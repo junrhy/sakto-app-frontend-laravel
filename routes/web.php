@@ -18,6 +18,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () { return Inertia::render('Dashboard'); })->name('dashboard');
     Route::get('/clinic', function () { return Inertia::render('Clinic'); })->name('clinic');
     Route::get('/inventory', function () { return Inertia::render('Inventory'); })->name('inventory');
+    Route::get('/loan', function () { return Inertia::render('Loan'); })->name('loan');
+    Route::get('/payroll', function () { return Inertia::render('Payroll'); })->name('payroll');
     Route::get('/help', function () { return Inertia::render('Help'); })->name('help');
 });
 

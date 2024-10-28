@@ -46,6 +46,18 @@ export default function Authenticated({
                                     Inventory
                                 </NavLink>
                                 <NavLink
+                                    href={route('loan')}
+                                    active={route().current('loan')}
+                                >
+                                    Loans
+                                </NavLink>
+                                <NavLink
+                                    href={route('payroll')}
+                                    active={route().current('payroll')}
+                                >
+                                    Payroll
+                                </NavLink>
+                                <NavLink
                                     href={route('help')}
                                     active={route().current('help')}
                                 >
