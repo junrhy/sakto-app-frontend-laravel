@@ -83,6 +83,12 @@ export default function Authenticated({
                                 >
                                     Warehousing
                                 </NavLink>
+                                <NavLink
+                                    href={route('transportation')}
+                                    active={route().current('transportation')}
+                                >
+                                    Transportation
+                                </NavLink>
                                 <div className="inline-flex items-center">
                                     <Dropdown>
                                         <Dropdown.Trigger>
