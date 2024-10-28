@@ -113,7 +113,7 @@ export default function RentalProperty() {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                         <Card>
                             <CardHeader>
-                            <CardTitle>Rental Properties</CardTitle>
+                            <CardTitle>Properties</CardTitle>
                             </CardHeader>
                             <CardContent>
                             <div className="flex justify-between mb-4">
