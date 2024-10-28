@@ -114,6 +114,30 @@ interface FuelUpdateFormData {
     location: string;
 }
 
+// Add these new types after your existing type definitions
+type CargoItem = {
+    id: string;
+    shipmentId: string;
+    name: string;
+    quantity: number;
+    unit: 'kg' | 'pieces' | 'pallets' | 'boxes';
+    description?: string;
+    specialHandling?: string;
+    status: 'Loaded' | 'In Transit' | 'Delivered' | 'Damaged';
+    temperature?: number; // For temperature-sensitive cargo
+    humidity?: number; // For humidity-sensitive cargo
+};
+
+interface CargoFormData {
+    name: string;
+    quantity: string;
+    unit: CargoItem['unit'];
+    description: string;
+    specialHandling: string;
+    temperature?: string;
+    humidity?: string;
+}
+
 // First, add this new component after your type definitions but before the main Transportation component
 const FuelUpdateDialogComponent = ({
     isOpen,
@@ -211,6 +235,135 @@ const FuelUpdateDialogComponent = ({
     );
 };
 
+// Add this new component after the existing CargoMonitoringSection component
+const CargoFormDialog = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    initialData = {
+        name: '',
+        quantity: '',
+        unit: 'pieces' as CargoItem['unit'],
+        description: '',
+        specialHandling: '',
+        temperature: '',
+        humidity: ''
+    }
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: CargoFormData) => void;
+    initialData?: CargoFormData;
+}) => {
+    const [formData, setFormData] = useState<CargoFormData>(initialData);
+
+    useEffect(() => {
+        if (isOpen) {
+            setFormData(initialData);
+        }
+    }, [isOpen, initialData]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSubmit(formData);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{initialData.name ? 'Edit Cargo' : 'Add New Cargo'}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Name</label>
+                        <Input
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Enter cargo name"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Quantity</label>
+                        <Input
+                            type="number"
+                            value={formData.quantity}
+                            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                            placeholder="Enter quantity"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Unit</label>
+                        <Select
+                            value={formData.unit}
+                            onValueChange={(value) => setFormData({ ...formData, unit: value as CargoItem['unit'] })}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="kg">Kilograms</SelectItem>
+                                <SelectItem value="pieces">Pieces</SelectItem>
+                                <SelectItem value="pallets">Pallets</SelectItem>
+                                <SelectItem value="boxes">Boxes</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Description</label>
+                        <Input
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            placeholder="Enter description"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Special Handling</label>
+                        <Input
+                            value={formData.specialHandling}
+                            onChange={(e) => setFormData({ ...formData, specialHandling: e.target.value })}
+                            placeholder="Enter special handling requirements"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Temperature (°C)</label>
+                        <Input
+                            type="number"
+                            value={formData.temperature}
+                            onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+                            placeholder="Enter required temperature"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Humidity (%)</label>
+                        <Input
+                            type="number"
+                            value={formData.humidity}
+                            onChange={(e) => setFormData({ ...formData, humidity: e.target.value })}
+                            placeholder="Enter required humidity"
+                        />
+                    </div>
+
+                    <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button type="submit">
+                            {initialData.name ? 'Save Changes' : 'Add Cargo'}
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 export default function Transportation() {
     const currency = '$';
     const [trucks, setTrucks] = useState<Truck[]>([
@@ -287,6 +440,29 @@ export default function Transportation() {
     const [isFuelUpdateDialogOpen, setIsFuelUpdateDialogOpen] = useState(false);
     const [updatingTruckFuelId, setUpdatingTruckFuelId] = useState<string>('');
     const [fuelHistory, setFuelHistory] = useState<FuelUpdate[]>([]);
+    const [cargoItems, setCargoItems] = useState<CargoItem[]>([
+        {
+            id: '1',
+            shipmentId: '1',
+            name: 'Electronics',
+            quantity: 100,
+            unit: 'boxes',
+            description: 'Consumer electronics',
+            specialHandling: 'Fragile',
+            status: 'In Transit',
+            temperature: 20,
+            humidity: 45
+        }
+    ]);
+    const [isCargoDialogOpen, setIsCargoDialogOpen] = useState(false);
+    const [editingShipmentId, setEditingShipmentId] = useState<string>('');
+    const [cargoForm, setCargoForm] = useState<CargoFormData>({
+        name: '',
+        quantity: '',
+        unit: 'pieces',
+        description: '',
+        specialHandling: '',
+    });
 
     useEffect(() => {
         // Calculate dashboard stats
@@ -677,6 +853,258 @@ export default function Transportation() {
         );
     };
 
+    const addCargoItem = (shipmentId: string, data: CargoFormData) => {
+        const newItem: CargoItem = {
+            id: Date.now().toString(),
+            shipmentId,
+            name: data.name,
+            quantity: parseInt(data.quantity),
+            unit: data.unit,
+            description: data.description,
+            specialHandling: data.specialHandling,
+            status: 'Loaded',
+            temperature: data.temperature ? parseFloat(data.temperature) : undefined,
+            humidity: data.humidity ? parseFloat(data.humidity) : undefined
+        };
+        setCargoItems(prev => [...prev, newItem]);
+        setIsCargoDialogOpen(false);
+    };
+
+    const updateCargoStatus = (cargoId: string, status: CargoItem['status']) => {
+        setCargoItems(items => 
+            items.map(item => 
+                item.id === cargoId ? { ...item, status } : item
+            )
+        );
+    };
+
+    const CargoMonitoringSection = () => {
+        const [isCargoFormOpen, setIsCargoFormOpen] = useState(false);
+        const [editingCargo, setEditingCargo] = useState<CargoFormData | null>(null);
+        const [cargoSearch, setCargoSearch] = useState('');
+
+        const handleAddCargo = (data: CargoFormData) => {
+            addCargoItem('1', data); // You might want to select a shipment ID here
+            setIsCargoFormOpen(false);
+        };
+
+        const handleEditCargo = (cargo: CargoItem) => {
+            setEditingCargo({
+                name: cargo.name,
+                quantity: cargo.quantity.toString(),
+                unit: cargo.unit,
+                description: cargo.description || '',
+                specialHandling: cargo.specialHandling || '',
+                temperature: cargo.temperature?.toString() || '',
+                humidity: cargo.humidity?.toString() || ''
+            });
+        };
+
+        const handleUpdateCargo = (data: CargoFormData) => {
+            if (!editingCargo) return;
+            
+            setCargoItems(items =>
+                items.map(item =>
+                    item.name === editingCargo.name
+                        ? {
+                            ...item,
+                            name: data.name,
+                            quantity: parseInt(data.quantity),
+                            unit: data.unit,
+                            description: data.description,
+                            specialHandling: data.specialHandling,
+                            temperature: data.temperature ? parseFloat(data.temperature) : undefined,
+                            humidity: data.humidity ? parseFloat(data.humidity) : undefined
+                        }
+                        : item
+                )
+            );
+            setEditingCargo(null);
+        };
+
+        const handleDeleteCargo = (cargoId: string) => {
+            if (confirm('Are you sure you want to delete this cargo item?')) {
+                setCargoItems(items => items.filter(item => item.id !== cargoId));
+            }
+        };
+
+        const filteredCargoItems = cargoItems.filter(item => {
+            const searchTerm = cargoSearch.toLowerCase();
+            return (
+                item.name.toLowerCase().includes(searchTerm) ||
+                item.description?.toLowerCase().includes(searchTerm) ||
+                item.specialHandling?.toLowerCase().includes(searchTerm)
+            );
+        });
+
+        return (
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Cargo Monitoring</CardTitle>
+                        <Button onClick={() => setIsCargoFormOpen(true)}>
+                            <PlusIcon className="mr-2 h-4 w-4" />
+                            Add Cargo
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex-1 max-w-sm">
+                            <Input
+                                placeholder="Search cargo..."
+                                value={cargoSearch}
+                                onChange={(e) => setCargoSearch(e.target.value)}
+                                className="max-w-sm"
+                            />
+                        </div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Shipment</TableHead>
+                                    <TableHead>Truck Details</TableHead>
+                                    <TableHead>Item</TableHead>
+                                    <TableHead>Quantity</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Conditions</TableHead>
+                                    <TableHead>Special Handling</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredCargoItems.map((item) => {
+                                    const shipment = shipments.find(s => s.id === item.shipmentId);
+                                    const truck = shipment ? trucks.find(t => t.id === shipment.truckId) : null;
+                                    
+                                    return (
+                                        <TableRow key={item.id}>
+                                            <TableCell>
+                                                {shipment ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">
+                                                            {shipment.origin} → {shipment.destination}
+                                                        </span>
+                                                        <span className="text-sm text-muted-foreground">
+                                                            ID: {shipment.id}
+                                                        </span>
+                                                    </div>
+                                                ) : 'Unknown Shipment'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {truck ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">
+                                                            {truck.plateNumber}
+                                                        </span>
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {truck.model}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Driver: {truck.driver || 'Unassigned'}
+                                                        </span>
+                                                    </div>
+                                                ) : 'No Truck Assigned'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{item.name}</span>
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {item.description}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {item.quantity} {item.unit}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={
+                                                    item.status === 'Delivered' ? 'default' :
+                                                    item.status === 'In Transit' ? 'secondary' :
+                                                    item.status === 'Damaged' ? 'destructive' :
+                                                    'outline'
+                                                }>
+                                                    {item.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col space-y-1">
+                                                    {item.temperature && (
+                                                        <span className="text-sm">
+                                                            🌡️ {item.temperature}°C
+                                                        </span>
+                                                    )}
+                                                    {item.humidity && (
+                                                        <span className="text-sm">
+                                                            💧 {item.humidity}%
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {item.specialHandling && (
+                                                    <Badge variant="outline">
+                                                        {item.specialHandling}
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex space-x-2">
+                                                    <Select
+                                                        value={item.status}
+                                                        onValueChange={(value) => 
+                                                            updateCargoStatus(item.id, value as CargoItem['status'])
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="w-[130px]">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="Loaded">Loaded</SelectItem>
+                                                            <SelectItem value="In Transit">In Transit</SelectItem>
+                                                            <SelectItem value="Delivered">Delivered</SelectItem>
+                                                            <SelectItem value="Damaged">Damaged</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleEditCargo(item)}
+                                                    >
+                                                        <Pencil2Icon className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteCargo(item.id)}
+                                                    >
+                                                        <TrashIcon className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+                <CargoFormDialog
+                    isOpen={isCargoFormOpen}
+                    onClose={() => setIsCargoFormOpen(false)}
+                    onSubmit={handleAddCargo}
+                />
+                {editingCargo && (
+                    <CargoFormDialog
+                        isOpen={!!editingCargo}
+                        onClose={() => setEditingCargo(null)}
+                        onSubmit={handleUpdateCargo}
+                        initialData={editingCargo}
+                    />
+                )}
+            </Card>
+        );
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -703,9 +1131,9 @@ export default function Transportation() {
                         {/* Add similar cards for other stats */}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6"> {/* Remove md:grid-cols-2 to make sections full width */}
+                    <div className="grid grid-cols-1 gap-6">
                         {/* Shipment Tracking Section */}
-                        <div className="space-y-6"> {/* This div now takes full width */}
+                        <div className="space-y-6">
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Shipment Tracking</CardTitle>
@@ -942,7 +1370,7 @@ export default function Transportation() {
                         </div>
 
                         {/* Fleet Management Section */}
-                        <div className="space-y-6"> {/* This div now takes full width */}
+                        <div className="space-y-6">
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Fleet Management</CardTitle>
@@ -1124,6 +1552,11 @@ export default function Transportation() {
                                     </div>
                                 </CardContent>
                             </Card>
+                        </div>
+
+                        {/* Cargo Monitoring Section */}
+                        <div className="space-y-6">
+                            <CargoMonitoringSection />
                         </div>
                     </div>
                 </div>
