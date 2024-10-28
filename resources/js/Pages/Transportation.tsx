@@ -51,6 +51,7 @@ type Shipment = {
     estimatedDelay?: number;
     customerContact: string;
     priority: 'Low' | 'Medium' | 'High';
+    trackingHistory?: TrackingUpdate[];
 };
 
 // Add this interface for the edit form
@@ -74,6 +75,141 @@ interface ShipmentFormData {
     priority: 'Low' | 'Medium' | 'High';
     driver: string;
 }
+
+// Add this new type after the existing type definitions
+type TrackingUpdate = {
+    id: string;
+    shipmentId: string;
+    status: Shipment['status'];
+    location: string;
+    timestamp: string;
+    notes?: string;
+    updatedBy: string;
+};
+
+// Add this new interface after the existing interfaces
+interface StatusUpdateFormData {
+    status: Shipment['status'];
+    location: string;
+    notes: string;
+}
+
+// Add this new type after the existing type definitions
+type FuelUpdate = {
+    id: string;
+    truckId: string;
+    timestamp: string;
+    previousLevel: number;
+    newLevel: number;
+    litersAdded: number;
+    cost: number;
+    location: string;
+    updatedBy: string;
+};
+
+// Add this new interface
+interface FuelUpdateFormData {
+    litersAdded: string;
+    cost: string;
+    location: string;
+}
+
+// First, add this new component after your type definitions but before the main Transportation component
+const FuelUpdateDialogComponent = ({
+    isOpen,
+    onClose,
+    onUpdate,
+    truckId,
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onUpdate: (truckId: string, data: FuelUpdateFormData) => void;
+    truckId: string;
+}) => {
+    const [formData, setFormData] = useState<FuelUpdateFormData>({
+        litersAdded: '',
+        cost: '',
+        location: ''
+    });
+
+    // Reset form when dialog opens with new truck
+    useEffect(() => {
+        if (isOpen) {
+            setFormData({
+                litersAdded: '',
+                cost: '',
+                location: ''
+            });
+        }
+    }, [isOpen, truckId]);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onUpdate(truckId, formData);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Update Fuel Level</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Liters Added</label>
+                        <Input
+                            type="number"
+                            value={formData.litersAdded}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                litersAdded: e.target.value
+                            })}
+                            placeholder="Enter liters added"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Cost</label>
+                        <Input
+                            type="number"
+                            value={formData.cost}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                cost: e.target.value
+                            })}
+                            placeholder="Enter fuel cost"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Location</label>
+                        <Input
+                            value={formData.location}
+                            onChange={(e) => setFormData({
+                                ...formData,
+                                location: e.target.value
+                            })}
+                            placeholder="Enter fueling location"
+                        />
+                    </div>
+
+                    <div className="flex justify-end space-x-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onClose}
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit">
+                            Update Fuel
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 export default function Transportation() {
     const currency = '$';
@@ -129,6 +265,28 @@ export default function Transportation() {
     const [editingTruckId, setEditingTruckId] = useState<string>(''); // Add this state
     const [shipmentSearch, setShipmentSearch] = useState('');
     const [truckSearch, setTruckSearch] = useState('');
+    const [trackingHistory, setTrackingHistory] = useState<TrackingUpdate[]>([
+        {
+            id: '1',
+            shipmentId: '1',
+            status: 'In Transit',
+            location: 'Chicago',
+            timestamp: '2024-03-15T10:30:00',
+            notes: 'Shipment passed through Chicago hub',
+            updatedBy: 'System'
+        },
+        // Add more sample tracking updates as needed
+    ]);
+    const [isStatusUpdateDialogOpen, setIsStatusUpdateDialogOpen] = useState(false);
+    const [updatingShipmentId, setUpdatingShipmentId] = useState<string>('');
+    const [statusUpdateForm, setStatusUpdateForm] = useState<StatusUpdateFormData>({
+        status: 'In Transit',
+        location: '',
+        notes: ''
+    });
+    const [isFuelUpdateDialogOpen, setIsFuelUpdateDialogOpen] = useState(false);
+    const [updatingTruckFuelId, setUpdatingTruckFuelId] = useState<string>('');
+    const [fuelHistory, setFuelHistory] = useState<FuelUpdate[]>([]);
 
     useEffect(() => {
         // Calculate dashboard stats
@@ -209,13 +367,34 @@ export default function Transportation() {
         }]);
     };
 
-    const updateShipmentStatus = (shipmentId: string, newStatus: Shipment['status']) => {
+    const openStatusUpdateDialog = (shipmentId: string, currentStatus: Shipment['status']) => {
+        setUpdatingShipmentId(shipmentId);
+        setStatusUpdateForm({
+            status: currentStatus,
+            location: '',
+            notes: ''
+        });
+        setIsStatusUpdateDialogOpen(true);
+    };
+
+    const updateShipmentStatus = (shipmentId: string, updateData: StatusUpdateFormData) => {
+        // Update shipment status
         setShipments(shipments.map(s =>
-            s.id === shipmentId ? { ...s, status: newStatus } : s
+            s.id === shipmentId ? { ...s, status: updateData.status } : s
         ));
 
+        // Add tracking update
+        addTrackingUpdate(shipmentId, {
+            shipmentId,
+            status: updateData.status,
+            location: updateData.location,
+            timestamp: new Date().toISOString(),
+            updatedBy: 'User', // You might want to get this from auth context
+            notes: updateData.notes
+        });
+
         // Update truck status if shipment is delivered
-        if (newStatus === 'Delivered') {
+        if (updateData.status === 'Delivered') {
             const shipment = shipments.find(s => s.id === shipmentId);
             if (shipment) {
                 setTrucks(trucks.map(t =>
@@ -223,6 +402,8 @@ export default function Transportation() {
                 ));
             }
         }
+
+        setIsStatusUpdateDialogOpen(false);
     };
 
     // Add these new functions for CRUD operations
@@ -301,6 +482,200 @@ export default function Transportation() {
             (truck.driver && truck.driver.toLowerCase().includes(searchTerm))
         );
     });
+
+    const addTrackingUpdate = (shipmentId: string, update: Omit<TrackingUpdate, 'id'>) => {
+        const newUpdate = {
+            ...update,
+            id: Date.now().toString(),
+        };
+        setTrackingHistory(prev => [...prev, newUpdate]);
+    };
+
+    const ShipmentTrackingHistory = ({ shipmentId }: { shipmentId: string }) => {
+        const shipmentUpdates = trackingHistory
+            .filter(update => update.shipmentId === shipmentId)
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+        return (
+            <div className="space-y-4">
+                <h3 className="font-medium">Tracking History</h3>
+                <div className="space-y-3">
+                    {shipmentUpdates.map((update) => (
+                        <div key={update.id} className="flex items-start space-x-4 border-l-2 border-blue-500 pl-4">
+                            <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                    <Badge variant={
+                                        update.status === 'Delivered' ? 'default' :
+                                        update.status === 'In Transit' ? 'secondary' :
+                                        update.status === 'Delayed' ? 'destructive' :
+                                        'outline'
+                                    }>
+                                        {update.status}
+                                    </Badge>
+                                    <span className="text-sm text-muted-foreground">
+                                        {format(new Date(update.timestamp), 'MMM dd, yyyy HH:mm')}
+                                    </span>
+                                </div>
+                                <p className="mt-1 text-sm">{update.location}</p>
+                                {update.notes && (
+                                    <p className="mt-1 text-sm text-muted-foreground">{update.notes}</p>
+                                )}
+                                <p className="mt-1 text-xs text-muted-foreground">Updated by: {update.updatedBy}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const StatusUpdateDialog = () => {
+        return (
+            <Dialog open={isStatusUpdateDialogOpen} onOpenChange={setIsStatusUpdateDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Update Shipment Status</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        updateShipmentStatus(updatingShipmentId, statusUpdateForm);
+                    }} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Status</label>
+                            <Select
+                                value={statusUpdateForm.status}
+                                onValueChange={(value) => setStatusUpdateForm({
+                                    ...statusUpdateForm,
+                                    status: value as Shipment['status']
+                                })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Scheduled">Scheduled</SelectItem>
+                                    <SelectItem value="In Transit">In Transit</SelectItem>
+                                    <SelectItem value="Delivered">Delivered</SelectItem>
+                                    <SelectItem value="Delayed">Delayed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Current Location</label>
+                            <Input
+                                value={statusUpdateForm.location}
+                                onChange={(e) => setStatusUpdateForm({
+                                    ...statusUpdateForm,
+                                    location: e.target.value
+                                })}
+                                placeholder="Enter current location"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Notes</label>
+                            <Input
+                                value={statusUpdateForm.notes}
+                                onChange={(e) => setStatusUpdateForm({
+                                    ...statusUpdateForm,
+                                    notes: e.target.value
+                                })}
+                                placeholder="Add any additional notes"
+                            />
+                        </div>
+
+                        <div className="flex justify-end space-x-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsStatusUpdateDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit">
+                                Update Status
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        );
+    };
+
+    const openFuelUpdateDialog = (truckId: string) => {
+        setUpdatingTruckFuelId(truckId);
+        setIsFuelUpdateDialogOpen(true);
+    };
+
+    const updateFuelLevel = (truckId: string, updateData: FuelUpdateFormData) => {
+        const truck = trucks.find(t => t.id === truckId);
+        if (!truck) return;
+
+        const litersAdded = parseFloat(updateData.litersAdded);
+        if (isNaN(litersAdded)) return;
+
+        const previousLevel = truck.fuelLevel;
+        const newLevel = Math.min(100, previousLevel + (litersAdded / truck.capacity) * 100);
+
+        // Update truck fuel level
+        setTrucks(trucks.map(t =>
+            t.id === truckId ? { ...t, fuelLevel: newLevel } : t
+        ));
+
+        // Add fuel history record
+        const fuelUpdate: FuelUpdate = {
+            id: Date.now().toString(),
+            truckId,
+            timestamp: new Date().toISOString(),
+            previousLevel,
+            newLevel,
+            litersAdded,
+            cost: parseFloat(updateData.cost),
+            location: updateData.location,
+            updatedBy: 'User' // You might want to get this from auth context
+        };
+        setFuelHistory(prev => [...prev, fuelUpdate]);
+
+        setIsFuelUpdateDialogOpen(false);
+    };
+
+    const FuelHistory = ({ truckId }: { truckId: string }) => {
+        const truckFuelHistory = fuelHistory
+            .filter(update => update.truckId === truckId)
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+        return (
+            <div className="space-y-4">
+                <h3 className="font-medium">Fuel History</h3>
+                <div className="space-y-3">
+                    {truckFuelHistory.map((update) => (
+                        <div key={update.id} className="flex items-start space-x-4 border-l-2 border-green-500 pl-4">
+                            <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-medium">
+                                        {update.litersAdded.toFixed(2)} L added
+                                    </span>
+                                    <span className="text-sm text-muted-foreground">
+                                        {format(new Date(update.timestamp), 'MMM dd, yyyy HH:mm')}
+                                    </span>
+                                </div>
+                                <p className="mt-1 text-sm">
+                                    Level: {update.previousLevel.toFixed(1)}% → {update.newLevel.toFixed(1)}%
+                                </p>
+                                <p className="mt-1 text-sm">
+                                    Cost: ${update.cost.toFixed(2)} | Location: {update.location}
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Updated by: {update.updatedBy}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
 
     return (
         <AuthenticatedLayout
@@ -522,20 +897,39 @@ export default function Transportation() {
                                                                 >
                                                                     <TrashIcon className="h-4 w-4" />
                                                                 </Button>
-                                                                <Select
-                                                                    value={shipment.status}
-                                                                    onValueChange={(value) => updateShipmentStatus(shipment.id, value as Shipment['status'])}
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => openStatusUpdateDialog(shipment.id, shipment.status)}
                                                                 >
-                                                                    <SelectTrigger className="h-8">
-                                                                        <SelectValue />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="Scheduled">Scheduled</SelectItem>
-                                                                        <SelectItem value="In Transit">In Transit</SelectItem>
-                                                                        <SelectItem value="Delivered">Delivered</SelectItem>
-                                                                        <SelectItem value="Delayed">Delayed</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
+                                                                    Update Status
+                                                                </Button>
+                                                                <Dialog>
+                                                                    <DialogTrigger asChild>
+                                                                        <Button variant="outline" size="sm">
+                                                                            Details
+                                                                        </Button>
+                                                                    </DialogTrigger>
+                                                                    <DialogContent className="max-w-2xl">
+                                                                        <DialogHeader>
+                                                                            <DialogTitle>Shipment Details</DialogTitle>
+                                                                        </DialogHeader>
+                                                                        <div className="grid gap-4">
+                                                                            <div className="grid grid-cols-2 gap-4">
+                                                                                <div>
+                                                                                    <h3 className="font-medium">Cargo Information</h3>
+                                                                                    <p className="text-sm">Type: {shipment.cargo}</p>
+                                                                                    <p className="text-sm">Weight: {shipment.weight} tons</p>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <h3 className="font-medium">Contact Information</h3>
+                                                                                    <p className="text-sm">Customer: {shipment.customerContact}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <ShipmentTrackingHistory shipmentId={shipment.id} />
+                                                                        </div>
+                                                                    </DialogContent>
+                                                                </Dialog>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
@@ -701,6 +1095,26 @@ export default function Transportation() {
                                                                 >
                                                                     Schedule Maintenance
                                                                 </Button>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => openFuelUpdateDialog(truck.id)}
+                                                                >
+                                                                    Update Fuel
+                                                                </Button>
+                                                                <Dialog>
+                                                                    <DialogTrigger asChild>
+                                                                        <Button variant="outline" size="sm">
+                                                                            Fuel History
+                                                                        </Button>
+                                                                    </DialogTrigger>
+                                                                    <DialogContent className="max-w-2xl">
+                                                                        <DialogHeader>
+                                                                            <DialogTitle>Fuel History - {truck.plateNumber}</DialogTitle>
+                                                                        </DialogHeader>
+                                                                        <FuelHistory truckId={truck.id} />
+                                                                    </DialogContent>
+                                                                </Dialog>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
@@ -714,6 +1128,13 @@ export default function Transportation() {
                     </div>
                 </div>
             </div>
+            <StatusUpdateDialog />
+            <FuelUpdateDialogComponent
+                isOpen={isFuelUpdateDialogOpen}
+                onClose={() => setIsFuelUpdateDialogOpen(false)}
+                onUpdate={updateFuelLevel}
+                truckId={updatingTruckFuelId}
+            />
         </AuthenticatedLayout>
     );
 }
