@@ -34,6 +34,7 @@ type Truck = {
     fuelLevel: number;
     mileage: number;
     driver?: string;
+    driverContact?: string;
 };
   
 type Shipment = {
@@ -60,6 +61,7 @@ interface TruckFormData {
   model: string;
   capacity: string;
   driver?: string;
+  driverContact?: string; // Add this line
 }
 
 // Add these new interfaces after the existing type definitions
@@ -589,7 +591,8 @@ export default function Transportation() {
             plateNumber: truck.plateNumber,
             model: truck.model,
             capacity: truck.capacity.toString(),
-            driver: truck.driver
+            driver: truck.driver,
+            driverContact: truck.driverContact // Add this line
         });
         setIsEditDialogOpen(true);
     };
@@ -602,7 +605,8 @@ export default function Transportation() {
                     plateNumber: editingTruck.plateNumber,
                     model: editingTruck.model,
                     capacity: parseInt(editingTruck.capacity),
-                    driver: editingTruck.driver
+                    driver: editingTruck.driver,
+                    driverContact: editingTruck.driverContact // Add this line
                 };
             }
             return truck;
@@ -1002,6 +1006,11 @@ export default function Transportation() {
                                                         <span className="text-xs text-muted-foreground">
                                                             Driver: {truck.driver || 'Unassigned'}
                                                         </span>
+                                                        {truck.driverContact && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                📞 {truck.driverContact}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 ) : 'No Truck Assigned'}
                                             </TableCell>
@@ -1259,8 +1268,19 @@ export default function Transportation() {
                                                             })()}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {/* Add driver name */}
-                                                            <span className="font-medium">{shipment.driver || 'Unassigned'}</span>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-medium">
+                                                                    {shipment.driver || 'Unassigned'}
+                                                                </span>
+                                                                {(() => {
+                                                                    const truck = trucks.find(t => t.id === shipment.truckId);
+                                                                    return truck?.driverContact && (
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            📞 {truck.driverContact}
+                                                                        </span>
+                                                                    );
+                                                                })()}
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center space-x-2">
@@ -1450,6 +1470,11 @@ export default function Transportation() {
                                                         value={editingTruck.driver || ''}
                                                         onChange={(e) => setEditingTruck({ ...editingTruck, driver: e.target.value })}
                                                     />
+                                                    <Input
+                                                        placeholder="Driver Contact Number"
+                                                        value={editingTruck.driverContact || ''}
+                                                        onChange={(e) => setEditingTruck({ ...editingTruck, driverContact: e.target.value })}
+                                                    />
                                                     <Button type="submit">Save Changes</Button>
                                                 </form>
                                             </DialogContent>
@@ -1476,6 +1501,11 @@ export default function Transportation() {
                                                                 <span className="font-medium">
                                                                     {truck.driver || 'Unassigned'}
                                                                 </span>
+                                                                {truck.driverContact && (
+                                                                    <span className="text-xs text-muted-foreground">
+                                                                        📞 {truck.driverContact}
+                                                                    </span>
+                                                                )}
                                                                 {truck.status === 'In Transit' && (
                                                                     <span className="text-xs text-muted-foreground">
                                                                         On delivery
