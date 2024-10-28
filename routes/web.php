@@ -14,17 +14,12 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('/clinic', function () {
-    return Inertia::render('Clinic');
-})->middleware(['auth', 'verified'])->name('clinic');
-
-Route::get('/help', function () {
-    return Inertia::render('Help');
-})->middleware(['auth', 'verified'])->name('help');
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () { return Inertia::render('Dashboard'); })->name('dashboard');
+    Route::get('/clinic', function () { return Inertia::render('Clinic'); })->name('clinic');
+    Route::get('/inventory', function () { return Inertia::render('Inventory'); })->name('inventory');
+    Route::get('/help', function () { return Inertia::render('Help'); })->name('help');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
