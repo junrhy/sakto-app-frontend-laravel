@@ -40,6 +40,12 @@ export default function Authenticated({
                                     Clinic
                                 </NavLink>
                                 <NavLink
+                                    href={route('inventory')}
+                                    active={route().current('inventory')}
+                                >
+                                    Inventory
+                                </NavLink>
+                                <NavLink
                                     href={route('help')}
                                     active={route().current('help')}
                                 >
