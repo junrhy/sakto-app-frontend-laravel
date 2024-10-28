@@ -22,9 +22,7 @@ interface Product {
 const ITEMS_PER_PAGE = 5;
 
 export default function Inventory(props: { inventory: Product[] }) {
-    const inventory = props.inventory || [];
-
-    const [products, setProducts] = useState<Product[]>(inventory);
+    const [products, setProducts] = useState<Product[]>(props.inventory);
 
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
     const [searchTerm, setSearchTerm] = useState<string>("");
@@ -152,7 +150,7 @@ export default function Inventory(props: { inventory: Product[] }) {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <Card>
                                 <CardHeader>
-                                <CardTitle>Product List</CardTitle>
+                                <CardTitle>Products</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                 <div className="mb-4 flex justify-between items-center">
