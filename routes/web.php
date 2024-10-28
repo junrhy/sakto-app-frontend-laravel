@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pos-retail', function () { return Inertia::render('PosRetail'); })->name('pos-retail');
     Route::get('/pos-restaurant', function () { return Inertia::render('PosRestaurant'); })->name('pos-restaurant');
     Route::get('/inventory', function () { return Inertia::render('Inventory'); })->name('inventory');
+    Route::get('/warehousing', function () { return Inertia::render('Warehousing'); })->name('warehousing');
     Route::get('/rental-item', function () { return Inertia::render('RentalItem'); })->name('rental-item');
     Route::get('/rental-property', function () { return Inertia::render('RentalProperty'); })->name('rental-property');
     Route::get('/loan', function () { return Inertia::render('Loan'); })->name('loan');

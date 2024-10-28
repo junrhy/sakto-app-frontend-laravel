@@ -77,6 +77,12 @@ export default function Authenticated({
                                 >
                                     Inventory
                                 </NavLink>
+                                <NavLink
+                                    href={route('warehousing')}
+                                    active={route().current('warehousing')}
+                                >
+                                    Warehousing
+                                </NavLink>
                                 <div className="inline-flex items-center">
                                     <Dropdown>
                                         <Dropdown.Trigger>
