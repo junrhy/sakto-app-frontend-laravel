@@ -47,7 +47,7 @@ export default function Authenticated({
                                                     type="button"
                                                     className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                                 >
-                                                    <span className="mt-[1px]">Point of Sale</span>
+                                                    <span className="mt-[1px]">Retail</span>
                                                     <svg
                                                         className="ml-2 -mr-0.5 h-4 w-4"
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -68,17 +68,17 @@ export default function Authenticated({
                                             <Dropdown.Link href={route('pos-retail')}>
                                                 Retail
                                             </Dropdown.Link>
-                                            <Dropdown.Link href={route('pos-restaurant')}>
-                                                Restaurant
+                                            <Dropdown.Link href={route('inventory')}>
+                                                Inventory
                                             </Dropdown.Link>
                                         </Dropdown.Content>
                                     </Dropdown>
                                 </div>
                                 <NavLink
-                                    href={route('inventory')}
-                                    active={route().current('inventory')}
+                                    href={route('pos-restaurant')}
+                                    active={route().current('pos-restaurant')}
                                 >
-                                    Inventory
+                                    Restaurant
                                 </NavLink>
                                 <div className="inline-flex items-center">
                                     <Dropdown>
