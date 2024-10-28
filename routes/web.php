@@ -1,6 +1,19 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\PosRetailController;
+use App\Http\Controllers\PosRestaurantController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\WarehousingController;
+use App\Http\Controllers\TransportationController;
+use App\Http\Controllers\RentalItemController;
+use App\Http\Controllers\RentalPropertyController;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\HelpController;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,21 +28,19 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () { return Inertia::render('Dashboard'); })->name('dashboard');
-    Route::get('/clinic', function () { return Inertia::render('Clinic'); })->name('clinic');
-    Route::get('/pos-retail', function () { return Inertia::render('PosRetail'); })->name('pos-retail');
-    Route::get('/pos-restaurant', function () { return Inertia::render('PosRestaurant'); })->name('pos-restaurant');
-    Route::get('/inventory', function () { return Inertia::render('Inventory'); })->name('inventory');
-    Route::get('/warehousing', function () { return Inertia::render('Warehousing'); })->name('warehousing');
-    Route::get('/transportation', function () { return Inertia::render('Transportation'); })->name('transportation');
-    Route::get('/rental-item', function () { return Inertia::render('RentalItem'); })->name('rental-item');
-    Route::get('/rental-property', function () { return Inertia::render('RentalProperty'); })->name('rental-property');
-    Route::get('/loan', function () { return Inertia::render('Loan'); })->name('loan');
-    Route::get('/payroll', function () { return Inertia::render('Payroll'); })->name('payroll');
-    Route::get('/help', function () { return Inertia::render('Help'); })->name('help');
-});
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
+    Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
+    Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+    Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
+    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
+    Route::get('/rental-item', [RentalItemController::class, 'index'])->name('rental-item');
+    Route::get('/rental-property', [RentalPropertyController::class, 'index'])->name('rental-property');
+    Route::get('/loan', [LoanController::class, 'index'])->name('loan');
+    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
+    Route::get('/help', [HelpController::class, 'index'])->name('help');
 
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

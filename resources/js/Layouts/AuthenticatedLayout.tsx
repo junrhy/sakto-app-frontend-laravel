@@ -25,7 +25,10 @@ export default function Authenticated({
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
+                                    <div className="flex items-center">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                    <span className="border-black text-xl font-black ml-1">Sakto</span>
+                                    </div>
                                 </Link>
                             </div>
 
@@ -71,12 +74,12 @@ export default function Authenticated({
                                         </Dropdown.Content>
                                     </Dropdown>
                                 </div>
-                                {/* <NavLink
+                                <NavLink
                                     href={route('inventory')}
                                     active={route().current('inventory')}
                                 >
                                     Inventory
-                                </NavLink> */}
+                                </NavLink>
                                 <div className="inline-flex items-center">
                                     <Dropdown>
                                         <Dropdown.Trigger>
