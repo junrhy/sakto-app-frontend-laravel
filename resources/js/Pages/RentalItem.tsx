@@ -115,7 +115,7 @@ export default function RentalItem() {
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                         <Card>
                         <CardHeader>
-                        <CardTitle>Rental Items</CardTitle>
+                        <CardTitle>Items</CardTitle>
                         </CardHeader>
                         <CardContent>
                         <div className="flex justify-between mb-4">
