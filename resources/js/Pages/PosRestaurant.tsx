@@ -315,7 +315,7 @@ export default function PosRestaurant() {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Point of Sale - Restaurant
+                    Point of Sale
                 </h2>
             }
         >

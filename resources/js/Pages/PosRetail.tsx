@@ -25,16 +25,8 @@ interface OrderItem {
   
 const ITEMS_PER_PAGE = 5;
 
-export default function PosRetail() {
-    const [products] = useState<Product[]>([
-        { id: 1, name: "Product A", price: 10.0, images: ["/images/product-a.jpg"], quantity: 50 },
-        { id: 2, name: "Product B", price: 15.0, images: ["/images/product-b.jpg"], quantity: 30 },
-        { id: 3, name: "Product C", price: 20.0, images: ["/images/product-c.jpg"], quantity: 20 },
-        { id: 4, name: "Product D", price: 25.0, images: ["/images/product-d.jpg"], quantity: 15 },
-        { id: 5, name: "Product E", price: 30.0, images: ["/images/product-e.jpg"], quantity: 25 },
-        { id: 6, name: "Product F", price: 35.0, images: ["/images/product-f.jpg"], quantity: 10 },
-        { id: 7, name: "Product G", price: 40.0, images: ["/images/product-g.jpg"], quantity: 5 },
-      ]);
+export default function PosRetail(props: { products: Product[] }) {
+    const [products] = useState<Product[]>(props.products);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -150,7 +142,7 @@ export default function PosRetail() {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Point of Sale - Retail
+                    Point of Sale
                 </h2>
             }
         >
