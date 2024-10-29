@@ -27,7 +27,10 @@ export interface PageProps {
     [key: string]: any;
 }
 
-export type Widget = {
+export type WidgetType = 'sales' | 'inventory' | 'orders' | 'tables' | 'kitchen' | 'reservations';
+
+export interface Widget {
     id: number;
-    type: "sales" | "inventory" | "orders";
-}; 
+    type: WidgetType;
+    // ... other existing properties
+} 

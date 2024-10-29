@@ -4,6 +4,9 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { SalesWidget } from "./SalesWidget";
 import { InventoryWidget } from "./InventoryWidget";
 import { OrdersWidget } from "./OrdersWidget";
+import { TablesWidget } from "./TablesWidget";
+import { KitchenWidget } from "./KitchenWidget";
+import { ReservationsWidget } from "./ReservationsWidget";
 import { Widget } from "@/types";
 
 interface WidgetComponentProps {
@@ -45,6 +48,24 @@ export function WidgetComponent({
                             Recent Orders
                         </>
                     )}
+                    {widget.type === "tables" && (
+                        <>
+                            <span className="h-2 w-2 bg-orange-500 rounded-full"></span>
+                            Table Status
+                        </>
+                    )}
+                    {widget.type === "kitchen" && (
+                        <>
+                            <span className="h-2 w-2 bg-red-500 rounded-full"></span>
+                            Kitchen Orders
+                        </>
+                    )}
+                    {widget.type === "reservations" && (
+                        <>
+                            <span className="h-2 w-2 bg-yellow-500 rounded-full"></span>
+                            Reservations
+                        </>
+                    )}
                 </CardTitle>
                 <Button 
                     variant="ghost" 
@@ -59,6 +80,9 @@ export function WidgetComponent({
             {widget.type === "sales" && <SalesWidget />}
             {widget.type === "inventory" && <InventoryWidget />}
             {widget.type === "orders" && <OrdersWidget />}
+            {widget.type === "tables" && <TablesWidget />}
+            {widget.type === "kitchen" && <KitchenWidget />}
+            {widget.type === "reservations" && <ReservationsWidget />}
 
             <div className="absolute bottom-2 left-2 right-2 flex justify-between">
                 <Button 
