@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2 } from "lucide-react";
+import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2, MoreHorizontal, Star, RotateCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -29,6 +29,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 type WidgetType = "sales" | "inventory" | "orders";
 
@@ -42,6 +50,7 @@ interface Dashboard {
   id: number;
   name: string;
   widgets: Widget[];
+  favorite?: boolean;
 }
 
 const WidgetComponent: React.FC<{ 
@@ -141,7 +150,7 @@ const WidgetComponent: React.FC<{
 
 export default function Dashboard() {
     const [dashboards, setDashboards] = useState<Dashboard[]>([
-        { id: 1, name: "Main Dashboard", widgets: [] },
+        { id: 1, name: "Main Dashboard", widgets: [], favorite: false },
     ]);
     const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(dashboards[0]);
     const [newDashboardName, setNewDashboardName] = useState("");
@@ -150,6 +159,7 @@ export default function Dashboard() {
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(2);
     const [loading, setLoading] = useState(true);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         fetchWidgets();
@@ -170,8 +180,11 @@ export default function Dashboard() {
     };
 
     const fetchWidgets = () => {
-        // Initialize with empty array or some default widgets
-        setWidgets([]);
+        return new Promise<void>((resolve) => {
+            // Initialize with empty array or some default widgets
+            setWidgets([]);
+            resolve();
+        });
     };
 
     const addWidget = () => {
@@ -249,109 +262,6 @@ export default function Dashboard() {
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-3 w-full sm:w-auto">
                                     <Select 
-                                        value={currentDashboard.id.toString()} 
-                                        onValueChange={(value) => {
-                                            const dashboard = dashboards.find(d => d.id.toString() === value);
-                                            if (dashboard) setCurrentDashboard(dashboard);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-[200px]">
-                                            <SelectValue placeholder="Select dashboard" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {dashboards.map(dashboard => (
-                                                <SelectItem 
-                                                    key={dashboard.id} 
-                                                    value={dashboard.id.toString()}
-                                                >
-                                                    {dashboard.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button variant="outline" size="sm" className="gap-2">
-                                                <PlusCircle className="h-4 w-4" />
-                                                New Dashboard
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                            <DialogHeader>
-                                                <DialogTitle>Create New Dashboard</DialogTitle>
-                                            </DialogHeader>
-                                            <div className="space-y-4 pt-4">
-                                                <Input
-                                                    placeholder="Dashboard name"
-                                                    value={newDashboardName}
-                                                    onChange={(e) => setNewDashboardName(e.target.value)}
-                                                />
-                                                <Button 
-                                                    onClick={createNewDashboard}
-                                                    disabled={!newDashboardName.trim()}
-                                                    className="w-full"
-                                                >
-                                                    Create Dashboard
-                                                </Button>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
-
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
-                                        onClick={() => setIsDeleteDialogOpen(true)}
-                                        disabled={dashboards.length <= 1}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                        Delete
-                                    </Button>
-
-                                    {/* Delete Dashboard Confirmation Dialog */}
-                                    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Delete Dashboard</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Are you sure you want to delete "{currentDashboard.name}"? This action cannot be undone.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction
-                                                    onClick={deleteDashboard}
-                                                    className="bg-red-600 hover:bg-red-700 text-white"
-                                                >
-                                                    Delete
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-
-                                <div className="flex items-center gap-3 w-full sm:w-auto">
-                                    <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
-                                        <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "ghost"} size="sm">
-                                            <LayoutGrid className="h-4 w-4" />
-                                        </Button>
-                                        <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "ghost"} size="sm">
-                                            <Columns className="h-4 w-4" />
-                                        </Button>
-                                        <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "ghost"} size="sm">
-                                            <Columns3 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Widget Controls Bar */}
-                        <div className="bg-gray-50 dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700">
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-3 w-full sm:w-auto">
-                                    <Select 
                                         value={selectedWidgetType || ""} 
                                         onValueChange={(value: string) => setSelectedWidgetType(value as WidgetType)}
                                     >
@@ -375,6 +285,143 @@ export default function Dashboard() {
                                         <Plus className="h-4 w-4" />
                                         Add Widget
                                     </Button>
+
+                                    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Delete Dashboard</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Are you sure you want to delete "{currentDashboard.name}"? This action cannot be undone.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={deleteDashboard}
+                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                >
+                                                    Delete
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+
+                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            const updatedDashboards = dashboards.map(d => ({
+                                                ...d,
+                                                favorite: d.id === currentDashboard.id ? !d.favorite : d.favorite
+                                            }));
+                                            setDashboards(updatedDashboards);
+                                            setCurrentDashboard({
+                                                ...currentDashboard,
+                                                favorite: !currentDashboard.favorite
+                                            });
+                                        }}
+                                        className={`${
+                                            currentDashboard.favorite 
+                                                ? 'text-yellow-500 hover:text-yellow-600' 
+                                                : 'text-gray-400 hover:text-gray-500'
+                                        }`}
+                                    >
+                                        <Star className="h-4 w-4" fill={currentDashboard.favorite ? "currentColor" : "none"} />
+                                    </Button>
+
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            setIsRefreshing(true);
+                                            fetchWidgets().finally(() => {
+                                                setTimeout(() => {
+                                                    setIsRefreshing(false);
+                                                }, 1000); // Adjust timing as needed
+                                            });
+                                        }}
+                                        className="text-gray-400 hover:text-gray-500"
+                                    >
+                                        <RotateCw 
+                                            className={`h-4 w-4 ${
+                                                isRefreshing ? 'animate-spin' : ''
+                                            }`}
+                                        />
+                                    </Button>
+
+                                    <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
+                                        <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "ghost"} size="sm">
+                                            <LayoutGrid className="h-4 w-4" />
+                                        </Button>
+                                        <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "ghost"} size="sm">
+                                            <Columns className="h-4 w-4" />
+                                        </Button>
+                                        <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "ghost"} size="sm">
+                                            <Columns3 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm" className="w-[40px]">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-[200px]">
+                                            <DropdownMenuItem disabled className="opacity-50 cursor-default">
+                                                {currentDashboard.name}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            {dashboards
+                                                .filter(dashboard => dashboard.id !== currentDashboard.id)
+                                                .map(dashboard => (
+                                                    <DropdownMenuItem
+                                                        key={dashboard.id}
+                                                        onClick={() => setCurrentDashboard(dashboard)}
+                                                    >
+                                                        {dashboard.name}
+                                                    </DropdownMenuItem>
+                                                ))}
+                                            <DropdownMenuSeparator />
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                        <PlusCircle className="h-4 w-4 mr-2" />
+                                                        New Dashboard
+                                                    </DropdownMenuItem>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Create New Dashboard</DialogTitle>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4 pt-4">
+                                                        <Input
+                                                            placeholder="Dashboard name"
+                                                            value={newDashboardName}
+                                                            onChange={(e) => setNewDashboardName(e.target.value)}
+                                                        />
+                                                        <Button 
+                                                            onClick={createNewDashboard}
+                                                            disabled={!newDashboardName.trim()}
+                                                            className="w-full"
+                                                        >
+                                                            Create Dashboard
+                                                        </Button>
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
+                                            <DropdownMenuItem
+                                                className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
+                                                disabled={dashboards.length <= 1}
+                                                onClick={() => setIsDeleteDialogOpen(true)}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                Delete Dashboard
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
                         </div>
