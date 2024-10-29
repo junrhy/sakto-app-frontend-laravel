@@ -44,6 +44,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::patch('/profile/currency', [ProfileController::class, 'updateCurrency'])
+        ->middleware(['auth'])
+        ->name('profile.currency');
+
+    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])
+        ->middleware(['auth'])
+        ->name('profile.theme');
+
+    Route::patch('/profile/color', [ProfileController::class, 'updateColor'])
+        ->middleware(['auth'])
+        ->name('profile.color');
 });
 
 require __DIR__.'/auth.php';
