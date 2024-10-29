@@ -4,11 +4,16 @@ import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import UpdateCurrencyForm from './Partials/UpdateCurrencyForm';
+import UpdateThemeForm from './Partials/UpdateThemeForm';
+import UpdateColorThemeForm from './Partials/UpdateColorThemeForm';
+import UpdateAddressesForm from './Partials/UpdateAddressesForm';
 
 export default function Edit({
     mustVerifyEmail,
     status,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string }>) {
+    addresses,
+}: PageProps<{ mustVerifyEmail: boolean; status?: string; addresses: Array<any>; }>) {
     return (
         <AuthenticatedLayout
             header={
@@ -31,6 +36,18 @@ export default function Edit({
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <UpdatePasswordForm className="max-w-xl" />
+                    </div>
+
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <UpdateCurrencyForm className="max-w-xl" />
+                    </div>
+
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <UpdateThemeForm className="max-w-xl" />
+                    </div>
+
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <UpdateColorThemeForm className="max-w-xl" />
                     </div>
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
