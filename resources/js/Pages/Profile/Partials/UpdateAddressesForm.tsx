@@ -1,10 +1,12 @@
-import { useState, FormEventHandler } from 'react';
+import { FormEventHandler } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
 import SecondaryButton from '@/Components/SecondaryButton';
+import { Listbox, Transition } from '@headlessui/react';
+import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
 interface Props {
     className?: string;
@@ -13,27 +15,39 @@ interface Props {
 
 interface Address {
     id?: number;
+    address_type: string;
     street: string;
+    unit_number?: string;
     city: string;
     state: string;
     postal_code: string;
     country: string;
     is_primary?: boolean;
+    phone?: string;
 }
 
 interface Errors {
     [key: string]: string | undefined;
 }
 
+const ADDRESS_TYPES = [
+    'Home',
+    'Office',
+    'Other'
+];
+
 export default function UpdateAddressesForm({ className = '', addresses = [] }: Props) {
     const { data, setData, post, processing, errors } = useForm<{ addresses: Address[] }>({
         addresses: addresses.length ? addresses : [{
+            address_type: 'Home',
             street: '',
+            unit_number: '',
             city: '',
             state: '',
             postal_code: '',
             country: '',
-            is_primary: false
+            is_primary: false,
+            phone: ''
         }]
     });
 
@@ -41,12 +55,15 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
         setData('addresses', [
             ...data.addresses,
             {
+                address_type: 'Home',
                 street: '',
+                unit_number: '',
                 city: '',
                 state: '',
                 postal_code: '',
                 country: '',
-                is_primary: false
+                is_primary: false,
+                phone: ''
             }
         ]);
     };
@@ -65,7 +82,6 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
             [field]: value
         };
 
-        // If setting an address as primary, unset others
         if (field === 'is_primary' && value === true) {
             newAddresses.forEach((addr, i) => {
                 if (i !== index) {
@@ -82,7 +98,6 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
         post(route('profile.addresses.update'));
     };
 
-    // Helper function to type-safe the error access
     const getError = (index: number, field: keyof Address): string | undefined => {
         return errors[`addresses.${index}.${field}` as keyof typeof errors];
     };
@@ -100,14 +115,11 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 {data.addresses.map((address, index) => (
-                    <div 
-                        key={index} 
-                        className={`relative rounded-lg border p-4 ${
-                            address.is_primary 
-                                ? 'border-indigo-500 dark:border-indigo-400' 
-                                : 'border-gray-200 dark:border-gray-700'
-                        }`}
-                    >
+                    <div key={index} className={`relative rounded-lg border p-4 ${
+                        address.is_primary 
+                            ? 'border-indigo-500 dark:border-indigo-400' 
+                            : 'border-gray-200 dark:border-gray-700'
+                    }`}>
                         <button
                             type="button"
                             onClick={() => removeAddress(index)}
@@ -117,8 +129,47 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                             <span className="text-xl">×</span>
                         </button>
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
+                        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                            <div className="col-span-1 md:col-span-1">
+                                <InputLabel htmlFor={`address_type-${index}`} value="Address Type" />
+                                <Listbox
+                                    value={address.address_type}
+                                    onChange={(value) => updateAddress(index, 'address_type', value)}
+                                >
+                                    <div className="relative mt-1">
+                                        <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                            <span className="block truncate">{address.address_type}</span>
+                                            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                                <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                            </span>
+                                        </Listbox.Button>
+                                        <Transition
+                                            leave="transition ease-in duration-100"
+                                            leaveFrom="opacity-100"
+                                            leaveTo="opacity-0"
+                                        >
+                                            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                                {ADDRESS_TYPES.map((type) => (
+                                                    <Listbox.Option
+                                                        key={type}
+                                                        value={type}
+                                                        className={({ active }) =>
+                                                            `relative cursor-default select-none py-2 pl-3 pr-9 ${
+                                                                active ? 'bg-indigo-600 text-white' : 'text-gray-900'
+                                                            }`
+                                                        }
+                                                    >
+                                                        {type}
+                                                    </Listbox.Option>
+                                                ))}
+                                            </Listbox.Options>
+                                        </Transition>
+                                    </div>
+                                </Listbox>
+                                <InputError message={getError(index, 'address_type')} className="mt-2" />
+                            </div>
+
+                            <div className="col-span-1 md:col-span-5">
                                 <InputLabel htmlFor={`street-${index}`} value="Street Address" />
                                 <TextInput
                                     id={`street-${index}`}
@@ -131,7 +182,19 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                                 <InputError message={getError(index, 'street')} className="mt-2" />
                             </div>
 
-                            <div>
+                            <div className="col-span-1 md:col-span-1">
+                                <InputLabel htmlFor={`unit_number-${index}`} value="Unit/Apartment Number" />
+                                <TextInput
+                                    id={`unit_number-${index}`}
+                                    type="text"
+                                    className="mt-1 block w-full"
+                                    value={address.unit_number}
+                                    onChange={(e) => updateAddress(index, 'unit_number', e.target.value)}
+                                />
+                                <InputError message={getError(index, 'unit_number')} className="mt-2" />
+                            </div>
+
+                            <div className="col-span-1 md:col-span-1">
                                 <InputLabel htmlFor={`city-${index}`} value="City" />
                                 <TextInput
                                     id={`city-${index}`}
@@ -144,7 +207,7 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                                 <InputError message={getError(index, 'city')} className="mt-2" />
                             </div>
 
-                            <div>
+                            <div className="col-span-1 md:col-span-1">
                                 <InputLabel htmlFor={`state-${index}`} value="State/Province" />
                                 <TextInput
                                     id={`state-${index}`}
@@ -157,7 +220,7 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                                 <InputError message={getError(index, 'state')} className="mt-2" />
                             </div>
 
-                            <div>
+                            <div className="col-span-1 md:col-span-1">
                                 <InputLabel htmlFor={`postal_code-${index}`} value="Postal Code" />
                                 <TextInput
                                     id={`postal_code-${index}`}
@@ -170,7 +233,7 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                                 <InputError message={getError(index, 'postal_code')} className="mt-2" />
                             </div>
 
-                            <div>
+                            <div className="col-span-1 md:col-span-1">
                                 <InputLabel htmlFor={`country-${index}`} value="Country" />
                                 <TextInput
                                     id={`country-${index}`}
@@ -183,7 +246,19 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                                 <InputError message={getError(index, 'country')} className="mt-2" />
                             </div>
 
-                            <div className="flex items-center">
+                            <div className="col-span-1 md:col-span-1">
+                                <InputLabel htmlFor={`phone-${index}`} value="Contact Phone" />
+                                <TextInput
+                                    id={`phone-${index}`}
+                                    type="tel"
+                                    className="mt-1 block w-full"
+                                    value={address.phone}
+                                    onChange={(e) => updateAddress(index, 'phone', e.target.value)}
+                                />
+                                <InputError message={getError(index, 'phone')} className="mt-2" />
+                            </div>
+
+                            <div className="col-span-1 md:col-span-6 flex items-center">
                                 <label className="flex items-center">
                                     <input
                                         type="checkbox"

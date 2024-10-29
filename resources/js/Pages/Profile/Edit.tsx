@@ -24,8 +24,8 @@ export default function Edit({
         >
             <Head title="Profile" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="bg-gray-50 dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700">
+                <div className="mx-auto max-w-7xl space-y-6">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
@@ -37,7 +37,7 @@ export default function Edit({
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <UpdateAddressesForm 
                             addresses={addresses}
-                            className="max-w-xl" 
+                            className="w-full" 
                         />
                     </div>
 
