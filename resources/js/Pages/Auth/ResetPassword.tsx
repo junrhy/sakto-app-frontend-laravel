@@ -32,10 +32,18 @@ export default function ResetPassword({
         <GuestLayout>
             <Head title="Reset Password" />
 
-            <form onSubmit={submit}>
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+                    Reset Password
+                </h2>
+                <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                    Please set your new password below
+                </p>
+            </div>
+
+            <form onSubmit={submit} className="mt-8 space-y-6">
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
-
                     <TextInput
                         id="email"
                         type="email"
@@ -44,14 +52,13 @@ export default function ResetPassword({
                         className="mt-1 block w-full"
                         autoComplete="username"
                         onChange={(e) => setData('email', e.target.value)}
+                        disabled
                     />
-
                     <InputError message={errors.email} className="mt-2" />
                 </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
+                <div>
+                    <InputLabel htmlFor="password" value="New Password" />
                     <TextInput
                         id="password"
                         type="password"
@@ -61,17 +68,16 @@ export default function ResetPassword({
                         autoComplete="new-password"
                         isFocused={true}
                         onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Enter new password"
                     />
-
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
-                <div className="mt-4">
+                <div>
                     <InputLabel
                         htmlFor="password_confirmation"
                         value="Confirm Password"
                     />
-
                     <TextInput
                         type="password"
                         name="password_confirmation"
@@ -81,17 +87,20 @@ export default function ResetPassword({
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
                         }
+                        placeholder="Confirm new password"
                     />
-
                     <InputError
                         message={errors.password_confirmation}
                         className="mt-2"
                     />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Reset Password
+                <div>
+                    <PrimaryButton
+                        className="w-full justify-center"
+                        disabled={processing}
+                    >
+                        {processing ? 'Resetting...' : 'Reset Password'}
                     </PrimaryButton>
                 </div>
             </form>

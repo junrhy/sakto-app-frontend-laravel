@@ -23,15 +23,19 @@ export default function ConfirmPassword() {
         <GuestLayout>
             <Head title="Confirm Password" />
 
-            <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                This is a secure area of the application. Please confirm your
-                password before continuing.
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+                    Secure Area
+                </h2>
+                <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                    This is a secure area of the application. Please confirm your
+                    password before continuing.
+                </p>
             </div>
 
-            <form onSubmit={submit}>
-                <div className="mt-4">
+            <form onSubmit={submit} className="mt-8 space-y-6">
+                <div>
                     <InputLabel htmlFor="password" value="Password" />
-
                     <TextInput
                         id="password"
                         type="password"
@@ -40,14 +44,17 @@ export default function ConfirmPassword() {
                         className="mt-1 block w-full"
                         isFocused={true}
                         onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Enter your password"
                     />
-
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Confirm
+                <div>
+                    <PrimaryButton 
+                        className="w-full justify-center"
+                        disabled={processing}
+                    >
+                        {processing ? 'Confirming...' : 'Confirm Password'}
                     </PrimaryButton>
                 </div>
             </form>
