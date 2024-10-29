@@ -25,4 +25,9 @@ export interface PageProps {
         };
     };
     [key: string]: any;
-} 
+}
+
+export type Widget = {
+    id: number;
+    type: "sales" | "inventory" | "orders";
+}; 
