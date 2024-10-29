@@ -37,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 type WidgetType = "sales" | "inventory" | "orders";
 
@@ -52,6 +53,31 @@ interface Dashboard {
   widgets: Widget[];
   favorite?: boolean;
 }
+
+const sampleSalesData = [
+    { name: 'Mon', sales: 4000 },
+    { name: 'Tue', sales: 3000 },
+    { name: 'Wed', sales: 5000 },
+    { name: 'Thu', sales: 2780 },
+    { name: 'Fri', sales: 1890 },
+    { name: 'Sat', sales: 2390 },
+    { name: 'Sun', sales: 3490 },
+];
+
+const sampleInventoryData = [
+    { category: 'Electronics', stock: 856 },
+    { category: 'Clothing', stock: 432 },
+    { category: 'Books', stock: 234 },
+    { category: 'Sports', stock: 389 },
+    { category: 'Home', stock: 178 },
+];
+
+const sampleOrdersData = [
+    { id: '1234', customer: 'John Doe', status: 'pending', amount: 234.50, time: '2 mins ago' },
+    { id: '1235', customer: 'Jane Smith', status: 'processing', amount: 129.00, time: '15 mins ago' },
+    { id: '1236', customer: 'Bob Johnson', status: 'pending', amount: 445.80, time: '45 mins ago' },
+    { id: '1237', customer: 'Alice Brown', status: 'processing', amount: 55.20, time: '1 hour ago' },
+];
 
 const WidgetComponent: React.FC<{ 
   widget: Widget; 
@@ -96,8 +122,40 @@ const WidgetComponent: React.FC<{
               <span className="text-sm font-medium">Today's Sales</span>
               <span className="text-lg font-bold text-green-600">$12,543</span>
             </div>
-            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              Chart Placeholder
+            <div className="h-32">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={sampleSalesData}>
+                        <XAxis 
+                            dataKey="name" 
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                        />
+                        <YAxis 
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(value) => `$${value}`}
+                        />
+                        <Tooltip 
+                            contentStyle={{ 
+                                backgroundColor: 'white', 
+                                border: 'none',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            }}
+                            formatter={(value) => [`$${value}`, 'Sales']}
+                        />
+                        <Line 
+                            type="monotone" 
+                            dataKey="sales" 
+                            stroke="#22c55e" 
+                            strokeWidth={2}
+                            dot={false}
+                            activeDot={{ r: 4, fill: "#22c55e" }}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
             </div>
           </div>
         )}
@@ -107,8 +165,50 @@ const WidgetComponent: React.FC<{
               <span className="text-sm font-medium">Stock Items</span>
               <span className="text-lg font-bold text-blue-600">1,234</span>
             </div>
-            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              Inventory Chart
+            <div className="h-32">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={sampleInventoryData}>
+                        <XAxis 
+                            dataKey="category" 
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                            interval={0}
+                            tick={(props) => (
+                                <text
+                                    transform={`rotate(-45 ${props.x} ${props.y})`}
+                                    textAnchor="end"
+                                    x={props.x}
+                                    y={props.y + 10}
+                                    fontSize={12}
+                                >
+                                    {props.payload.value}
+                                </text>
+                            )}
+                            height={50}
+                        />
+                        <YAxis 
+                            fontSize={12}
+                            tickLine={false}
+                            axisLine={false}
+                            tickFormatter={(value) => `${value}`}
+                        />
+                        <Tooltip 
+                            contentStyle={{ 
+                                backgroundColor: 'white', 
+                                border: 'none',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            }}
+                            formatter={(value) => [`${value}`, 'Items']}
+                        />
+                        <Bar 
+                            dataKey="stock" 
+                            fill="#3b82f6"
+                            radius={[4, 4, 0, 0]}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
           </div>
         )}
@@ -118,8 +218,35 @@ const WidgetComponent: React.FC<{
               <span className="text-sm font-medium">Pending Orders</span>
               <span className="text-lg font-bold text-purple-600">47</span>
             </div>
-            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              Orders List
+            <div className="space-y-2">
+                {sampleOrdersData.map((order) => (
+                    <div 
+                        key={order.id}
+                        className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                        <div className="flex flex-col">
+                            <span className="text-sm font-medium">{order.customer}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">#{order.id}</span>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                    order.status === 'pending' 
+                                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500'
+                                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-500'
+                                }`}>
+                                    {order.status}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                            <span className="text-sm font-medium">
+                                ${order.amount.toFixed(2)}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                                {order.time}
+                            </span>
+                        </div>
+                    </div>
+                ))}
             </div>
           </div>
         )}
@@ -283,7 +410,6 @@ export default function Dashboard() {
                                         className="gap-2"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        Add Widget
                                     </Button>
 
                                     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
