@@ -321,544 +321,536 @@ export default function PosRestaurant() {
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                        <div className="p-8" ref={fullscreenRef}>
-                            <div className="flex justify-between items-center mb-4">
-                                <Button onClick={toggleFullscreen} className="bg-gray-700 hover:bg-gray-600 text-white">
-                                {isFullscreen ? <Minimize className="mr-2 h-4 w-4" /> : <Maximize className="mr-2 h-4 w-4" />}
-                                {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                                </Button>
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" ref={fullscreenRef}>
+                <div className="flex justify-between items-center mb-4">
+                    <Button onClick={toggleFullscreen} className="bg-gray-700 hover:bg-gray-600 text-white">
+                    {isFullscreen ? <Minimize className="mr-2 h-4 w-4" /> : <Maximize className="mr-2 h-4 w-4" />}
+                    {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                    </Button>
+                </div>
+
+                <Tabs defaultValue="pos" className="space-y-4">
+                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="pos">POS</TabsTrigger>
+                    <TabsTrigger value="tables">Tables</TabsTrigger>
+                    <TabsTrigger value="reservations">Reservations</TabsTrigger>
+                    <TabsTrigger value="menu">Menu Management</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="pos">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <Card>
+                        <CardHeader>
+                            <CardTitle>Menu Items</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="mb-4">
+                            <Select onValueChange={(value) => setSelectedCategory(value)}>
+                                <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                <SelectItem value="Main">Main Dishes</SelectItem>
+                                <SelectItem value="Side">Side Dishes</SelectItem>
+                                <SelectItem value="Drink">Drinks</SelectItem>
+                                </SelectContent>
+                            </Select>
                             </div>
-
-                            <Tabs defaultValue="pos" className="space-y-4">
-                                <TabsList className="grid w-full grid-cols-4">
-                                <TabsTrigger value="pos">POS</TabsTrigger>
-                                <TabsTrigger value="tables">Tables</TabsTrigger>
-                                <TabsTrigger value="reservations">Reservations</TabsTrigger>
-                                <TabsTrigger value="menu">Menu Management</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="pos">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    <Card>
-                                    <CardHeader>
-                                        <CardTitle>Menu Items</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="mb-4">
-                                        <Select onValueChange={(value) => setSelectedCategory(value)}>
-                                            <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Select category" />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-white">
-                                            <SelectItem value="Main">Main Dishes</SelectItem>
-                                            <SelectItem value="Side">Side Dishes</SelectItem>
-                                            <SelectItem value="Drink">Drinks</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        {categoryFilteredMenuItems.map((item) => (
-                                            <Button
-                                            key={item.id}
-                                            onClick={() => addItemToOrder(item)}
-                                            className="h-auto flex flex-col items-center p-2 touch-manipulation bg-gray-700 hover:bg-gray-600 text-white"
-                                            >
-                                            <img src={item.image} alt={item.name} width={100} height={100} className="mb-2 rounded" />
-                                            <span className="text-center">{item.name}</span>
-                                            <span>${item.price.toFixed(2)}</span>
-                                            </Button>
-                                        ))}
-                                        </div>
-                                    </CardContent>
-                                    </Card>
-                                    <Card>
-                                    <CardHeader>
-                                        <CardTitle>Current Order</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="mb-4">
-                                        <Label htmlFor="tableNumber">Table Number</Label>
-                                        <Input
-                                            id="tableNumber"
-                                            value={tableNumber}
-                                            onChange={(e) => setTableNumber(e.target.value)}
-                                            placeholder="Enter table number"
-                                            className="text-lg p-2"
-                                        />
-                                        </div>
-                                        <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                            <TableHead>Item</TableHead>
-                                            <TableHead>Quantity</TableHead>
-                                            <TableHead>Price</TableHead>
-                                            <TableHead>Total</TableHead>
-                                            <TableHead>Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {orderItems.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell>{item.name}</TableCell>
-                                                <TableCell>
-                                                <div className="flex items-center space-x-2">
-                                                    <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>
-                                                    <Minus className="h-4 w-4" />
-                                                    </Button>
-                                                    <span className="text-lg">{item.quantity}</span>
-                                                    <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>
-                                                    <Plus className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                                </TableCell>
-                                                <TableCell>${item.price.toFixed(2)}</TableCell>
-                                                <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
-                                                <TableCell>
-                                                <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
-                                                    Remove
-                                                </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                            ))}
-                                        </TableBody>
-                                        </Table>
-                                        <div className="mt-4 space-y-2">
-                                        <div className="flex items-center space-x-2">
-                                            <Label htmlFor="discountType">Discount Type</Label>
-                                            <Select value={discountType} onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)}>
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Select discount type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="percentage">Percentage</SelectItem>
-                                                <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                            </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <Label htmlFor="discount">Discount</Label>
-                                            <Input
-                                            id="discount"
-                                            type="number"
-                                            value={discount}
-                                            onChange={(e) => setDiscount(Number(e.target.value))}
-                                            placeholder={discountType === 'percentage' ? "Enter percentage" : "Enter amount"}
-                                            />
-                                        </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="flex flex-col items-start">
-                                        <div className="w-full flex justify-between mb-2">
-                                        <span>Subtotal:</span>
-                                        <span>${totalAmount.toFixed(2)}</span>
-                                        </div>
-                                        <div className="w-full flex justify-between mb-2">
-                                        <span>Discount:</span>
-                                        <span>${discountAmount.toFixed(2)}</span>
-                                        </div>
-                                        <div className="w-full flex justify-between mb-4">
-                                        <span className="font-bold">Total:</span>
-                                        <span className="font-bold">${finalTotal.toFixed(2)}</span>
-                                        </div>
-                                        <div className="w-full flex justify-end space-x-2 mt-4">
-                                        <Button onClick={printKitchenOrder} disabled={orderItems.length === 0} className="text-lg py-6 bg-gray-700 hover:bg-gray-600 text-white">Print Kitchen Order</Button>
-                                        <Button onClick={handleSplitBill} disabled={orderItems.length === 0} className="text-lg py-6 bg-gray-700 hover:bg-gray-600 text-white">Split Bill</Button>
-                                        <Button onClick={handleCompleteSale} disabled={orderItems.length === 0 || !tableNumber} className="text-lg py-6 bg-blue-500 hover:bg-blue-600 text-white">Complete Order</Button>
-                                        </div>
-                                    </CardFooter>
-                                    </Card>
-                                </div>
-                                </TabsContent>
-                                <TabsContent value="tables">
-                                <Card>
-                                    <CardHeader>
-                                    <CardTitle>Table Management</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                    <div className="mb-4">
-                                        <Label htmlFor="tableStatusFilter">Filter by Status</Label>
-                                        <Select
-                                        value={tableStatusFilter}
-                                        onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved') => setTableStatusFilter(value)}
-                                        >
-                                        <SelectTrigger id="tableStatusFilter" className="bg-white">
-                                            <SelectValue placeholder="Filter by status" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="available">Available</SelectItem>
-                                            <SelectItem value="occupied">Occupied</SelectItem>
-                                            <SelectItem value="reserved">Reserved</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {filteredTables.map((table) => (
-                                        <Card key={table.id}>
-                                            <CardHeader>
-                                            <CardTitle>{table.name}</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                            <p>Seats: {table.seats}</p>
-                                            <p>Status: {table.status}</p>
-                                            </CardContent>
-                                            <CardFooter className="flex justify-between">
-                                            <Button
-                                                variant={table.status === 'available' ? 'outline' : 'secondary'}
-                                                onClick={() => setTableNumber(table.name)}
-                                                className="bg-gray-700 hover:bg-gray-600 text-white"
-                                            >
-                                                Select
-                                            </Button>
-                                            <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white">
-                                                Generate QR
-                                            </Button>
-                                            </CardFooter>
-                                        </Card>
-                                        ))}
-                                    </div>
-                                    </CardContent>
-                                </Card>
-                                </TabsContent>
-                                <TabsContent value="reservations">
-                                <Card>
-                                    <CardHeader>
-                                    <CardTitle>Reservations</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                        <Label htmlFor="reservationName">Name</Label>
-                                        <Input
-                                            id="reservationName"
-                                            value={newReservation.name}
-                                            onChange={(e) => setNewReservation({ ...newReservation, name: e.target.value })}
-                                        />
-                                        </div>
-                                        <div>
-                                        <Label htmlFor="reservationDate">Date</Label>
-                                        <Input
-                                            id="reservationDate"
-                                            type="date"
-                                            value={newReservation.date}
-                                            onChange={(e) => setNewReservation({ ...newReservation, date: e.target.value })}
-                                        />
-                                        </div>
-                                        <div>
-                                        <Label htmlFor="reservationTime">Time</Label>
-                                        <Input
-                                            id="reservationTime"
-                                            type="time"
-                                            value={newReservation.time}
-                                            onChange={(e) => setNewReservation({ ...newReservation, time: e.target.value })}
-                                        />
-                                        </div>
-                                        <div>
-                                        <Label htmlFor="reservationGuests">Guests</Label>
-                                        <Input
-                                            id="reservationGuests"
-                                            type="number"
-                                            value={newReservation.guests}
-                                            onChange={(e) => setNewReservation({ ...newReservation, guests: parseInt(e.target.value) })}
-                                        />
-                                        </div>
-                                        <div>
-                                        <Label htmlFor="reservationTable">Table</Label>
-                                        <Select onValueChange={(value) => setNewReservation({ ...newReservation, tableId: parseInt(value) })}>
-                                            <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Select table" />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-white">
-                                            {tables.filter(table => table.status === 'available').map((table) => (
-                                                <SelectItem key={table.id} value={table.id.toString()}>{table.name}</SelectItem>
-                                            ))}
-                                            </SelectContent>
-                                        </Select>
-                                        </div>
-                                    </div>
-                                    <Button onClick={handleReservation} className="bg-blue-500 hover:bg-blue-600 text-white">Make Reservation</Button>
-                                    <Table>
-                                        <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Time</TableHead>
-                                            <TableHead>Guests</TableHead>
-                                            <TableHead>Table</TableHead>
-                                        </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                        {reservations.map((reservation) => (
-                                            <TableRow key={reservation.id}>
-                                            <TableCell>{reservation.name}</TableCell>
-                                            <TableCell>{reservation.date}</TableCell>
-                                            <TableCell>{reservation.time}</TableCell>
-                                            <TableCell>{reservation.guests}</TableCell>
-                                            <TableCell>{tables.find(table => table.id === reservation.tableId)?.name}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                        </TableBody>
-                                    </Table>
-                                    </CardContent>
-                                </Card>
-                                </TabsContent>
-                                <TabsContent value="menu">
-                                <Card>
-                                    <CardHeader>
-                                    <CardTitle>Menu Management</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                    <div className="flex justify-between mb-4">
-                                        <div className="flex items-center space-x-2">
-                                        <Button onClick={handleAddMenuItem}>
-                                            <Plus className="mr-2 h-4 w-4" /> Add Menu Item
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {categoryFilteredMenuItems.map((item) => (
+                                <Button
+                                key={item.id}
+                                onClick={() => addItemToOrder(item)}
+                                className="h-auto flex flex-col items-center p-2 touch-manipulation bg-gray-700 hover:bg-gray-600 text-white"
+                                >
+                                <img src={item.image} alt={item.name} width={100} height={100} className="mb-2 rounded" />
+                                <span className="text-center">{item.name}</span>
+                                <span>${item.price.toFixed(2)}</span>
+                                </Button>
+                            ))}
+                            </div>
+                        </CardContent>
+                        </Card>
+                        <Card>
+                        <CardHeader>
+                            <CardTitle>Current Order</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="mb-4">
+                            <Label htmlFor="tableNumber">Table Number</Label>
+                            <Input
+                                id="tableNumber"
+                                value={tableNumber}
+                                onChange={(e) => setTableNumber(e.target.value)}
+                                placeholder="Enter table number"
+                                className="text-lg p-2"
+                            />
+                            </div>
+                            <Table>
+                            <TableHeader>
+                                <TableRow>
+                                <TableHead>Item</TableHead>
+                                <TableHead>Quantity</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Total</TableHead>
+                                <TableHead>Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {orderItems.map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell>{item.name}</TableCell>
+                                    <TableCell>
+                                    <div className="flex items-center space-x-2">
+                                        <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>
+                                        <Minus className="h-4 w-4" />
                                         </Button>
-                                        <Button 
-                                            onClick={handleDeleteSelectedMenuItems} 
-                                            variant="destructive" 
-                                            disabled={selectedMenuItems.length === 0}
-                                        >
-                                            <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                                        <span className="text-lg">{item.quantity}</span>
+                                        <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>
+                                        <Plus className="h-4 w-4" />
                                         </Button>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                        <Search className="h-4 w-4 text-gray-500" />
-                                        <Input
-                                            placeholder="Search menu items..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-64"
-                                        />
-                                        </div>
                                     </div>
-                                    <Table>
-                                        <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[50px]">
-                                            <Checkbox
-                                                checked={selectedMenuItems.length === paginatedMenuItems.length}
-                                                onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setSelectedMenuItems(paginatedMenuItems.map(item => item.id));
-                                                } else {
-                                                    setSelectedMenuItems([]);
-                                                }
-                                                }}
-                                            />
-                                            </TableHead>
-                                            <TableHead>Image</TableHead>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Category</TableHead>
-                                            <TableHead>Price</TableHead>
-                                            <TableHead>Actions</TableHead>
-                                        </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                        {paginatedMenuItems.map((item) => (
-                                            <TableRow key={item.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                checked={selectedMenuItems.includes(item.id)}
-                                                onCheckedChange={() => toggleMenuItemSelection(item.id)}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <img 
-                                                src={item.image} 
-                                                alt={item.name} 
-                                                width={50} 
-                                                height={50} 
-                                                className="rounded-md object-cover"
-                                                />
-                                            </TableCell>
-                                            <TableCell>{item.name}</TableCell>
-                                            <TableCell>{item.category}</TableCell>
-                                            <TableCell>${item.price.toFixed(2)}</TableCell>
-                                            <TableCell>
-                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
-                                                <Edit className="mr-2 h-4 w-4" /> Edit
-                                                </Button>
-                                                <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
-                                                <Trash className="mr-2 h-4 w-4" /> Delete
-                                                </Button>
-                                            </TableCell>
-                                            </TableRow>
-                                        ))}
-                                        </TableBody>
-                                    </Table>
-                                    <div className="flex justify-between items-center mt-4">
-                                        <div>
-                                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredMenuItems.length)} of {filteredMenuItems.length} items
-                                        </div>
-                                        <div className="flex space-x-2">
-                                        <Button
-                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                            disabled={currentPage === 1}
-                                        >
-                                            Previous
-                                        </Button>
-                                        {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                                            <Button
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            variant={currentPage === page ? "default" : "outline"}
-                                            >
-                                            {page}
-                                            </Button>
-                                        ))}
-                                        <Button
-                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                                            disabled={currentPage === pageCount}
-                                        >
-                                            Next
-                                        </Button>
-                                        </div>
-                                    </div>
-                                    </CardContent>
-                                </Card>
-                                </TabsContent>
-                            </Tabs>
-
-                            <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Complete Order</DialogTitle>
-                                </DialogHeader>
-                                <div className="py-4">
-                                    <p>Table Number: {tableNumber}</p>
-                                    <p>Total Amount: ${finalTotal.toFixed(2)}</p>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
-                                    <Button onClick={confirmCompleteSale} className="bg-blue-500 hover:bg-blue-600 text-white">Confirm Order</Button>
-                                </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <Dialog open={isSplitBillDialogOpen} onOpenChange={setIsSplitBillDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Split Bill</DialogTitle>
-                                </DialogHeader>
-                                <div className="py-4">
-                                    <Label htmlFor="splitAmount">Number of ways to split</Label>
-                                    <Input
-                                    id="splitAmount"
-                                    type="number"
-                                    value={splitAmount}
-                                    onChange={(e) => setSplitAmount(parseInt(e.target.value))}
-                                    min={2}
-                                    />
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsSplitBillDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
-                                    <Button onClick={confirmSplitBill} className="bg-blue-500 hover:bg-blue-600 text-white">Split Bill</Button>
-                                </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>QR Code for {selectedTable?.name}</DialogTitle>
-                                </DialogHeader>
-                                <div className="py-4 space-y-4">
-                                    <div>
-                                    <Label htmlFor="customerName">Customer Name (Optional)</Label>
-                                    <Input
-                                        id="customerName"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder="Enter customer name"
-                                    />
-                                    </div>
-                                    <div className="flex flex-col items-center" ref={qrCodeRef}>
-                                    {selectedTable && (
-                                        <QRCodeSVG
-                                        value={`https://your-restaurant-domain.com/menu?table=${selectedTable.id}${customerName ? `&customer=${encodeURIComponent(customerName)}` : ''}`}
-                                        size={200}
-                                        />
-                                    )}
-                                    <p className="mt-2 text-sm text-gray-500">Scan to view menu</p>
-                                    {customerName && <p className="mt-1 text-sm">Customer: {customerName}</p>}
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button onClick={printQRCode} className="mr-2 bg-gray-700 hover:bg-gray-600 text-white">
-                                    <Printer className="mr-2 h-4 w-4" />
-                                    Print QR Code
+                                    </TableCell>
+                                    <TableCell>${item.price.toFixed(2)}</TableCell>
+                                    <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                    <TableCell>
+                                    <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
+                                        Remove
                                     </Button>
-                                    <Button onClick={() => setIsQRDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Close</Button>
-                                </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <Dialog open={isMenuItemDialogOpen} onOpenChange={setIsMenuItemDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>{currentMenuItem?.id ? 'Edit Menu Item' : 'Add Menu Item'}</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleSaveMenuItem}>
-                                    <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="name" className="text-right">Name</Label>
-                                        <Input
-                                        id="name"
-                                        value={currentMenuItem?.name || ''}
-                                        onChange={(e) => setCurrentMenuItem({ ...currentMenuItem!, name: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="category" className="text-right">Category</Label>
-                                        <Select
-                                        value={currentMenuItem?.category || ''}
-                                        onValueChange={(value) => setCurrentMenuItem({ ...currentMenuItem!, category: value })}
-                                        >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Main">Main</SelectItem>
-                                            <SelectItem value="Side">Side</SelectItem>
-                                            <SelectItem value="Drink">Drink</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="price" className="text-right">Price</Label>
-                                        <Input
-                                        id="price"
-                                        type="number"
-                                        step="0.01"
-                                        value={currentMenuItem?.price || ''}
-                                        onChange={(e) => setCurrentMenuItem({ ...currentMenuItem!, price: parseFloat(e.target.value) })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="image" className="text-right">Image</Label>
-                                        <Input
-                                        id="image"
-                                        type="file"
-                                        onChange={handleMenuItemImageChange}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    </div>
-                                    <DialogFooter>
-                                    <Button type="submit">Save</Button>
-                                    </DialogFooter>
-                                </form>
-                                </DialogContent>
-                            </Dialog>
+                                    </TableCell>
+                                </TableRow>
+                                ))}
+                            </TableBody>
+                            </Table>
+                            <div className="mt-4 space-y-2">
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="discountType">Discount Type</Label>
+                                <Select value={discountType} onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select discount type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="percentage">Percentage</SelectItem>
+                                    <SelectItem value="fixed">Fixed Amount</SelectItem>
+                                </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor="discount">Discount</Label>
+                                <Input
+                                id="discount"
+                                type="number"
+                                value={discount}
+                                onChange={(e) => setDiscount(Number(e.target.value))}
+                                placeholder={discountType === 'percentage' ? "Enter percentage" : "Enter amount"}
+                                />
+                            </div>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="flex flex-col items-start">
+                            <div className="w-full flex justify-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>${totalAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="w-full flex justify-between mb-2">
+                            <span>Discount:</span>
+                            <span>${discountAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="w-full flex justify-between mb-4">
+                            <span className="font-bold">Total:</span>
+                            <span className="font-bold">${finalTotal.toFixed(2)}</span>
+                            </div>
+                            <div className="w-full flex justify-end space-x-2 mt-4">
+                            <Button onClick={printKitchenOrder} disabled={orderItems.length === 0} className="text-lg py-6 bg-gray-700 hover:bg-gray-600 text-white">Print Kitchen Order</Button>
+                            <Button onClick={handleSplitBill} disabled={orderItems.length === 0} className="text-lg py-6 bg-gray-700 hover:bg-gray-600 text-white">Split Bill</Button>
+                            <Button onClick={handleCompleteSale} disabled={orderItems.length === 0 || !tableNumber} className="text-lg py-6 bg-blue-500 hover:bg-blue-600 text-white">Complete Order</Button>
+                            </div>
+                        </CardFooter>
+                        </Card>
+                    </div>
+                    </TabsContent>
+                    <TabsContent value="tables">
+                    <Card>
+                        <CardHeader>
+                        <CardTitle>Table Management</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <div className="mb-4">
+                            <Label htmlFor="tableStatusFilter">Filter by Status</Label>
+                            <Select
+                            value={tableStatusFilter}
+                            onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved') => setTableStatusFilter(value)}
+                            >
+                            <SelectTrigger id="tableStatusFilter" className="bg-white">
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white">
+                                <SelectItem value="all">All</SelectItem>
+                                <SelectItem value="available">Available</SelectItem>
+                                <SelectItem value="occupied">Occupied</SelectItem>
+                                <SelectItem value="reserved">Reserved</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {filteredTables.map((table) => (
+                            <Card key={table.id}>
+                                <CardHeader>
+                                <CardTitle>{table.name}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                <p>Seats: {table.seats}</p>
+                                <p>Status: {table.status}</p>
+                                </CardContent>
+                                <CardFooter className="flex justify-between">
+                                <Button
+                                    variant={table.status === 'available' ? 'outline' : 'secondary'}
+                                    onClick={() => setTableNumber(table.name)}
+                                    className="bg-gray-700 hover:bg-gray-600 text-white"
+                                >
+                                    Select
+                                </Button>
+                                <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white">
+                                    Generate QR
+                                </Button>
+                                </CardFooter>
+                            </Card>
+                            ))}
+                        </div>
+                        </CardContent>
+                    </Card>
+                    </TabsContent>
+                    <TabsContent value="reservations">
+                    <Card>
+                        <CardHeader>
+                        <CardTitle>Reservations</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                            <Label htmlFor="reservationName">Name</Label>
+                            <Input
+                                id="reservationName"
+                                value={newReservation.name}
+                                onChange={(e) => setNewReservation({ ...newReservation, name: e.target.value })}
+                            />
+                            </div>
+                            <div>
+                            <Label htmlFor="reservationDate">Date</Label>
+                            <Input
+                                id="reservationDate"
+                                type="date"
+                                value={newReservation.date}
+                                onChange={(e) => setNewReservation({ ...newReservation, date: e.target.value })}
+                            />
+                            </div>
+                            <div>
+                            <Label htmlFor="reservationTime">Time</Label>
+                            <Input
+                                id="reservationTime"
+                                type="time"
+                                value={newReservation.time}
+                                onChange={(e) => setNewReservation({ ...newReservation, time: e.target.value })}
+                            />
+                            </div>
+                            <div>
+                            <Label htmlFor="reservationGuests">Guests</Label>
+                            <Input
+                                id="reservationGuests"
+                                type="number"
+                                value={newReservation.guests}
+                                onChange={(e) => setNewReservation({ ...newReservation, guests: parseInt(e.target.value) })}
+                            />
+                            </div>
+                            <div>
+                            <Label htmlFor="reservationTable">Table</Label>
+                            <Select onValueChange={(value) => setNewReservation({ ...newReservation, tableId: parseInt(value) })}>
+                                <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Select table" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-white">
+                                {tables.filter(table => table.status === 'available').map((table) => (
+                                    <SelectItem key={table.id} value={table.id.toString()}>{table.name}</SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
                             </div>
                         </div>
+                        <Button onClick={handleReservation} className="bg-blue-500 hover:bg-blue-600 text-white">Make Reservation</Button>
+                        <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Time</TableHead>
+                                <TableHead>Guests</TableHead>
+                                <TableHead>Table</TableHead>
+                            </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {reservations.map((reservation) => (
+                                <TableRow key={reservation.id}>
+                                <TableCell>{reservation.name}</TableCell>
+                                <TableCell>{reservation.date}</TableCell>
+                                <TableCell>{reservation.time}</TableCell>
+                                <TableCell>{reservation.guests}</TableCell>
+                                <TableCell>{tables.find(table => table.id === reservation.tableId)?.name}</TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                        </CardContent>
+                    </Card>
+                    </TabsContent>
+                    <TabsContent value="menu">
+                    <Card>
+                        <CardHeader>
+                        <CardTitle>Menu Management</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <div className="flex justify-between mb-4">
+                            <div className="flex items-center space-x-2">
+                            <Button onClick={handleAddMenuItem}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Menu Item
+                            </Button>
+                            <Button 
+                                onClick={handleDeleteSelectedMenuItems} 
+                                variant="destructive" 
+                                disabled={selectedMenuItems.length === 0}
+                            >
+                                <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                            </Button>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                            <Search className="h-4 w-4 text-gray-500" />
+                            <Input
+                                placeholder="Search menu items..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-64"
+                            />
+                            </div>
+                        </div>
+                        <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[50px]">
+                                <Checkbox
+                                    checked={selectedMenuItems.length === paginatedMenuItems.length}
+                                    onCheckedChange={(checked) => {
+                                    if (checked) {
+                                        setSelectedMenuItems(paginatedMenuItems.map(item => item.id));
+                                    } else {
+                                        setSelectedMenuItems([]);
+                                    }
+                                    }}
+                                />
+                                </TableHead>
+                                <TableHead>Image</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {paginatedMenuItems.map((item) => (
+                                <TableRow key={item.id}>
+                                <TableCell>
+                                    <Checkbox
+                                    checked={selectedMenuItems.includes(item.id)}
+                                    onCheckedChange={() => toggleMenuItemSelection(item.id)}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <img 
+                                    src={item.image} 
+                                    alt={item.name} 
+                                    width={50} 
+                                    height={50} 
+                                    className="rounded-md object-cover"
+                                    />
+                                </TableCell>
+                                <TableCell>{item.name}</TableCell>
+                                <TableCell>{item.category}</TableCell>
+                                <TableCell>${item.price.toFixed(2)}</TableCell>
+                                <TableCell>
+                                    <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
+                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                    </Button>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
+                                    <Trash className="mr-2 h-4 w-4" /> Delete
+                                    </Button>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                        <div className="flex justify-between items-center mt-4">
+                            <div>
+                            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredMenuItems.length)} of {filteredMenuItems.length} items
+                            </div>
+                            <div className="flex space-x-2">
+                            <Button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </Button>
+                            {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                                <Button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                variant={currentPage === page ? "default" : "outline"}
+                                >
+                                {page}
+                                </Button>
+                            ))}
+                            <Button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                                disabled={currentPage === pageCount}
+                            >
+                                Next
+                            </Button>
+                            </div>
+                        </div>
+                        </CardContent>
+                    </Card>
+                    </TabsContent>
+                </Tabs>
+
+                <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Complete Order</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p>Table Number: {tableNumber}</p>
+                        <p>Total Amount: ${finalTotal.toFixed(2)}</p>
                     </div>
-                </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
+                        <Button onClick={confirmCompleteSale} className="bg-blue-500 hover:bg-blue-600 text-white">Confirm Order</Button>
+                    </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isSplitBillDialogOpen} onOpenChange={setIsSplitBillDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Split Bill</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="splitAmount">Number of ways to split</Label>
+                        <Input
+                        id="splitAmount"
+                        type="number"
+                        value={splitAmount}
+                        onChange={(e) => setSplitAmount(parseInt(e.target.value))}
+                        min={2}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSplitBillDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
+                        <Button onClick={confirmSplitBill} className="bg-blue-500 hover:bg-blue-600 text-white">Split Bill</Button>
+                    </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>QR Code for {selectedTable?.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div>
+                        <Label htmlFor="customerName">Customer Name (Optional)</Label>
+                        <Input
+                            id="customerName"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="Enter customer name"
+                        />
+                        </div>
+                        <div className="flex flex-col items-center" ref={qrCodeRef}>
+                        {selectedTable && (
+                            <QRCodeSVG
+                            value={`https://your-restaurant-domain.com/menu?table=${selectedTable.id}${customerName ? `&customer=${encodeURIComponent(customerName)}` : ''}`}
+                            size={200}
+                            />
+                        )}
+                        <p className="mt-2 text-sm text-gray-500">Scan to view menu</p>
+                        {customerName && <p className="mt-1 text-sm">Customer: {customerName}</p>}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={printQRCode} className="mr-2 bg-gray-700 hover:bg-gray-600 text-white">
+                        <Printer className="mr-2 h-4 w-4" />
+                        Print QR Code
+                        </Button>
+                        <Button onClick={() => setIsQRDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Close</Button>
+                    </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isMenuItemDialogOpen} onOpenChange={setIsMenuItemDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{currentMenuItem?.id ? 'Edit Menu Item' : 'Add Menu Item'}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSaveMenuItem}>
+                        <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input
+                            id="name"
+                            value={currentMenuItem?.name || ''}
+                            onChange={(e) => setCurrentMenuItem({ ...currentMenuItem!, name: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="category" className="text-right">Category</Label>
+                            <Select
+                            value={currentMenuItem?.category || ''}
+                            onValueChange={(value) => setCurrentMenuItem({ ...currentMenuItem!, category: value })}
+                            >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Main">Main</SelectItem>
+                                <SelectItem value="Side">Side</SelectItem>
+                                <SelectItem value="Drink">Drink</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="price" className="text-right">Price</Label>
+                            <Input
+                            id="price"
+                            type="number"
+                            step="0.01"
+                            value={currentMenuItem?.price || ''}
+                            onChange={(e) => setCurrentMenuItem({ ...currentMenuItem!, price: parseFloat(e.target.value) })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="image" className="text-right">Image</Label>
+                            <Input
+                            id="image"
+                            type="file"
+                            onChange={handleMenuItemImageChange}
+                            className="col-span-3"
+                            />
+                        </div>
+                        </div>
+                        <DialogFooter>
+                        <Button type="submit">Save</Button>
+                        </DialogFooter>
+                    </form>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );
