@@ -18,7 +18,7 @@ export default function Authenticated({
 
     return (
         <ThemeProvider>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-white dark:bg-gray-800">
             <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80 sticky top-0 z-50">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
