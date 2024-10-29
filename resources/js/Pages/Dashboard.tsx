@@ -39,19 +39,20 @@ import {
 import { ChevronDown } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { WidgetComponent } from "@/Components/widgets/WidgetComponent";
+import { Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
 
-type WidgetType = "sales" | "inventory" | "orders";
-
-interface Widget {
-  id: number;
-  type: WidgetType;
-  column: number;
-}
+// Remove or comment out these local declarations since we're using the imported types
+// type WidgetType = "sales" | "inventory" | "orders" | "tables" | "kitchen" | "reservations";
+// interface Widget {
+//   id: number;
+//   type: WidgetType;
+//   column: number;
+// }
 
 interface Dashboard {
   id: number;
   name: string;
-  widgets: Widget[];
+  widgets: WidgetImport[];
   favorite?: boolean;
 }
 
@@ -86,8 +87,8 @@ export default function Dashboard() {
     ]);
     const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(dashboards[0]);
     const [newDashboardName, setNewDashboardName] = useState("");
-    const [widgets, setWidgets] = useState<Widget[]>([]);
-    const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetType | null>(null);
+    const [widgets, setWidgets] = useState<WidgetImport[]>([]);
+    const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetTypeImport | null>(null);
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(2);
     const [loading, setLoading] = useState(true);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -119,9 +120,18 @@ export default function Dashboard() {
         });
     };
 
-    const addWidget = () => {
+    const availableWidgets: WidgetTypeImport[] = [
+        'sales',
+        'inventory',
+        'orders',
+        'tables',
+        'kitchen',
+        'reservations'
+    ];
+
+    const addWidget = (type: WidgetTypeImport) => {
         if (selectedWidgetType) {
-            const newWidget: Widget = {
+            const newWidget: WidgetImport = {
                 id: Date.now(),
                 type: selectedWidgetType,
                 column: 0,
@@ -195,7 +205,7 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-3 w-full sm:w-auto">
                                     <Select 
                                         value={selectedWidgetType || ""} 
-                                        onValueChange={(value: string) => setSelectedWidgetType(value as WidgetType)}
+                                        onValueChange={(value: string) => setSelectedWidgetType(value as WidgetTypeImport)}
                                     >
                                         <SelectTrigger className="w-[180px]">
                                             <SelectValue placeholder="Select widget" />
@@ -204,11 +214,13 @@ export default function Dashboard() {
                                             <SelectItem value="sales">Sales Overview</SelectItem>
                                             <SelectItem value="inventory">Inventory Status</SelectItem>
                                             <SelectItem value="orders">Recent Orders</SelectItem>
+                                            <SelectItem value="tables">Tables Status</SelectItem>
+                                            <SelectItem value="kitchen">Kitchen Orders</SelectItem>
+                                            <SelectItem value="reservations">Reservations</SelectItem>
                                         </SelectContent>
                                     </Select>
-
                                     <Button 
-                                        onClick={addWidget} 
+                                        onClick={(e) => addWidget(selectedWidgetType!)}
                                         disabled={!selectedWidgetType} 
                                         variant="default"
                                         size="sm"
