@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import SocialButton from '@/Components/SocialButton';
 
 export default function Login({
     status,
@@ -117,6 +118,36 @@ export default function Login({
                                     )}
                                 </div>
 
+                                <div className="relative my-6">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-2 text-gray-500 bg-white dark:bg-gray-900">Or continue with</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <SocialButton
+                                        provider="Google"
+                                        icon="/images/google.svg"
+                                        onClick={() => window.location.href = route('google.redirect')}
+                                        type="button"
+                                    >
+                                        Google
+                                    </SocialButton>
+
+                                    <SocialButton
+                                        provider="Apple"
+                                        icon="/images/apple.svg"
+                                        onClick={() => window.location.href = route('apple.redirect')}
+                                        type="button"
+                                        className="dark:text-white"
+                                    >
+                                        Apple
+                                    </SocialButton>
+                                </div>
+
                                 <div>
                                     <PrimaryButton
                                         className="w-full justify-center py-3 px-4 text-base font-medium rounded-lg"
@@ -156,8 +187,8 @@ export default function Login({
                             <h3 className="text-2xl font-semibold text-white">
                                 Why Choose Us?
                             </h3>
-                            <p className="mt-3 text-lg text-white/80 max-w-md">
-                                Discover how our platform can help you achieve your financial goals with our innovative loan solutions.
+                            <p className="mt-3 text-lg text-white/80 max-w-lg">
+                                Discover how our platform can help your business achieve easier management with our innovative business solutions.
                             </p>
                         </div>
                     </div>
