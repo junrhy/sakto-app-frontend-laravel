@@ -81,6 +81,15 @@ const sampleOrdersData = [
     { id: '1237', customer: 'Alice Brown', status: 'processing', amount: 55.20, time: '1 hour ago' },
 ];
 
+const sampleTableData = [
+    { tableNumber: '1', seats: 4, status: 'occupied', timeRemaining: '45 min', server: 'John D.' },
+    { tableNumber: '2', seats: 2, status: 'available', timeRemaining: null, server: null },
+    { tableNumber: '3', seats: 6, status: 'reserved', timeRemaining: null, server: null },
+    { tableNumber: '4', seats: 4, status: 'occupied', timeRemaining: '15 min', server: 'Sarah M.' },
+    { tableNumber: '5', seats: 8, status: 'cleaning', timeRemaining: null, server: null },
+    { tableNumber: '6', seats: 2, status: 'occupied', timeRemaining: '90 min', server: 'Mike R.' },
+];
+
 export default function Dashboard() {
     const [dashboards, setDashboards] = useState<Dashboard[]>([
         { id: 1, name: "Main Dashboard", widgets: [], favorite: false },

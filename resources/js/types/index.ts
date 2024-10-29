@@ -30,6 +30,7 @@ export interface PageProps {
 export type WidgetType = 'sales' | 'inventory' | 'orders' | 'tables' | 'kitchen' | 'reservations';
 
 export interface Widget {
+    column: number;
     id: number;
     type: WidgetType;
     // ... other existing properties
