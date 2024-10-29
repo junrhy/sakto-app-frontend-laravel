@@ -1,5 +1,4 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
 import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
@@ -13,7 +12,11 @@ export default function Edit({
     mustVerifyEmail,
     status,
     addresses,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string; addresses: Array<any>; }>) {
+}: {
+    mustVerifyEmail: boolean;
+    status?: string;
+    addresses: Array<any>;
+}) {
     return (
         <AuthenticatedLayout
             header={
