@@ -144,207 +144,200 @@ export default function Inventory(props: { inventory: Product[] }) {
         >
             <Head title="Inventory" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <Card>
-                                <CardHeader>
-                                <CardTitle>Products</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <div className="mb-4 flex justify-between items-center">
-                                    <div className="flex items-center w-1/3">
-                                    <Search className="mr-2 h-4 w-4 text-gray-500" />
-                                    <Input
-                                        placeholder="Search products..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full"
-                                    />
-                                    </div>
-                                    <div className="flex gap-2">
-                                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                                        <DialogTrigger asChild>
-                                        <Button onClick={() => {
-                                            setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [] });
-                                            setIsEditing(false);
-                                        }}>
-                                            <Plus className="mr-2 h-4 w-4" /> Add New Product
-                                        </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>{isEditing ? "Edit Product" : "Add New Product"}</DialogTitle>
-                                        </DialogHeader>
-                                        <div className="grid gap-4 py-4">
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="name" className="text-right">Name</Label>
-                                            <Input
-                                                id="name"
-                                                className="col-span-3"
-                                                value={newProduct.name}
-                                                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                                            />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="sku" className="text-right">SKU</Label>
-                                            <Input
-                                                id="sku"
-                                                className="col-span-3"
-                                                value={newProduct.sku}
-                                                onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                                            />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="quantity" className="text-right">Quantity</Label>
-                                            <Input
-                                                id="quantity"
-                                                className="col-span-3"
-                                                type="number"
-                                                value={newProduct.quantity}
-                                                onChange={(e) => setNewProduct({ ...newProduct, quantity: Number(e.target.value) })}
-                                            />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="price" className="text-right">Price</Label>
-                                            <Input
-                                                id="price"
-                                                className="col-span-3"
-                                                type="number"
-                                                value={newProduct.price}
-                                                onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
-                                            />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label htmlFor="images" className="text-right">Images</Label>
-                                            <div className="col-span-3">
-                                                <Input
-                                                id="images"
-                                                type="file"
-                                                accept="image/*"
-                                                multiple
-                                                onChange={handleImageUpload}
-                                                />
-                                                <div className="mt-2 flex flex-wrap gap-2">
-                                                {newProduct.images.map((image, index) => (
-                                                    <div key={index} className="relative">
-                                                    <img src={image} alt={`Product ${index + 1}`} width={100} height={100} />
-                                                    <button
-                                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                                                        onClick={() => removeImage(index)}
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                    </div>
-                                                ))}
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </div>
-                                        <Button onClick={addOrUpdateProduct}>
-                                            {isEditing ? "Update Product" : "Add Product"}
-                                        </Button>
-                                        </DialogContent>
-                                    </Dialog>
-                                    <Button 
-                                        variant="destructive" 
-                                        onClick={deleteSelectedProducts}
-                                        disabled={selectedProducts.length === 0}
+            <Card>
+                <CardHeader>
+                <CardTitle>Products</CardTitle>
+                </CardHeader>
+                <CardContent>
+                <div className="mb-4 flex flex-col md:flex-row justify-between items-center">
+                    <div className="flex items-center w-full md:w-1/3 mb-2 md:mb-0">
+                    <Search className="mr-2 h-4 w-4 text-gray-500" />
+                    <Input
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full"
+                    />
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                        <Button onClick={() => {
+                            setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [] });
+                            setIsEditing(false);
+                        }} className="w-full md:w-auto">
+                            <Plus className="mr-2 h-4 w-4" /> Add New Product
+                        </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{isEditing ? "Edit Product" : "Add New Product"}</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input
+                                id="name"
+                                className="col-span-3"
+                                value={newProduct.name}
+                                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                            />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="sku" className="text-right">SKU</Label>
+                            <Input
+                                id="sku"
+                                className="col-span-3"
+                                value={newProduct.sku}
+                                onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
+                            />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="quantity" className="text-right">Quantity</Label>
+                            <Input
+                                id="quantity"
+                                className="col-span-3"
+                                type="number"
+                                value={newProduct.quantity}
+                                onChange={(e) => setNewProduct({ ...newProduct, quantity: Number(e.target.value) })}
+                            />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="price" className="text-right">Price</Label>
+                            <Input
+                                id="price"
+                                className="col-span-3"
+                                type="number"
+                                value={newProduct.price}
+                                onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
+                            />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="images" className="text-right">Images</Label>
+                            <div className="col-span-3">
+                                <Input
+                                id="images"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleImageUpload}
+                                />
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                {newProduct.images.map((image, index) => (
+                                    <div key={index} className="relative">
+                                    <img src={image} alt={`Product ${index + 1}`} width={100} height={100} />
+                                    <button
+                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                                        onClick={() => removeImage(index)}
                                     >
-                                        <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedProducts.length})
-                                    </Button>
+                                        <X className="h-4 w-4" />
+                                    </button>
                                     </div>
+                                ))}
                                 </div>
-                                <Table>
-                                    <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50px]">Select</TableHead>
-                                        <TableHead>Images</TableHead>
-                                        <TableHead>Product Name</TableHead>
-                                        <TableHead>SKU</TableHead>
-                                        <TableHead>Quantity</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {paginatedProducts.map((product) => (
-                                        <TableRow key={product.id}>
-                                        <TableCell>
-                                            <Checkbox
-                                            checked={selectedProducts.includes(product.id)}
-                                            onCheckedChange={() => toggleProductSelection(product.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-1">
-                                            {product.images.length > 0 ? (
-                                                product.images.slice(0, 3).map((image, index) => (
-                                                <img key={index} src={image} alt={`${product.name} ${index + 1}`} width={50} height={50} />
-                                                ))
-                                            ) : (
-                                                <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
-                                                <Upload className="h-6 w-6 text-gray-400" />
-                                                </div>
-                                            )}
-                                            {product.images.length > 3 && (
-                                                <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
-                                                +{product.images.length - 3}
-                                                </div>
-                                            )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{product.name}</TableCell>
-                                        <TableCell>{product.sku}</TableCell>
-                                        <TableCell>{product.quantity}</TableCell>
-                                        <TableCell>${product.price.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Button variant="outline" size="sm" className="mr-2" onClick={() => editProduct(product)}>
-                                            <Pencil className="mr-2 h-4 w-4" /> Edit
-                                            </Button>
-                                            <Button variant="destructive" size="sm" onClick={() => deleteProduct(product.id)}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                            </Button>
-                                        </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    </TableBody>
-                                </Table>
-                                <div className="flex justify-between items-center mt-4">
-                                    <div>
-                                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} entries
-                                    </div>
-                                    <div className="flex gap-2">
-                                    <Button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </Button>
-                                    {getPageNumbers().map(pageNumber => (
-                                        <Button
-                                        key={pageNumber}
-                                        variant={pageNumber === currentPage ? "default" : "outline"}
-                                        onClick={() => setCurrentPage(pageNumber)}
-                                        >
-                                        {pageNumber}
-                                        </Button>
-                                    ))}
-                                    <Button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                        disabled={currentPage === totalPages}
-                                    >
-                                        Next
-                                    </Button>
-                                    </div>
-                                </div>
-                                </CardContent>
-                            </Card>
+                            </div>
+                            </div>
                         </div>
+                        <Button onClick={addOrUpdateProduct}>
+                            {isEditing ? "Update Product" : "Add Product"}
+                        </Button>
+                        </DialogContent>
+                    </Dialog>
+                    <Button 
+                        variant="destructive" 
+                        onClick={deleteSelectedProducts}
+                        disabled={selectedProducts.length === 0}
+                        className="w-full md:w-auto"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Selected ({selectedProducts.length})
+                    </Button>
                     </div>
                 </div>
-            </div>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[50px]">Select</TableHead>
+                        <TableHead>Images</TableHead>
+                        <TableHead>Product Name</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Actions</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {paginatedProducts.map((product) => (
+                        <TableRow key={product.id}>
+                        <TableCell>
+                            <Checkbox
+                            checked={selectedProducts.includes(product.id)}
+                            onCheckedChange={() => toggleProductSelection(product.id)}
+                            />
+                        </TableCell>
+                        <TableCell>
+                            <div className="flex gap-1">
+                            {product.images.length > 0 ? (
+                                product.images.slice(0, 3).map((image, index) => (
+                                <img key={index} src={image} alt={`${product.name} ${index + 1}`} width={50} height={50} />
+                                ))
+                            ) : (
+                                <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
+                                <Upload className="h-6 w-6 text-gray-400" />
+                                </div>
+                            )}
+                            {product.images.length > 3 && (
+                                <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
+                                +{product.images.length - 3}
+                                </div>
+                            )}
+                            </div>
+                        </TableCell>
+                        <TableCell>{product.name}</TableCell>
+                        <TableCell>{product.sku}</TableCell>
+                        <TableCell>{product.quantity}</TableCell>
+                        <TableCell>${product.price.toFixed(2)}</TableCell>
+                        <TableCell>
+                            <Button variant="outline" size="sm" className="mr-2" onClick={() => editProduct(product)}>
+                            <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => deleteProduct(product.id)}>
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                <div className="flex justify-between items-center mt-4">
+                    <div>
+                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} entries
+                    </div>
+                    <div className="flex gap-2">
+                    <Button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </Button>
+                    {getPageNumbers().map(pageNumber => (
+                        <Button
+                        key={pageNumber}
+                        variant={pageNumber === currentPage ? "default" : "outline"}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        >
+                        {pageNumber}
+                        </Button>
+                    ))}
+                    <Button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </Button>
+                    </div>
+                </div>
+                </CardContent>
+            </Card>
         </AuthenticatedLayout>
     );
 }

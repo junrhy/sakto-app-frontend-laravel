@@ -148,11 +148,7 @@ export default function PosRetail(props: { products: Product[] }) {
         >
             <Head title="Retail" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Card>
                             <CardHeader>
                                 <CardTitle>Product Search</CardTitle>
@@ -268,33 +264,29 @@ export default function PosRetail(props: { products: Product[] }) {
                                 <Button onClick={handleCompleteSale} disabled={orderItems.length === 0}>Complete Sale</Button>
                             </CardFooter>
                             </Card>
-                            </div>
-
-                            <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Complete Sale</DialogTitle>
-                                </DialogHeader>
-                                <div className="py-4">
-                                    <Label htmlFor="cashReceived">Cash Received</Label>
-                                    <Input
-                                    id="cashReceived"
-                                    type="number"
-                                    value={cashReceived}
-                                    onChange={(e) => setCashReceived(e.target.value)}
-                                    placeholder="Enter amount received"
-                                    />
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)}>Cancel</Button>
-                                    <Button onClick={confirmCompleteSale}>Confirm Sale</Button>
-                                </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
-                    </div>
-                </div>
             </div>
+
+            <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
+                <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Complete Sale</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                    <Label htmlFor="cashReceived">Cash Received</Label>
+                    <Input
+                    id="cashReceived"
+                    type="number"
+                    value={cashReceived}
+                    onChange={(e) => setCashReceived(e.target.value)}
+                    placeholder="Enter amount received"
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={confirmCompleteSale}>Confirm Sale</Button>
+                </DialogFooter>
+                </DialogContent>
+            </Dialog> 
         </AuthenticatedLayout>
     );
 }
