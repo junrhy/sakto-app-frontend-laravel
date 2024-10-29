@@ -15,4 +15,14 @@ export interface Address {
 export interface User {
     // existing properties...
     contact_number: string | null;
+}
+
+export interface PageProps {
+    auth: {
+        user: {
+            name: string;
+            email: string;
+        };
+    };
+    [key: string]: any;
 } 
