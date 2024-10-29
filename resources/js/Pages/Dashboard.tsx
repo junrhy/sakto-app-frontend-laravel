@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,6 +11,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/Components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/Components/ui/dialog";
+import { Input } from "@/Components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 type WidgetType = "sales" | "inventory" | "orders";
 
@@ -18,6 +36,12 @@ interface Widget {
   id: number;
   type: WidgetType;
   column: number;
+}
+
+interface Dashboard {
+  id: number;
+  name: string;
+  widgets: Widget[];
 }
 
 const WidgetComponent: React.FC<{ 
@@ -29,22 +53,67 @@ const WidgetComponent: React.FC<{
   isRightmost: boolean;
 }> = ({ widget, onRemove, onMoveLeft, onMoveRight, isLeftmost, isRightmost }) => {
   return (
-    <Card className="h-full mb-4 relative">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-sm font-medium">
-          {widget.type === "sales" && "Sales Overview"}
-          {widget.type === "inventory" && "Inventory Status"}
-          {widget.type === "orders" && "Recent Orders"}
+    <Card className="h-full mb-4 relative hover:shadow-lg transition-shadow duration-200 dark:border-gray-700">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 border-b dark:border-gray-700">
+        <CardTitle className="text-base font-semibold flex items-center gap-2">
+          {widget.type === "sales" && (
+            <>
+              <span className="h-2 w-2 bg-green-500 rounded-full"></span>
+              Sales Overview
+            </>
+          )}
+          {widget.type === "inventory" && (
+            <>
+              <span className="h-2 w-2 bg-blue-500 rounded-full"></span>
+              Inventory Status
+            </>
+          )}
+          {widget.type === "orders" && (
+            <>
+              <span className="h-2 w-2 bg-purple-500 rounded-full"></span>
+              Recent Orders
+            </>
+          )}
         </CardTitle>
-        <Button variant="ghost" size="sm" onClick={() => onRemove(widget.id)}>
+        <Button variant="ghost" size="sm" onClick={() => onRemove(widget.id)} className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30">
           <X className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
-        {/* Placeholder content for each widget type */}
-        {widget.type === "sales" && <p>Sales data visualization would go here.</p>}
-        {widget.type === "inventory" && <p>Inventory levels and alerts would be displayed here.</p>}
-        {widget.type === "orders" && <p>A list of recent orders would be shown here.</p>}
+      <CardContent className="pt-4">
+        {/* Enhanced placeholder content */}
+        {widget.type === "sales" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Today's Sales</span>
+              <span className="text-lg font-bold text-green-600">$12,543</span>
+            </div>
+            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              Chart Placeholder
+            </div>
+          </div>
+        )}
+        {widget.type === "inventory" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Stock Items</span>
+              <span className="text-lg font-bold text-blue-600">1,234</span>
+            </div>
+            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              Inventory Chart
+            </div>
+          </div>
+        )}
+        {widget.type === "orders" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Pending Orders</span>
+              <span className="text-lg font-bold text-purple-600">47</span>
+            </div>
+            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              Orders List
+            </div>
+          </div>
+        )}
       </CardContent>
       <div className="absolute bottom-2 left-2 right-2 flex justify-between">
         <Button 
@@ -52,6 +121,7 @@ const WidgetComponent: React.FC<{
           size="sm" 
           onClick={() => onMoveLeft(widget.id)}
           disabled={isLeftmost}
+          className="hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -60,6 +130,7 @@ const WidgetComponent: React.FC<{
           size="sm" 
           onClick={() => onMoveRight(widget.id)}
           disabled={isRightmost}
+          className="hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -69,15 +140,34 @@ const WidgetComponent: React.FC<{
 };
 
 export default function Dashboard() {
+    const [dashboards, setDashboards] = useState<Dashboard[]>([
+        { id: 1, name: "Main Dashboard", widgets: [] },
+    ]);
+    const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(dashboards[0]);
+    const [newDashboardName, setNewDashboardName] = useState("");
     const [widgets, setWidgets] = useState<Widget[]>([]);
     const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetType | null>(null);
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(2);
     const [loading, setLoading] = useState(true);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
         fetchWidgets();
         setLoading(false);
-    }, []);
+    }, [currentDashboard]);
+
+    const createNewDashboard = () => {
+        if (newDashboardName.trim()) {
+            const newDashboard: Dashboard = {
+                id: Date.now(),
+                name: newDashboardName,
+                widgets: []
+            };
+            setDashboards([...dashboards, newDashboard]);
+            setCurrentDashboard(newDashboard);
+            setNewDashboardName("");
+        }
+    };
 
     const fetchWidgets = () => {
         // Initialize with empty array or some default widgets
@@ -126,6 +216,17 @@ export default function Dashboard() {
         }
     };
 
+    const deleteDashboard = () => {
+        if (dashboards.length <= 1) {
+            return; // Prevent deleting the last dashboard
+        }
+        
+        const updatedDashboards = dashboards.filter(d => d.id !== currentDashboard.id);
+        setDashboards(updatedDashboards);
+        setCurrentDashboard(updatedDashboards[0]);
+        setIsDeleteDialogOpen(false);
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -140,61 +241,168 @@ export default function Dashboard() {
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
+            <div className="py-6">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
+                    <div className="overflow-hidden bg-white/50 backdrop-blur-sm shadow-sm sm:rounded-lg dark:bg-gray-800/50">
+                        <div className="text-gray-900 dark:text-gray-100">
                             <main className="flex flex-col min-h-screen">
                                 <div className="flex-grow p-8">
                                     <div className="w-full max-w-7xl mx-auto h-full">
-                                    <div className="w-full flex justify-between max-w-7xl mb-8">
-                                        <div className="flex space-x-4 mb-4">
-                                        <Select value={selectedWidgetType || ""} onValueChange={(value: string) => setSelectedWidgetType(value as WidgetType)}>
-                                            <SelectTrigger className="w-[180px]">
-                                            <SelectValue placeholder="Select widget" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                            <SelectItem value="sales">Sales Overview</SelectItem>
-                                            <SelectItem value="inventory">Inventory Status</SelectItem>
-                                            <SelectItem value="orders">Recent Orders</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button onClick={addWidget} disabled={!selectedWidgetType}>
-                                            <Plus className="h-4 w-4" />
-                                        </Button>
-                                        </div>
-                                        <div className="flex space-x-2">
-                                        <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "outline"}>
-                                            <LayoutGrid className="h-4 w-4" />
-                                        </Button>
-                                        <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "outline"}>
-                                            <Columns className="h-4 w-4" />
-                                        </Button>
-                                        <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "outline"}>
-                                            <Columns3 className="h-4 w-4" />
-                                        </Button>
-                                        </div>
-                                    </div>
+                                        {/* Dashboard Controls Bar */}
+                                        <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                                    <Select 
+                                                        value={currentDashboard.id.toString()} 
+                                                        onValueChange={(value) => {
+                                                            const dashboard = dashboards.find(d => d.id.toString() === value);
+                                                            if (dashboard) setCurrentDashboard(dashboard);
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="w-[200px]">
+                                                            <SelectValue placeholder="Select dashboard" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {dashboards.map(dashboard => (
+                                                                <SelectItem 
+                                                                    key={dashboard.id} 
+                                                                    value={dashboard.id.toString()}
+                                                                >
+                                                                    {dashboard.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
 
-                                    <div className={`w-full grid gap-8 min-h-[500px] ${getColumnClass()}`}>
-                                        {Array.from({ length: columnCount }).map((_, columnIndex) => (
-                                        <div key={columnIndex} className="flex flex-col gap-6 h-full">
-                                            {widgets
-                                            .filter(widget => widget.column === columnIndex)
-                                            .map(widget => (
-                                                <WidgetComponent 
-                                                key={widget.id} 
-                                                widget={widget} 
-                                                onRemove={removeWidget}
-                                                onMoveLeft={() => moveWidget(widget.id, 'left')}
-                                                onMoveRight={() => moveWidget(widget.id, 'right')}
-                                                isLeftmost={widget.column === 0}
-                                                isRightmost={widget.column === columnCount - 1}
-                                                />
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="outline" size="sm" className="gap-2">
+                                                                <PlusCircle className="h-4 w-4" />
+                                                                New Dashboard
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Create New Dashboard</DialogTitle>
+                                                            </DialogHeader>
+                                                            <div className="space-y-4 pt-4">
+                                                                <Input
+                                                                    placeholder="Dashboard name"
+                                                                    value={newDashboardName}
+                                                                    onChange={(e) => setNewDashboardName(e.target.value)}
+                                                                />
+                                                                <Button 
+                                                                    onClick={createNewDashboard}
+                                                                    disabled={!newDashboardName.trim()}
+                                                                    className="w-full"
+                                                                >
+                                                                    Create Dashboard
+                                                                </Button>
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
+
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                                        onClick={() => setIsDeleteDialogOpen(true)}
+                                                        disabled={dashboards.length <= 1}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Delete
+                                                    </Button>
+
+                                                    {/* Delete Dashboard Confirmation Dialog */}
+                                                    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Delete Dashboard</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Are you sure you want to delete "{currentDashboard.name}"? This action cannot be undone.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    onClick={deleteDashboard}
+                                                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                                                >
+                                                                    Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+
+                                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                                    <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
+                                                        <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "ghost"} size="sm">
+                                                            <LayoutGrid className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "ghost"} size="sm">
+                                                            <Columns className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "ghost"} size="sm">
+                                                            <Columns3 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Widget Controls Bar */}
+                                        <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6">
+                                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                                    <Select 
+                                                        value={selectedWidgetType || ""} 
+                                                        onValueChange={(value: string) => setSelectedWidgetType(value as WidgetType)}
+                                                    >
+                                                        <SelectTrigger className="w-[180px]">
+                                                            <SelectValue placeholder="Select widget" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="sales">Sales Overview</SelectItem>
+                                                            <SelectItem value="inventory">Inventory Status</SelectItem>
+                                                            <SelectItem value="orders">Recent Orders</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+
+                                                    <Button 
+                                                        onClick={addWidget} 
+                                                        disabled={!selectedWidgetType} 
+                                                        variant="default"
+                                                        size="sm"
+                                                        className="gap-2"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                        Add Widget
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Widget Grid remains the same */}
+                                        <div className={`w-full grid gap-8 min-h-[500px] ${getColumnClass()}`}>
+                                            {Array.from({ length: columnCount }).map((_, columnIndex) => (
+                                            <div key={columnIndex} className="flex flex-col gap-6 h-full">
+                                                {widgets
+                                                .filter(widget => widget.column === columnIndex)
+                                                .map(widget => (
+                                                    <WidgetComponent 
+                                                    key={widget.id} 
+                                                    widget={widget} 
+                                                    onRemove={removeWidget}
+                                                    onMoveLeft={() => moveWidget(widget.id, 'left')}
+                                                    onMoveRight={() => moveWidget(widget.id, 'right')}
+                                                    isLeftmost={widget.column === 0}
+                                                    isRightmost={widget.column === columnCount - 1}
+                                                    />
+                                                ))}
+                                            </div>
                                             ))}
                                         </div>
-                                        ))}
-                                    </div>
                                     </div>
                                 </div>
                             </main>
