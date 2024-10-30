@@ -206,7 +206,7 @@ export default function Dashboard() {
             <Head title="Dashboard" />
             
             <main className="flex flex-col flex-1">
-                <div className="py-6">
+                <div className="py-0">
                     {/* Dashboard Controls Bar */}
                     <div className="dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

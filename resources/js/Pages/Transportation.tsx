@@ -1124,8 +1124,8 @@ export default function Transportation() {
         >
             <Head title="Transportation" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="py-0">
+                <div className="">
                     {/* Dashboard Stats */}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-4 mb-6">
                         <Card>
