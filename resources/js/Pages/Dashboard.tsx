@@ -97,6 +97,8 @@ export default function Dashboard() {
     const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
+        setDashboards(props.dashboards);
+        setCurrentDashboard(props.currentDashboard);
         fetchWidgets();
         setLoading(false);
     }, [currentDashboard]);
@@ -194,179 +196,177 @@ export default function Dashboard() {
             <main className="flex flex-col flex-1">
                 <div className="py-0">
                     {/* Dashboard Controls Bar */}
-                    <div className="dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                {/* Widget selection - Only show in edit mode */}
-                                {isEditMode && (
-                                    <>
-                                        <Select 
-                                            value={selectedWidgetType || ""} 
-                                            onValueChange={(value: string) => setSelectedWidgetType(value as WidgetTypeImport)}
-                                        >
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Select widget" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="sales">Sales Overview</SelectItem>
-                                                <SelectItem value="inventory">Inventory Status</SelectItem>
-                                                <SelectItem value="orders">Recent Orders</SelectItem>
-                                                <SelectItem value="tables">Tables Status</SelectItem>
-                                                <SelectItem value="kitchen">Kitchen Orders</SelectItem>
-                                                <SelectItem value="reservations">Reservations</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button 
-                                            onClick={(e) => addWidget(selectedWidgetType!)}
-                                            disabled={!selectedWidgetType} 
-                                            variant="default"
-                                            size="sm"
-                                            className="gap-2"
-                                        >
-                                            <Plus className="h-4 w-4" />
-                                        </Button>
-                                    </>
-                                )}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            {/* Widget selection - Only show in edit mode */}
+                            {isEditMode && (
+                                <>
+                                    <Select 
+                                        value={selectedWidgetType || ""} 
+                                        onValueChange={(value: string) => setSelectedWidgetType(value as WidgetTypeImport)}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Select widget" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="sales">Sales Overview</SelectItem>
+                                            <SelectItem value="inventory">Inventory Status</SelectItem>
+                                            <SelectItem value="orders">Recent Orders</SelectItem>
+                                            <SelectItem value="tables">Tables Status</SelectItem>
+                                            <SelectItem value="kitchen">Kitchen Orders</SelectItem>
+                                            <SelectItem value="reservations">Reservations</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button 
+                                        onClick={(e) => addWidget(selectedWidgetType!)}
+                                        disabled={!selectedWidgetType} 
+                                        variant="default"
+                                        size="sm"
+                                        className="gap-2"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </>
+                            )}
 
-                                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete Dashboard</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure you want to delete "{currentDashboard.name}"? This action cannot be undone.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={deleteDashboard}
-                                                className="bg-red-600 hover:bg-red-700 text-white"
-                                            >
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
+                            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete Dashboard</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Are you sure you want to delete "{currentDashboard.name}"? This action cannot be undone.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={deleteDashboard}
+                                            className="bg-red-600 hover:bg-red-700 text-white"
+                                        >
+                                            Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
 
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                        const updatedDashboards = dashboards.map(d => ({
-                                            ...d,
-                                            favorite: d.id === currentDashboard.id ? !d.favorite : d.favorite
-                                        }));
-                                        setDashboards(updatedDashboards);
-                                        setCurrentDashboard({
-                                            ...currentDashboard,
-                                            favorite: !currentDashboard.favorite
-                                        });
-                                    }}
-                                    className={`${
-                                        currentDashboard.favorite 
-                                            ? 'text-yellow-500 hover:text-yellow-600' 
-                                            : 'text-gray-400 hover:text-gray-500'
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    const updatedDashboards = dashboards.map(d => ({
+                                        ...d,
+                                        favorite: d.id === currentDashboard.id ? !d.favorite : d.favorite
+                                    }));
+                                    setDashboards(updatedDashboards);
+                                    setCurrentDashboard({
+                                        ...currentDashboard,
+                                        favorite: !currentDashboard.favorite
+                                    });
+                                }}
+                                className={`${
+                                    currentDashboard.favorite 
+                                        ? 'text-yellow-500 hover:text-yellow-600' 
+                                        : 'text-gray-400 hover:text-gray-500'
+                                }`}
+                            >
+                                <Star className="h-4 w-4" fill={currentDashboard.favorite ? "currentColor" : "none"} />
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setIsRefreshing(true);
+                                    fetchWidgets().finally(() => {
+                                        setTimeout(() => {
+                                            setIsRefreshing(false);
+                                        }, 1000); // Adjust timing as needed
+                                    });
+                                }}
+                                className="text-gray-400 hover:text-gray-500"
+                            >
+                                <RotateCw 
+                                    className={`h-4 w-4 ${
+                                        isRefreshing ? 'animate-spin' : ''
                                     }`}
-                                >
-                                    <Star className="h-4 w-4" fill={currentDashboard.favorite ? "currentColor" : "none"} />
-                                </Button>
+                                />
+                            </Button>
 
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                        setIsRefreshing(true);
-                                        fetchWidgets().finally(() => {
-                                            setTimeout(() => {
-                                                setIsRefreshing(false);
-                                            }, 1000); // Adjust timing as needed
-                                        });
-                                    }}
-                                    className="text-gray-400 hover:text-gray-500"
-                                >
-                                    <RotateCw 
-                                        className={`h-4 w-4 ${
-                                            isRefreshing ? 'animate-spin' : ''
-                                        }`}
-                                    />
-                                </Button>
+                            {/* Add Edit button */}
+                            <Button
+                                variant={isEditMode ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setIsEditMode(!isEditMode)}
+                                className="gap-2"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                {isEditMode ? 'Done' : 'Edit'}
+                            </Button>
 
-                                {/* Add Edit button */}
-                                <Button
-                                    variant={isEditMode ? "default" : "ghost"}
-                                    size="sm"
-                                    onClick={() => setIsEditMode(!isEditMode)}
-                                    className="gap-2"
-                                >
-                                    <Pencil className="h-4 w-4" />
-                                    {isEditMode ? 'Done' : 'Edit'}
-                                </Button>
+                            {/* Grid layout selection - Only show in edit mode */}
+                            {isEditMode && (
+                                <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
+                                    <Button 
+                                        onClick={() => setColumnCount(1)} 
+                                        variant={columnCount === 1 ? "default" : "ghost"} 
+                                        size="sm"
+                                        disabled={wouldHideWidgets(1)}
+                                        title={wouldHideWidgets(1) ? "Move widgets to column 0 first" : "Single column layout"}
+                                    >
+                                        <LayoutGrid className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                        onClick={() => setColumnCount(2)} 
+                                        variant={columnCount === 2 ? "default" : "ghost"} 
+                                        size="sm"
+                                        disabled={wouldHideWidgets(2)}
+                                        title={wouldHideWidgets(2) ? "Move widgets to columns 0-1 first" : "Two column layout"}
+                                    >
+                                        <Columns className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                        onClick={() => setColumnCount(3)} 
+                                        variant={columnCount === 3 ? "default" : "ghost"} 
+                                        size="sm"
+                                    >
+                                        <Columns3 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            )}
 
-                                {/* Grid layout selection - Only show in edit mode */}
-                                {isEditMode && (
-                                    <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
-                                        <Button 
-                                            onClick={() => setColumnCount(1)} 
-                                            variant={columnCount === 1 ? "default" : "ghost"} 
-                                            size="sm"
-                                            disabled={wouldHideWidgets(1)}
-                                            title={wouldHideWidgets(1) ? "Move widgets to column 0 first" : "Single column layout"}
-                                        >
-                                            <LayoutGrid className="h-4 w-4" />
-                                        </Button>
-                                        <Button 
-                                            onClick={() => setColumnCount(2)} 
-                                            variant={columnCount === 2 ? "default" : "ghost"} 
-                                            size="sm"
-                                            disabled={wouldHideWidgets(2)}
-                                            title={wouldHideWidgets(2) ? "Move widgets to columns 0-1 first" : "Two column layout"}
-                                        >
-                                            <Columns className="h-4 w-4" />
-                                        </Button>
-                                        <Button 
-                                            onClick={() => setColumnCount(3)} 
-                                            variant={columnCount === 3 ? "default" : "ghost"} 
-                                            size="sm"
-                                        >
-                                            <Columns3 className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                )}
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm" className="w-[40px]">
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[200px]">
-                                        <DropdownMenuItem
-                                            onClick={() => {
-                                                setDefaultDashboardId(currentDashboard.id);
-                                                // You might want to persist this to the backend
-                                                // axios.post('/api/dashboards/set-default', { dashboardId: currentDashboard.id });
-                                            }}
-                                            disabled={defaultDashboardId === currentDashboard.id}
-                                        >
-                                            <CheckCircle2 className={`h-4 w-4 mr-2 ${
-                                                defaultDashboardId === currentDashboard.id ? 'text-green-500' : ''
-                                            }`} />
-                                            Use as Default
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
-                                            disabled={dashboards.length <= 1}
-                                            onClick={() => setIsDeleteDialogOpen(true)}
-                                        >
-                                            <Trash2 className="h-4 w-4 mr-2" />
-                                            Delete Dashboard
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-[40px]">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[200px]">
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            setDefaultDashboardId(currentDashboard.id);
+                                            // You might want to persist this to the backend
+                                            // axios.post('/api/dashboards/set-default', { dashboardId: currentDashboard.id });
+                                        }}
+                                        disabled={defaultDashboardId === currentDashboard.id}
+                                    >
+                                        <CheckCircle2 className={`h-4 w-4 mr-2 ${
+                                            defaultDashboardId === currentDashboard.id ? 'text-green-500' : ''
+                                        }`} />
+                                        Use as Default
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
+                                        disabled={dashboards.length <= 1}
+                                        onClick={() => setIsDeleteDialogOpen(true)}
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete Dashboard
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
 
