@@ -1,10 +1,25 @@
 import { Config } from 'ziggy-js';
 
-export interface User {
+export interface ProjectModule {
     id: number;
     name: string;
+    identifier: string;
+}
+
+export interface Project {
+    id: number;
+    name: string;
+    modules: ProjectModule[];
+}
+
+export interface User {
+    name: string;
     email: string;
-    email_verified_at?: string;
+    project?: {
+        modules?: Array<{
+            identifier: string;
+        }>;
+    };
 }
 
 export type PageProps<
