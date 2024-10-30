@@ -201,291 +201,285 @@ export default function Loan() {
         >
             <Head title="Loans" />
 
-            <div className="py-0">
-                <div className="">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800 border-2">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <Card>
-                                <CardHeader>
-                                <CardTitle>Loans</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <div className="flex justify-between mb-4">
-                                    <div className="flex items-center space-x-2">
-                                    <Button onClick={handleAddLoan}>
-                                        <Plus className="mr-2 h-4 w-4" /> Add Loan
-                                    </Button>
-                                    <Button 
-                                        onClick={handleDeleteSelectedLoans} 
-                                        variant="destructive" 
-                                        disabled={selectedLoans.length === 0}
-                                    >
-                                        <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                                    </Button>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                    <Search className="h-4 w-4 text-gray-500" />
-                                    <Input
-                                        placeholder="Search loans..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-64"
-                                    />
-                                    </div>
-                                </div>
-                                <Table>
-                                    <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50px]">
-                                        <Checkbox
-                                            checked={selectedLoans.length === paginatedLoans.length}
-                                            onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setSelectedLoans(paginatedLoans.map(loan => loan.id));
-                                            } else {
-                                                setSelectedLoans([]);
-                                            }
-                                            }}
-                                        />
-                                        </TableHead>
-                                        <TableHead>Borrower Name</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Interest Rate</TableHead>
-                                        <TableHead>Start Date</TableHead>
-                                        <TableHead>End Date</TableHead>
-                                        <TableHead>Compounding</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Total Amount</TableHead>
-                                        <TableHead>Paid Amount</TableHead>
-                                        <TableHead>Remaining</TableHead>
-                                        <TableHead>Overpayment</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {paginatedLoans.map((loan) => {
-                                        const { totalAmount } = calculateCompoundInterest(loan);
-                                        return (
-                                        <TableRow key={loan.id}>
-                                            <TableCell>
-                                            <Checkbox
-                                                checked={selectedLoans.includes(loan.id)}
-                                                onCheckedChange={() => toggleLoanSelection(loan.id)}
-                                            />
-                                            </TableCell>
-                                            <TableCell>{loan.borrowerName}</TableCell>
-                                            <TableCell>${loan.amount.toFixed(2)}</TableCell>
-                                            <TableCell>{loan.interestRate}%</TableCell>
-                                            <TableCell>{loan.startDate}</TableCell>
-                                            <TableCell>{loan.endDate}</TableCell>
-                                            <TableCell>{loan.compoundingFrequency}</TableCell>
-                                            <TableCell>{loan.status}</TableCell>
-                                            <TableCell>${totalAmount}</TableCell>
-                                            <TableCell>${loan.paidAmount.toFixed(2)}</TableCell>
-                                            <TableCell>${getRemainingAmount(loan)}</TableCell>
-                                            <TableCell>${loan.overpaymentBalance.toFixed(2)}</TableCell>
-                                            <TableCell className="flex">
-                                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="destructive" size="sm" className="mr-2" onClick={() => handleDeleteLoan(loan.id)}>
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
-                                            {loan.status === 'active' && (
-                                                <Button variant="default" size="sm" className="mr-2" onClick={() => handlePayment(loan)}>
-                                                <DollarSign className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                            <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(loan)}>
-                                                <History className="h-4 w-4" />
-                                            </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                        );
-                                    })}
-                                    </TableBody>
-                                </Table>
-                                <div className="flex justify-between items-center mt-4">
-                                    <div>
-                                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredLoans.length)} of {filteredLoans.length} loans
-                                    </div>
-                                    <div className="flex space-x-2">
-                                    <Button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </Button>
-                                    {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                                        <Button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        variant={currentPage === page ? "default" : "outline"}
-                                        >
-                                        {page}
-                                        </Button>
-                                    ))}
-                                    <Button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                                        disabled={currentPage === pageCount}
-                                    >
-                                        Next
-                                    </Button>
-                                    </div>
-                                </div>
-                                </CardContent>
-                            </Card>
-
-                            <Dialog open={isLoanDialogOpen} onOpenChange={setIsLoanDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>{currentLoan?.id ? 'Edit Loan' : 'Add Loan'}</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleSaveLoan}>
-                                    <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="borrowerName" className="text-right">Borrower Name</Label>
-                                        <Input
-                                        id="borrowerName"
-                                        value={currentLoan?.borrowerName || ''}
-                                        onChange={(e) => setCurrentLoan({ ...currentLoan!, borrowerName: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="amount" className="text-right">Amount</Label>
-                                        <Input
-                                        id="amount"
-                                        type="number"
-                                        value={currentLoan?.amount || ''}
-                                        onChange={(e) => setCurrentLoan({ ...currentLoan!, amount: parseFloat(e.target.value) })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="interestRate" className="text-right">Interest Rate</Label>
-                                        <Input
-                                        id="interestRate"
-                                        type="number"
-                                        step="0.1"
-                                        value={currentLoan?.interestRate || ''}
-                                        onChange={(e) => setCurrentLoan({ ...currentLoan!, interestRate: parseFloat(e.target.value) })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="startDate" className="text-right">Start Date</Label>
-                                        <Input
-                                        id="startDate"
-                                        type="date"
-                                        value={currentLoan?.startDate || ''}
-                                        onChange={(e) => setCurrentLoan({ ...currentLoan!, startDate: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="endDate" className="text-right">End Date</Label>
-                                        <Input
-                                        id="endDate"
-                                        type="date"
-                                        value={currentLoan?.endDate || ''}
-                                        onChange={(e) => setCurrentLoan({ ...currentLoan!, endDate: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="compoundingFrequency" className="text-right">Compounding Frequency</Label>
-                                        <Select
-                                        value={currentLoan?.compoundingFrequency || ''}
-                                        onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => setCurrentLoan({ ...currentLoan!, compoundingFrequency: value })}
-                                        >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select frequency" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="daily">Daily</SelectItem>
-                                            <SelectItem value="monthly">Monthly</SelectItem>
-                                            <SelectItem value="quarterly">Quarterly</SelectItem>
-                                            <SelectItem value="annually">Annually</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="status" className="text-right">Status</Label>
-                                        <Select
-                                        value={currentLoan?.status || ''}
-                                        onValueChange={(value: 'active' | 'paid' | 'defaulted') => setCurrentLoan({ ...currentLoan!, status: value })}
-                                        >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="paid">Paid</SelectItem>
-                                            <SelectItem value="defaulted">Defaulted</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                    </div>
-                                    </div>
-                                    <DialogFooter>
-                                    <Button type="submit">Save</Button>
-                                    </DialogFooter>
-                                </form>
-                                </DialogContent>
-                            </Dialog>
-
-                            <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Record Payment</DialogTitle>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="paymentAmount" className="text-right">Payment Amount</Label>
-                                    <Input
-                                        id="paymentAmount"
-                                        type="number"
-                                        value={paymentAmount}
-                                        onChange={(e) => setPaymentAmount(e.target.value)}
-                                        className="col-span-3"
-                                    />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button onClick={confirmPayment}>Confirm Payment</Button>
-                                </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-
-                            <Dialog open={isPaymentHistoryDialogOpen} onOpenChange={setIsPaymentHistoryDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Payment History</DialogTitle>
-                                </DialogHeader>
-                                <Table>
-                                    <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                    </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {currentLoan?.payments.map((payment) => (
-                                        <TableRow key={payment.id}>
-                                        <TableCell>{payment.date}</TableCell>
-                                        <TableCell>${payment.amount.toFixed(2)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                    </TableBody>
-                                </Table>
-                                <DialogFooter>
-                                    <Button onClick={() => setIsPaymentHistoryDialogOpen(false)}>Close</Button>
-                                </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Loans</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <div className="flex justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                        <Button onClick={handleAddLoan}>
+                            <Plus className="mr-2 h-4 w-4" /> Add Loan
+                        </Button>
+                        <Button 
+                            onClick={handleDeleteSelectedLoans} 
+                            variant="destructive" 
+                            disabled={selectedLoans.length === 0}
+                        >
+                            <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                        </Button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                        <Search className="h-4 w-4 text-gray-500" />
+                        <Input
+                            placeholder="Search loans..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-64"
+                        />
                         </div>
                     </div>
-                </div>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[50px]">
+                            <Checkbox
+                                checked={selectedLoans.length === paginatedLoans.length}
+                                onCheckedChange={(checked) => {
+                                if (checked) {
+                                    setSelectedLoans(paginatedLoans.map(loan => loan.id));
+                                } else {
+                                    setSelectedLoans([]);
+                                }
+                                }}
+                            />
+                            </TableHead>
+                            <TableHead>Borrower Name</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Interest Rate</TableHead>
+                            <TableHead>Start Date</TableHead>
+                            <TableHead>End Date</TableHead>
+                            <TableHead>Compounding</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Total Amount</TableHead>
+                            <TableHead>Paid Amount</TableHead>
+                            <TableHead>Remaining</TableHead>
+                            <TableHead>Overpayment</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {paginatedLoans.map((loan) => {
+                            const { totalAmount } = calculateCompoundInterest(loan);
+                            return (
+                            <TableRow key={loan.id}>
+                                <TableCell>
+                                <Checkbox
+                                    checked={selectedLoans.includes(loan.id)}
+                                    onCheckedChange={() => toggleLoanSelection(loan.id)}
+                                />
+                                </TableCell>
+                                <TableCell>{loan.borrowerName}</TableCell>
+                                <TableCell>${loan.amount.toFixed(2)}</TableCell>
+                                <TableCell>{loan.interestRate}%</TableCell>
+                                <TableCell>{loan.startDate}</TableCell>
+                                <TableCell>{loan.endDate}</TableCell>
+                                <TableCell>{loan.compoundingFrequency}</TableCell>
+                                <TableCell>{loan.status}</TableCell>
+                                <TableCell>${totalAmount}</TableCell>
+                                <TableCell>${loan.paidAmount.toFixed(2)}</TableCell>
+                                <TableCell>${getRemainingAmount(loan)}</TableCell>
+                                <TableCell>${loan.overpaymentBalance.toFixed(2)}</TableCell>
+                                <TableCell className="flex">
+                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="destructive" size="sm" className="mr-2" onClick={() => handleDeleteLoan(loan.id)}>
+                                    <Trash className="h-4 w-4" />
+                                </Button>
+                                {loan.status === 'active' && (
+                                    <Button variant="default" size="sm" className="mr-2" onClick={() => handlePayment(loan)}>
+                                    <DollarSign className="h-4 w-4" />
+                                    </Button>
+                                )}
+                                <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(loan)}>
+                                    <History className="h-4 w-4" />
+                                </Button>
+                                </TableCell>
+                            </TableRow>
+                            );
+                        })}
+                        </TableBody>
+                    </Table>
+                    <div className="flex justify-between items-center mt-4">
+                        <div>
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredLoans.length)} of {filteredLoans.length} loans
+                        </div>
+                        <div className="flex space-x-2">
+                        <Button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                            <Button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            variant={currentPage === page ? "default" : "outline"}
+                            >
+                            {page}
+                            </Button>
+                        ))}
+                        <Button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                            disabled={currentPage === pageCount}
+                        >
+                            Next
+                        </Button>
+                        </div>
+                    </div>
+                    </CardContent>
+                </Card>
+
+                <Dialog open={isLoanDialogOpen} onOpenChange={setIsLoanDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{currentLoan?.id ? 'Edit Loan' : 'Add Loan'}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSaveLoan}>
+                        <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="borrowerName" className="text-right">Borrower Name</Label>
+                            <Input
+                            id="borrowerName"
+                            value={currentLoan?.borrowerName || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, borrowerName: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="amount" className="text-right">Amount</Label>
+                            <Input
+                            id="amount"
+                            type="number"
+                            value={currentLoan?.amount || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, amount: parseFloat(e.target.value) })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="interestRate" className="text-right">Interest Rate</Label>
+                            <Input
+                            id="interestRate"
+                            type="number"
+                            step="0.1"
+                            value={currentLoan?.interestRate || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, interestRate: parseFloat(e.target.value) })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="startDate" className="text-right">Start Date</Label>
+                            <Input
+                            id="startDate"
+                            type="date"
+                            value={currentLoan?.startDate || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, startDate: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="endDate" className="text-right">End Date</Label>
+                            <Input
+                            id="endDate"
+                            type="date"
+                            value={currentLoan?.endDate || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, endDate: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="compoundingFrequency" className="text-right">Compounding Frequency</Label>
+                            <Select
+                            value={currentLoan?.compoundingFrequency || ''}
+                            onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => setCurrentLoan({ ...currentLoan!, compoundingFrequency: value })}
+                            >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="daily">Daily</SelectItem>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                <SelectItem value="annually">Annually</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status" className="text-right">Status</Label>
+                            <Select
+                            value={currentLoan?.status || ''}
+                            onValueChange={(value: 'active' | 'paid' | 'defaulted') => setCurrentLoan({ ...currentLoan!, status: value })}
+                            >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="defaulted">Defaulted</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        </div>
+                        <DialogFooter>
+                        <Button type="submit">Save</Button>
+                        </DialogFooter>
+                    </form>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Record Payment</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="paymentAmount" className="text-right">Payment Amount</Label>
+                        <Input
+                            id="paymentAmount"
+                            type="number"
+                            value={paymentAmount}
+                            onChange={(e) => setPaymentAmount(e.target.value)}
+                            className="col-span-3"
+                        />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={confirmPayment}>Confirm Payment</Button>
+                    </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isPaymentHistoryDialogOpen} onOpenChange={setIsPaymentHistoryDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Payment History</DialogTitle>
+                    </DialogHeader>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Amount</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {currentLoan?.payments.map((payment) => (
+                            <TableRow key={payment.id}>
+                            <TableCell>{payment.date}</TableCell>
+                            <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                    <DialogFooter>
+                        <Button onClick={() => setIsPaymentHistoryDialogOpen(false)}>Close</Button>
+                    </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );

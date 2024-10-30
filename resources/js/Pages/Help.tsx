@@ -70,57 +70,45 @@ export default function Help() {
         >
             <Head title="Help" />
 
-            <div className="py-0">
-                <div className="">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800 border-2">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <Card className="mb-6">
-                                <CardHeader>
-                                <CardTitle>Frequently Asked Questions</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <div className="mb-4 flex items-center">
-                                    <Search className="mr-2 h-4 w-4 text-gray-500" />
-                                    <Input
-                                    placeholder="Search FAQs..."
-                                    value={searchTerm}
-                                    onChange={(e) => handleSearch(e.target.value)}
-                                    className="w-full"
-                                    />
-                                </div>
-                                <Accordion type="single" collapsible className="w-full">
-                                    {filteredFAQs.map((item, index) => (
-                                    <AccordionItem key={index} value={`item-${index}`}>
-                                        <AccordionTrigger>{item.question}</AccordionTrigger>
-                                        <AccordionContent>{item.answer}</AccordionContent>
-                                    </AccordionItem>
-                                    ))}
-                                </Accordion>
-                                </CardContent>
-                            </Card>
-                            
-                            <Card>
-                                <CardHeader>
-                                <CardTitle>Need More Help?</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <p>If you couldn't find the answer to your question in our FAQ, please don't hesitate to contact our support team:</p>
-                                <ul className="list-disc list-inside mt-2">
-                                    <li>Email: support@posandinventory.com</li>
-                                    <li>Phone: 1-800-123-4567</li>
-                                    <li>Live Chat: Available 24/7 on our website</li>
-                                </ul>
-                                </CardContent>
-                            </Card>
-                            
-                            {/* Add this class to all buttons */}
-                            <Button className="bg-gray-700 hover:bg-gray-600 text-white">
-                                Sample Help Button
-                            </Button>
-                            {/* Add more content and buttons as needed */}
-                        </div>
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <Card className="mb-6">
+                    <CardHeader>
+                    <CardTitle>Frequently Asked Questions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <div className="mb-4 flex items-center">
+                        <Search className="mr-2 h-4 w-4 text-gray-500" />
+                        <Input
+                        placeholder="Search FAQs..."
+                        value={searchTerm}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        className="w-full"
+                        />
                     </div>
-                </div>
+                    <Accordion type="single" collapsible className="w-full">
+                        {filteredFAQs.map((item, index) => (
+                        <AccordionItem key={index} value={`item-${index}`}>
+                            <AccordionTrigger>{item.question}</AccordionTrigger>
+                            <AccordionContent>{item.answer}</AccordionContent>
+                        </AccordionItem>
+                        ))}
+                    </Accordion>
+                    </CardContent>
+                </Card>
+                
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Need More Help?</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <p>If you couldn't find the answer to your question in our FAQ, please don't hesitate to contact our support team:</p>
+                    <ul className="list-disc list-inside mt-2">
+                        <li>Email: support@posandinventory.com</li>
+                        <li>Phone: 1-800-123-4567</li>
+                        <li>Live Chat: Available 24/7 on our website</li>
+                    </ul>
+                    </CardContent>
+                </Card>
             </div>
         </AuthenticatedLayout>
     );

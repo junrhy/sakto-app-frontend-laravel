@@ -107,16 +107,13 @@ export default function RentalProperty() {
         >
             <Head title="Properties" />
 
-            <div className="py-0">
-                <div className="">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800 border-2">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                        <Card>
-                            <CardHeader>
-                            <CardTitle>Properties</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                            <div className="flex justify-between mb-4">
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Properties</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex justify-between mb-4">
                                 <div className="flex items-center space-x-2">
                                 <Button onClick={handleAddProperty}>
                                     <Plus className="mr-2 h-4 w-4" /> Add Property
@@ -137,10 +134,10 @@ export default function RentalProperty() {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-64"
                                 />
-                                </div>
                             </div>
-                            <Table>
-                                <TableHeader>
+                        </div>
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-[50px]">
                                     <Checkbox
@@ -351,10 +348,7 @@ export default function RentalProperty() {
                             </form>
                             </DialogContent>
                         </Dialog>
-                        </div>
-                    </div>
                 </div>
-            </div>
         </AuthenticatedLayout>
     );
 }
