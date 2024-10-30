@@ -21,14 +21,19 @@ export default function Authenticated({
     const hasFnbAccess = true;
     const hasWarehousingAccess = true;
     const hasTransportationAccess = true;
-    // const hasFnbAccess = user.project?.modules?.some(
-    //     module => module.identifier === 'fnb'
+    const hasRentalItemAccess = true;
+    const hasRentalPropertyAccess = true;
+    const hasClinicalAccess = true;
+    const hasLendingAccess = true;
+    const hasPayrollAccess = true;
+    // const hasClinicAccess = user.project?.modules?.some(
+    //     module => module.identifier === 'clinic'
     // );
-    // const hasWarehousingAccess = user.project?.modules?.some(
-    //     module => module.identifier === 'warehousing'
+    // const hasLoanAccess = user.project?.modules?.some(
+    //     module => module.identifier === 'loan'
     // );
-    // const hasTransportationAccess = user.project?.modules?.some(
-    //     module => module.identifier === 'transportation'
+    // const hasPayrollAccess = user.project?.modules?.some(
+    //     module => module.identifier === 'payroll'
     // );
 
     return (
@@ -144,62 +149,74 @@ export default function Authenticated({
                                         </Dropdown>
                                     </div>
                                 )}
-                                <div className="inline-flex items-center">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
-                                                >
-                                                    <span className="mt-[1px]">Rental</span>
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
+                                {(hasRentalItemAccess || hasRentalPropertyAccess) && (
+                                    <div className="inline-flex items-center">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <span className="inline-flex rounded-md">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                     >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        </Dropdown.Trigger>
+                                                        <span className="mt-[1px]">Rental</span>
+                                                        <svg
+                                                            className="ml-2 -mr-0.5 h-4 w-4"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            </Dropdown.Trigger>
 
-                                        <Dropdown.Content>
-                                            <Dropdown.Link href={route('rental-item')}>
-                                                Rental Items
-                                            </Dropdown.Link>
-                                            <Dropdown.Link href={route('rental-property')}>
-                                                Rental Properties
-                                            </Dropdown.Link>
-                                        </Dropdown.Content>
-                                    </Dropdown>
-                                </div>
-                                <NavLink
-                                    href={route('clinic')}
-                                    active={route().current('clinic')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                                >
-                                    Clinic
-                                </NavLink>
-                                <NavLink
-                                    href={route('loan')}
-                                    active={route().current('loan')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                                >
-                                    Loans
-                                </NavLink>
-                                <NavLink
-                                    href={route('payroll')}
-                                    active={route().current('payroll')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                                >
-                                    Payroll
-                                </NavLink>
+                                            <Dropdown.Content>
+                                                {hasRentalItemAccess && (
+                                                    <Dropdown.Link href={route('rental-item')}>
+                                                        Rental Items
+                                                    </Dropdown.Link>
+                                                )}
+                                                {hasRentalPropertyAccess && (
+                                                    <Dropdown.Link href={route('rental-property')}>
+                                                        Rental Properties
+                                                    </Dropdown.Link>
+                                                )}
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
+                                )}
+                                {hasClinicalAccess && (
+                                    <NavLink
+                                        href={route('clinic')}
+                                        active={route().current('clinic')}
+                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                    >
+                                        Clinic
+                                    </NavLink>
+                                )}
+                                {hasLendingAccess && (
+                                    <NavLink
+                                        href={route('loan')}
+                                        active={route().current('loan')}
+                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                    >
+                                        Loans
+                                    </NavLink>
+                                )}
+                                {hasPayrollAccess && (
+                                    <NavLink
+                                        href={route('payroll')}
+                                        active={route().current('payroll')}
+                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                    >
+                                        Payroll
+                                    </NavLink>
+                                )}
                                 <NavLink
                                     href={route('help')}
                                     active={route().current('help')}
@@ -352,36 +369,48 @@ export default function Authenticated({
                             </div>
                         )}
 
-                        <div className="px-4 py-2">
-                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Rental</div>
-                            <ResponsiveNavLink href={route('rental-item')} className="ml-3">
-                                Rental Items
+                        {(hasRentalItemAccess || hasRentalPropertyAccess) && (
+                            <div className="px-4 py-2">
+                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Rental</div>
+                                {hasRentalItemAccess && (
+                                    <ResponsiveNavLink href={route('rental-item')} className="ml-3">
+                                        Rental Items
+                                    </ResponsiveNavLink>
+                                )}
+                                {hasRentalPropertyAccess && (
+                                    <ResponsiveNavLink href={route('rental-property')} className="ml-3">
+                                        Rental Properties
+                                    </ResponsiveNavLink>
+                                )}
+                            </div>
+                        )}
+
+                        {hasClinicalAccess && (
+                            <ResponsiveNavLink
+                                href={route('clinic')}
+                                active={route().current('clinic')}
+                            >
+                                Clinic
                             </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('rental-property')} className="ml-3">
-                                Rental Properties
+                        )}
+
+                        {hasLendingAccess && (
+                            <ResponsiveNavLink
+                                href={route('loan')}
+                                active={route().current('loan')}
+                            >
+                                Loans
                             </ResponsiveNavLink>
-                        </div>
+                        )}
 
-                        <ResponsiveNavLink
-                            href={route('clinic')}
-                            active={route().current('clinic')}
-                        >
-                            Clinic
-                        </ResponsiveNavLink>
-
-                        <ResponsiveNavLink
-                            href={route('loan')}
-                            active={route().current('loan')}
-                        >
-                            Loans
-                        </ResponsiveNavLink>
-
-                        <ResponsiveNavLink
-                            href={route('payroll')}
-                            active={route().current('payroll')}
-                        >
-                            Payroll
-                        </ResponsiveNavLink>
+                        {hasPayrollAccess && (
+                            <ResponsiveNavLink
+                                href={route('payroll')}
+                                active={route().current('payroll')}
+                            >
+                                Payroll
+                            </ResponsiveNavLink>
+                        )}
 
                         <ResponsiveNavLink
                             href={route('help')}
