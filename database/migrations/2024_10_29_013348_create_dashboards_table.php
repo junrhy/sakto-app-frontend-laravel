@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('dashboards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->integer('columns')->default(1);
-            $table->boolean('is_default')->default(false);
+            $table->json('widgets')->nullable();
+            $table->boolean('favorite')->default(false);
             $table->timestamps();
         });
     }
