@@ -106,198 +106,192 @@ export default function Payroll() {
         >
             <Head title="Payroll" />
 
-            <div className="py-0">
-                <div className="">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800 border-2">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <Card className="mb-4">
-                                <CardHeader>
-                                <CardTitle>Payroll Overview</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <div className="text-2xl font-bold">Total Monthly Payroll: ${calculateTotalPayroll().toFixed(2)}</div>
-                                <div>Total Employees: {employees.length}</div>
-                                <div>Active Employees: {employees.filter(e => e.status === 'active').length}</div>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                <CardTitle>Employee Management</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <div className="flex justify-between mb-4">
-                                    <div className="flex items-center space-x-2">
-                                    <Button onClick={handleAddEmployee}>
-                                        <Plus className="mr-2 h-4 w-4" /> Add Employee
-                                    </Button>
-                                    <Button 
-                                        onClick={handleDeleteSelectedEmployees} 
-                                        variant="destructive" 
-                                        disabled={selectedEmployees.length === 0}
-                                    >
-                                        <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                                    </Button>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                    <Search className="h-4 w-4 text-gray-500" />
-                                    <Input
-                                        placeholder="Search employees..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-64"
-                                    />
-                                    </div>
-                                </div>
-                                <Table>
-                                    <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50px]">
-                                        <Checkbox
-                                            checked={selectedEmployees.length === paginatedEmployees.length}
-                                            onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setSelectedEmployees(paginatedEmployees.map(employee => employee.id));
-                                            } else {
-                                                setSelectedEmployees([]);
-                                            }
-                                            }}
-                                        />
-                                        </TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Position</TableHead>
-                                        <TableHead>Salary</TableHead>
-                                        <TableHead>Start Date</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                    {paginatedEmployees.map((employee) => (
-                                        <TableRow key={employee.id}>
-                                        <TableCell>
-                                            <Checkbox
-                                            checked={selectedEmployees.includes(employee.id)}
-                                            onCheckedChange={() => toggleEmployeeSelection(employee.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>{employee.name}</TableCell>
-                                        <TableCell>{employee.position}</TableCell>
-                                        <TableCell>${employee.salary.toFixed(2)}</TableCell>
-                                        <TableCell>{employee.startDate}</TableCell>
-                                        <TableCell>{employee.status}</TableCell>
-                                        <TableCell>
-                                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditEmployee(employee)}>
-                                            <Edit className="mr-2 h-4 w-4" /> Edit
-                                            </Button>
-                                            <Button variant="destructive" size="sm" onClick={() => handleDeleteEmployee(employee.id)}>
-                                            <Trash className="mr-2 h-4 w-4" /> Delete
-                                            </Button>
-                                        </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    </TableBody>
-                                </Table>
-                                <div className="flex justify-between items-center mt-4">
-                                    <div>
-                                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
-                                    </div>
-                                    <div className="flex space-x-2">
-                                    <Button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={currentPage === 1}
-                                    >
-                                        Previous
-                                    </Button>
-                                    {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                                        <Button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        variant={currentPage === page ? "default" : "outline"}
-                                        >
-                                        {page}
-                                        </Button>
-                                    ))}
-                                    <Button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                                        disabled={currentPage === pageCount}
-                                    >
-                                        Next
-                                    </Button>
-                                    </div>
-                                </div>
-                                </CardContent>
-                            </Card>
-
-                            <Dialog open={isEmployeeDialogOpen} onOpenChange={setIsEmployeeDialogOpen}>
-                                <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>{currentEmployee?.id ? 'Edit Employee' : 'Add Employee'}</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleSaveEmployee}>
-                                    <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="name" className="text-right">Name</Label>
-                                        <Input
-                                        id="name"
-                                        value={currentEmployee?.name || ''}
-                                        onChange={(e) => setCurrentEmployee({ ...currentEmployee!, name: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="position" className="text-right">Position</Label>
-                                        <Input
-                                        id="position"
-                                        value={currentEmployee?.position || ''}
-                                        onChange={(e) => setCurrentEmployee({ ...currentEmployee!, position: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="salary" className="text-right">Salary</Label>
-                                        <Input
-                                        id="salary"
-                                        type="number"
-                                        value={currentEmployee?.salary || ''}
-                                        onChange={(e) => setCurrentEmployee({ ...currentEmployee!, salary: parseFloat(e.target.value) })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="startDate" className="text-right">Start Date</Label>
-                                        <Input
-                                        id="startDate"
-                                        type="date"
-                                        value={currentEmployee?.startDate || ''}
-                                        onChange={(e) => setCurrentEmployee({ ...currentEmployee!, startDate: e.target.value })}
-                                        className="col-span-3"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="status" className="text-right">Status</Label>
-                                        <Select
-                                        value={currentEmployee?.status || ''}
-                                        onValueChange={(value: 'active' | 'inactive') => setCurrentEmployee({ ...currentEmployee!, status: value })}
-                                        >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="inactive">Inactive</SelectItem>
-                                        </SelectContent>
-                                        </Select>
-                                    </div>
-                                    </div>
-                                    <DialogFooter>
-                                    <Button type="submit">Save</Button>
-                                    </DialogFooter>
-                                </form>
-                                </DialogContent>
-                            </Dialog>
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <Card className="mb-4">
+                    <CardHeader>
+                    <CardTitle>Payroll Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-2xl font-bold">Total Monthly Payroll: ${calculateTotalPayroll().toFixed(2)}</div>
+                    <div>Total Employees: {employees.length}</div>
+                    <div>Active Employees: {employees.filter(e => e.status === 'active').length}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Employee Management</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                    <div className="flex justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                        <Button onClick={handleAddEmployee}>
+                            <Plus className="mr-2 h-4 w-4" /> Add Employee
+                        </Button>
+                        <Button 
+                            onClick={handleDeleteSelectedEmployees} 
+                            variant="destructive" 
+                            disabled={selectedEmployees.length === 0}
+                        >
+                            <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                        </Button>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                        <Search className="h-4 w-4 text-gray-500" />
+                        <Input
+                            placeholder="Search employees..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-64"
+                        />
                         </div>
                     </div>
-                </div>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[50px]">
+                            <Checkbox
+                                checked={selectedEmployees.length === paginatedEmployees.length}
+                                onCheckedChange={(checked) => {
+                                if (checked) {
+                                    setSelectedEmployees(paginatedEmployees.map(employee => employee.id));
+                                } else {
+                                    setSelectedEmployees([]);
+                                }
+                                }}
+                            />
+                            </TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Position</TableHead>
+                            <TableHead>Salary</TableHead>
+                            <TableHead>Start Date</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {paginatedEmployees.map((employee) => (
+                            <TableRow key={employee.id}>
+                            <TableCell>
+                                <Checkbox
+                                checked={selectedEmployees.includes(employee.id)}
+                                onCheckedChange={() => toggleEmployeeSelection(employee.id)}
+                                />
+                            </TableCell>
+                            <TableCell>{employee.name}</TableCell>
+                            <TableCell>{employee.position}</TableCell>
+                            <TableCell>${employee.salary.toFixed(2)}</TableCell>
+                            <TableCell>{employee.startDate}</TableCell>
+                            <TableCell>{employee.status}</TableCell>
+                            <TableCell>
+                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditEmployee(employee)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                                </Button>
+                                <Button variant="destructive" size="sm" onClick={() => handleDeleteEmployee(employee.id)}>
+                                <Trash className="mr-2 h-4 w-4" /> Delete
+                                </Button>
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                    <div className="flex justify-between items-center mt-4">
+                        <div>
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
+                        </div>
+                        <div className="flex space-x-2">
+                        <Button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                            <Button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            variant={currentPage === page ? "default" : "outline"}
+                            >
+                            {page}
+                            </Button>
+                        ))}
+                        <Button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                            disabled={currentPage === pageCount}
+                        >
+                            Next
+                        </Button>
+                        </div>
+                    </div>
+                    </CardContent>
+                </Card>
+
+                <Dialog open={isEmployeeDialogOpen} onOpenChange={setIsEmployeeDialogOpen}>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{currentEmployee?.id ? 'Edit Employee' : 'Add Employee'}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSaveEmployee}>
+                        <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input
+                            id="name"
+                            value={currentEmployee?.name || ''}
+                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, name: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="position" className="text-right">Position</Label>
+                            <Input
+                            id="position"
+                            value={currentEmployee?.position || ''}
+                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, position: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="salary" className="text-right">Salary</Label>
+                            <Input
+                            id="salary"
+                            type="number"
+                            value={currentEmployee?.salary || ''}
+                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, salary: parseFloat(e.target.value) })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="startDate" className="text-right">Start Date</Label>
+                            <Input
+                            id="startDate"
+                            type="date"
+                            value={currentEmployee?.startDate || ''}
+                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, startDate: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status" className="text-right">Status</Label>
+                            <Select
+                            value={currentEmployee?.status || ''}
+                            onValueChange={(value: 'active' | 'inactive') => setCurrentEmployee({ ...currentEmployee!, status: value })}
+                            >
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        </div>
+                        <DialogFooter>
+                        <Button type="submit">Save</Button>
+                        </DialogFooter>
+                    </form>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );
