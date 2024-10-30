@@ -188,7 +188,7 @@ export default function Register() {
                                 Why Choose Us?
                             </h3>
                             <p className="mt-3 text-lg text-white/80 max-w-lg">
-                            Discover how our platform can help your business achieve easier management with our innovative business solutions.
+                                Find out how our platform's cutting-edge IT solutions can make managing your business easier.
                             </p>
                         </div>
                     </div>
