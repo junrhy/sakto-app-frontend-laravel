@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Users } from "lucide-react";
 
 interface TableData {
     tableNumber: string;
@@ -38,35 +39,34 @@ export function TablesWidget() {
             timeRemaining: "5 min",
             server: null,
         },
+        {
+            tableNumber: "5",
+            seats: 4,
+            status: "available",
+            timeRemaining: null,
+            server: null,
+        },
+        {
+            tableNumber: "6",
+            seats: 4,
+            status: "available",
+            timeRemaining: null,
+            server: null,
+        },
     ];
 
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'available':
-                return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800';
+                return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/50';
             case 'occupied':
-                return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800';
+                return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50';
             case 'reserved':
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+                return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50';
             case 'cleaning':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
+                return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800/50';
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border-gray-200 dark:border-gray-800';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'available':
-                return '✓';
-            case 'occupied':
-                return '●';
-            case 'reserved':
-                return '⏰';
-            case 'cleaning':
-                return '🧹';
-            default:
-                return '•';
+                return 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800/50';
         }
     };
 
@@ -74,10 +74,14 @@ export function TablesWidget() {
         <Card>
             <CardHeader className="pb-3">
                 <CardTitle>Tables Status</CardTitle>
-                <div className="flex flex-wrap gap-3 mt-2 text-sm">
+                <div className="flex flex-wrap gap-2 mt-3">
                     {['available', 'occupied', 'reserved', 'cleaning'].map((status) => (
-                        <div key={status} className="flex items-center gap-1 min-w-[80px]">
-                            <span className={`w-2 h-2 rounded-full ${getStatusColor(status)}`}></span>
+                        <div
+                            key={status}
+                            className={`px-2.5 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 ${getStatusColor(
+                                status
+                            )}`}
+                        >
                             <span className="capitalize">{status}</span>
                         </div>
                     ))}
@@ -88,22 +92,16 @@ export function TablesWidget() {
                     {sampleTableData.map((table) => (
                         <div
                             key={table.tableNumber}
-                            className={`p-3 sm:p-4 rounded-lg border transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
-                                table.status === 'available' ? 'cursor-pointer' : ''
+                            className={`p-3 sm:p-4 rounded-lg border transition-colors ${getStatusColor(table.status)} ${
+                                table.status === 'available' ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''
                             }`}
                         >
                             <div className="flex justify-between items-center mb-2 sm:mb-3">
                                 <div className="flex items-center gap-1.5 sm:gap-2">
-                                    <span className="text-base sm:text-lg font-semibold">Table {table.tableNumber}</span>
-                                    <span className={`px-1 rounded-full text-xs ${getStatusColor(table.status)}`}>
-                                        {getStatusIcon(table.status)}
-                                    </span>
+                                    <span className="text-base sm:text-md font-semibold">Table {table.tableNumber}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 sm:w-4 sm:h-4">
-                                        <path d="M18 11v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                                        <circle cx="12" cy="9" r="3"/>
-                                    </svg>
+                                    <Users className="text-gray-400 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span className="text-xs sm:text-sm text-gray-500">{table.seats}</span>
                                 </div>
                             </div>
