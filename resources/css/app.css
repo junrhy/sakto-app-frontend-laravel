@@ -64,3 +64,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+#app {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-1 {
+    flex: 1 1 auto;
+}
