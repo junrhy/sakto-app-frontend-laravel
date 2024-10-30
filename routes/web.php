@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
         ->name('profile.color');
 
     Route::post('/widgets', [WidgetController::class, 'store'])->middleware(['auth']);
+    Route::get('/widgets', [WidgetController::class, 'index'])->middleware(['auth']);
 });
 
 require __DIR__.'/auth.php';

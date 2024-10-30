@@ -85,6 +85,18 @@ interface Props {
     currentDashboard: Dashboard;
 }
 
+interface WidgetResponse {
+    widget: Widget;
+}
+
+interface PageProps {
+    widget?: {
+        id: number;
+        type: WidgetTypeImport;
+        column: number;
+    };
+}
+
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
     const [dashboards, setDashboards] = useState<Dashboard[]>(initialDashboards);
     const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(initialCurrentDashboard);
@@ -103,7 +115,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         column: number;
         dashboard_id: number;
     }>({
-        type: 'sales', // Set a default valid type
+        type: 'sales' as WidgetTypeImport,
         column: 0,
         dashboard_id: currentDashboard.id
     });
@@ -111,8 +123,14 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     useEffect(() => {
         // Only fetch widgets if needed
         console.log("currentDashboard", currentDashboard);
+        console.log("currentDashboard.widgets", currentDashboard.widgets);
+        
         if (!currentDashboard.widgets || currentDashboard.widgets.length === 0) {
+            console.log("Fetching widgets...");
             fetchWidgets();
+        } else {
+            console.log("Using existing widgets");
+            setWidgets(currentDashboard.widgets);
         }
         setLoading(false);
     }, [currentDashboard]);
@@ -136,28 +154,42 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
 
     // Modify the addWidget function to use the form from component level
     const addWidget = (type: WidgetTypeImport) => {
-        // Log everything for debugging
+        console.log('Adding widget with type:', type);
         console.log('Current form data:', form.data);
-        console.log('Adding widget type:', type);
-        console.log('Dashboard ID:', currentDashboard.id);
-
-        const formData = {
+        
+        // Set the form data
+        form.setData({
             type: type,
             column: 0,
             dashboard_id: currentDashboard.id
-        };
+        });
 
-        console.log('Form data to be sent:', formData);
+        // Add validation before posting
+        if (!type) {
+            console.error('Widget type is required');
+            return;
+        }
 
         form.post('/widgets', {
             preserveScroll: true,
             preserveState: true,
-            onSuccess: (response) => {
-                console.log('Success response:', response);
-                const newWidget = response.props.widget as Widget;
-                const updatedWidgets = [...widgets, newWidget];
-                setWidgets(updatedWidgets);
-                setSelectedWidgetType(null);
+            replace: true,
+            onSuccess: (page) => {
+                const widgetData = page.props.widget as {
+                    id: number;
+                    type: WidgetTypeImport;
+                    column: number;
+                };
+                if (widgetData) {
+                    const newWidget: Widget = {
+                        id: widgetData.id,
+                        type: widgetData.type,
+                        column: 0
+                    };
+                    
+                    setWidgets([...widgets, newWidget]);
+                    setSelectedWidgetType(null);
+                }
             },
             onError: (errors) => {
                 console.error('Form data that failed:', form.data);
@@ -171,16 +203,18 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     };
 
     const moveWidget = (id: number, direction: 'left' | 'right') => {
-        const updatedWidgets = widgets.map(widget => {
-            if (widget && widget.id === id && typeof widget.column === 'number') {
-                const newColumn = direction === 'left' 
-                    ? Math.max(0, widget.column - 1)
-                    : Math.min(columnCount - 1, widget.column + 1);
-                return { ...widget, column: newColumn };
-            }
-            return widget;
-        });
-        setWidgets(updatedWidgets);
+        setWidgets(currentWidgets => 
+            currentWidgets.map(widget => {
+                if (widget.id === id) {
+                    const newColumn = direction === 'left' 
+                        ? Math.max(0, widget.column - 1)
+                        : Math.min(columnCount - 1, widget.column + 1);
+
+                    return { ...widget, column: newColumn };
+                }
+                return widget;
+            })
+        );
     };
 
     const getColumnClass = () => {
@@ -220,6 +254,11 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         );
     };
 
+    // Add debug logging for widgets state
+    useEffect(() => {
+        console.log('Current widgets:', widgets);
+    }, [widgets]);
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -248,6 +287,11 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                             console.log('Selected value:', value);
                                             if (availableWidgets.includes(value as WidgetTypeImport)) {
                                                 setSelectedWidgetType(value as WidgetTypeImport);
+                                                // Pre-set the form data when type is selected
+                                                form.setData(prevData => ({
+                                                    ...prevData,
+                                                    type: value as WidgetTypeImport
+                                                }));
                                             }
                                         }}
                                     >
@@ -423,21 +467,22 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                     {/* Update the widget grid */}
                     <div className={`w-full grid gap-8 ${getColumnClass()}`}>
                         {Array.from({ length: columnCount }).map((_, columnIndex) => (
-                        <div key={columnIndex} className="flex flex-col gap-6 h-full">
-                            {widgets
-                            .filter(widget => widget && typeof widget.column === 'number' && widget.column === columnIndex)
-                            .map(widget => (
-                                <WidgetComponent 
-                                key={widget.id} 
-                                widget={widget} 
-                                onRemove={removeWidget}
-                                onMoveLeft={() => moveWidget(widget.id, 'left')}
-                                onMoveRight={() => moveWidget(widget.id, 'right')}
-                                isLeftmost={widget.column === 0}
-                                isRightmost={widget.column === columnCount - 1}
-                                />
-                            ))}
-                        </div>
+                            <div key={columnIndex} className="flex flex-col gap-6 h-full">
+                                {widgets
+                                    .filter(widget => widget && widget.column === columnIndex)
+                                    .map(widget => (
+                                        <WidgetComponent 
+                                            key={widget.id} 
+                                            widget={widget} 
+                                            onRemove={removeWidget}
+                                            onMoveLeft={() => moveWidget(widget.id, 'left')}
+                                            onMoveRight={() => moveWidget(widget.id, 'right')}
+                                            isLeftmost={widget.column === 0}
+                                            isRightmost={widget.column === columnCount - 1}
+                                            isEditMode={isEditMode} // Pass edit mode to widget component
+                                        />
+                                    ))}
+                            </div>
                         ))}
                     </div>
                 </div>

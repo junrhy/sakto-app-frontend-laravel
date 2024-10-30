@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Dashboard;
-
+use App\Models\Widget;
 class DashboardController extends Controller
 {
     /**
@@ -16,6 +16,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         $dashboards = Dashboard::where('user_id', $user->id)->get();
         $currentDashboard = Dashboard::where('user_id', $user->id)->where('is_default', true)->first();
+        $currentDashboard->widgets = Widget::where('dashboard_id', $currentDashboard->id)->get();
 
         return Inertia::render('Dashboard', [
             'dashboards' => $dashboards,
