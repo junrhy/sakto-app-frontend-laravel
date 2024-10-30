@@ -6,6 +6,9 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
+import { Input } from "@/Components/ui/input";
+import { Button } from "@/Components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 
 interface PageProps extends Record<string, any> {
     auth: {
@@ -38,6 +41,19 @@ export default function Authenticated({
     //     module => module.identifier === 'clinic'
     // );
 
+    const [newDashboardName, setNewDashboardName] = useState('');
+
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+    const createNewDashboard = () => {
+        if (newDashboardName.trim()) {
+            // You can implement the dashboard creation logic here
+            // For now, we'll just navigate to the dashboard page
+            window.location.href = route('dashboard');
+            setNewDashboardName("");
+        }
+    };
+
     return (
         <ThemeProvider>
         <div className="min-h-screen bg-white dark:bg-gray-800">
@@ -57,13 +73,53 @@ export default function Authenticated({
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                                >
-                                    Dashboard
-                                </NavLink>
+                                <div className="inline-flex items-center">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <span className="inline-flex rounded-md">
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                >
+                                                    <span className="mt-[1px]">Dashboard</span>
+                                                    <svg
+                                                        className="ml-2 -mr-0.5 h-4 w-4"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </span>
+                                        </Dropdown.Trigger>
+
+                                        <Dropdown.Content>
+                                            <Dropdown.Link 
+                                                href={route('dashboard')}
+                                                className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                                            >
+                                                View Dashboards
+                                            </Dropdown.Link>
+                                            <Dropdown.Link 
+                                                href="#"
+                                                as="button"
+                                                className="w-full text-left"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setIsCreateDialogOpen(true);
+                                                }}
+                                            >
+                                                Create Dashboard
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                </div>
+
                                 {hasRetailAccess && (
                                     <div className="inline-flex items-center">
                                         <Dropdown>
@@ -326,13 +382,21 @@ export default function Authenticated({
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                            className="text-gray-600 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
+                        <div className="px-4 py-2">
+                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Dashboard</div>
+                            <ResponsiveNavLink href={route('dashboard')} className="ml-3">
+                                View Dashboards
+                            </ResponsiveNavLink>
+                            <button 
+                                className="w-full text-left ml-3 block pl-3 pr-4 py-2 text-base font-medium text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:text-gray-800 focus:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setIsCreateDialogOpen(true);
+                                }}
+                            >
+                                Create Dashboard
+                            </button>
+                        </div>
 
                         {hasRetailAccess && (
                             <div className="px-4 py-2">
@@ -469,6 +533,31 @@ export default function Authenticated({
                 </div>
             </main>
         </div>
-        </ThemeProvider>
+
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create New Dashboard</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                    <Input
+                        placeholder="Dashboard name"
+                        value={newDashboardName}
+                        onChange={(e) => setNewDashboardName(e.target.value)}
+                    />
+                    <Button 
+                        onClick={() => {
+                            createNewDashboard();
+                            setIsCreateDialogOpen(false);
+                        }}
+                        disabled={!newDashboardName.trim()}
+                        className="w-full"
+                    >
+                        Create Dashboard
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    </ThemeProvider>
     );
 }
