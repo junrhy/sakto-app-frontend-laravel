@@ -6,6 +6,11 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Add these lines for favicon support -->
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris.svg') }}">
+        <!-- Optional: Add PNG fallback for browsers that don't support SVG favicons -->
+        <link rel="alternate icon" type="image/png" href="{{ asset('images/tetris.png') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
