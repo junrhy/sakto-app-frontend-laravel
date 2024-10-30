@@ -39,7 +39,7 @@ export default function Authenticated({
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                 >
                                     Dashboard
                                 </NavLink>
@@ -49,7 +49,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-300 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Retail</span>
                                                     <svg
@@ -81,7 +81,7 @@ export default function Authenticated({
                                 <NavLink
                                     href={route('pos-restaurant')}
                                     active={route().current('pos-restaurant')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                 >
                                     Restaurant
                                 </NavLink>
@@ -91,7 +91,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-300 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Distribution</span>
                                                     <svg
@@ -126,7 +126,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-300 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Rental</span>
                                                     <svg
@@ -158,28 +158,28 @@ export default function Authenticated({
                                 <NavLink
                                     href={route('clinic')}
                                     active={route().current('clinic')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                 >
                                     Clinic
                                 </NavLink>
                                 <NavLink
                                     href={route('loan')}
                                     active={route().current('loan')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                 >
                                     Loans
                                 </NavLink>
                                 <NavLink
                                     href={route('payroll')}
                                     active={route().current('payroll')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                 >
                                     Payroll
                                 </NavLink>
                                 <NavLink
                                     href={route('help')}
                                     active={route().current('help')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                 >
                                     Help
                                 </NavLink>
@@ -286,7 +286,7 @@ export default function Authenticated({
                         <ResponsiveNavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
-                            className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                            className="text-gray-600 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
                         >
                             Dashboard
                         </ResponsiveNavLink>
