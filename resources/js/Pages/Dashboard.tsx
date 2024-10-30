@@ -12,14 +12,6 @@ import {
   SelectValue,
 } from "@/Components/ui/select"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/Components/ui/dialog";
-import { Input } from "@/Components/ui/input";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -95,7 +87,6 @@ export default function Dashboard() {
         { id: 1, name: "Main Dashboard", widgets: [], favorite: false },
     ]);
     const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(dashboards[0]);
-    const [newDashboardName, setNewDashboardName] = useState("");
     const [widgets, setWidgets] = useState<WidgetImport[]>([]);
     const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetTypeImport | null>(null);
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(2);
@@ -107,19 +98,6 @@ export default function Dashboard() {
         fetchWidgets();
         setLoading(false);
     }, [currentDashboard]);
-
-    const createNewDashboard = () => {
-        if (newDashboardName.trim()) {
-            const newDashboard: Dashboard = {
-                id: Date.now(),
-                name: newDashboardName,
-                widgets: []
-            };
-            setDashboards([...dashboards, newDashboard]);
-            setCurrentDashboard(newDashboard);
-            setNewDashboardName("");
-        }
-    };
 
     const fetchWidgets = () => {
         return new Promise<void>((resolve) => {
@@ -203,7 +181,7 @@ export default function Dashboard() {
                 </h2>
             }
         >
-            <Head title="Dashboard" />
+            <Head title={`Dashboard - ${currentDashboard.name}`} />
             
             <main className="flex flex-col flex-1">
                 <div className="py-0">
@@ -321,48 +299,6 @@ export default function Dashboard() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-[200px]">
-                                        <DropdownMenuItem disabled className="opacity-50 cursor-default">
-                                            {currentDashboard.name}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        {dashboards
-                                            .filter(dashboard => dashboard.id !== currentDashboard.id)
-                                            .map(dashboard => (
-                                                <DropdownMenuItem
-                                                    key={dashboard.id}
-                                                    onClick={() => setCurrentDashboard(dashboard)}
-                                                >
-                                                    {dashboard.name}
-                                                </DropdownMenuItem>
-                                            ))}
-                                        <DropdownMenuSeparator />
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                                    <PlusCircle className="h-4 w-4 mr-2" />
-                                                    New Dashboard
-                                                </DropdownMenuItem>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Create New Dashboard</DialogTitle>
-                                                </DialogHeader>
-                                                <div className="space-y-4 pt-4">
-                                                    <Input
-                                                        placeholder="Dashboard name"
-                                                        value={newDashboardName}
-                                                        onChange={(e) => setNewDashboardName(e.target.value)}
-                                                    />
-                                                    <Button 
-                                                        onClick={createNewDashboard}
-                                                        disabled={!newDashboardName.trim()}
-                                                        className="w-full"
-                                                    >
-                                                        Create Dashboard
-                                                    </Button>
-                                                </div>
-                                            </DialogContent>
-                                        </Dialog>
                                         <DropdownMenuItem
                                             className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
                                             disabled={dashboards.length <= 1}

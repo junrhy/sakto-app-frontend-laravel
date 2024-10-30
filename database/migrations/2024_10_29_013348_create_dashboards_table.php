@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->string('name');
-            $table->integer('columns');
+            $table->integer('columns')->default(1);
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

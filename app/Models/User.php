@@ -51,4 +51,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Project::class, 'project_identifier', 'identifier');
     }
+
+    public function dashboards(): HasMany
+    {
+        return $this->hasMany(Dashboard::class, 'user_id', 'id');
+    }
 }
