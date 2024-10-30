@@ -82,12 +82,15 @@ const sampleTableData = [
     { tableNumber: '6', seats: 2, status: 'occupied', timeRemaining: '90 min', server: 'Mike R.' },
 ];
 
-export default function Dashboard() {
-    const [dashboards, setDashboards] = useState<Dashboard[]>([
-        { id: 1, name: "Main Dashboard", widgets: [], favorite: false },
-    ]);
-    const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(dashboards[0]);
-    const [widgets, setWidgets] = useState<WidgetImport[]>([]);
+interface Props {
+    dashboards: Dashboard[];
+    currentDashboard: Dashboard;
+}
+
+export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
+    const [dashboards, setDashboards] = useState<Dashboard[]>(initialDashboards);
+    const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(initialCurrentDashboard);
+    const [widgets, setWidgets] = useState<WidgetImport[]>(currentDashboard.widgets || []);
     const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetTypeImport | null>(null);
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(2);
     const [loading, setLoading] = useState(true);
@@ -97,9 +100,10 @@ export default function Dashboard() {
     const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
-        setDashboards(props.dashboards);
-        setCurrentDashboard(props.currentDashboard);
-        fetchWidgets();
+        // Only fetch widgets if needed
+        if (!currentDashboard.widgets || currentDashboard.widgets.length === 0) {
+            fetchWidgets();
+        }
         setLoading(false);
     }, [currentDashboard]);
 
@@ -121,15 +125,14 @@ export default function Dashboard() {
     ] as const satisfies WidgetTypeImport[];
 
     const addWidget = (type: WidgetTypeImport) => {
-        if (selectedWidgetType) {
-            const newWidget: WidgetImport = {
-                id: Date.now(),
-                type: selectedWidgetType,
-                column: 0,
-            };
-            setWidgets([...widgets, newWidget]);
-            setSelectedWidgetType(null);
-        }
+        const newWidget: WidgetImport = {
+            id: Date.now(),
+            type: type,
+            column: 0,
+        };
+        const updatedWidgets = [...widgets, newWidget];
+        setWidgets(updatedWidgets);
+        setSelectedWidgetType(null);
     };
 
     const removeWidget = (id: number) => {

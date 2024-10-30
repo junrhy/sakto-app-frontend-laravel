@@ -12,10 +12,17 @@ class DashboardController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {   
-        $currentDashboard = Dashboard::where('user_id', auth()->user()->id)->where('is_default', true)->first();
+    {
+        $user = auth()->user();
+        $dashboards = Dashboard::where('user_id', $user->id)->get();
+        $currentDashboard = $dashboards->first() ?? Dashboard::create([
+            'user_id' => $user->id,
+            'name' => 'Main Dashboard',
+            'widgets' => [],
+        ]);
 
         return Inertia::render('Dashboard', [
+            'dashboards' => $dashboards,
             'currentDashboard' => $currentDashboard,
         ]);
     }
