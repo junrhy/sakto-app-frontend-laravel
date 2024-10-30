@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
@@ -13,10 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('identifier')->unique()->default(DB::raw('(UUID())'));
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('contact_number')->nullable();
+            $table->string('project_identifier');
+            $table->string('referer')->nullable();
+            $table->string('app_currency')->default('USD');
+            $table->string('theme')->default('light');
+            $table->string('theme_color')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
