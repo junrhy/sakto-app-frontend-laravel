@@ -1,6 +1,14 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+
+interface PageProps extends Record<string, any> {
+    auth: {
+        user: {
+            name: string;
+            email: string;
+        };
+    };
+}
 
 export default function Welcome({
     auth,

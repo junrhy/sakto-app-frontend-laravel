@@ -22,11 +22,12 @@ export interface User {
     };
 }
 
-export type PageProps<
-    T extends Record<string, unknown> = Record<string, unknown>,
-> = T & {
+export interface PageProps {
     auth: {
-        user: User;
+        user: {
+            name: string;
+            email: string;
+            // Add other user properties as needed
+        };
     };
-    ziggy: Config & { location: string };
-};
+}

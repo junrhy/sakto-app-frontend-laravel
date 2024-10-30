@@ -30,37 +30,37 @@ export function WidgetComponent({
         <Card className="h-full mb-4 relative shadow-md border-2 border-gray-300 hover:shadow-lg transition-shadow duration-200 dark:border-gray-600">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 border-b dark:border-gray-700">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    {widget.type === "sales" && (
+                    {(widget.type as string) === "sales" && (
                         <>
                             <span className="h-2 w-2 bg-green-500 rounded-full"></span>
                             Sales Overview
                         </>
                     )}
-                    {widget.type === "inventory" && (
+                    {(widget.type as string) === "inventory" && (
                         <>
                             <span className="h-2 w-2 bg-blue-500 rounded-full"></span>
                             Inventory Status
                         </>
                     )}
-                    {widget.type === "orders" && (
+                    {(widget.type as string) === "orders" && (
                         <>
                             <span className="h-2 w-2 bg-purple-500 rounded-full"></span>
                             Recent Orders
                         </>
                     )}
-                    {widget.type === "tables" && (
+                    {(widget.type as string) === "tables" && (
                         <>
                             <span className="h-2 w-2 bg-orange-500 rounded-full"></span>
                             Table Status
                         </>
                     )}
-                    {widget.type === "kitchen" && (
+                    {(widget.type as string) === "kitchen" && (
                         <>
                             <span className="h-2 w-2 bg-red-500 rounded-full"></span>
                             Kitchen Orders
                         </>
                     )}
-                    {widget.type === "reservations" && (
+                    {(widget.type as string) === "reservations" && (
                         <>
                             <span className="h-2 w-2 bg-yellow-500 rounded-full"></span>
                             Reservations
@@ -77,12 +77,12 @@ export function WidgetComponent({
                 </Button>
             </CardHeader>
 
-            {widget.type === "sales" && <SalesWidget />}
-            {widget.type === "inventory" && <InventoryWidget />}
-            {widget.type === "orders" && <OrdersWidget />}
-            {widget.type === "tables" && <TablesWidget />}
-            {widget.type === "kitchen" && <KitchenWidget />}
-            {widget.type === "reservations" && <ReservationsWidget />}
+            {(widget.type as string) === "sales" && <SalesWidget />}
+            {(widget.type as string) === "inventory" && <InventoryWidget />}
+            {(widget.type as string) === "orders" && <OrdersWidget />}
+            {(widget.type as string) === "tables" && <TablesWidget />}
+            {(widget.type as string) === "kitchen" && <KitchenWidget />}
+            {(widget.type as string) === "reservations" && <ReservationsWidget />}
 
             <div className="absolute bottom-2 left-2 right-2 flex justify-between">
                 <Button 
