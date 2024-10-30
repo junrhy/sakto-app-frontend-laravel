@@ -27,7 +27,7 @@ export default function Authenticated({
                             <div className="flex shrink-0 items-center">
                                 <Link href="/" className="transition-transform hover:scale-105">
                                     <div className="flex items-center">
-                                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                        <ApplicationLogo className="block h-9 w-auto" />
                                         <span className="text-xl font-black ml-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                             Sakto
                                         </span>
@@ -49,7 +49,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-300 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Retail</span>
                                                     <svg
@@ -91,7 +91,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-300 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Distribution</span>
                                                     <svg
@@ -126,7 +126,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-300 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Rental</span>
                                                     <svg
@@ -286,11 +286,89 @@ export default function Authenticated({
                         <ResponsiveNavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
+                            className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                         >
                             Dashboard
                         </ResponsiveNavLink>
+
+                        {/* Retail Dropdown */}
+                        <div className="px-4 py-2">
+                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Retail</div>
+                            <ResponsiveNavLink href={route('pos-retail')} className="ml-3">
+                                Retail
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('inventory')} className="ml-3">
+                                Inventory
+                            </ResponsiveNavLink>
+                        </div>
+
+                        <ResponsiveNavLink
+                            href={route('pos-restaurant')}
+                            active={route().current('pos-restaurant')}
+                        >
+                            Restaurant
+                        </ResponsiveNavLink>
+
+                        {/* Distribution Dropdown */}
+                        <div className="px-4 py-2">
+                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Distribution</div>
+                            <ResponsiveNavLink href={route('warehousing')} className="ml-3">
+                                Warehousing
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('transportation')} className="ml-3">
+                                Distribution
+                            </ResponsiveNavLink>
+                        </div>
+
+                        {/* Rental Dropdown */}
+                        <div className="px-4 py-2">
+                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Rental</div>
+                            <ResponsiveNavLink href={route('rental-item')} className="ml-3">
+                                Rental Items
+                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('rental-property')} className="ml-3">
+                                Rental Properties
+                            </ResponsiveNavLink>
+                        </div>
+
+                        <ResponsiveNavLink
+                            href={route('clinic')}
+                            active={route().current('clinic')}
+                        >
+                            Clinic
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            href={route('loan')}
+                            active={route().current('loan')}
+                        >
+                            Loans
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            href={route('payroll')}
+                            active={route().current('payroll')}
+                        >
+                            Payroll
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            href={route('help')}
+                            active={route().current('help')}
+                        >
+                            Help
+                        </ResponsiveNavLink>
                     </div>
 
+                    {/* Add the theme toggle in mobile menu */}
+                    <div className="border-t border-gray-200 dark:border-gray-600 px-4 py-4">
+                        <div className="flex items-center">
+                            <ModeToggle />
+                            <span className="ml-3 text-sm text-gray-600 dark:text-gray-300">Toggle theme</span>
+                        </div>
+                    </div>
+
+                    {/* Existing user profile section */}
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
                         <div className="px-4">
                             <div className="text-base font-medium text-gray-800 dark:text-gray-200">
