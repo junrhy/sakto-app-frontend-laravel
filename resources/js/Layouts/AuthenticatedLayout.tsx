@@ -29,18 +29,12 @@ export default function Authenticated({
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
-    // const hasLoanAccess = user.project?.modules?.some(
-    //     module => module.identifier === 'loan'
-    // );
-    // const hasPayrollAccess = user.project?.modules?.some(
-    //     module => module.identifier === 'payroll'
-    // );
 
     return (
         <ThemeProvider>
         <div className="min-h-screen bg-white dark:bg-gray-800">
             <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80 sticky top-0 z-50">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
@@ -455,14 +449,14 @@ export default function Authenticated({
 
             {header && (
                 <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    <div className="px-4 py-6 sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>
             )}
 
             <main className="py-6">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="px-4 sm:px-6 lg:px-8">
                     {children}
                 </div>
             </main>
