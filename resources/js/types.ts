@@ -1,4 +1,4 @@
-export type WidgetType = 'chart' | 'table' | 'metric';
+export type WidgetType = "sales" | "inventory" | "orders" | "tables" | "kitchen" | "reservations";
 
 export interface Widget {
     id: number;

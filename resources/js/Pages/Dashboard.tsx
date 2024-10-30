@@ -129,14 +129,14 @@ export default function Dashboard() {
         });
     };
 
-    const availableWidgets: WidgetTypeImport[] = [
+    const availableWidgets = [
         'sales',
         'inventory',
         'orders',
         'tables',
         'kitchen',
         'reservations'
-    ];
+    ] as const satisfies WidgetTypeImport[];
 
     const addWidget = (type: WidgetTypeImport) => {
         if (selectedWidgetType) {

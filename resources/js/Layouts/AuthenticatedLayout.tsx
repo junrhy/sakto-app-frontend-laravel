@@ -6,7 +6,15 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
-import { PageProps } from '@/types';
+
+interface PageProps extends Record<string, any> {
+    auth: {
+        user: {
+            name: string;
+            email: string;
+        };
+    };
+}
 
 export default function Authenticated({
     header,
