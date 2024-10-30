@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->json('widgets')->nullable();
-            $table->boolean('favorite')->default(false);
+            $table->boolean('is_default')->default(false);
+            $table->boolean('is_starred')->default(false);
             $table->timestamps();
         });
     }

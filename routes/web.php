@@ -13,6 +13,7 @@ use App\Http\Controllers\RentalPropertyController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\WidgetController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/color', [ProfileController::class, 'updateColor'])
         ->middleware(['auth'])
         ->name('profile.color');
+
+    Route::post('/widgets', [WidgetController::class, 'store'])->middleware(['auth']);
 });
 
 require __DIR__.'/auth.php';

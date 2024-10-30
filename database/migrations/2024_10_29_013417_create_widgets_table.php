@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('widgets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dashboard_id')->constrained('dashboards');
-            $table->string('name');
+            $table->string('type');
             $table->integer('column');
             $table->timestamps();
         });
