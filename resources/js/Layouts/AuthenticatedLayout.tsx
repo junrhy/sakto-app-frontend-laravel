@@ -17,6 +17,20 @@ export default function Authenticated({
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    const hasRetailAccess = true;
+    const hasFnbAccess = true;
+    const hasWarehousingAccess = true;
+    const hasTransportationAccess = true;
+    // const hasFnbAccess = user.project?.modules?.some(
+    //     module => module.identifier === 'fnb'
+    // );
+    // const hasWarehousingAccess = user.project?.modules?.some(
+    //     module => module.identifier === 'warehousing'
+    // );
+    // const hasTransportationAccess = user.project?.modules?.some(
+    //     module => module.identifier === 'transportation'
+    // );
+
     return (
         <ThemeProvider>
         <div className="min-h-screen bg-white dark:bg-gray-800">
@@ -43,83 +57,93 @@ export default function Authenticated({
                                 >
                                     Dashboard
                                 </NavLink>
-                                <div className="inline-flex items-center">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
-                                                >
-                                                    <span className="mt-[1px]">Retail</span>
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
+                                {hasRetailAccess && (
+                                    <div className="inline-flex items-center">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <span className="inline-flex rounded-md">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                     >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        </Dropdown.Trigger>
+                                                        <span className="mt-[1px]">Retail</span>
+                                                        <svg
+                                                            className="ml-2 -mr-0.5 h-4 w-4"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            </Dropdown.Trigger>
 
-                                        <Dropdown.Content>
-                                            <Dropdown.Link href={route('pos-retail')}>
-                                                Retail
-                                            </Dropdown.Link>
-                                            <Dropdown.Link href={route('inventory')}>
-                                                Inventory
-                                            </Dropdown.Link>
-                                        </Dropdown.Content>
-                                    </Dropdown>
-                                </div>
-                                <NavLink
-                                    href={route('pos-restaurant')}
-                                    active={route().current('pos-restaurant')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                                >
-                                    Restaurant
-                                </NavLink>
-                                <div className="inline-flex items-center">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
-                                                >
-                                                    <span className="mt-[1px]">Distribution</span>
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
+                                            <Dropdown.Content>
+                                                <Dropdown.Link href={route('pos-retail')}>
+                                                    Retail
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href={route('inventory')}>
+                                                    Inventory
+                                                </Dropdown.Link>
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
+                                )}
+                                {hasFnbAccess && (
+                                    <NavLink
+                                        href={route('pos-restaurant')}
+                                        active={route().current('pos-restaurant')}
+                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                    >
+                                        Restaurant
+                                    </NavLink>
+                                )}
+                                {(hasWarehousingAccess || hasTransportationAccess) && (
+                                    <div className="inline-flex items-center">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <span className="inline-flex rounded-md">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                     >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        </Dropdown.Trigger>
+                                                        <span className="mt-[1px]">Distribution</span>
+                                                        <svg
+                                                            className="ml-2 -mr-0.5 h-4 w-4"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            </Dropdown.Trigger>
 
-                                        <Dropdown.Content>
-                                            <Dropdown.Link href={route('warehousing')}>
-                                                Warehousing
-                                            </Dropdown.Link>
-                                            <Dropdown.Link href={route('transportation')}>
-                                                Distribution
-                                            </Dropdown.Link>
-                                        </Dropdown.Content>
-                                    </Dropdown>
-                                </div>
+                                            <Dropdown.Content>
+                                                {hasWarehousingAccess && (
+                                                    <Dropdown.Link href={route('warehousing')}>
+                                                        Warehousing
+                                                    </Dropdown.Link>
+                                                )}
+                                                {hasTransportationAccess && (
+                                                    <Dropdown.Link href={route('transportation')}>
+                                                        Transportation
+                                                    </Dropdown.Link>
+                                                )}
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
+                                )}
                                 <div className="inline-flex items-center">
                                     <Dropdown>
                                         <Dropdown.Trigger>
@@ -291,36 +315,43 @@ export default function Authenticated({
                             Dashboard
                         </ResponsiveNavLink>
 
-                        {/* Retail Dropdown */}
-                        <div className="px-4 py-2">
-                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Retail</div>
-                            <ResponsiveNavLink href={route('pos-retail')} className="ml-3">
-                                Retail
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('inventory')} className="ml-3">
-                                Inventory
-                            </ResponsiveNavLink>
-                        </div>
+                        {hasRetailAccess && (
+                            <div className="px-4 py-2">
+                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Retail</div>
+                                <ResponsiveNavLink href={route('pos-retail')} className="ml-3">
+                                    Retail
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink href={route('inventory')} className="ml-3">
+                                    Inventory
+                                </ResponsiveNavLink>
+                            </div>
+                        )}
 
-                        <ResponsiveNavLink
-                            href={route('pos-restaurant')}
-                            active={route().current('pos-restaurant')}
-                        >
-                            Restaurant
-                        </ResponsiveNavLink>
+                        {hasFnbAccess && (
+                            <div className="px-4 py-2">
+                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Restaurant</div>
+                                <ResponsiveNavLink href={route('pos-restaurant')} className="ml-3">
+                                    Restaurant
+                                </ResponsiveNavLink>
+                            </div>
+                        )}
 
-                        {/* Distribution Dropdown */}
-                        <div className="px-4 py-2">
-                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Distribution</div>
-                            <ResponsiveNavLink href={route('warehousing')} className="ml-3">
-                                Warehousing
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink href={route('transportation')} className="ml-3">
-                                Distribution
-                            </ResponsiveNavLink>
-                        </div>
+                        {(hasWarehousingAccess || hasTransportationAccess) && (
+                            <div className="px-4 py-2">
+                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Distribution</div>
+                                {hasWarehousingAccess && (
+                                    <ResponsiveNavLink href={route('warehousing')} className="ml-3">
+                                        Warehousing
+                                    </ResponsiveNavLink>
+                                )}
+                                {hasTransportationAccess && (
+                                    <ResponsiveNavLink href={route('transportation')} className="ml-3">
+                                        Transportation
+                                    </ResponsiveNavLink>
+                                )}
+                            </div>
+                        )}
 
-                        {/* Rental Dropdown */}
                         <div className="px-4 py-2">
                             <div className="font-medium text-base text-gray-700 dark:text-gray-200">Rental</div>
                             <ResponsiveNavLink href={route('rental-item')} className="ml-3">
@@ -360,7 +391,6 @@ export default function Authenticated({
                         </ResponsiveNavLink>
                     </div>
 
-                    {/* Add the theme toggle in mobile menu */}
                     <div className="border-t border-gray-200 dark:border-gray-600 px-4 py-4">
                         <div className="flex items-center">
                             <ModeToggle />
@@ -368,7 +398,6 @@ export default function Authenticated({
                         </div>
                     </div>
 
-                    {/* Existing user profile section */}
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
                         <div className="px-4">
                             <div className="text-base font-medium text-gray-800 dark:text-gray-200">
