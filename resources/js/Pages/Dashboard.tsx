@@ -2,8 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil } from "lucide-react";
+import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -28,10 +27,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { WidgetComponent } from "@/Components/widgets/WidgetComponent";
-import { Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
+import { Widget, Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
+import { useForm } from '@inertiajs/react';
 
 // Remove or comment out these local declarations since we're using the imported types
 // type WidgetType = "sales" | "inventory" | "orders" | "tables" | "kitchen" | "reservations";
@@ -99,8 +97,20 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     const [defaultDashboardId, setDefaultDashboardId] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
 
+    // At the component level, initialize form
+    const form = useForm<{
+        type: WidgetTypeImport;
+        column: number;
+        dashboard_id: number;
+    }>({
+        type: 'sales', // Set a default valid type
+        column: 0,
+        dashboard_id: currentDashboard.id
+    });
+
     useEffect(() => {
         // Only fetch widgets if needed
+        console.log("currentDashboard", currentDashboard);
         if (!currentDashboard.widgets || currentDashboard.widgets.length === 0) {
             fetchWidgets();
         }
@@ -124,15 +134,36 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         'reservations'
     ] as const satisfies WidgetTypeImport[];
 
+    // Modify the addWidget function to use the form from component level
     const addWidget = (type: WidgetTypeImport) => {
-        const newWidget: WidgetImport = {
-            id: Date.now(),
+        // Log everything for debugging
+        console.log('Current form data:', form.data);
+        console.log('Adding widget type:', type);
+        console.log('Dashboard ID:', currentDashboard.id);
+
+        const formData = {
             type: type,
             column: 0,
+            dashboard_id: currentDashboard.id
         };
-        const updatedWidgets = [...widgets, newWidget];
-        setWidgets(updatedWidgets);
-        setSelectedWidgetType(null);
+
+        console.log('Form data to be sent:', formData);
+
+        form.post('/widgets', {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: (response) => {
+                console.log('Success response:', response);
+                const newWidget = response.props.widget as Widget;
+                const updatedWidgets = [...widgets, newWidget];
+                setWidgets(updatedWidgets);
+                setSelectedWidgetType(null);
+            },
+            onError: (errors) => {
+                console.error('Form data that failed:', form.data);
+                console.error('Validation errors:', errors);
+            }
+        });
     };
 
     const removeWidget = (id: number) => {
@@ -141,7 +172,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
 
     const moveWidget = (id: number, direction: 'left' | 'right') => {
         const updatedWidgets = widgets.map(widget => {
-            if (widget.id === id) {
+            if (widget && widget.id === id && typeof widget.column === 'number') {
                 const newColumn = direction === 'left' 
                     ? Math.max(0, widget.column - 1)
                     : Math.min(columnCount - 1, widget.column + 1);
@@ -178,8 +209,15 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
 
     // Add this function near your other utility functions
     const wouldHideWidgets = (newColumnCount: number) => {
-        // Check if any widgets are in columns that would be hidden
-        return widgets.some(widget => widget.column >= newColumnCount);
+        // Check if widgets array exists and has items
+        if (!widgets || widgets.length === 0) {
+            return false;
+        }
+
+        // Add null check when checking columns
+        return widgets.some(widget => 
+            widget && typeof widget.column !== 'undefined' && widget.column >= newColumnCount
+        );
     };
 
     if (loading) {
@@ -206,22 +244,31 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                 <>
                                     <Select 
                                         value={selectedWidgetType || ""} 
-                                        onValueChange={(value: string) => setSelectedWidgetType(value as WidgetTypeImport)}
+                                        onValueChange={(value: string) => {
+                                            console.log('Selected value:', value);
+                                            if (availableWidgets.includes(value as WidgetTypeImport)) {
+                                                setSelectedWidgetType(value as WidgetTypeImport);
+                                            }
+                                        }}
                                     >
                                         <SelectTrigger className="w-[180px]">
                                             <SelectValue placeholder="Select widget" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="sales">Sales Overview</SelectItem>
-                                            <SelectItem value="inventory">Inventory Status</SelectItem>
-                                            <SelectItem value="orders">Recent Orders</SelectItem>
-                                            <SelectItem value="tables">Tables Status</SelectItem>
-                                            <SelectItem value="kitchen">Kitchen Orders</SelectItem>
-                                            <SelectItem value="reservations">Reservations</SelectItem>
+                                            {availableWidgets.map((type) => (
+                                                <SelectItem key={type} value={type}>
+                                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <Button 
-                                        onClick={(e) => addWidget(selectedWidgetType!)}
+                                        onClick={() => {
+                                            if (selectedWidgetType) {
+                                                console.log('Adding widget of type:', selectedWidgetType);
+                                                addWidget(selectedWidgetType);
+                                            }
+                                        }}
                                         disabled={!selectedWidgetType} 
                                         variant="default"
                                         size="sm"
@@ -378,7 +425,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                         {Array.from({ length: columnCount }).map((_, columnIndex) => (
                         <div key={columnIndex} className="flex flex-col gap-6 h-full">
                             {widgets
-                            .filter(widget => widget.column === columnIndex)
+                            .filter(widget => widget && typeof widget.column === 'number' && widget.column === columnIndex)
                             .map(widget => (
                                 <WidgetComponent 
                                 key={widget.id} 

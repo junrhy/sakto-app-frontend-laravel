@@ -28,7 +28,18 @@ class WidgetController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'type' => 'required|string',
+            'column' => 'required|integer',
+            'dashboard_id' => 'required|exists:dashboards,id'
+        ]);
+
+        $widget = Widget::create($validated);
+
+        return redirect()->back()->with([
+            'widget' => $widget,
+            'message' => 'Widget created successfully'
+        ]);
     }
 
     /**

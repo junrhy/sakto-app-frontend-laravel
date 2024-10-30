@@ -22,4 +22,9 @@ class Dashboard extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function widgets()
+    {
+        return $this->hasMany(Widget::class);
+    }
 }
