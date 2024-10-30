@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2, MoreHorizontal, Star, RotateCw } from "lucide-react";
+import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -93,6 +93,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [defaultDashboardId, setDefaultDashboardId] = useState<number | null>(null);
 
     useEffect(() => {
         fetchWidgets();
@@ -177,11 +178,11 @@ export default function Dashboard() {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Dashboard
+                    {currentDashboard.name}
                 </h2>
             }
         >
-            <Head title={`Dashboard - ${currentDashboard.name}`} />
+            <Head title='Dashboard' />
             
             <main className="flex flex-col flex-1">
                 <div className="py-0">
@@ -299,6 +300,20 @@ export default function Dashboard() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-[200px]">
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setDefaultDashboardId(currentDashboard.id);
+                                                // You might want to persist this to the backend
+                                                // axios.post('/api/dashboards/set-default', { dashboardId: currentDashboard.id });
+                                            }}
+                                            disabled={defaultDashboardId === currentDashboard.id}
+                                        >
+                                            <CheckCircle2 className={`h-4 w-4 mr-2 ${
+                                                defaultDashboardId === currentDashboard.id ? 'text-green-500' : ''
+                                            }`} />
+                                            Use as Default
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
                                         <DropdownMenuItem
                                             className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
                                             disabled={dashboards.length <= 1}
