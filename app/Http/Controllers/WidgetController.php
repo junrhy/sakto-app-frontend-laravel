@@ -37,15 +37,15 @@ class WidgetController extends Controller
         $validated = $request->validate([
             'type' => 'required|string',
             'column' => 'required|integer',
-            'dashboard_id' => 'required|exists:dashboards,id'
+            'dashboard_id' => 'required|integer'
         ]);
 
         $widget = Widget::create($validated);
 
-        // Return just the widget data as a partial response
-        return back()->with([
-            'widget' => $widget
-        ]);
+        // Return Inertia response with widget data in props
+        // return Inertia::render('Dashboard', [
+        //     'widget' => $widget
+        // ]);
     }
 
     /**

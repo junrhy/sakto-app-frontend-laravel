@@ -157,14 +157,12 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         console.log('Adding widget with type:', type);
         console.log('Current form data:', form.data);
         
-        // Set the form data
         form.setData({
             type: type,
             column: 0,
             dashboard_id: currentDashboard.id
         });
 
-        // Add validation before posting
         if (!type) {
             console.error('Widget type is required');
             return;
@@ -173,23 +171,33 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         form.post('/widgets', {
             preserveScroll: true,
             preserveState: true,
-            replace: true,
-            onSuccess: (page) => {
-                const widgetData = page.props.widget as {
-                    id: number;
-                    type: WidgetTypeImport;
-                    column: number;
+            replace: false,
+            onSuccess: (response) => {
+                console.log('Widget added successfully:', response);
+                const newWidget: Widget = {
+                    id: 0,
+                    type: type,
+                    column: 0
                 };
-                if (widgetData) {
-                    const newWidget: Widget = {
-                        id: widgetData.id,
-                        type: widgetData.type,
-                        column: 0
+                
+                // Update both states immediately
+                setWidgets(prevWidgets => {
+                    console.log('Previous widgets:', prevWidgets);
+                    const updatedWidgets = [...prevWidgets, newWidget];
+                    console.log('Updated widgets:', updatedWidgets);
+                    return updatedWidgets;
+                });
+                
+                setCurrentDashboard(prevDashboard => {
+                    const updatedDashboard = {
+                        ...prevDashboard,
+                        widgets: [...(prevDashboard.widgets || []), newWidget]
                     };
-                    
-                    setWidgets([...widgets, newWidget]);
-                    setSelectedWidgetType(null);
-                }
+                    console.log('Updated dashboard:', updatedDashboard);
+                    return updatedDashboard;
+                });
+                
+                setSelectedWidgetType(null);
             },
             onError: (errors) => {
                 console.error('Form data that failed:', form.data);
@@ -258,6 +266,15 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     useEffect(() => {
         console.log('Current widgets:', widgets);
     }, [widgets]);
+
+    // Add this effect to monitor state changes
+    useEffect(() => {
+        console.log('Widgets state updated:', widgets);
+    }, [widgets]);
+
+    useEffect(() => {
+        console.log('CurrentDashboard state updated:', currentDashboard);
+    }, [currentDashboard]);
 
     if (loading) {
         return <div>Loading...</div>;
