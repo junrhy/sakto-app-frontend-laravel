@@ -171,6 +171,12 @@ export default function Dashboard() {
         setIsDeleteDialogOpen(false);
     };
 
+    // Add this function near your other utility functions
+    const wouldHideWidgets = (newColumnCount: number) => {
+        // Check if any widgets are in columns that would be hidden
+        return widgets.some(widget => widget.column >= newColumnCount);
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -301,13 +307,29 @@ export default function Dashboard() {
                                 {/* Grid layout selection - Only show in edit mode */}
                                 {isEditMode && (
                                     <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
-                                        <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "ghost"} size="sm">
+                                        <Button 
+                                            onClick={() => setColumnCount(1)} 
+                                            variant={columnCount === 1 ? "default" : "ghost"} 
+                                            size="sm"
+                                            disabled={wouldHideWidgets(1)}
+                                            title={wouldHideWidgets(1) ? "Move widgets to column 0 first" : "Single column layout"}
+                                        >
                                             <LayoutGrid className="h-4 w-4" />
                                         </Button>
-                                        <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "ghost"} size="sm">
+                                        <Button 
+                                            onClick={() => setColumnCount(2)} 
+                                            variant={columnCount === 2 ? "default" : "ghost"} 
+                                            size="sm"
+                                            disabled={wouldHideWidgets(2)}
+                                            title={wouldHideWidgets(2) ? "Move widgets to columns 0-1 first" : "Two column layout"}
+                                        >
                                             <Columns className="h-4 w-4" />
                                         </Button>
-                                        <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "ghost"} size="sm">
+                                        <Button 
+                                            onClick={() => setColumnCount(3)} 
+                                            variant={columnCount === 3 ? "default" : "ghost"} 
+                                            size="sm"
+                                        >
                                             <Columns3 className="h-4 w-4" />
                                         </Button>
                                     </div>
