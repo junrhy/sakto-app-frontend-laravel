@@ -16,6 +16,7 @@ interface WidgetComponentProps {
     onMoveRight: (id: number) => void;
     isLeftmost: boolean;
     isRightmost: boolean;
+    isEditMode: boolean;
 }
 
 export function WidgetComponent({ 

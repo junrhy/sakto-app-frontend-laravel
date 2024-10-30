@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Widget;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+
 
 class WidgetController extends Controller
 {
@@ -12,7 +14,11 @@ class WidgetController extends Controller
      */
     public function index()
     {
-        //
+        $user = auth()->user();
+        $widgets = $user->currentDashboard->widgets;
+        return Inertia::render('Dashboard', [
+            'widgets' => $widgets
+        ]); 
     }
 
     /**
@@ -36,9 +42,9 @@ class WidgetController extends Controller
 
         $widget = Widget::create($validated);
 
-        return redirect()->back()->with([
-            'widget' => $widget,
-            'message' => 'Widget created successfully'
+        // Return just the widget data as a partial response
+        return back()->with([
+            'widget' => $widget
         ]);
     }
 
