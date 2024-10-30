@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2 } from "lucide-react";
+import { Plus, X, LayoutGrid, Columns, Columns3, ChevronLeft, ChevronRight, PlusCircle, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -94,6 +94,7 @@ export default function Dashboard() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [defaultDashboardId, setDefaultDashboardId] = useState<number | null>(null);
+    const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
         fetchWidgets();
@@ -190,31 +191,36 @@ export default function Dashboard() {
                     <div className="dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <Select 
-                                    value={selectedWidgetType || ""} 
-                                    onValueChange={(value: string) => setSelectedWidgetType(value as WidgetTypeImport)}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select widget" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="sales">Sales Overview</SelectItem>
-                                        <SelectItem value="inventory">Inventory Status</SelectItem>
-                                        <SelectItem value="orders">Recent Orders</SelectItem>
-                                        <SelectItem value="tables">Tables Status</SelectItem>
-                                        <SelectItem value="kitchen">Kitchen Orders</SelectItem>
-                                        <SelectItem value="reservations">Reservations</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button 
-                                    onClick={(e) => addWidget(selectedWidgetType!)}
-                                    disabled={!selectedWidgetType} 
-                                    variant="default"
-                                    size="sm"
-                                    className="gap-2"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </Button>
+                                {/* Widget selection - Only show in edit mode */}
+                                {isEditMode && (
+                                    <>
+                                        <Select 
+                                            value={selectedWidgetType || ""} 
+                                            onValueChange={(value: string) => setSelectedWidgetType(value as WidgetTypeImport)}
+                                        >
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder="Select widget" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="sales">Sales Overview</SelectItem>
+                                                <SelectItem value="inventory">Inventory Status</SelectItem>
+                                                <SelectItem value="orders">Recent Orders</SelectItem>
+                                                <SelectItem value="tables">Tables Status</SelectItem>
+                                                <SelectItem value="kitchen">Kitchen Orders</SelectItem>
+                                                <SelectItem value="reservations">Reservations</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Button 
+                                            onClick={(e) => addWidget(selectedWidgetType!)}
+                                            disabled={!selectedWidgetType} 
+                                            variant="default"
+                                            size="sm"
+                                            className="gap-2"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </>
+                                )}
 
                                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                                     <AlertDialogContent>
@@ -281,17 +287,31 @@ export default function Dashboard() {
                                     />
                                 </Button>
 
-                                <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
-                                    <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "ghost"} size="sm">
-                                        <LayoutGrid className="h-4 w-4" />
-                                    </Button>
-                                    <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "ghost"} size="sm">
-                                        <Columns className="h-4 w-4" />
-                                    </Button>
-                                    <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "ghost"} size="sm">
-                                        <Columns3 className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                {/* Add Edit button */}
+                                <Button
+                                    variant={isEditMode ? "default" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setIsEditMode(!isEditMode)}
+                                    className="gap-2"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                    {isEditMode ? 'Done' : 'Edit'}
+                                </Button>
+
+                                {/* Grid layout selection - Only show in edit mode */}
+                                {isEditMode && (
+                                    <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
+                                        <Button onClick={() => setColumnCount(1)} variant={columnCount === 1 ? "default" : "ghost"} size="sm">
+                                            <LayoutGrid className="h-4 w-4" />
+                                        </Button>
+                                        <Button onClick={() => setColumnCount(2)} variant={columnCount === 2 ? "default" : "ghost"} size="sm">
+                                            <Columns className="h-4 w-4" />
+                                        </Button>
+                                        <Button onClick={() => setColumnCount(3)} variant={columnCount === 3 ? "default" : "ghost"} size="sm">
+                                            <Columns3 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
