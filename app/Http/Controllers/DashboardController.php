@@ -55,4 +55,20 @@ class DashboardController extends Controller
     {
         //
     }
+
+    /**
+     * Get widgets for a specific dashboard
+     */
+    public function getWidgets(Dashboard $dashboard)
+    {
+        // Ensure the user owns this dashboard
+        if ($dashboard->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // Eager load fresh widget data
+        $dashboard->load('widgets');
+
+        return redirect()->back()->with('currentDashboard', $dashboard);
+    }
 }

@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/widgets', [WidgetController::class, 'store'])->name('widgets.store');
     Route::delete('/widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');
     Route::patch('/widgets/{widget}', [WidgetController::class, 'update'])->name('widgets.update');
+
+    Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])
+        ->name('dashboard.widgets');
 });
 
 require __DIR__.'/auth.php';
