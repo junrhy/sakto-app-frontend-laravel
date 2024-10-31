@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Widget extends Model
 {
-    protected $fillable = ['type', 'column', 'dashboard_id'];
+    protected $fillable = [
+        'type',
+        'column',
+        'dashboard_id',
+        'user_id'
+    ];
 
     public function dashboard()
     {

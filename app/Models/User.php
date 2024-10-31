@@ -57,4 +57,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Dashboard::class, 'user_id', 'id')->where('is_default', true);
     }
+
+    public function latestWidget(): HasOne
+    {
+        return $this->hasOne(Widget::class, 'user_id', 'id')->latestOfMany();
+    }
 }

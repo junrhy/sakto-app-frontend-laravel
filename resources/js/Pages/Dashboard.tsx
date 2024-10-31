@@ -30,6 +30,7 @@ import {
 import { WidgetComponent } from "@/Components/widgets/WidgetComponent";
 import { Widget, Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
 import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 // Remove or comment out these local declarations since we're using the imported types
 // type WidgetType = "sales" | "inventory" | "orders" | "tables" | "kitchen" | "reservations";
@@ -40,6 +41,7 @@ import { useForm } from '@inertiajs/react';
 // }
 
 interface Dashboard {
+  latestWidget: any;
   id: number;
   name: string;
   widgets: WidgetImport[];
@@ -122,14 +124,9 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
 
     useEffect(() => {
         // Only fetch widgets if needed
-        console.log("currentDashboard", currentDashboard);
-        console.log("currentDashboard.widgets", currentDashboard.widgets);
-        
         if (!currentDashboard.widgets || currentDashboard.widgets.length === 0) {
-            console.log("Fetching widgets...");
             fetchWidgets();
         } else {
-            console.log("Using existing widgets");
             setWidgets(currentDashboard.widgets);
         }
         setLoading(false);
@@ -154,9 +151,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
 
     // Modify the addWidget function to use the form from component level
     const addWidget = (type: WidgetTypeImport) => {
-        console.log('Adding widget with type:', type);
-        console.log('Current form data:', form.data);
-        
         form.setData({
             type: type,
             column: 0,
@@ -164,7 +158,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         });
 
         if (!type) {
-            console.error('Widget type is required');
             return;
         }
 
@@ -172,42 +165,47 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
             preserveScroll: true,
             preserveState: true,
             replace: false,
-            onSuccess: (response) => {
-                console.log('Widget added successfully:', response);
+            onSuccess: (response: any) => {
                 const newWidget: Widget = {
-                    id: 0,
+                    id: response.props.currentDashboard.widgets.slice(-1)[0].id,
                     type: type,
                     column: 0
                 };
                 
-                // Update both states immediately
-                setWidgets(prevWidgets => {
-                    console.log('Previous widgets:', prevWidgets);
-                    const updatedWidgets = [...prevWidgets, newWidget];
-                    console.log('Updated widgets:', updatedWidgets);
-                    return updatedWidgets;
-                });
+                setWidgets(prevWidgets => [...prevWidgets, newWidget]);
                 
-                setCurrentDashboard(prevDashboard => {
-                    const updatedDashboard = {
-                        ...prevDashboard,
-                        widgets: [...(prevDashboard.widgets || []), newWidget]
-                    };
-                    console.log('Updated dashboard:', updatedDashboard);
-                    return updatedDashboard;
-                });
+                setCurrentDashboard(prevDashboard => ({
+                    ...prevDashboard,
+                    widgets: [...(prevDashboard.widgets || []), newWidget]
+                }));
                 
                 setSelectedWidgetType(null);
             },
             onError: (errors) => {
-                console.error('Form data that failed:', form.data);
-                console.error('Validation errors:', errors);
+                // Consider adding user-facing error handling here
             }
         });
     };
 
     const removeWidget = (id: number) => {
-        setWidgets(widgets.filter(widget => widget.id !== id));
+        router.delete(`/widgets/${id}`, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                // Update local state after successful deletion
+                setWidgets(prevWidgets => prevWidgets.filter(widget => widget.id !== id));
+                
+                // Update dashboard state
+                setCurrentDashboard(prevDashboard => ({
+                    ...prevDashboard,
+                    widgets: prevDashboard.widgets.filter(widget => widget.id !== id)
+                }));
+            },
+            onError: (errors) => {
+                console.error('Failed to delete widget:', errors);
+                // Optionally show an error message to the user
+            }
+        });
     };
 
     const moveWidget = (id: number, direction: 'left' | 'right') => {
@@ -262,20 +260,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         );
     };
 
-    // Add debug logging for widgets state
-    useEffect(() => {
-        console.log('Current widgets:', widgets);
-    }, [widgets]);
-
-    // Add this effect to monitor state changes
-    useEffect(() => {
-        console.log('Widgets state updated:', widgets);
-    }, [widgets]);
-
-    useEffect(() => {
-        console.log('CurrentDashboard state updated:', currentDashboard);
-    }, [currentDashboard]);
-
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -301,10 +285,8 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     <Select 
                                         value={selectedWidgetType || ""} 
                                         onValueChange={(value: string) => {
-                                            console.log('Selected value:', value);
                                             if (availableWidgets.includes(value as WidgetTypeImport)) {
                                                 setSelectedWidgetType(value as WidgetTypeImport);
-                                                // Pre-set the form data when type is selected
                                                 form.setData(prevData => ({
                                                     ...prevData,
                                                     type: value as WidgetTypeImport
@@ -326,7 +308,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     <Button 
                                         onClick={() => {
                                             if (selectedWidgetType) {
-                                                console.log('Adding widget of type:', selectedWidgetType);
                                                 addWidget(selectedWidgetType);
                                             }
                                         }}

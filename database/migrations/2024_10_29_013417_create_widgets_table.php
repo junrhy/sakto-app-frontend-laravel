@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('widgets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dashboard_id')->constrained('dashboards');
             $table->string('type');
             $table->integer('column');
+            $table->foreignId('dashboard_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
