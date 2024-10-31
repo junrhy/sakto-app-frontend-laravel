@@ -209,18 +209,43 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     };
 
     const moveWidget = (id: number, direction: 'left' | 'right') => {
-        setWidgets(currentWidgets => 
-            currentWidgets.map(widget => {
-                if (widget.id === id) {
-                    const newColumn = direction === 'left' 
-                        ? Math.max(0, widget.column - 1)
-                        : Math.min(columnCount - 1, widget.column + 1);
+        // Find the current widget and calculate new column
+        const widget = widgets.find(w => w.id === id);
+        if (!widget) return;
+        
+        const newColumn = direction === 'left' 
+            ? Math.max(0, widget.column - 1)
+            : Math.min(columnCount - 1, widget.column + 1);
 
-                    return { ...widget, column: newColumn };
+        // Optimistically update the UI
+        setWidgets(currentWidgets => 
+            currentWidgets.map(w => {
+                if (w.id === id) {
+                    return { ...w, column: newColumn };
                 }
-                return widget;
+                return w;
             })
         );
+
+        // Make the API request
+        router.patch(`/widgets/${id}`, {
+            column: newColumn
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            onError: (errors) => {
+                // Revert the optimistic update if the request fails
+                setWidgets(currentWidgets =>
+                    currentWidgets.map(w => {
+                        if (w.id === id) {
+                            return { ...w, column: widget.column }; // Revert to original column
+                        }
+                        return w;
+                    })
+                );
+                console.error('Failed to move widget:', errors);
+            }
+        });
     };
 
     const getColumnClass = () => {
