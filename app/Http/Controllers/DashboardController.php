@@ -35,9 +35,16 @@ class DashboardController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Dashboard $dashboard)
     {
-        //
+        $validated = $request->validate([
+            'column_count' => 'sometimes|required|in:1,2,3',
+            // ... other validation rules
+        ]);
+
+        $dashboard->update($validated);
+
+        return redirect()->back();
     }
 
     /**

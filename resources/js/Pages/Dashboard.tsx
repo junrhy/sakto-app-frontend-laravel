@@ -46,6 +46,7 @@ interface Dashboard {
   name: string;
   widgets: WidgetImport[];
   favorite?: boolean;
+  column_count?: 1 | 2 | 3;
 }
 
 const sampleSalesData = [
@@ -285,6 +286,45 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         );
     };
 
+    const updateColumnCount = (newColumnCount: 1 | 2 | 3) => {
+        if (wouldHideWidgets(newColumnCount)) {
+            return;
+        }
+
+        // Optimistically update the UI
+        setColumnCount(newColumnCount);
+        
+        // Make the API request
+        router.patch(`/dashboard/${currentDashboard.id}`, {
+            column_count: newColumnCount
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                // Update the current dashboard in state
+                setCurrentDashboard(prev => ({
+                    ...prev,
+                    column_count: newColumnCount
+                }));
+                
+                // Update the dashboard in the dashboards array
+                setDashboards(prevDashboards => 
+                    prevDashboards.map(dashboard => 
+                        dashboard.id === currentDashboard.id 
+                            ? { ...dashboard, column_count: newColumnCount }
+                            : dashboard
+                    )
+                );
+            },
+            onError: (errors) => {
+                // Revert the optimistic update if the request fails
+                setColumnCount(currentDashboard.column_count || 2);
+                console.error('Failed to update column count:', errors);
+                // Optionally show an error message to the user
+            }
+        });
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -426,7 +466,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                             {isEditMode && (
                                 <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
                                     <Button 
-                                        onClick={() => setColumnCount(1)} 
+                                        onClick={() => updateColumnCount(1)} 
                                         variant={columnCount === 1 ? "default" : "ghost"} 
                                         size="sm"
                                         disabled={wouldHideWidgets(1)}
@@ -435,7 +475,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                         <LayoutGrid className="h-4 w-4" />
                                     </Button>
                                     <Button 
-                                        onClick={() => setColumnCount(2)} 
+                                        onClick={() => updateColumnCount(2)} 
                                         variant={columnCount === 2 ? "default" : "ghost"} 
                                         size="sm"
                                         disabled={wouldHideWidgets(2)}
@@ -444,7 +484,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                         <Columns className="h-4 w-4" />
                                     </Button>
                                     <Button 
-                                        onClick={() => setColumnCount(3)} 
+                                        onClick={() => updateColumnCount(3)} 
                                         variant={columnCount === 3 ? "default" : "ghost"} 
                                         size="sm"
                                     >
