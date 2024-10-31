@@ -38,13 +38,14 @@ class DashboardController extends Controller
     public function update(Request $request, Dashboard $dashboard)
     {
         $validated = $request->validate([
-            'column_count' => 'sometimes|required|in:1,2,3',
+            'column_count' => 'sometimes|integer|in:1,2,3',
+            'is_starred' => 'sometimes|boolean',
             // ... other validation rules
         ]);
 
         $dashboard->update($validated);
 
-        return redirect()->back();
+        return redirect()->back()->with('dashboard', $dashboard);
     }
 
     /**
