@@ -83,10 +83,8 @@ interface WidgetResponse {
 }
 
 interface PageProps {
-    widget?: {
-        id: number;
-        type: WidgetTypeImport;
-        column: number;
+    props: {
+        currentDashboard?: DashboardType;
     };
 }
 
@@ -123,12 +121,25 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         setLoading(false);
     }, [currentDashboard]);
 
-    const fetchWidgets = () => {
-        return new Promise<void>((resolve) => {
-            // Initialize with empty array or some default widgets
-            setWidgets([]);
-            resolve();
-        });
+    const fetchWidgets = async () => {
+        try {
+            await router.get(`/dashboard/${currentDashboard.id}/widgets`, {}, {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['currentDashboard'],
+                onSuccess: (page: any) => {
+                    if (page.props.currentDashboard) {
+                        setWidgets(page.props.currentDashboard.widgets);
+                        setCurrentDashboard(prevDashboard => ({
+                            ...prevDashboard,
+                            widgets: page.props.currentDashboard!.widgets
+                        }));
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Failed to fetch widgets:', error);
+        }
     };
 
     const availableWidgets = [
@@ -435,14 +446,14 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
+                                onClick={async () => {
                                     setIsRefreshing(true);
-                                    fetchWidgets().finally(() => {
-                                        setTimeout(() => {
-                                            setIsRefreshing(false);
-                                        }, 1000); // Adjust timing as needed
-                                    });
+                                    await fetchWidgets();
+                                    setTimeout(() => {
+                                        setIsRefreshing(false);
+                                    }, 500);
                                 }}
+                                disabled={isRefreshing}
                                 className="text-gray-400 hover:text-gray-500"
                             >
                                 <RotateCw 
