@@ -11,13 +11,15 @@ class Dashboard extends Model
         'user_id',
         'widgets',
         'is_starred',
-        'column_count'
+        'column_count',
+        'is_default'
     ];
 
     protected $casts = [
         'widgets' => 'array',
         'is_starred' => 'boolean',
-        'column_count' => 'integer'
+        'column_count' => 'integer',
+        'is_default' => 'boolean'
     ];
 
     public function user()
