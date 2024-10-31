@@ -29,24 +29,14 @@ import {
 } from "@/Components/ui/dropdown-menu";
 import { WidgetComponent } from "@/Components/widgets/WidgetComponent";
 import { Widget, Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
-import { useForm } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 
-// Remove or comment out these local declarations since we're using the imported types
-// type WidgetType = "sales" | "inventory" | "orders" | "tables" | "kitchen" | "reservations";
-// interface Widget {
-//   id: number;
-//   type: WidgetType;
-//   column: number;
-// }
-
-interface Dashboard {
-  latestWidget: any;
-  id: number;
-  name: string;
-  widgets: WidgetImport[];
-  favorite?: boolean;
-  column_count?: 1 | 2 | 3;
+interface DashboardType {
+    id: number;
+    name: string;
+    widgets: Widget[];
+    column_count?: 1 | 2 | 3;
+    favorite?: boolean;
 }
 
 const sampleSalesData = [
@@ -84,8 +74,8 @@ const sampleTableData = [
 ];
 
 interface Props {
-    dashboards: Dashboard[];
-    currentDashboard: Dashboard;
+    dashboards: DashboardType[];
+    currentDashboard: DashboardType;
 }
 
 interface WidgetResponse {
@@ -101,11 +91,11 @@ interface PageProps {
 }
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
-    const [dashboards, setDashboards] = useState<Dashboard[]>(initialDashboards);
-    const [currentDashboard, setCurrentDashboard] = useState<Dashboard>(initialCurrentDashboard);
+    const [dashboards, setDashboards] = useState<DashboardType[]>(initialDashboards);
+    const [currentDashboard, setCurrentDashboard] = useState<DashboardType>(initialCurrentDashboard);
     const [widgets, setWidgets] = useState<WidgetImport[]>(currentDashboard.widgets || []);
     const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetTypeImport | null>(null);
-    const [columnCount, setColumnCount] = useState<1 | 2 | 3>(2);
+    const [columnCount, setColumnCount] = useState<1 | 2 | 3>(currentDashboard.column_count || 2);
     const [loading, setLoading] = useState(true);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -175,7 +165,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                 
                 setWidgets(prevWidgets => [...prevWidgets, newWidget]);
                 
-                setCurrentDashboard(prevDashboard => ({
+                setCurrentDashboard((prevDashboard: DashboardType) => ({
                     ...prevDashboard,
                     widgets: [...(prevDashboard.widgets || []), newWidget]
                 }));
@@ -197,9 +187,9 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                 setWidgets(prevWidgets => prevWidgets.filter(widget => widget.id !== id));
                 
                 // Update dashboard state
-                setCurrentDashboard(prevDashboard => ({
-                    ...prevDashboard,
-                    widgets: prevDashboard.widgets.filter(widget => widget.id !== id)
+                setCurrentDashboard((prev: DashboardType) => ({
+                    ...prev,
+                    widgets: prev.widgets.filter((widget: Widget) => widget.id !== id)
                 }));
             },
             onError: (errors) => {
@@ -210,7 +200,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     };
 
     const moveWidget = (id: number, direction: 'left' | 'right') => {
-        // Find the current widget and calculate new column
         const widget = widgets.find(w => w.id === id);
         if (!widget) return;
         
@@ -218,48 +207,46 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
             ? Math.max(0, widget.column - 1)
             : Math.min(columnCount - 1, widget.column + 1);
 
-        // Optimistically update the UI
-        setWidgets(currentWidgets => 
-            currentWidgets.map(w => {
-                if (w.id === id) {
-                    return { ...w, column: newColumn };
-                }
-                return w;
-            })
-        );
+        if (newColumn === widget.column) return;
 
-        // Make the API request
+        const updatedWidgets = widgets.map(w => 
+            w.id === id ? { ...w, column: newColumn } : w
+        );
+        
+        setWidgets(updatedWidgets);
+        
+        setCurrentDashboard((prev: DashboardType) => ({
+            ...prev,
+            widgets: prev.widgets.map((w: Widget) => 
+                w.id === id ? { ...w, column: newColumn } : w
+            )
+        }));
+
         router.patch(`/widgets/${id}`, {
             column: newColumn
         }, {
             preserveScroll: true,
             preserveState: true,
             onError: (errors) => {
-                // Revert the optimistic update if the request fails
+                // Revert both states if the request fails
                 setWidgets(currentWidgets =>
-                    currentWidgets.map(w => {
-                        if (w.id === id) {
-                            return { ...w, column: widget.column }; // Revert to original column
-                        }
-                        return w;
-                    })
+                    currentWidgets.map((w: Widget) => 
+                        w.id === id ? { ...w, column: widget.column } : w
+                    )
                 );
-                console.error('Failed to move widget:', errors);
+                
+                setCurrentDashboard((prev: DashboardType) => ({
+                    ...prev,
+                    widgets: prev.widgets.map((w: Widget) => 
+                        w.id === id ? { ...w, column: widget.column } : w
+                    )
+                }));
             }
         });
     };
 
     const getColumnClass = () => {
-        switch (columnCount) {
-        case 1:
-            return 'grid-cols-1';
-        case 2:
-            return 'grid-cols-1 lg:grid-cols-[1fr,2fr]';
-        case 3:
-            return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-        default:
-            return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-        }
+        return `grid-cols-${columnCount} gap-4`;
     };
 
     const deleteDashboard = () => {
@@ -302,7 +289,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
             preserveState: true,
             onSuccess: () => {
                 // Update the current dashboard in state
-                setCurrentDashboard(prev => ({
+                setCurrentDashboard((prev: DashboardType) => ({
                     ...prev,
                     column_count: newColumnCount
                 }));
@@ -528,12 +515,12 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                     </div>
 
                     {/* Update the widget grid */}
-                    <div className={`w-full grid gap-8 ${getColumnClass()}`}>
-                        {Array.from({ length: columnCount }).map((_, columnIndex) => (
-                            <div key={columnIndex} className="flex flex-col gap-6 h-full">
-                                {widgets
-                                    .filter(widget => widget && widget.column === columnIndex)
-                                    .map(widget => (
+                    <div className={`grid ${getColumnClass()} p-4`}>
+                        {[...Array(columnCount)].map((_, colIndex) => (
+                            <div key={colIndex} className="space-y-4">
+                                {currentDashboard.widgets
+                                    .filter((widget: WidgetImport) => widget.column === colIndex)
+                                    .map((widget: WidgetImport) => (
                                         <WidgetComponent 
                                             key={widget.id} 
                                             widget={widget} 
@@ -542,7 +529,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                             onMoveRight={() => moveWidget(widget.id, 'right')}
                                             isLeftmost={widget.column === 0}
                                             isRightmost={widget.column === columnCount - 1}
-                                            isEditMode={isEditMode} // Pass edit mode to widget component
+                                            isEditMode={isEditMode}
                                         />
                                     ))}
                             </div>
