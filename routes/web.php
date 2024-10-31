@@ -30,6 +30,8 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
+
     Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');

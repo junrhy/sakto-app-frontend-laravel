@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->integer('column_count')->default(2);
             $table->boolean('is_default')->default(false);
             $table->boolean('is_starred')->default(false);
             $table->timestamps();

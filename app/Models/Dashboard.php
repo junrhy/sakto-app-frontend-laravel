@@ -10,12 +10,14 @@ class Dashboard extends Model
         'name',
         'user_id',
         'widgets',
-        'favorite'
+        'favorite',
+        'column_count'
     ];
 
     protected $casts = [
         'widgets' => 'array',
-        'favorite' => 'boolean'
+        'favorite' => 'boolean',
+        'column_count' => 'integer'
     ];
 
     public function user()
