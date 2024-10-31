@@ -15,10 +15,7 @@ class WidgetController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $widgets = $user->currentDashboard->widgets;
-        return Inertia::render('Dashboard', [
-            'widgets' => $widgets
-        ]); 
+        $widgets = Widget::where('user_id', $user->id)->orderBy('id', 'desc')->get();
     }
 
     /**
@@ -40,12 +37,11 @@ class WidgetController extends Controller
             'dashboard_id' => 'required|integer'
         ]);
 
+        $validated['user_id'] = auth()->user()->id;
+        
         $widget = Widget::create($validated);
-
-        // Return Inertia response with widget data in props
-        // return Inertia::render('Dashboard', [
-        //     'widget' => $widget
-        // ]);
+        
+        return redirect()->back()->with('widget', $widget);
     }
 
     /**
@@ -77,6 +73,7 @@ class WidgetController extends Controller
      */
     public function destroy(Widget $widget)
     {
-        //
+        $widget->delete();
+        return redirect()->back();
     }
 }

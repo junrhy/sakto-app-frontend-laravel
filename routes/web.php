@@ -58,8 +58,8 @@ Route::middleware('auth')->group(function () {
         ->middleware(['auth'])
         ->name('profile.color');
 
-    Route::post('/widgets', [WidgetController::class, 'store'])->middleware(['auth']);
-    Route::get('/widgets', [WidgetController::class, 'index'])->middleware(['auth']);
+    Route::post('/widgets', [WidgetController::class, 'store'])->name('widgets.store');
+    Route::delete('/widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');
 });
 
 require __DIR__.'/auth.php';
