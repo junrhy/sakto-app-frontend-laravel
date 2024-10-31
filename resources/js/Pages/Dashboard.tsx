@@ -37,6 +37,7 @@ interface DashboardType {
     widgets: Widget[];
     column_count?: 1 | 2 | 3;
     is_starred?: boolean;
+    is_default?: boolean;
 }
 
 const sampleSalesData = [
@@ -512,19 +513,21 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-[200px]">
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            setDefaultDashboardId(currentDashboard.id);
-                                            // You might want to persist this to the backend
-                                            // axios.post('/api/dashboards/set-default', { dashboardId: currentDashboard.id });
-                                        }}
-                                        disabled={defaultDashboardId === currentDashboard.id}
-                                    >
-                                        <CheckCircle2 className={`h-4 w-4 mr-2 ${
-                                            defaultDashboardId === currentDashboard.id ? 'text-green-500' : ''
-                                        }`} />
-                                        Use as Default
-                                    </DropdownMenuItem>
+                                    {!currentDashboard.is_default && (
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setDefaultDashboardId(currentDashboard.id);
+                                                // You might want to persist this to the backend
+                                                // axios.post('/api/dashboards/set-default', { dashboardId: currentDashboard.id });
+                                            }}
+                                            disabled={defaultDashboardId === currentDashboard.id}
+                                        >
+                                            <CheckCircle2 className={`h-4 w-4 mr-2 ${
+                                                defaultDashboardId === currentDashboard.id ? 'text-green-500' : ''
+                                            }`} />
+                                            Use as Default
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
