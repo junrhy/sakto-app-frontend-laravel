@@ -65,7 +65,15 @@ class WidgetController extends Controller
      */
     public function update(Request $request, Widget $widget)
     {
-        //
+        $validated = $request->validate([
+            'column' => 'required|integer|min:0|max:2',
+        ]);
+
+        $widget->update([
+            'column' => $validated['column']
+        ]);
+
+        return redirect()->back()->with('widget', $widget);
     }
 
     /**
