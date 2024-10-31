@@ -36,7 +36,7 @@ interface DashboardType {
     name: string;
     widgets: Widget[];
     column_count?: 1 | 2 | 3;
-    favorite?: boolean;
+    is_starred?: boolean;
 }
 
 const sampleSalesData = [
@@ -399,23 +399,37 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
-                                    const updatedDashboards = dashboards.map(d => ({
-                                        ...d,
-                                        favorite: d.id === currentDashboard.id ? !d.favorite : d.favorite
-                                    }));
-                                    setDashboards(updatedDashboards);
-                                    setCurrentDashboard({
-                                        ...currentDashboard,
-                                        favorite: !currentDashboard.favorite
+                                    // Make API request to update is_starred status
+                                    router.patch(`/dashboard/${currentDashboard.id}`, {
+                                        is_starred: !currentDashboard.is_starred
+                                    }, {
+                                        preserveScroll: true,
+                                        preserveState: true,
+                                        onSuccess: () => {
+                                            // Update local state after successful API call
+                                            const updatedDashboards = dashboards.map(d => ({
+                                                ...d,
+                                                is_starred: d.id === currentDashboard.id ? !d.is_starred : d.is_starred
+                                            }));
+                                            setDashboards(updatedDashboards);
+                                            setCurrentDashboard({
+                                                ...currentDashboard,
+                                                is_starred: !currentDashboard.is_starred
+                                            });
+                                        },
+                                        onError: (errors) => {
+                                            console.error('Failed to update dashboard star status:', errors);
+                                            // Optionally show an error message to the user
+                                        }
                                     });
                                 }}
                                 className={`${
-                                    currentDashboard.favorite 
+                                    currentDashboard.is_starred 
                                         ? 'text-yellow-500 hover:text-yellow-600' 
                                         : 'text-gray-400 hover:text-gray-500'
                                 }`}
                             >
-                                <Star className="h-4 w-4" fill={currentDashboard.favorite ? "currentColor" : "none"} />
+                                <Star className="h-4 w-4" fill={currentDashboard.is_starred ? "currentColor" : "none"} />
                             </Button>
 
                             <Button
