@@ -90,12 +90,14 @@ export function WidgetComponent({
                 )}
             </CardHeader>
 
-            {(widget.type as string) === "sales" && <SalesWidget />}
-            {(widget.type as string) === "inventory" && <InventoryWidget />}
-            {(widget.type as string) === "orders" && <OrdersWidget />}
-            {(widget.type as string) === "tables" && <TablesWidget />}
-            {(widget.type as string) === "kitchen" && <KitchenWidget />}
-            {(widget.type as string) === "reservations" && <ReservationsWidget />}
+            <div className="h-fit">
+                {(widget.type as string) === "sales" && <SalesWidget />}
+                {(widget.type as string) === "inventory" && <InventoryWidget />}
+                {(widget.type as string) === "orders" && <OrdersWidget />}
+                {(widget.type as string) === "tables" && <TablesWidget />}
+                {(widget.type as string) === "kitchen" && <KitchenWidget />}
+                {(widget.type as string) === "reservations" && <ReservationsWidget />}
+            </div>
 
             {isEditMode && (
                 <div className="absolute bottom-2 left-2 right-2 flex justify-between">

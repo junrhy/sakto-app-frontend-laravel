@@ -615,20 +615,22 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     .filter((widget: WidgetImport) => widget.column === colIndex)
                                     .sort((a, b) => a.order - b.order)
                                     .map((widget: WidgetImport, index: number, filteredWidgets: WidgetImport[]) => (
-                                        <WidgetComponent 
-                                            key={widget.id} 
-                                            widget={widget} 
-                                            onRemove={removeWidget}
-                                            onMoveLeft={() => moveWidget(widget.id, 'left')}
-                                            onMoveRight={() => moveWidget(widget.id, 'right')}
-                                            onMoveUp={() => moveWidgetVertically(widget.id, 'up')}
-                                            onMoveDown={() => moveWidgetVertically(widget.id, 'down')}
-                                            isLeftmost={widget.column === 0}
-                                            isRightmost={widget.column === columnCount - 1}
-                                            isTopmost={index === 0}
-                                            isBottommost={index === filteredWidgets.length - 1}
-                                            isEditMode={isEditMode}
-                                        />
+                                        <div key={widget.id} className="h-fit">
+                                            <WidgetComponent 
+                                                key={widget.id} 
+                                                widget={widget} 
+                                                onRemove={removeWidget}
+                                                onMoveLeft={() => moveWidget(widget.id, 'left')}
+                                                onMoveRight={() => moveWidget(widget.id, 'right')}
+                                                onMoveUp={() => moveWidgetVertically(widget.id, 'up')}
+                                                onMoveDown={() => moveWidgetVertically(widget.id, 'down')}
+                                                isLeftmost={widget.column === 0}
+                                                isRightmost={widget.column === columnCount - 1}
+                                                isTopmost={index === 0}
+                                                isBottommost={index === filteredWidgets.length - 1}
+                                                isEditMode={isEditMode}
+                                            />
+                                        </div>
                                     ))}
                             </div>
                         ))}
