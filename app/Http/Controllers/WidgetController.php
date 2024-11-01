@@ -39,6 +39,12 @@ class WidgetController extends Controller
 
         $validated['user_id'] = auth()->user()->id;
         
+        $maxOrder = Widget::where('dashboard_id', $validated['dashboard_id'])
+            ->where('column', $validated['column'])
+            ->max('order');
+        
+        $validated['order'] = is_null($maxOrder) ? 0 : $maxOrder + 1;
+        
         $widget = Widget::create($validated);
         
         return redirect()->back()->with('widget', $widget);
@@ -84,5 +90,33 @@ class WidgetController extends Controller
     {
         $widget->delete();
         return redirect()->back();
+    }
+
+    public function reorder(Request $request, Widget $widget)
+    {
+        $request->validate([
+            'direction' => ['required', 'in:up,down']
+        ]);
+
+        try {
+            \DB::beginTransaction();
+
+            $success = $request->direction === 'up' 
+                ? $widget->moveUp() 
+                : $widget->moveDown();
+
+            if (!$success) {
+                throw new \Exception('Could not move widget ' . $request->direction);
+            }
+
+            \DB::commit();
+
+            // Return redirect with the dashboard ID to ensure proper state refresh
+            return redirect()->back()->with('dashboard.id', $widget->dashboard_id);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return redirect()->back()->withErrors(['message' => $e->getMessage()]);
+        }
     }
 }

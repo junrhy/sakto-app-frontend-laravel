@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, MoveUp, MoveDown, Trash2 } from "lucide-react";
 import { SalesWidget } from "./SalesWidget";
 import { InventoryWidget } from "./InventoryWidget";
 import { OrdersWidget } from "./OrdersWidget";
@@ -8,14 +8,19 @@ import { TablesWidget } from "./TablesWidget";
 import { KitchenWidget } from "./KitchenWidget";
 import { ReservationsWidget } from "./ReservationsWidget";
 import { Widget } from "@/types";
+import { MouseEventHandler } from "react";
 
 interface WidgetComponentProps {
     widget: Widget;
     onRemove: (id: number) => void;
-    onMoveLeft: (id: number) => void;
-    onMoveRight: (id: number) => void;
+    onMoveLeft: () => void;
+    onMoveRight: () => void;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
     isLeftmost: boolean;
     isRightmost: boolean;
+    isTopmost: boolean;
+    isBottommost: boolean;
     isEditMode: boolean;
 }
 
@@ -24,8 +29,13 @@ export function WidgetComponent({
     onRemove, 
     onMoveLeft, 
     onMoveRight, 
+    onMoveUp, 
+    onMoveDown, 
     isLeftmost, 
-    isRightmost 
+    isRightmost, 
+    isTopmost, 
+    isBottommost,
+    isEditMode 
 }: WidgetComponentProps) {
     return (
         <Card className="h-full mb-4 relative shadow-md border-2 border-gray-300 hover:shadow-lg transition-shadow duration-200 dark:border-gray-600">
@@ -68,14 +78,16 @@ export function WidgetComponent({
                         </>
                     )}
                 </CardTitle>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => onRemove(widget.id)} 
-                    className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30"
-                >
-                    <X className="h-4 w-4" />
-                </Button>
+                {isEditMode && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => onRemove(widget.id)} 
+                        className="hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30"
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                )}
             </CardHeader>
 
             {(widget.type as string) === "sales" && <SalesWidget />}
@@ -85,26 +97,50 @@ export function WidgetComponent({
             {(widget.type as string) === "kitchen" && <KitchenWidget />}
             {(widget.type as string) === "reservations" && <ReservationsWidget />}
 
-            <div className="absolute bottom-2 left-2 right-2 flex justify-between">
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => onMoveLeft(widget.id)}
-                    disabled={isLeftmost}
-                    className="hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => onMoveRight(widget.id)}
-                    disabled={isRightmost}
-                    className="hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
+            {isEditMode && (
+                <div className="absolute bottom-2 left-2 right-2 flex justify-between">
+                    <div className="flex items-center gap-1">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={onMoveLeft}
+                            disabled={isLeftmost}
+                            className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={onMoveRight}
+                            disabled={isRightmost}
+                            className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onMoveUp}
+                            disabled={isTopmost}
+                            className="h-8 w-8 p-0"
+                        >
+                            <MoveUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onMoveDown}
+                            disabled={isBottommost}
+                            className="h-8 w-8 p-0"
+                        >
+                            <MoveDown className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </Card>
     );
 } 
