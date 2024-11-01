@@ -9,6 +9,8 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
 import { Plus, Pencil, Trash2, Search, Upload, X } from "lucide-react";
+import { router } from '@inertiajs/react';
+import { toast, Toaster } from "sonner";
 
 interface Product {
     id: number;
@@ -38,6 +40,7 @@ export default function Inventory(props: { inventory: Product[] }) {
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
         const lowercasedFilter = searchTerm.toLowerCase();
@@ -51,15 +54,72 @@ export default function Inventory(props: { inventory: Product[] }) {
         setCurrentPage(1);
     }, [searchTerm, products]);
 
-    const addOrUpdateProduct = () => {
-        if (isEditing) {
-        setProducts(products.map((product) => (product.id === newProduct.id ? newProduct : product)));
-        } else {
-        setProducts([...products, { ...newProduct, id: Date.now() }]);
+    const fetchProducts = async () => {
+        try {
+            setIsLoading(true);
+            router.get('/api/inventory/products', {}, {
+                preserveState: true,
+                onSuccess: (page: any) => {
+                    setProducts(page.props.inventory as Product[]);
+                },
+                onError: () => {
+                    toast.error('Failed to fetch products');
+                },
+                onFinish: () => setIsLoading(false),
+            });
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            setIsLoading(false);
         }
-        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [] });
-        setIsEditing(false);
-        setIsDialogOpen(false);
+    };
+
+    const addOrUpdateProduct = async () => {
+        try {
+            setIsLoading(true);
+            if (isEditing) {
+                router.put(`/api/inventory/${newProduct.id}`, {
+                    name: newProduct.name,
+                    sku: newProduct.sku,
+                    quantity: newProduct.quantity,
+                    price: newProduct.price,
+                    images: newProduct.images,
+                }, {
+                    preserveState: true,
+                    onSuccess: () => {
+                        setProducts(products.map((product) => 
+                            product.id === newProduct.id ? newProduct : product
+                        ));
+                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [] });
+                        setIsEditing(false);
+                        setIsDialogOpen(false);
+                        toast.success('Product updated successfully');
+                    },
+                    onError: () => toast.error('Failed to update product'),
+                    onFinish: () => setIsLoading(false),
+                });
+            } else {
+                router.post('/api/inventory', {
+                    name: newProduct.name,
+                    sku: newProduct.sku,
+                    quantity: newProduct.quantity,
+                    price: newProduct.price,
+                    images: newProduct.images,
+                }, {
+                    preserveState: true,
+                    onSuccess: (page: any) => {
+                        setProducts([...products, page.props.inventory]);
+                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [] });
+                        setIsDialogOpen(false);
+                        toast.success('Product added successfully');
+                    },
+                    onError: () => toast.error('Failed to add product'),
+                    onFinish: () => setIsLoading(false),
+                });
+            }
+        } catch (error) {
+            console.error('Error saving product:', error);
+            setIsLoading(false);
+        }
     };
 
     const editProduct = (product: Product) => {
@@ -68,9 +128,23 @@ export default function Inventory(props: { inventory: Product[] }) {
         setIsDialogOpen(true);
     };
 
-    const deleteProduct = (id: number) => {
-        setProducts(products.filter((product) => product.id !== id));
-        setSelectedProducts(selectedProducts.filter((productId) => productId !== id));
+    const deleteProduct = async (id: number) => {
+        try {
+            setIsLoading(true);
+            router.delete(`/api/inventory/${id}`, {
+                preserveState: true,
+                onSuccess: () => {
+                    setProducts(products.filter((product) => product.id !== id));
+                    setSelectedProducts(selectedProducts.filter((productId) => productId !== id));
+                    toast.success('Product deleted successfully');
+                },
+                onError: () => toast.error('Failed to delete product'),
+                onFinish: () => setIsLoading(false),
+            });
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            setIsLoading(false);
+        }
     };
 
     const toggleProductSelection = (id: number) => {
@@ -81,25 +155,51 @@ export default function Inventory(props: { inventory: Product[] }) {
         );
     };
 
-    const deleteSelectedProducts = () => {
-        setProducts(products.filter((product) => !selectedProducts.includes(product.id)));
-        setSelectedProducts([]);
+    const deleteSelectedProducts = async () => {
+        try {
+            setIsLoading(true);
+            router.delete('/api/inventory/bulk', {
+                data: { ids: selectedProducts },
+                preserveState: true,
+                onSuccess: () => {
+                    setProducts(products.filter((product) => !selectedProducts.includes(product.id)));
+                    setSelectedProducts([]);
+                    toast.success('Selected products deleted successfully');
+                },
+                onError: () => toast.error('Failed to delete selected products'),
+                onFinish: () => setIsLoading(false),
+            });
+        } catch (error) {
+            console.error('Error deleting selected products:', error);
+            setIsLoading(false);
+        }
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
-        const newImages: string[] = [];
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-            newImages.push(reader.result as string);
-            if (newImages.length === files.length) {
-                setNewProduct({ ...newProduct, images: [...newProduct.images, ...newImages] });
+            try {
+                const formData = new FormData();
+                Array.from(files).forEach((file) => {
+                    formData.append('images[]', file);
+                });
+
+                router.post('/api/inventory/upload-images', formData, {
+                    forceFormData: true,
+                    preserveState: true,
+                    onSuccess: (response) => {
+                        setNewProduct({ 
+                            ...newProduct, 
+                            images: [...newProduct.images, ...(response.props.urls as string[])] 
+                        });
+                        toast.success('Images uploaded successfully');
+                    },
+                    onError: () => toast.error('Failed to upload images'),
+                });
+            } catch (error) {
+                console.error('Error uploading images:', error);
+                toast.error('Failed to upload images');
             }
-            };
-            reader.readAsDataURL(file);
-        });
         }
     };
 
@@ -238,8 +338,21 @@ export default function Inventory(props: { inventory: Product[] }) {
                             </div>
                             </div>
                         </div>
-                        <Button onClick={addOrUpdateProduct}>
-                            {isEditing ? "Update Product" : "Add Product"}
+                        <Button 
+                            onClick={addOrUpdateProduct}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </span>
+                            ) : (
+                                isEditing ? "Update Product" : "Add Product"
+                            )}
                         </Button>
                         </DialogContent>
                     </Dialog>
@@ -338,6 +451,7 @@ export default function Inventory(props: { inventory: Product[] }) {
                 </div>
                 </CardContent>
             </Card>
+            <Toaster />
         </AuthenticatedLayout>
     );
 }
