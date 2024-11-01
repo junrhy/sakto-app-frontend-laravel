@@ -259,7 +259,16 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     };
 
     const getColumnClass = () => {
-        return `grid-cols-${columnCount} gap-4`;
+        switch (columnCount) {
+            case 1:
+                return 'grid-cols-1';
+            case 2:
+                return 'grid-cols-2';
+            case 3:
+                return 'grid-cols-3';
+            default:
+                return 'grid-cols-2';
+        }
     };
 
     const deleteDashboard = () => {
@@ -608,7 +617,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                     </div>
 
                     {/* Update the widget grid */}
-                    <div className={`grid ${getColumnClass()} p-4`}>
+                    <div className={`grid ${getColumnClass()} gap-4`}>
                         {[...Array(columnCount)].map((_, colIndex) => (
                             <div key={colIndex} className="space-y-4">
                                 {currentDashboard.widgets
