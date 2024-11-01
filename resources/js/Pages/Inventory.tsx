@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/Components/ui/calendar";
 import InventoryAnalytics from "@/Components/InventoryAnalytics";
 import { Download, Upload as UploadIcon, BarChart2 } from "lucide-react";
+import { Dialog as PreviewDialog, DialogContent as PreviewDialogContent } from "@/Components/ui/dialog";
 
 interface Category {
     id: number;
@@ -68,6 +69,8 @@ export default function Inventory(props: { inventory: Product[] }) {
         }
     });
     const [showAnalytics, setShowAnalytics] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+    const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
     useEffect(() => {
         const lowercasedFilter = searchTerm.toLowerCase();
@@ -326,6 +329,23 @@ export default function Inventory(props: { inventory: Product[] }) {
         }
     };
 
+    const ImagePreviewModal = () => {
+        if (!selectedImageUrl) return null;
+        
+        return (
+            <PreviewDialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
+                <PreviewDialogContent className="max-w-3xl">
+                    <img 
+                        src={selectedImageUrl} 
+                        alt="Product preview" 
+                        className="w-full h-auto"
+                        onClick={() => setIsImagePreviewOpen(false)}
+                    />
+                </PreviewDialogContent>
+            </PreviewDialog>
+        );
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -574,7 +594,18 @@ export default function Inventory(props: { inventory: Product[] }) {
                                 <div className="flex gap-1">
                                 {product.images.length > 0 ? (
                                     product.images.slice(0, 3).map((image, index) => (
-                                    <img key={index} src={image} alt={`${product.name} ${index + 1}`} width={50} height={50} />
+                                        <img 
+                                            key={index} 
+                                            src={image} 
+                                            alt={`${product.name} ${index + 1}`} 
+                                            width={50} 
+                                            height={50}
+                                            className="cursor-pointer hover:opacity-80 transition-opacity"
+                                            onClick={() => {
+                                                setSelectedImageUrl(image);
+                                                setIsImagePreviewOpen(true);
+                                            }}
+                                        />
                                     ))
                                 ) : (
                                     <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
@@ -582,8 +613,14 @@ export default function Inventory(props: { inventory: Product[] }) {
                                     </div>
                                 )}
                                 {product.images.length > 3 && (
-                                    <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
-                                    +{product.images.length - 3}
+                                    <div 
+                                        className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300"
+                                        onClick={() => {
+                                            setSelectedImageUrl(product.images[3]);
+                                            setIsImagePreviewOpen(true);
+                                        }}
+                                    >
+                                        +{product.images.length - 3}
                                     </div>
                                 )}
                                 </div>
@@ -634,6 +671,7 @@ export default function Inventory(props: { inventory: Product[] }) {
                     </div>
                 </CardContent>
             </Card>
+            <ImagePreviewModal />
             <Toaster />
         </AuthenticatedLayout>
     );
