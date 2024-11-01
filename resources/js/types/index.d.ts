@@ -46,3 +46,21 @@ export interface Widget {
     dashboard_id: number;
     user_id: number;
 }
+
+export interface Product {
+    id: number;
+    name: string;
+    sku: string;
+    quantity: number;
+    price: number;
+    images: string[];
+    category_id?: number;
+    description?: string;
+    status?: 'in_stock' | 'low_stock' | 'out_of_stock';
+}
+
+export interface Category {
+    id: number;
+    name: string;
+    description?: string;
+}
