@@ -18,6 +18,8 @@ use App\Http\Controllers\WidgetController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -67,6 +69,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/widgets/{widget}', [WidgetController::class, 'update'])->name('widgets.update');
     Route::patch('/widgets/{widget}/reorder', [WidgetController::class, 'reorder'])
         ->name('widgets.reorder');
+});
+
+Route::prefix('api')->group(function () {
+    Route::get('/inventory/products', [InventoryController::class, 'getProducts']);
+    Route::post('/inventory', [InventoryController::class, 'store']);
+    Route::put('/inventory/{id}', [InventoryController::class, 'update']);
+    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
+    Route::delete('/inventory/bulk', [InventoryController::class, 'bulkDestroy']);
+    Route::post('/inventory/upload-images', [InventoryController::class, 'uploadImages']);
 });
 
 require __DIR__.'/auth.php';
