@@ -71,15 +71,28 @@ export default function Inventory(props: { inventory: Product[] }) {
 
     useEffect(() => {
         const lowercasedFilter = searchTerm.toLowerCase();
-        const filtered = products.filter(item => {
-        return Object.keys(item).some(key => {
-            const value = item[key as keyof Product];
-            return typeof value === 'string' && value.toLowerCase().includes(lowercasedFilter);
+        
+        // First apply search filter
+        const searchFiltered = products.filter(item => {
+            return Object.keys(item).some(key => {
+                const value = item[key as keyof Product];
+                return typeof value === 'string' && value.toLowerCase().includes(lowercasedFilter);
+            });
         });
+
+        // Then apply category, price, and status filters
+        const filtered = searchFiltered.filter(product => {
+            const matchesCategory = filters.category === 'all' || product.category_id.toString() === filters.category;
+            const matchesPrice = (!filters.minPrice || product.price >= Number(filters.minPrice)) &&
+                               (!filters.maxPrice || product.price <= Number(filters.maxPrice));
+            const matchesStatus = filters.status === 'all' || product.status === filters.status;
+            
+            return matchesCategory && matchesPrice && matchesStatus;
         });
+
         setFilteredProducts(filtered);
-        setCurrentPage(1);
-    }, [searchTerm, products]);
+        setCurrentPage(1); // Reset to first page when filters change
+    }, [searchTerm, products, filters]); // Add filters to dependencies
 
     const fetchProducts = async () => {
         try {
@@ -265,17 +278,6 @@ export default function Inventory(props: { inventory: Product[] }) {
         }
 
         return pageNumbers;
-    };
-
-    const applyFilters = (products: Product[]) => {
-        return products.filter(product => {
-            const matchesCategory = filters.category === 'all' || product.category_id.toString() === filters.category;
-            const matchesPrice = (!filters.minPrice || product.price >= Number(filters.minPrice)) &&
-                               (!filters.maxPrice || product.price <= Number(filters.maxPrice));
-            const matchesStatus = filters.status === 'all' || product.status === filters.status;
-            
-            return matchesCategory && matchesPrice && matchesStatus;
-        });
     };
 
     const handleExport = async () => {
