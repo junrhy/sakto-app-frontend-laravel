@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
-import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil } from "lucide-react";
+import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, MoveUp, MoveDown } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -172,7 +172,8 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                 const newWidget: Widget = {
                     id: response.props.currentDashboard.widgets.slice(-1)[0].id,
                     type: type,
-                    column: 0
+                    column: 0,
+                    order: widgets.length
                 };
                 
                 setWidgets(prevWidgets => [...prevWidgets, newWidget]);
@@ -320,6 +321,70 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                 setColumnCount(currentDashboard.column_count || 2);
                 console.error('Failed to update column count:', errors);
                 // Optionally show an error message to the user
+            }
+        });
+    };
+
+    const moveWidgetVertically = (id: number, direction: 'up' | 'down') => {
+        const widget = widgets.find(w => w.id === id);
+        if (!widget) return;
+
+        // Get widgets in the same column, sorted by order
+        const columnWidgets = widgets
+            .filter(w => w.column === widget.column)
+            .sort((a, b) => a.order - b.order);
+        
+        const currentIndex = columnWidgets.findIndex(w => w.id === id);
+        if (currentIndex === -1) return;
+
+        // Check if move is possible
+        if (
+            (direction === 'up' && currentIndex === 0) || 
+            (direction === 'down' && currentIndex === columnWidgets.length - 1)
+        ) {
+            return;
+        }
+
+        const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        const swapWidget = columnWidgets[newIndex];
+
+        // Create a new array with the swapped positions
+        const updatedColumnWidgets = [...columnWidgets];
+        updatedColumnWidgets[currentIndex] = swapWidget;
+        updatedColumnWidgets[newIndex] = widget;
+
+        // Update the full widgets array with the new order
+        const updatedWidgets = widgets.map(w => {
+            const updatedWidget = updatedColumnWidgets.find(uw => uw.id === w.id);
+            return updatedWidget || w;
+        });
+
+        // Optimistically update the UI
+        setWidgets(updatedWidgets);
+        setCurrentDashboard(prev => ({
+            ...prev,
+            widgets: updatedWidgets
+        }));
+
+        // Make API request
+        router.patch(`/widgets/${id}/reorder`, {
+            direction
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: (page: any) => {
+                if (page.props.currentDashboard) {
+                    setWidgets(page.props.currentDashboard.widgets);
+                    setCurrentDashboard(page.props.currentDashboard);
+                }
+            },
+            onError: () => {
+                // Revert changes on error
+                setWidgets(widgets);
+                setCurrentDashboard(prev => ({
+                    ...prev,
+                    widgets: widgets
+                }));
             }
         });
     };
@@ -548,15 +613,20 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                             <div key={colIndex} className="space-y-4">
                                 {currentDashboard.widgets
                                     .filter((widget: WidgetImport) => widget.column === colIndex)
-                                    .map((widget: WidgetImport) => (
+                                    .sort((a, b) => a.order - b.order)
+                                    .map((widget: WidgetImport, index: number, filteredWidgets: WidgetImport[]) => (
                                         <WidgetComponent 
                                             key={widget.id} 
                                             widget={widget} 
                                             onRemove={removeWidget}
                                             onMoveLeft={() => moveWidget(widget.id, 'left')}
                                             onMoveRight={() => moveWidget(widget.id, 'right')}
+                                            onMoveUp={() => moveWidgetVertically(widget.id, 'up')}
+                                            onMoveDown={() => moveWidgetVertically(widget.id, 'down')}
                                             isLeftmost={widget.column === 0}
                                             isRightmost={widget.column === columnCount - 1}
+                                            isTopmost={index === 0}
+                                            isBottommost={index === filteredWidgets.length - 1}
                                             isEditMode={isEditMode}
                                         />
                                     ))}

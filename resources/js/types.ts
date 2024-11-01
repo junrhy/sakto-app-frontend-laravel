@@ -4,4 +4,5 @@ export interface Widget {
     id: number;
     type: WidgetType;
     column: number;
+    order: number;
 } 

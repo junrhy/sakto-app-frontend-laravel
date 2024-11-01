@@ -31,3 +31,18 @@ export interface PageProps {
         };
     };
 }
+
+export enum WidgetType {
+    Chart = 'chart',
+    Table = 'table',
+    // Add other widget types as needed
+}
+
+export interface Widget {
+    id: number;
+    type: WidgetType;
+    column: number;
+    order: number;
+    dashboard_id: number;
+    user_id: number;
+}

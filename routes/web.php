@@ -31,6 +31,8 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
+    Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])
+        ->name('dashboard.widgets');
 
     Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
@@ -63,9 +65,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/widgets', [WidgetController::class, 'store'])->name('widgets.store');
     Route::delete('/widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');
     Route::patch('/widgets/{widget}', [WidgetController::class, 'update'])->name('widgets.update');
-
-    Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])
-        ->name('dashboard.widgets');
+    Route::patch('/widgets/{widget}/reorder', [WidgetController::class, 'reorder'])
+        ->name('widgets.reorder');
 });
 
 require __DIR__.'/auth.php';
