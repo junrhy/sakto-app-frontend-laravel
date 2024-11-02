@@ -594,22 +594,24 @@ export default function Inventory(props: { inventory: Product[] }) {
                                 <div className="flex gap-1">
                                 {product.images.length > 0 ? (
                                     product.images.slice(0, 3).map((image, index) => (
-                                        <img 
-                                            key={index} 
-                                            src={image} 
-                                            alt={`${product.name} ${index + 1}`} 
-                                            width={50} 
-                                            height={50}
-                                            className="cursor-pointer hover:opacity-80 transition-opacity"
-                                            onClick={() => {
-                                                setSelectedImageUrl(image);
-                                                setIsImagePreviewOpen(true);
-                                            }}
-                                        />
+                                        <div 
+                                            key={index}
+                                            className="w-[50px] h-[50px] overflow-hidden bg-gray-100 flex items-center justify-center"
+                                        >
+                                            <img 
+                                                src={image} 
+                                                alt={`${product.name} ${index + 1}`}
+                                                className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                                onClick={() => {
+                                                    setSelectedImageUrl(image);
+                                                    setIsImagePreviewOpen(true);
+                                                }}
+                                            />
+                                        </div>
                                     ))
                                 ) : (
                                     <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
-                                    <Upload className="h-6 w-6 text-gray-400" />
+                                        <Upload className="h-6 w-6 text-gray-400" />
                                     </div>
                                 )}
                                 {product.images.length > 3 && (
@@ -628,7 +630,7 @@ export default function Inventory(props: { inventory: Product[] }) {
                             <TableCell>{product.name}</TableCell>
                             <TableCell>{product.sku}</TableCell>
                             <TableCell>{product.quantity}</TableCell>
-                            <TableCell>${product.price.toFixed(2)}</TableCell>
+                            <TableCell>${product.price}</TableCell>
                             <TableCell>
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => editProduct(product)}>
                                 <Pencil className="h-4 w-4" />
