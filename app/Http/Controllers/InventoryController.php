@@ -107,7 +107,10 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return response()->json($response->json());
+            return Inertia::render('Inventory', [
+                'inventory' => $response->json()['data']['products'],
+                'categories' => $response->json()['data']['categories']
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -123,7 +126,10 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return response()->json($response->json());
+            return Inertia::render('Inventory', [
+                'inventory' => $response->json()['data']['products'],
+                'categories' => $response->json()['data']['categories']
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete product'], 500);
         }
@@ -141,7 +147,10 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return response()->json($response->json());
+            return Inertia::render('Inventory', [
+                'inventory' => $response->json()['data']['products'],
+                'categories' => $response->json()['data']['categories']
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -198,7 +207,7 @@ class InventoryController extends Controller
     {
         try {
             $lowStockThreshold = env('LOW_STOCK_THRESHOLD', 10);
-            $lowStockProducts = array_filter($this->getDummyData()['data']['products'], function($product) use ($lowStockThreshold) {
+            $lowStockProducts = array_filter($this->getProducts()['data']['products'], function($product) use ($lowStockThreshold) {
                 return $product['quantity'] <= $lowStockThreshold;
             });
 
