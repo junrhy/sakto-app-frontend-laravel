@@ -91,11 +91,14 @@ interface PageProps {
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
     const [dashboards, setDashboards] = useState<DashboardType[]>(initialDashboards);
-    const [currentDashboard, setCurrentDashboard] = useState<DashboardType>(initialCurrentDashboard);
-    const [widgets, setWidgets] = useState<WidgetImport[]>(currentDashboard.widgets || []);
+    const [currentDashboard, setCurrentDashboard] = useState<DashboardType>({
+        ...initialCurrentDashboard,
+        widgets: initialCurrentDashboard.widgets || []
+    });
+    const [widgets, setWidgets] = useState<WidgetImport[]>(initialCurrentDashboard.widgets || []);
     const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetTypeImport | null>(null);
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(currentDashboard.column_count || 2);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [defaultDashboardId, setDefaultDashboardId] = useState<number | null>(null);
@@ -111,37 +114,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         column: 0,
         dashboard_id: currentDashboard.id
     });
-
-    useEffect(() => {
-        // Only fetch widgets if needed
-        if (!currentDashboard.widgets || currentDashboard.widgets.length === 0) {
-            fetchWidgets();
-        } else {
-            setWidgets(currentDashboard.widgets);
-        }
-        setLoading(false);
-    }, [currentDashboard]);
-
-    const fetchWidgets = async () => {
-        try {
-            await router.get(`/dashboard/${currentDashboard.id}/widgets`, {}, {
-                preserveState: true,
-                preserveScroll: true,
-                only: ['currentDashboard'],
-                onSuccess: (page: any) => {
-                    if (page.props.currentDashboard) {
-                        setWidgets(page.props.currentDashboard.widgets);
-                        setCurrentDashboard(prevDashboard => ({
-                            ...prevDashboard,
-                            widgets: page.props.currentDashboard!.widgets
-                        }));
-                    }
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch widgets:', error);
-        }
-    };
 
     const availableWidgets = [
         'sales',
@@ -521,12 +493,10 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={async () => {
+                                onClick={(e) => {
+                                    e.preventDefault(); // Prevent default behavior if necessary
                                     setIsRefreshing(true);
-                                    await fetchWidgets();
-                                    setTimeout(() => {
-                                        setIsRefreshing(false);
-                                    }, 500);
+                                    window.location.reload();
                                 }}
                                 disabled={isRefreshing}
                                 className="text-gray-400 hover:text-gray-500"

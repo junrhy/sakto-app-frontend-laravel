@@ -69,6 +69,10 @@ class DashboardController extends Controller
         // Eager load fresh widget data
         $dashboard->load('widgets');
 
-        return redirect()->back()->with('currentDashboard', $dashboard);
+        // Return data using Inertia
+        return Inertia::render('Dashboard', [
+            'dashboards' => Dashboard::where('user_id', auth()->id())->get(),
+            'currentDashboard' => $dashboard,
+        ]);
     }
 }
