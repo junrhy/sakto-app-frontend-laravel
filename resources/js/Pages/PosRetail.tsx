@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
+import { Upload } from 'lucide-react';
+import { Dialog as PreviewDialog, DialogContent as PreviewDialogContent } from "@/Components/ui/dialog";
 
 interface Product {
     id: number;
@@ -33,6 +35,8 @@ export default function PosRetail(props: { products: Product[] }) {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
     const [cashReceived, setCashReceived] = useState<string>("");
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+    const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
     
     const handleSearch = (term: string) => {
         setSearchTerm(term);
@@ -119,7 +123,7 @@ export default function PosRetail(props: { products: Product[] }) {
         }
     
         const change = cashReceivedAmount - totalAmount;
-        alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nCash Received: $${cashReceivedAmount.toFixed(2)}\nChange: $${change.toFixed(2)}`);
+        alert(`Sale completed!\nTotal: $${totalAmount}\nCash Received: $${cashReceivedAmount}\nChange: $${change}`);
         
         // Update inventory quantities
         const updatedProducts = products.map(product => {
@@ -138,6 +142,23 @@ export default function PosRetail(props: { products: Product[] }) {
         console.log("Updated product quantities:", updatedProducts);
     };
 
+    const ImagePreviewModal = () => {
+      if (!selectedImageUrl) return null;
+      
+      return (
+          <PreviewDialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
+              <PreviewDialogContent className="max-w-3xl">
+                  <img 
+                      src={selectedImageUrl} 
+                      alt="Product preview" 
+                      className="w-full h-auto"
+                      onClick={() => setIsImagePreviewOpen(false)}
+                  />
+              </PreviewDialogContent>
+          </PreviewDialog>
+      );
+  };
+
     return (
         <AuthenticatedLayout
             header={
@@ -147,6 +168,8 @@ export default function PosRetail(props: { products: Product[] }) {
             }
         >
             <Head title="Retail" />
+
+            <ImagePreviewModal />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Card>
@@ -174,12 +197,33 @@ export default function PosRetail(props: { products: Product[] }) {
                                     {paginatedProducts.map((product) => (
                                         <TableRow key={product.id}>
                                         <TableCell>
-                                            {product.images.length > 0 && (
-                                            <img src={product.images[0]} alt={product.name} width={50} height={50} />
+                                          <div className="flex gap-1">
+                                                {product.images.length > 0 ? (
+                                                    product.images.slice(0, 3).map((image, index) => (
+                                                  <div 
+                                                      key={index}
+                                                      className="w-[50px] h-[50px] overflow-hidden bg-gray-100 flex items-center justify-center"
+                                                  >
+                                                      <img 
+                                                          src={image} 
+                                                          alt={`${product.name} ${index + 1}`}
+                                                          className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                                          onClick={() => {
+                                                              setSelectedImageUrl(image);
+                                                              setIsImagePreviewOpen(true);
+                                                          }}
+                                                      />
+                                                  </div>
+                                                ))
+                                            ) : (
+                                              <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
+                                                <Upload className="h-6 w-6 text-gray-400" />
+                                            </div>
                                             )}
+                                          </div>
                                         </TableCell>
                                         <TableCell>{product.name}</TableCell>
-                                        <TableCell>${product.price.toFixed(2)}</TableCell>
+                                        <TableCell>${product.price}</TableCell>
                                         <TableCell>{product.quantity}</TableCell>
                                         <TableCell>
                                             <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0}>
@@ -247,8 +291,8 @@ export default function PosRetail(props: { products: Product[] }) {
                                             <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>+</Button>
                                         </div>
                                         </TableCell>
-                                        <TableCell>${item.price.toFixed(2)}</TableCell>
-                                        <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                        <TableCell>${item.price}</TableCell>
+                                        <TableCell>${(item.price * item.quantity)}</TableCell>
                                         <TableCell>
                                         <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
                                             Remove
@@ -260,31 +304,31 @@ export default function PosRetail(props: { products: Product[] }) {
                                 </Table>
                             </CardContent>
                             <CardFooter className="flex justify-between">
-                                <div>Total: ${totalAmount.toFixed(2)}</div>
+                                <div>Total: ${totalAmount}</div>
                                 <Button onClick={handleCompleteSale} disabled={orderItems.length === 0}>Complete Sale</Button>
                             </CardFooter>
                             </Card>
             </div>
 
             <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
-                <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Complete Sale</DialogTitle>
-                </DialogHeader>
-                <div className="py-4">
-                    <Label htmlFor="cashReceived">Cash Received</Label>
-                    <Input
-                    id="cashReceived"
-                    type="number"
-                    value={cashReceived}
-                    onChange={(e) => setCashReceived(e.target.value)}
-                    placeholder="Enter amount received"
-                    />
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={confirmCompleteSale}>Confirm Sale</Button>
-                </DialogFooter>
+                <DialogContent aria-describedby="complete-sale-description">
+                    <DialogHeader>
+                        <DialogTitle>Complete Sale</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Label htmlFor="cashReceived">Cash Received</Label>
+                        <Input
+                            id="cashReceived"
+                            type="number"
+                            value={cashReceived}
+                            onChange={(e) => setCashReceived(e.target.value)}
+                            placeholder="Enter amount received"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={confirmCompleteSale}>Confirm Sale</Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog> 
         </AuthenticatedLayout>
