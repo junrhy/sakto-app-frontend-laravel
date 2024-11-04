@@ -28,7 +28,7 @@ interface OrderItem {
 const ITEMS_PER_PAGE = 5;
 
 export default function PosRetail(props: { products: Product[] }) {
-    const [products] = useState<Product[]>(props.products);
+    const [products, setProducts] = useState<Product[]>(props.products);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -49,41 +49,62 @@ export default function PosRetail(props: { products: Product[] }) {
     
     const addItemToOrder = (product: Product) => {
         if (product.quantity > 0) {
-          const existingItem = orderItems.find(item => item.id === product.id);
-          if (existingItem) {
-            if (existingItem.quantity < product.quantity) {
-              setOrderItems(orderItems.map(item =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-              ));
+            const existingItem = orderItems.find(item => item.id === product.id);
+            if (existingItem) {
+                if (existingItem.quantity < product.quantity) {
+                    setOrderItems(orderItems.map(item =>
+                        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                    ));
+                    setProducts(products.map(p => 
+                        p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p
+                    ));
+                } else {
+                    alert("Cannot add more items than available in inventory.");
+                }
             } else {
-              alert("Cannot add more items than available in inventory.");
+                setOrderItems([...orderItems, { ...product, quantity: 1 }]);
+                setProducts(products.map(p => 
+                    p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p
+                ));
             }
-          } else {
-            setOrderItems([...orderItems, { ...product, quantity: 1 }]);
-          }
         } else {
-          alert("This product is out of stock.");
+            alert("This product is out of stock.");
         }
-      };
+    };
     
     const removeItemFromOrder = (id: number) => {
+        const itemToRemove = orderItems.find(item => item.id === id);
+        if (itemToRemove) {
+            setProducts(products.map(p => 
+                p.id === id ? { ...p, quantity: p.quantity + itemToRemove.quantity } : p
+            ));
+        }
         setOrderItems(orderItems.filter((item) => item.id !== id));
-      };
+    };
     
     const updateItemQuantity = (id: number, newQuantity: number) => {
         const product = products.find(p => p.id === id);
-        if (product && newQuantity <= product.quantity) {
-          if (newQuantity > 0) {
-            setOrderItems(orderItems.map(item =>
-              item.id === id ? { ...item, quantity: newQuantity } : item
-            ));
-          } else {
-            removeItemFromOrder(id);
-          }
+        const existingItem = orderItems.find(item => item.id === id);
+        
+        if (product && existingItem) {
+            // Calculate the difference in quantity
+            const quantityDifference = newQuantity - existingItem.quantity;
+
+            if (newQuantity <= product.quantity + existingItem.quantity && newQuantity >= 0) {
+                setOrderItems(orderItems.map(item =>
+                    item.id === id ? { ...item, quantity: newQuantity } : item
+                ));
+                // Update product quantity based on the difference
+                setProducts(products.map(p => 
+                    p.id === id ? { ...p, quantity: p.quantity - quantityDifference } : p
+                ));
+            } else {
+                alert("Cannot add more items than available in inventory.");
+            }
         } else {
-          alert("Cannot add more items than available in inventory.");
+            alert("Product not found.");
         }
-      };
+    };
     
       const totalAmount = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
     
