@@ -76,7 +76,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/inventory', [InventoryController::class, 'store']);
     Route::put('/inventory/{id}', [InventoryController::class, 'update']);
     Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
-    Route::delete('/inventory/bulk', [InventoryController::class, 'bulkDestroy']);
+    Route::post('/inventory/bulk', [InventoryController::class, 'bulkDestroy']);
     Route::post('/inventory/upload-images', [InventoryController::class, 'uploadImages']);
     Route::get('/inventory/export', [InventoryController::class, 'exportProducts']);
     Route::post('/inventory/import', [InventoryController::class, 'importProducts']);
