@@ -40,18 +40,14 @@ class InventoryController extends Controller
                                    ($product['quantity'] <= 10 ? 'low_stock' : 'in_stock');
                 return $product;
             }, $inventoryData);
-            
-            Log::info('Inventory data retrieved successfully');
+            $inventoryCategories = $response->json()['data']['categories'];
             
             return Inertia::render('Inventory', [
-                'inventory' => $inventoryData
+                'inventory' => $inventoryData,
+                'categories' => $inventoryCategories
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to fetch inventory', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json(['error' => 'Failed to fetch inventory'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -97,7 +93,7 @@ class InventoryController extends Controller
                 'error' => $e->getMessage(),
                 'request_data' => $request->all()
             ]);
-            return response()->json(['error' => 'Failed to create product'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -113,7 +109,7 @@ class InventoryController extends Controller
             
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update product'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -137,7 +133,7 @@ class InventoryController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/inventory/bulk", [
+                ->post("{$this->apiUrl}/inventory/bulk-destroy", [
                     'ids' => $request->ids
                 ]);
             
@@ -147,7 +143,7 @@ class InventoryController extends Controller
             
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete products'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

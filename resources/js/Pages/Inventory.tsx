@@ -37,7 +37,7 @@ interface Product {
 
 const ITEMS_PER_PAGE = 5;
 
-export default function Inventory(props: { inventory: Product[] }) {
+export default function Inventory(props: { inventory: Product[], categories: Category[] }) {
     const [products, setProducts] = useState<Product[]>(props.inventory);
 
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
@@ -150,7 +150,7 @@ export default function Inventory(props: { inventory: Product[] }) {
                     quantity: newProduct.quantity,
                     price: newProduct.price,
                     images: newProduct.images,
-                    category_id: newProduct.category_id,
+                    category_id: 1,
                     description: newProduct.description,
                     status: newProduct.status,
                 }, {
@@ -207,8 +207,9 @@ export default function Inventory(props: { inventory: Product[] }) {
     const deleteSelectedProducts = async () => {
         try {
             setIsLoading(true);
-            router.delete('/inventory/bulk', {
-                data: { ids: selectedProducts },
+            router.post('/inventory/bulk', {
+                ids: selectedProducts
+            }, {
                 preserveState: true,
                 onSuccess: () => {
                     setProducts(products.filter((product) => !selectedProducts.includes(product.id)));
@@ -408,8 +409,11 @@ export default function Inventory(props: { inventory: Product[] }) {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Categories</SelectItem>
-                                <SelectItem value="1">Electronics</SelectItem>
-                                <SelectItem value="2">Accessories</SelectItem>
+                                {props.categories.map((category) => (
+                                    <SelectItem key={category.id} value={category.id.toString()}>
+                                        {category.name}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
 
