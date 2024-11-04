@@ -105,6 +105,13 @@ export default function Authenticated({
 
                                         <Dropdown.Content>
                                             <Dropdown.Link 
+                                                href="/dashboard"
+                                                as="button"
+                                                className="w-full text-left"
+                                            >
+                                                View Dashboard
+                                            </Dropdown.Link>
+                                            <Dropdown.Link 
                                                 href="#"
                                                 as="button"
                                                 className="w-full text-left"
