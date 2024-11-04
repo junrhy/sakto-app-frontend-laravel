@@ -144,7 +144,7 @@ export default function PosRetail(props: { products: Product[] }) {
         }
 
         const change = cashReceivedAmount - totalAmount;
-        alert(`Sale completed!\nTotal: $${totalAmount}\nCash Received: $${cashReceivedAmount}\nChange: $${change}`);
+        alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nCash Received: $${cashReceivedAmount.toFixed(2)}\nChange: $${change.toFixed(2)}`);
 
         // Transform order items into a simpler format
         const saleData = {
@@ -153,8 +153,8 @@ export default function PosRetail(props: { products: Product[] }) {
                 quantity: item.quantity,
                 price: item.price
             })),
-            totalAmount,
-            cashReceived: cashReceivedAmount,
+            total_amount: totalAmount,
+            cash_received: cashReceivedAmount,
             change: change,
         };
 

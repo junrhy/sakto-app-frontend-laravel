@@ -51,19 +51,19 @@ class PosRetailController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
-        $validatedData = $request->validate([
-            'items' => 'required|array',
-            'totalAmount' => 'required|numeric',
-            'cashReceived' => 'required|numeric',
-            'change' => 'required|numeric',
-        ]);
-
-        // Here you would typically save the sale to the database
-        // For example, you might have a Sale model to handle this
-        // Sale::create([...]);
-
-        return response()->json(['message' => 'Sale recorded successfully.'], 201);
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->timeout(30)
+                ->post("{$this->apiUrl}/pos-retail", $request->all());
+            
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+            dd($response->json());
+            return redirect()->back();
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
