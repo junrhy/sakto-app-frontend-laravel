@@ -38,6 +38,7 @@ class DashboardController extends Controller
     public function update(Request $request, Dashboard $dashboard)
     {
         $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
             'column_count' => 'sometimes|integer|in:1,2,3',
             'is_starred' => 'sometimes|boolean',
             // ... other validation rules
