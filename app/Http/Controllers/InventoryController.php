@@ -87,7 +87,7 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return response()->json($response->json());
+            return redirect()->back();
         } catch (\Exception $e) {
             Log::error('Failed to create product', [
                 'error' => $e->getMessage(),
@@ -107,10 +107,7 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return Inertia::render('Inventory', [
-                'inventory' => $response->json()['data']['products'],
-                'categories' => $response->json()['data']['categories']
-            ]);
+            return redirect()->back();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -126,12 +123,9 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return Inertia::render('Inventory', [
-                'inventory' => $response->json()['data']['products'],
-                'categories' => $response->json()['data']['categories']
-            ]);
+            return redirect()->back();
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to delete product'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -147,10 +141,7 @@ class InventoryController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
-            return Inertia::render('Inventory', [
-                'inventory' => $response->json()['data']['products'],
-                'categories' => $response->json()['data']['categories']
-            ]);
+            return redirect()->back();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
