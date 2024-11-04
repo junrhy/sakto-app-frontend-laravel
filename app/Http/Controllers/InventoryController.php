@@ -15,12 +15,6 @@ class InventoryController extends Controller
     {
         $this->apiUrl = env('API_URL');
         $this->apiToken = env('API_TOKEN');
-        
-        // Set PHP execution time for long-running requests
-        set_time_limit((int)env('MAX_EXECUTION_TIME', 300));
-        
-        // Increase memory limit if needed
-        ini_set('memory_limit', '256M');
     }
 
     public function index()
@@ -29,6 +23,10 @@ class InventoryController extends Controller
             // Fetch data from API
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/inventory");
+
+            if(!$response->json()) {
+                return response()->json(['error' => 'Failed to connect to Inventory API.'], 500);
+            }
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
