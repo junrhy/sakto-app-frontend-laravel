@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from "react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
@@ -136,31 +136,39 @@ export default function PosRetail(props: { products: Product[] }) {
         setIsCompleteSaleDialogOpen(true);
     };
     
-    const confirmCompleteSale = () => {
+    const confirmCompleteSale = async () => {
         const cashReceivedAmount = parseFloat(cashReceived);
         if (isNaN(cashReceivedAmount) || cashReceivedAmount < totalAmount) {
-          alert("Invalid amount received. Please enter a valid amount.");
-          return;
+            alert("Invalid amount received. Please enter a valid amount.");
+            return;
         }
-    
+
         const change = cashReceivedAmount - totalAmount;
         alert(`Sale completed!\nTotal: $${totalAmount}\nCash Received: $${cashReceivedAmount}\nChange: $${change}`);
-        
-        // Update inventory quantities
-        const updatedProducts = products.map(product => {
-          const soldItem = orderItems.find(item => item.id === product.id);
-          if (soldItem) {
-            return { ...product, quantity: product.quantity - soldItem.quantity };
-          }
-          return product;
-        });
-        
-        // Reset the order and close the dialog
-        setOrderItems([]);
-        setCashReceived("");
-        setIsCompleteSaleDialogOpen(false);
-        // In a real application, you would update the products state or send the updated quantities to a backend
-        console.log("Updated product quantities:", updatedProducts);
+
+        // Transform order items into a simpler format
+        const saleData = {
+            items: orderItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                price: item.price
+            })),
+            totalAmount,
+            cashReceived: cashReceivedAmount,
+            change: change,
+        };
+
+        // Send sale data to the backend using Inertia
+        try {
+            await router.post('/pos-retail', saleData);
+            // Reset the order and close the dialog
+            setOrderItems([]);
+            setCashReceived("");
+            setIsCompleteSaleDialogOpen(false);
+        } catch (error) {
+            console.error("Error completing sale:", error);
+            alert("There was an error completing the sale. Please try again.");
+        }
     };
 
     const ImagePreviewModal = () => {
@@ -313,7 +321,7 @@ export default function PosRetail(props: { products: Product[] }) {
                                         </div>
                                         </TableCell>
                                         <TableCell>${item.price}</TableCell>
-                                        <TableCell>${(item.price * item.quantity)}</TableCell>
+                                        <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
                                         <TableCell>
                                         <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
                                             Remove
@@ -325,7 +333,7 @@ export default function PosRetail(props: { products: Product[] }) {
                                 </Table>
                             </CardContent>
                             <CardFooter className="flex justify-between">
-                                <div>Total: ${totalAmount}</div>
+                                <div>Total: ${totalAmount.toFixed(2)}</div>
                                 <Button onClick={handleCompleteSale} disabled={orderItems.length === 0}>Complete Sale</Button>
                             </CardFooter>
                             </Card>

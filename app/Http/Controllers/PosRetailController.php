@@ -21,15 +21,6 @@ class PosRetailController extends Controller
      */
     public function index()
     {
-        // $products = [
-        //     ['id' => 1, 'name' => "Product A", 'price' => 10.0, 'images' => ["/images/product-a.jpg"], 'quantity' => 50],
-        //     ['id' => 2, 'name' => "Product B", 'price' => 15.0, 'images' => ["/images/product-b.jpg"], 'quantity' => 30],
-        //     ['id' => 3, 'name' => "Product C", 'price' => 20.0, 'images' => ["/images/product-c.jpg"], 'quantity' => 20],
-        //     ['id' => 4, 'name' => "Product D", 'price' => 25.0, 'images' => ["/images/product-d.jpg"], 'quantity' => 15],
-        //     ['id' => 5, 'name' => "Product E", 'price' => 30.0, 'images' => ["/images/product-e.jpg"], 'quantity' => 25],
-        //     ['id' => 6, 'name' => "Product F", 'price' => 35.0, 'images' => ["/images/product-f.jpg"], 'quantity' => 10],
-        //     ['id' => 7, 'name' => "Product G", 'price' => 40.0, 'images' => ["/images/product-g.jpg"], 'quantity' => 5],
-        // ];
         try {
             // Fetch data from API
             $response = Http::withToken($this->apiToken)
@@ -60,7 +51,19 @@ class PosRetailController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request->all());
+        $validatedData = $request->validate([
+            'items' => 'required|array',
+            'totalAmount' => 'required|numeric',
+            'cashReceived' => 'required|numeric',
+            'change' => 'required|numeric',
+        ]);
+
+        // Here you would typically save the sale to the database
+        // For example, you might have a Sale model to handle this
+        // Sale::create([...]);
+
+        return response()->json(['message' => 'Sale recorded successfully.'], 201);
     }
 
     /**

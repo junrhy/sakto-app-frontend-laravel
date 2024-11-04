@@ -83,6 +83,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventory/low-stock', [InventoryController::class, 'checkLowStock']);
     Route::get('/inventory/{id}/history', [InventoryController::class, 'getInventoryHistory']);
     Route::get('/inventory/{sku}/barcode', [InventoryController::class, 'generateBarcode']);
+
+    // Pos Retail routes
+    Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
+    Route::post('/pos-retail', [PosRetailController::class, 'store']);
+    Route::put('/pos-retail/{id}', [PosRetailController::class, 'update']);
+    Route::delete('/pos-retail/{id}', [PosRetailController::class, 'destroy']);
 });
 
 require __DIR__.'/auth.php';
