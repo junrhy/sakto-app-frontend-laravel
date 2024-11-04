@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
-import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, MoveUp, MoveDown } from "lucide-react";
+import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, MoveUp, MoveDown, Edit } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -30,6 +30,7 @@ import {
 import { WidgetComponent } from "@/Components/widgets/WidgetComponent";
 import { Widget, Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
 import { useForm, router } from '@inertiajs/react';
+import { Input } from "@/Components/ui/input";
 
 interface DashboardType {
     id: number;
@@ -103,6 +104,8 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [defaultDashboardId, setDefaultDashboardId] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+    const [newDashboardName, setNewDashboardName] = useState(currentDashboard.name);
 
     // At the component level, initialize form
     const form = useForm<{
@@ -370,6 +373,33 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         });
     };
 
+    const renameDashboard = () => {
+        router.patch(`/dashboard/${currentDashboard.id}`, {
+            name: newDashboardName
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                setCurrentDashboard(prev => ({
+                    ...prev,
+                    name: newDashboardName
+                }));
+                setDashboards(prevDashboards => 
+                    prevDashboards.map(dashboard => 
+                        dashboard.id === currentDashboard.id 
+                            ? { ...dashboard, name: newDashboardName }
+                            : dashboard
+                    )
+                );
+                setIsRenameDialogOpen(false); // Close the dialog after renaming
+            },
+            onError: (errors) => {
+                console.error('Failed to rename dashboard:', errors);
+                // Optionally show an error message to the user
+            }
+        });
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -574,6 +604,13 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     )}
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
+                                        onClick={() => setIsRenameDialogOpen(true)}
+                                    >
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Rename Dashboard
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
                                         className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
                                         disabled={dashboards.length <= 1}
                                         onClick={() => setIsDeleteDialogOpen(true)}
@@ -585,6 +622,31 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                             </DropdownMenu>
                         </div>
                     </div>
+
+                    {/* Rename Dashboard Dialog */}
+                    {isRenameDialogOpen && (
+                        <AlertDialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Rename Dashboard</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Enter a new name for the dashboard:
+                                    </AlertDialogDescription>
+                                    <Input 
+                                        value={newDashboardName} 
+                                        onChange={(e) => setNewDashboardName(e.target.value)} 
+                                        placeholder="New Dashboard Name" 
+                                    />
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel onClick={() => setIsRenameDialogOpen(false)}>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={renameDashboard} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                        Rename
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
 
                     {/* Update the widget grid */}
                     <div className={`grid ${getColumnClass()} gap-4`}>

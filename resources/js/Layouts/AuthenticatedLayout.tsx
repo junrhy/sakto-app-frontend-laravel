@@ -2,13 +2,18 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
+
+interface DashboardType {
+    id: number;
+    name: string;
+}
 
 interface PageProps extends Record<string, any> {
     auth: {
@@ -81,7 +86,7 @@ export default function Authenticated({
                                                     type="button"
                                                     className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
                                                 >
-                                                    <span className="mt-[1px]">Dashboard</span>
+                                                    <span className="mt-[1px]">Dashboards</span>
                                                     <svg
                                                         className="ml-2 -mr-0.5 h-4 w-4"
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -99,12 +104,6 @@ export default function Authenticated({
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content>
-                                            <Dropdown.Link 
-                                                href={route('dashboard')}
-                                                className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                                            >
-                                                View Dashboards
-                                            </Dropdown.Link>
                                             <Dropdown.Link 
                                                 href="#"
                                                 as="button"
