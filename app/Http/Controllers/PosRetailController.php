@@ -55,11 +55,11 @@ class PosRetailController extends Controller
             $response = Http::withToken($this->apiToken)
                 ->timeout(30)
                 ->post("{$this->apiUrl}/pos-retail", $request->all());
-            
+     
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
             }
-            dd($response->json());
+
             return redirect()->back();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
