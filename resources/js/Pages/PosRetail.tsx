@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/Components/ui/label";
 import { Upload } from 'lucide-react';
 import { Dialog as PreviewDialog, DialogContent as PreviewDialogContent } from "@/Components/ui/dialog";
+import { useEffect } from "react";
 
 interface Product {
     id: number;
@@ -37,6 +38,7 @@ export default function PosRetail(props: { products: Product[] }) {
     const [cashReceived, setCashReceived] = useState<string>("");
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
     
     const handleSearch = (term: string) => {
         setSearchTerm(term);
@@ -106,15 +108,15 @@ export default function PosRetail(props: { products: Product[] }) {
         }
     };
     
-      const totalAmount = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    const totalAmount = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
     
-      const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-      const paginatedProducts = filteredProducts.slice(
+    const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+    const paginatedProducts = filteredProducts.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE
-      );
+    );
     
-      const getPageNumbers = () => {
+    const getPageNumbers = () => {
         const pageNumbers = [];
         const maxVisiblePages = 5;
     
@@ -122,15 +124,15 @@ export default function PosRetail(props: { products: Product[] }) {
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
     
         if (endPage - startPage + 1 < maxVisiblePages) {
-          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
     
         for (let i = startPage; i <= endPage; i++) {
-          pageNumbers.push(i);
+            pageNumbers.push(i);
         }
     
         return pageNumbers;
-      };
+    };
     
     const handleCompleteSale = () => {
         setIsCompleteSaleDialogOpen(true);
@@ -138,15 +140,14 @@ export default function PosRetail(props: { products: Product[] }) {
     
     const confirmCompleteSale = async () => {
         const cashReceivedAmount = parseFloat(cashReceived);
-        if (isNaN(cashReceivedAmount) || cashReceivedAmount < totalAmount) {
+        if (paymentMethod === 'cash' && (isNaN(cashReceivedAmount) || cashReceivedAmount < totalAmount)) {
             alert("Invalid amount received. Please enter a valid amount.");
             return;
         }
 
-        const change = cashReceivedAmount - totalAmount;
-        alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nCash Received: $${cashReceivedAmount.toFixed(2)}\nChange: $${change.toFixed(2)}`);
+        const change = paymentMethod === 'cash' ? cashReceivedAmount - totalAmount : 0;
 
-        // Transform order items into a simpler format
+        // Prepare sale data
         const saleData = {
             items: orderItems.map(item => ({
                 id: item.id,
@@ -154,9 +155,17 @@ export default function PosRetail(props: { products: Product[] }) {
                 price: item.price
             })),
             total_amount: totalAmount,
-            cash_received: cashReceivedAmount,
-            change: change,
+            cash_received: paymentMethod === 'cash' ? cashReceivedAmount : null,
+            change: paymentMethod === 'cash' ? change : null,
+            payment_method: paymentMethod // Add payment method to the data
         };
+
+        // Handle cash payment processing
+        if (paymentMethod === 'cash') {
+            alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nPayment Method: Cash Received: $${cashReceivedAmount.toFixed(2)}\nChange: $${change.toFixed(2)}`);
+        } else {
+            alert(`Sale completed!\nTotal: $${totalAmount.toFixed(2)}\nPayment Method: Card Payment`);
+        }
 
         // Send sale data to the backend using Inertia
         try {
@@ -172,21 +181,21 @@ export default function PosRetail(props: { products: Product[] }) {
     };
 
     const ImagePreviewModal = () => {
-      if (!selectedImageUrl) return null;
-      
-      return (
-          <PreviewDialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
-              <PreviewDialogContent className="max-w-3xl">
-                  <img 
-                      src={selectedImageUrl} 
-                      alt="Product preview" 
-                      className="w-full h-auto"
-                      onClick={() => setIsImagePreviewOpen(false)}
-                  />
-              </PreviewDialogContent>
-          </PreviewDialog>
-      );
-  };
+        if (!selectedImageUrl) return null;
+        
+        return (
+            <PreviewDialog open={isImagePreviewOpen} onOpenChange={setIsImagePreviewOpen}>
+                <PreviewDialogContent className="max-w-3xl">
+                    <img 
+                        src={selectedImageUrl} 
+                        alt="Product preview" 
+                        className="w-full h-auto"
+                        onClick={() => setIsImagePreviewOpen(false)}
+                    />
+                </PreviewDialogContent>
+            </PreviewDialog>
+        );
+    };
 
     return (
         <AuthenticatedLayout
@@ -201,19 +210,19 @@ export default function PosRetail(props: { products: Product[] }) {
             <ImagePreviewModal />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card>
-                            <CardHeader>
-                                <CardTitle>Product Search</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="flex flex-col space-y-2">
-                                <Input
-                                    placeholder="Search products..."
-                                    value={searchTerm}
-                                    onChange={(e) => handleSearch(e.target.value)}
-                                />
-                                <Table>
-                                    <TableHeader>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Product Search</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col space-y-2">
+                            <Input
+                                placeholder="Search products..."
+                                value={searchTerm}
+                                onChange={(e) => handleSearch(e.target.value)}
+                            />
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
                                         <TableHead>Image</TableHead>
                                         <TableHead>Product</TableHead>
@@ -221,53 +230,53 @@ export default function PosRetail(props: { products: Product[] }) {
                                         <TableHead>In Stock</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
+                                </TableHeader>
+                                <TableBody>
                                     {paginatedProducts.map((product) => (
                                         <TableRow key={product.id}>
-                                        <TableCell>
-                                          <div className="flex gap-1">
-                                                {product.images.length > 0 ? (
-                                                    product.images.slice(0, 3).map((image, index) => (
-                                                  <div 
-                                                      key={index}
-                                                      className="w-[50px] h-[50px] overflow-hidden bg-gray-100 flex items-center justify-center"
-                                                  >
-                                                      <img 
-                                                          src={image} 
-                                                          alt={`${product.name} ${index + 1}`}
-                                                          className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                                          onClick={() => {
-                                                              setSelectedImageUrl(image);
-                                                              setIsImagePreviewOpen(true);
-                                                          }}
-                                                      />
-                                                  </div>
-                                                ))
-                                            ) : (
-                                              <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
-                                                <Upload className="h-6 w-6 text-gray-400" />
-                                            </div>
-                                            )}
-                                          </div>
-                                        </TableCell>
-                                        <TableCell>{product.name}</TableCell>
-                                        <TableCell>${product.price}</TableCell>
-                                        <TableCell>{product.quantity}</TableCell>
-                                        <TableCell>
-                                            <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0}>
-                                            Add
-                                            </Button>
-                                        </TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-1">
+                                                    {product.images.length > 0 ? (
+                                                        product.images.slice(0, 3).map((image, index) => (
+                                                            <div 
+                                                                key={index}
+                                                                className="w-[50px] h-[50px] overflow-hidden bg-gray-100 flex items-center justify-center"
+                                                            >
+                                                                <img 
+                                                                    src={image} 
+                                                                    alt={`${product.name} ${index + 1}`}
+                                                                    className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                                                    onClick={() => {
+                                                                        setSelectedImageUrl(image);
+                                                                        setIsImagePreviewOpen(true);
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center">
+                                                            <Upload className="h-6 w-6 text-gray-400" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>{product.name}</TableCell>
+                                            <TableCell>${product.price}</TableCell>
+                                            <TableCell>{product.quantity}</TableCell>
+                                            <TableCell>
+                                                <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0}>
+                                                    Add
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
-                                    </TableBody>
-                                </Table>
-                                <div className="flex justify-between items-center mt-4">
-                                    <div>
+                                </TableBody>
+                            </Table>
+                            <div className="flex justify-between items-center mt-4">
+                                <div>
                                     Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} entries
-                                    </div>
-                                    <div className="flex gap-2">
+                                </div>
+                                <div className="flex gap-2">
                                     <Button
                                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                         disabled={currentPage === 1}
@@ -276,11 +285,11 @@ export default function PosRetail(props: { products: Product[] }) {
                                     </Button>
                                     {getPageNumbers().map(pageNumber => (
                                         <Button
-                                        key={pageNumber}
-                                        variant={pageNumber === currentPage ? "default" : "outline"}
-                                        onClick={() => setCurrentPage(pageNumber)}
+                                            key={pageNumber}
+                                            variant={pageNumber === currentPage ? "default" : "outline"}
+                                            onClick={() => setCurrentPage(pageNumber)}
                                         >
-                                        {pageNumber}
+                                            {pageNumber}
                                         </Button>
                                     ))}
                                     <Button
@@ -289,74 +298,89 @@ export default function PosRetail(props: { products: Product[] }) {
                                     >
                                         Next
                                     </Button>
-                                    </div>
                                 </div>
-                                </div>
-                            </CardContent>
-                            </Card>
-                            <Card>
-                            <CardHeader>
-                                <CardTitle>Current Order</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                <TableHeader>
-                                    <TableRow>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Current Order</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
                                     <TableHead>Product</TableHead>
                                     <TableHead>Quantity</TableHead>
                                     <TableHead>Price</TableHead>
                                     <TableHead>Total</TableHead>
                                     <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {orderItems.map((item) => (
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {orderItems.map((item) => (
                                     <TableRow key={item.id}>
                                         <TableCell>{item.name}</TableCell>
                                         <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>-</Button>
-                                            <span>{item.quantity}</span>
-                                            <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>+</Button>
-                                        </div>
+                                            <div className="flex items-center space-x-2">
+                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>-</Button>
+                                                <span>{item.quantity}</span>
+                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>+</Button>
+                                            </div>
                                         </TableCell>
                                         <TableCell>${item.price}</TableCell>
                                         <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
                                         <TableCell>
-                                        <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
-                                            Remove
-                                        </Button>
+                                            <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
+                                                Remove
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
-                                    ))}
-                                </TableBody>
-                                </Table>
-                            </CardContent>
-                            <CardFooter className="flex justify-between">
-                                <div>Total: ${totalAmount.toFixed(2)}</div>
-                                <Button onClick={handleCompleteSale} disabled={orderItems.length === 0}>Complete Sale</Button>
-                            </CardFooter>
-                            </Card>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                    <CardFooter className="flex justify-between">
+                        <div>Total: ${totalAmount.toFixed(2)}</div>
+                        <Button onClick={handleCompleteSale} disabled={orderItems.length === 0}>Complete Sale</Button>
+                    </CardFooter>
+                </Card>
             </div>
 
             <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
-                <DialogContent aria-describedby="complete-sale-description">
+                <DialogContent aria-describedby="complete-sale-description" className="p-6">
                     <DialogHeader>
-                        <DialogTitle>Complete Sale</DialogTitle>
+                        <DialogTitle className="text-lg font-semibold">Complete Sale</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                        <Label htmlFor="cashReceived">Cash Received</Label>
-                        <Input
-                            id="cashReceived"
-                            type="number"
-                            value={cashReceived}
-                            onChange={(e) => setCashReceived(e.target.value)}
-                            placeholder="Enter amount received"
-                        />
+                        <Label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">Payment Method</Label>
+                        <select 
+                            id="paymentMethod" 
+                            value={paymentMethod} 
+                            onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'card')}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="cash">Cash</option>
+                            <option value="card">Card</option>
+                        </select>
+                        {paymentMethod === 'cash' && (
+                            <>
+                                <Label htmlFor="cashReceived" className="block text-sm font-medium text-gray-700 mt-4">Cash Received</Label>
+                                <Input
+                                    id="cashReceived"
+                                    type="number"
+                                    value={cashReceived}
+                                    onChange={(e) => setCashReceived(e.target.value)}
+                                    placeholder="Enter amount received"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </>
+                        )}
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="flex justify-between">
                         <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={confirmCompleteSale}>Confirm Sale</Button>
+                        <Button onClick={confirmCompleteSale} className="bg-blue-600 text-white hover:bg-blue-700">Confirm Sale</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog> 
