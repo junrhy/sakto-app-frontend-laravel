@@ -49,7 +49,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
         quantity: 0,
         price: 0,
         images: [],
-        category_id: 0,
+        category_id: props.categories[0]?.id || 0,
         description: "",
         status: 'in_stock',
     });
@@ -150,7 +150,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                     quantity: newProduct.quantity,
                     price: newProduct.price,
                     images: newProduct.images,
-                    category_id: 1,
+                    category_id: newProduct.category_id,
                     description: newProduct.description,
                     status: newProduct.status,
                 }, {
@@ -347,6 +347,20 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
         );
     };
 
+    const resetProduct = () => {
+        setNewProduct({
+            id: 0,
+            name: "",
+            sku: "",
+            quantity: 0,
+            price: 0,
+            images: [],
+            category_id: props.categories[0]?.id || 0,
+            description: "",
+            status: 'in_stock'
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -463,7 +477,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
                             <Button onClick={() => {
-                                setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock' });
+                                resetProduct();
                                 setIsEditing(false);
                             }} className="w-full md:w-auto">
                                 <Plus className="mr-2 h-4 w-4" /> Add New Product
@@ -511,6 +525,24 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                                     value={newProduct.price}
                                     onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
                                 />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="category" className="text-right">Category</Label>
+                                <Select 
+                                    value={newProduct.category_id.toString()}
+                                    onValueChange={(value) => setNewProduct({ ...newProduct, category_id: Number(value) })}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {props.categories.map((category) => (
+                                            <SelectItem key={category.id} value={category.id.toString()}>
+                                                {category.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="images" className="text-right">Images</Label>
