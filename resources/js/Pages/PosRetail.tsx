@@ -15,6 +15,7 @@ interface Product {
     id: number;
     name: string;
     price: number;
+    price_formatted: string;
     images: string[];
     quantity: number; // Add this line to include inventory quantity
 }
@@ -24,11 +25,12 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number;
+    price_formatted: string;
 }
   
 const ITEMS_PER_PAGE = 5;
 
-export default function PosRetail(props: { products: Product[] }) {
+export default function PosRetail(props: { products: Product[], appCurrency: any }) {
     const [products, setProducts] = useState<Product[]>(props.products);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
@@ -261,7 +263,7 @@ export default function PosRetail(props: { products: Product[] }) {
                                                 </div>
                                             </TableCell>
                                             <TableCell>{product.name}</TableCell>
-                                            <TableCell>${product.price}</TableCell>
+                                            <TableCell>{product.price_formatted}</TableCell>
                                             <TableCell>{product.quantity}</TableCell>
                                             <TableCell>
                                                 <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0} className="p-4">
@@ -329,8 +331,8 @@ export default function PosRetail(props: { products: Product[] }) {
                                                 <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)} className="p-4">+</Button>
                                             </div>
                                         </TableCell>
-                                        <TableCell>${item.price}</TableCell>
-                                        <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                        <TableCell>{item.price_formatted}</TableCell>
+                                        <TableCell>{props.appCurrency.symbol}{(item.price * item.quantity).toFixed(2)}</TableCell>
                                         <TableCell>
                                             <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)} className="p-4">
                                                 Remove
@@ -342,7 +344,7 @@ export default function PosRetail(props: { products: Product[] }) {
                         </Table>
                     </CardContent>
                     <CardFooter className="flex justify-between">
-                        <div>Total: ${totalAmount.toFixed(2)}</div>
+                        <div>Total: {props.appCurrency.symbol}{totalAmount.toFixed(2)}</div>
                         <Button onClick={handleCompleteSale} disabled={orderItems.length === 0} className="p-4">Complete Sale</Button>
                     </CardFooter>
                 </Card>
