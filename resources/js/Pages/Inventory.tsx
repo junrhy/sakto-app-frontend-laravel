@@ -38,7 +38,7 @@ interface Product {
 
 const ITEMS_PER_PAGE = 5;
 
-export default function Inventory(props: { inventory: Product[], categories: Category[] }) {
+export default function Inventory(props: { inventory: Product[], categories: Category[], appCurrency: any }) {
     const [products, setProducts] = useState<Product[]>(props.inventory);
 
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
@@ -702,7 +702,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                             <TableCell>{product.name}</TableCell>
                             <TableCell>{product.sku}</TableCell>
                             <TableCell>{product.quantity}</TableCell>
-                            <TableCell>${product.price}</TableCell>
+                            <TableCell>{props.appCurrency.symbol}{product.price}</TableCell>
                             <TableCell>
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => editProduct(product)}>
                                 <Pencil className="h-4 w-4" />
