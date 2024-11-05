@@ -84,7 +84,7 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->client_identifier = auth()->user()->id;
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
 
             $response = Http::withToken($this->apiToken)
                 ->timeout(30)
