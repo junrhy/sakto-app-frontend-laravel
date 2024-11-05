@@ -254,6 +254,12 @@ class InventoryController extends Controller
                     'barcode' => 'data:image/png;base64,' . $barcode
                 ]
             ]);
+            return Inertia::render('Inventory', [
+                'status' => 'success',
+                'data' => [
+                    'barcode' => 'data:image/png;base64,' . $barcode
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to generate barcode'], 500);
         }
