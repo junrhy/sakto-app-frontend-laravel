@@ -59,6 +59,8 @@ class PosRetailController extends Controller
     public function store(Request $request)
     {
         try {
+            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+
             $response = Http::withToken($this->apiToken)
                 ->timeout(30)
                 ->post("{$this->apiUrl}/pos-retail", $request->all());
