@@ -24,6 +24,7 @@ interface Category {
 }
 
 interface Product {
+    barcode: string;
     id: number;
     name: string;
     sku: string;
@@ -52,6 +53,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
         category_id: props.categories[0]?.id || 0,
         description: "",
         status: 'in_stock',
+        barcode: ""
     });
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
@@ -129,13 +131,14 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                     category_id: newProduct.category_id,
                     description: newProduct.description,
                     status: newProduct.status,
+                    barcode: newProduct.barcode,
                 }, {
                     preserveState: true,
                     onSuccess: () => {
                         setProducts(products.map((product) => 
                             product.id === newProduct.id ? newProduct : product
                         ));
-                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock' });
+                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock', barcode: "" });
                         setIsEditing(false);
                         setIsDialogOpen(false);
                         toast.success('Product updated successfully');
@@ -153,11 +156,12 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                     category_id: newProduct.category_id,
                     description: newProduct.description,
                     status: newProduct.status,
+                    barcode: newProduct.barcode,
                 }, {
                     preserveState: true,
                     onSuccess: (page: any) => {
                         setProducts([...products, page.props.inventory]);
-                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock' });
+                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock', barcode: "" });
                         setIsDialogOpen(false);
                         toast.success('Product added successfully');
                     },
@@ -357,7 +361,8 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
             images: [],
             category_id: props.categories[0]?.id || 0,
             description: "",
-            status: 'in_stock'
+            status: 'in_stock',
+            barcode: ""
         });
     };
 
@@ -503,7 +508,29 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                                     id="sku"
                                     className="col-span-3"
                                     value={newProduct.sku}
-                                    onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
+                                    onChange={async (e) => {
+                                        const skuValue = e.target.value;
+                                        setNewProduct({ 
+                                            ...newProduct, 
+                                            sku: skuValue,
+                                        });
+                                    }}
+                                    onBlur={async (e) => {
+                                        const skuValue = e.target.value;
+
+                                        // Fetch barcode data without reloading
+                                        try {
+                                            const response = await fetch(`/inventory/${skuValue}/barcode`);
+                                            if (!response.ok) throw new Error('Network response was not ok');
+                                            const page = await response.json();
+                                            setNewProduct({ 
+                                                ...newProduct, 
+                                                barcode: page.data.barcode // Adjust according to your JSON structure
+                                            });
+                                        } catch (error) {
+                                            console.error('Error fetching barcode:', error);
+                                        }
+                                    }}
                                 />
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
@@ -568,6 +595,15 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                                     ))}
                                     </div>
                                 </div>
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="barcode" className="text-right">Barcode</Label>
+                                    <Input
+                                        id="barcode"
+                                        className="col-span-3"
+                                        value={newProduct.barcode || ''} // Display barcode
+                                        readOnly // Make it read-only
+                                    />
                                 </div>
                             </div>
                             <Button 
