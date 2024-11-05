@@ -12,7 +12,13 @@ import { Calendar } from "@/Components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { subMonths } from "date-fns";
+import { subMonths, startOfToday, startOfWeek, startOfMonth, endOfMonth, endOfWeek } from "date-fns";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+
+type DateRange = {
+    from: Date | undefined;
+    to: Date | undefined;
+};
 
 const itemsPerPage = 5;
 
@@ -24,10 +30,7 @@ export default function PosRetailSale() {
     const today = new Date();
     const oneMonthAgo = subMonths(today, 1);
     
-    const [dateRange, setDateRange] = useState<{
-        from: Date | undefined;
-        to: Date | undefined;
-    }>({
+    const [dateRange, setDateRange] = useState<DateRange>({
         from: oneMonthAgo,
         to: today,
     });
@@ -35,7 +38,7 @@ export default function PosRetailSale() {
     const [data, setData] = useState([
         { 
             id: 1, 
-            date: '2024-02-15', 
+            date: '2024-11-15', 
             items: [
                 { id: 1, price: "1299.99", quantity: 1 },
                 { id: 2, price: "799.99", quantity: 2 }
@@ -47,7 +50,7 @@ export default function PosRetailSale() {
         },
         { 
             id: 2, 
-            date: '2024-02-16', 
+            date: '2024-11-16', 
             items: [
                 { id: 3, price: "599.99", quantity: 1 }
             ],
@@ -58,7 +61,7 @@ export default function PosRetailSale() {
         },
         { 
             id: 3, 
-            date: '2024-02-17', 
+            date: '2024-11-17', 
             items: [
                 { id: 4, price: "999.99", quantity: 1 },
                 { id: 5, price: "499.99", quantity: 3 }
@@ -70,7 +73,7 @@ export default function PosRetailSale() {
         },
         { 
             id: 4, 
-            date: '2024-02-18', 
+            date: '2024-10-18', 
             items: [
                 { id: 6, price: "1499.99", quantity: 1 }
             ],
@@ -81,7 +84,7 @@ export default function PosRetailSale() {
         },
         { 
             id: 5, 
-            date: '2024-02-19', 
+            date: '2024-10-19', 
             items: [
                 { id: 7, price: "899.99", quantity: 2 }
             ],
@@ -91,6 +94,10 @@ export default function PosRetailSale() {
             paymentMethod: 'Card' 
         }
     ]);
+
+    const uniquePaymentMethods = Array.from(
+        new Set(data.map(sale => sale.paymentMethod))
+    );
 
     const filteredData = data.filter(sale => {
         const matchesSearch = sale.items.some(item => 
@@ -146,6 +153,38 @@ export default function PosRetailSale() {
         );
     };
 
+    const handleDateRangeSelect = (range: string) => {
+        const today = new Date();
+        
+        switch (range) {
+            case 'today':
+                setDateRange({
+                    from: startOfToday(),
+                    to: today
+                });
+                break;
+            case 'this-week':
+                setDateRange({
+                    from: startOfWeek(today, { weekStartsOn: 1 }), // Week starts on Monday
+                    to: endOfWeek(today, { weekStartsOn: 1 })
+                });
+                break;
+            case 'this-month':
+                setDateRange({
+                    from: startOfMonth(today),
+                    to: endOfMonth(today)
+                });
+                break;
+            case 'last-month':
+                const lastMonth = subMonths(today, 1);
+                setDateRange({
+                    from: startOfMonth(lastMonth),
+                    to: endOfMonth(lastMonth)
+                });
+                break;
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -182,50 +221,83 @@ export default function PosRetailSale() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Methods</SelectItem>
-                                <SelectItem value="Cash">Cash</SelectItem>
-                                <SelectItem value="Card">Card</SelectItem>
+                                {uniquePaymentMethods.map((method) => (
+                                    <SelectItem key={method} value={method}>
+                                        {method}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="w-full md:w-1/4">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-full justify-start text-left font-normal h-10",
-                                        !dateRange.from && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dateRange.from ? (
-                                        dateRange.to ? (
-                                            <>
-                                                {format(dateRange.from, "LLL dd, y")} -{" "}
-                                                {format(dateRange.to, "LLL dd, y")}
-                                            </>
+                        <div className="flex gap-2">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="h-10"
+                                    >
+                                        Quick Select
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('today')}>
+                                        Today
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('this-week')}>
+                                        This Week
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('this-month')}>
+                                        This Month
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDateRangeSelect('last-month')}>
+                                        Last Month
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className={cn(
+                                            "w-full justify-start text-left font-normal h-10",
+                                            !dateRange.from && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {dateRange.from ? (
+                                            dateRange.to ? (
+                                                <>
+                                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                                    {format(dateRange.to, "LLL dd, y")}
+                                                </>
+                                            ) : (
+                                                format(dateRange.from, "LLL dd, y")
+                                            )
                                         ) : (
-                                            format(dateRange.from, "LLL dd, y")
-                                        )
-                                    ) : (
-                                        <span>Pick a date range</span>
-                                    )}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                    initialFocus
-                                    mode="range"
-                                    defaultMonth={dateRange.from}
-                                    selected={{ 
-                                        from: dateRange.from,
-                                        to: dateRange.to
-                                    }}
-                                    onSelect={(range: any) => setDateRange(range)}
-                                    numberOfMonths={2}
-                                />
-                            </PopoverContent>
-                        </Popover>
+                                            <span>Pick a date range</span>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        initialFocus
+                                        mode="range"
+                                        defaultMonth={dateRange.from}
+                                        selected={dateRange}
+                                        onSelect={(range) => {
+                                            if (range && 'from' in range && 'to' in range) {
+                                                setDateRange({
+                                                    from: range.from || new Date(),
+                                                    to: range.to || new Date(),
+                                                });
+                                            }
+                                        }}
+                                        numberOfMonths={2}
+                                    ></Calendar>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
                     </div>
                     <div className="flex justify-end md:flex-1">
                         <Button 
