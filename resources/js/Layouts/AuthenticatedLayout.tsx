@@ -159,6 +159,9 @@ export default function Authenticated({
                                                 <Dropdown.Link href={route('inventory')}>
                                                     Inventory
                                                 </Dropdown.Link>
+                                                <Dropdown.Link href={route('retail-sale')}>
+                                                    Sales
+                                                </Dropdown.Link>
                                             </Dropdown.Content>
                                         </Dropdown>
                                     </div>
