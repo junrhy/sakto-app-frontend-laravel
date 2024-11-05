@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\PosRetailController;
+use App\Http\Controllers\PosRetailSaleController;
 use App\Http\Controllers\PosRestaurantController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\WarehousingController;
@@ -38,6 +39,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
+    Route::get('/retail-sale', [PosRetailSaleController::class, 'index'])->name('retail-sale');
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');

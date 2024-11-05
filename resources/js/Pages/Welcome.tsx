@@ -60,7 +60,7 @@ export default function Welcome({
                         <div className="text-center">
                             <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
                                 <span className="block">Innovate Your Business with</span>
-                                <span className="text-indigo-600">Sakto</span> management apps.
+                                <span className="text-indigo-600">sakto</span> online platform.
                             </h1>
                             <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
                                 Streamline your workflow, boost productivity, and achieve better results with our powerful platform.
