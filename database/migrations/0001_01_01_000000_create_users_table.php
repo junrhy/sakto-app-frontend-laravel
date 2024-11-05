@@ -21,12 +21,15 @@ return new class extends Migration
             $table->string('contact_number')->nullable();
             $table->string('project_identifier');
             $table->string('referer')->nullable();
-            $table->string('app_currency')->default('USD');
+            $table->json('app_currency')->nullable();
             $table->string('theme')->default('light');
             $table->string('theme_color')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
+
+        // Add default value after table creation
+        DB::statement("ALTER TABLE users ALTER app_currency SET DEFAULT (JSON_OBJECT('code', 'USD', 'symbol', '$', 'decimal_point', '.', 'thousands_separator', ','))");
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
