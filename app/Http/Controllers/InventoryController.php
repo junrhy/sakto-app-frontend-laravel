@@ -39,10 +39,13 @@ class InventoryController extends Controller
                 return $product;
             }, $inventoryData);
             $inventoryCategories = $response->json()['data']['categories'];
+
+            $appCurrency = auth()->user()->app_currency;
             
             return Inertia::render('Inventory', [
                 'inventory' => $inventoryData,
-                'categories' => $inventoryCategories
+                'categories' => $inventoryCategories,
+                'appCurrency' => json_decode($appCurrency)
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
