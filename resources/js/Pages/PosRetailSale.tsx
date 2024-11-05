@@ -22,7 +22,23 @@ type DateRange = {
 
 const itemsPerPage = 5;
 
-export default function PosRetailSale() {
+interface SaleItem {
+    id: number;
+    price: number;
+    quantity: number;
+}
+
+interface Sale {
+    id: number;
+    created_at: string;
+    items: SaleItem[];
+    total_amount: number;
+    cash_received: number;
+    change: number;
+    payment_method: string;
+}
+
+export default function PosRetailSale({ sales }: { sales: Sale[] }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -35,79 +51,24 @@ export default function PosRetailSale() {
         to: today,
     });
 
-    const [data, setData] = useState([
-        { 
-            id: 1, 
-            date: '2024-11-15', 
-            items: [
-                { id: 1, price: "1299.99", quantity: 1 },
-                { id: 2, price: "799.99", quantity: 2 }
-            ],
-            total: '$2899.97', 
-            cashReceived: '$3000.00', 
-            change: '$100.03', 
-            paymentMethod: 'Cash' 
-        },
-        { 
-            id: 2, 
-            date: '2024-11-16', 
-            items: [
-                { id: 3, price: "599.99", quantity: 1 }
-            ],
-            total: '$599.99', 
-            cashReceived: '$600.00', 
-            change: '$0.01', 
-            paymentMethod: 'Cash' 
-        },
-        { 
-            id: 3, 
-            date: '2024-11-17', 
-            items: [
-                { id: 4, price: "999.99", quantity: 1 },
-                { id: 5, price: "499.99", quantity: 3 }
-            ],
-            total: '$2499.96', 
-            cashReceived: '$2500.00', 
-            change: '$0.04', 
-            paymentMethod: 'Card' 
-        },
-        { 
-            id: 4, 
-            date: '2024-10-18', 
-            items: [
-                { id: 6, price: "1499.99", quantity: 1 }
-            ],
-            total: '$1499.99', 
-            cashReceived: '$1500.00', 
-            change: '$0.01', 
-            paymentMethod: 'Cash' 
-        },
-        { 
-            id: 5, 
-            date: '2024-10-19', 
-            items: [
-                { id: 7, price: "899.99", quantity: 2 }
-            ],
-            total: '$1799.98', 
-            cashReceived: '$1800.00', 
-            change: '$0.02', 
-            paymentMethod: 'Card' 
-        }
-    ]);
-
+    const [data, setData] = useState<Sale[]>(sales);
+    
     const uniquePaymentMethods = Array.from(
-        new Set(data.map(sale => sale.paymentMethod))
+        new Set(data.map(sale => sale.payment_method))
     );
-
     const filteredData = data.filter(sale => {
-        const matchesSearch = sale.items.some(item => 
+        if (!sale.items || !Array.isArray(sale.items)) {
+            console.log('Invalid sale items for sale:', sale);
+            return false;
+        }
+
+        const matchesSearch = searchTerm === "" || sale.items.some((item: { id: number }) => 
             item.id.toString().includes(searchTerm.toLowerCase())
         );
-        const matchesPaymentMethod = paymentMethodFilter === "all" || sale.paymentMethod === paymentMethodFilter;
-        
+        const matchesPaymentMethod = paymentMethodFilter === "all" || sale.payment_method === paymentMethodFilter;
         let matchesDateRange = true;
         if (dateRange.from || dateRange.to) {
-            const saleDate = new Date(sale.date);
+            const saleDate = new Date(sale.created_at);
             if (dateRange.from && dateRange.to) {
                 matchesDateRange = saleDate >= dateRange.from && saleDate <= dateRange.to;
             } else if (dateRange.from) {
@@ -123,6 +84,13 @@ export default function PosRetailSale() {
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+    console.log('Sales data:', {
+        receivedSales: sales,
+        currentData: data,
+        filteredData: filteredData,
+        currentItems: currentItems
+    });
 
     const handleDelete = (id: number) => {
         if (confirm("Are you sure you want to delete this sale?")) {
@@ -334,37 +302,47 @@ export default function PosRetailSale() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {currentItems.map((sale, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={selectedIds.includes(sale.id)} 
-                                            onCheckedChange={() => toggleSelect(sale.id)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>{sale.date}</TableCell>
-                                    <TableCell>
-                                        {sale.items.map((item, idx) => (
-                                            <div key={idx}>
-                                                Item #{item.id} (${item.price} x {item.quantity})
-                                            </div>
-                                        ))}
-                                    </TableCell>
-                                    <TableCell>{sale.total}</TableCell>
-                                    <TableCell>{sale.cashReceived}</TableCell>
-                                    <TableCell>{sale.change}</TableCell>
-                                    <TableCell>{sale.paymentMethod}</TableCell>
-                                    <TableCell>
-                                        <Button 
-                                            variant="destructive" 
-                                            size="sm"
-                                            onClick={() => handleDelete(sale.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                            {currentItems.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8} className="text-center py-4">
+                                        No sales data found
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : (
+                                currentItems.map((sale, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedIds.includes(sale.id)} 
+                                                onCheckedChange={() => toggleSelect(sale.id)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            {sale.created_at ? new Date(sale.created_at).toLocaleDateString() : 'N/A'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {sale.items.map((item: { id: number; price: number; quantity: number }, idx: number) => (
+                                                <div key={item.id}>
+                                                    {item.id} (${item.price} x {item.quantity})
+                                                </div>
+                                            ))}
+                                        </TableCell>
+                                        <TableCell>{sale.total_amount}</TableCell>
+                                        <TableCell>{sale.cash_received}</TableCell>
+                                        <TableCell>{sale.change}</TableCell>
+                                        <TableCell>{sale.payment_method}</TableCell>
+                                        <TableCell>
+                                            <Button 
+                                                variant="destructive" 
+                                                size="sm"
+                                                onClick={() => handleDelete(sale.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
                         </TableBody>
                     </Table>
                 </div>
