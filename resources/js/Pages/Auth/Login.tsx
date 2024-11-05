@@ -188,7 +188,7 @@ export default function Login({
                                 Why Choose Us?
                             </h3>
                             <p className="mt-3 text-lg text-white/80 max-w-lg">
-                            Find out how our platform's cutting-edge IT solutions can make managing your business easier.
+                                All in one online software that can run any business simpler, faster, and more efficient.
                             </p>
                         </div>
                     </div>

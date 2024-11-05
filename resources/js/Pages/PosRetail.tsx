@@ -264,7 +264,7 @@ export default function PosRetail(props: { products: Product[] }) {
                                             <TableCell>${product.price}</TableCell>
                                             <TableCell>{product.quantity}</TableCell>
                                             <TableCell>
-                                                <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0}>
+                                                <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0} className="p-4">
                                                     Add
                                                 </Button>
                                             </TableCell>
@@ -324,15 +324,15 @@ export default function PosRetail(props: { products: Product[] }) {
                                         <TableCell>{item.name}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-2">
-                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>-</Button>
+                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)} className="p-4">-</Button>
                                                 <span>{item.quantity}</span>
-                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>+</Button>
+                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)} className="p-4">+</Button>
                                             </div>
                                         </TableCell>
                                         <TableCell>${item.price}</TableCell>
                                         <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
                                         <TableCell>
-                                            <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
+                                            <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)} className="p-4">
                                                 Remove
                                             </Button>
                                         </TableCell>
@@ -343,7 +343,7 @@ export default function PosRetail(props: { products: Product[] }) {
                     </CardContent>
                     <CardFooter className="flex justify-between">
                         <div>Total: ${totalAmount.toFixed(2)}</div>
-                        <Button onClick={handleCompleteSale} disabled={orderItems.length === 0}>Complete Sale</Button>
+                        <Button onClick={handleCompleteSale} disabled={orderItems.length === 0} className="p-4">Complete Sale</Button>
                     </CardFooter>
                 </Card>
             </div>
@@ -379,8 +379,8 @@ export default function PosRetail(props: { products: Product[] }) {
                         )}
                     </div>
                     <DialogFooter className="flex justify-between">
-                        <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={confirmCompleteSale} className="bg-blue-600 text-white hover:bg-blue-700">Confirm Sale</Button>
+                        <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)} className="p-4">Cancel</Button>
+                        <Button onClick={confirmCompleteSale} className="bg-blue-600 text-white hover:bg-blue-700 p-4">Confirm Sale</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog> 
