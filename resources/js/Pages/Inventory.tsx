@@ -30,6 +30,7 @@ interface Product {
     sku: string;
     quantity: number;
     price: number;
+    price_formatted: string;
     images: string[];
     category_id: number;
     description?: string;
@@ -49,6 +50,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
         sku: "",
         quantity: 0,
         price: 0,
+        price_formatted: "",
         images: [],
         category_id: props.categories[0]?.id || 0,
         description: "",
@@ -138,7 +140,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                         setProducts(products.map((product) => 
                             product.id === newProduct.id ? newProduct : product
                         ));
-                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock', barcode: "" });
+                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, price_formatted: "", images: [], category_id: 0, description: "", status: 'in_stock', barcode: "" });
                         setIsEditing(false);
                         setIsDialogOpen(false);
                         toast.success('Product updated successfully');
@@ -161,7 +163,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                     preserveState: true,
                     onSuccess: (page: any) => {
                         setProducts([...products, page.props.inventory]);
-                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, images: [], category_id: 0, description: "", status: 'in_stock', barcode: "" });
+                        setNewProduct({ id: 0, name: "", sku: "", quantity: 0, price: 0, price_formatted: "", images: [], category_id: 0, description: "", status: 'in_stock', barcode: "" });
                         setIsDialogOpen(false);
                         toast.success('Product added successfully');
                     },
@@ -358,6 +360,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
             sku: "",
             quantity: 0,
             price: 0,
+            price_formatted: "",
             images: [],
             category_id: props.categories[0]?.id || 0,
             description: "",
@@ -387,7 +390,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                     {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
                 </Button>
                 
-                {showAnalytics && <InventoryAnalytics products={products} />}
+                {showAnalytics && <InventoryAnalytics products={products} appCurrency={props.appCurrency} />}
             </div>
 
             <Card>
@@ -702,7 +705,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                             <TableCell>{product.name}</TableCell>
                             <TableCell>{product.sku}</TableCell>
                             <TableCell>{product.quantity}</TableCell>
-                            <TableCell>{props.appCurrency.symbol}{product.price}</TableCell>
+                            <TableCell>{product.price_formatted}</TableCell>
                             <TableCell>
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => editProduct(product)}>
                                 <Pencil className="h-4 w-4" />

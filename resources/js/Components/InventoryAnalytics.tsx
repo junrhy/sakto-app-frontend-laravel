@@ -26,9 +26,10 @@ ChartJS.register(
 
 interface AnalyticsProps {
     products: Product[];
+    appCurrency: any;
 }
 
-export default function InventoryAnalytics({ products }: AnalyticsProps) {
+export default function InventoryAnalytics({ products, appCurrency }: AnalyticsProps) {
     const totalValue = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
     const lowStockItems = products.filter(p => p.quantity <= 10).length;
     const outOfStockItems = products.filter(p => p.quantity === 0).length;
@@ -65,7 +66,7 @@ export default function InventoryAnalytics({ products }: AnalyticsProps) {
                         <CardTitle>Total Value</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">{appCurrency.symbol}{totalValue.toFixed(2)}</div>
                     </CardContent>
                 </Card>
 
@@ -92,7 +93,7 @@ export default function InventoryAnalytics({ products }: AnalyticsProps) {
                         <CardTitle>Average Price</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">${averagePrice.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">{appCurrency.symbol}{averagePrice.toFixed(2)}</div>
                     </CardContent>
                 </Card>
             </div>

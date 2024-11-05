@@ -40,12 +40,16 @@ class InventoryController extends Controller
             }, $inventoryData);
             $inventoryCategories = $response->json()['data']['categories'];
 
-            $appCurrency = auth()->user()->app_currency;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            $inventoryData = array_map(function($product) use ($jsonAppCurrency) {
+                $product['price_formatted'] = $jsonAppCurrency->symbol . number_format($product['price'], 2, $jsonAppCurrency->decimal_separator, $jsonAppCurrency->thousands_separator);
+                return $product;
+            }, $inventoryData);
             
             return Inertia::render('Inventory', [
                 'inventory' => $inventoryData,
                 'categories' => $inventoryCategories,
-                'appCurrency' => json_decode($appCurrency)
+                'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -293,15 +297,31 @@ class InventoryController extends Controller
     public function exportProducts()
     {
         try {
-            $products = $this->getDummyData()['data']['products'];
-            
+            // Fetch data from API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/inventory");
+
+            if(!$response->json()) {
+                return response()->json(['error' => 'Failed to connect to Inventory API.'], 500);
+            }
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $products = $response->json()['data']['products'];
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            $products = array_map(function($product) use ($jsonAppCurrency) {
+                $product['price'] = $jsonAppCurrency->symbol . number_format($product['price'], 2, $jsonAppCurrency->decimal_separator, $jsonAppCurrency->thousands_separator);
+                return $product;
+            }, $products);
+
             // Generate CSV
             $csv = fopen('php://temp', 'r+');
-            fputcsv($csv, ['ID', 'Name', 'SKU', 'Quantity', 'Price']); // Headers
+            fputcsv($csv, ['Name', 'SKU', 'Quantity', 'Price']); // Headers
             
             foreach ($products as $product) {
                 fputcsv($csv, [
-                    $product['id'],
                     $product['name'],
                     $product['sku'],
                     $product['quantity'],

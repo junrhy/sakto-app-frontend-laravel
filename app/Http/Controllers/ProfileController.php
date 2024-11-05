@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use App\Models\User;
 class ProfileController extends Controller
 {
     /**
@@ -59,5 +59,14 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function updateCurrency(Request $request): RedirectResponse
+    {
+        $user = User::find(auth()->user()->id);
+        $user->fill(['app_currency' => json_encode($request->all())]);
+        $user->save();
+
+        return Redirect::route('profile.edit');
     }
 }

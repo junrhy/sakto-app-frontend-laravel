@@ -6,14 +6,21 @@ import TextInput from '@/Components/TextInput';
 
 export default function UpdateCurrencyForm({ className = '' }: { className?: string }) {
     const { data, setData, patch, errors, processing } = useForm({
-        currency_symbol: '$', // Default value, should come from user preferences
+        symbol: '$', // Default value, should come from user preferences
         decimal_separator: '.',
         thousands_separator: ',',
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        patch(route('profile.currency'));
+        patch(route('profile.currency'), {
+            onSuccess: () => {
+                // Handle success response if needed
+            },
+            onError: () => {
+                // Handle error response if needed
+            }
+        });
     };
 
     return (
@@ -33,8 +40,8 @@ export default function UpdateCurrencyForm({ className = '' }: { className?: str
                     <TextInput
                         id="currency_symbol"
                         className="mt-1 block w-full"
-                        value={data.currency_symbol}
-                        onChange={(e) => setData('currency_symbol', e.target.value)}
+                        value={data.symbol}
+                        onChange={(e) => setData('symbol', e.target.value)}
                         required
                     />
                 </div>
