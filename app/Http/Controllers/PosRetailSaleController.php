@@ -31,12 +31,42 @@ class PosRetailSaleController extends Controller
             throw new \Exception('API request failed: ' . $response->body());
         }
 
+        $app_currency = json_decode(auth()->user()->app_currency);
+        $responseData = $response->json();
+        $sales = collect($responseData['data'])->map(function ($sale) use ($app_currency) {
+            return [
+                'id' => $sale['id'],
+                'created_at' => $sale['created_at'],
+                'items' => $this->mapSaleItems($sale['items']),
+                'total_amount' => $app_currency->symbol . number_format($sale['total_amount'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
+                'cash_received' => $app_currency->symbol . number_format($sale['cash_received'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
+                'change' => $app_currency->symbol . number_format($sale['change'], 2, $app_currency->decimal_separator, $app_currency->thousands_separator),
+                'payment_method' => ucfirst($sale['payment_method']),
+            ];
+        });
         return Inertia::render('PosRetailSale', [
-            'sales' => $response->json()['data']
+            'sales' => $sales
         ]);
     }
 
-    public function showSalesReport() {
-        return view('sales-report'); // Assuming you have a corresponding Blade view
+    private function mapSaleItems($items) {
+        // Fetch data from API
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/inventory");
+
+        if(!$response->json()) {
+            return response()->json(['error' => 'Failed to connect to Retail POS Sales API.'], 500);
+        }
+
+        if (!$response->successful()) {
+            throw new \Exception('API request failed: ' . $response->body());
+        }
+
+        $inventoryProducts = $response->json()['data']['products'];
+
+        return collect($items)->map(function ($item) use ($inventoryProducts) {
+            $product = collect($inventoryProducts)->firstWhere('id', $item['id']);
+            return ['id' => $product['name'], 'price' => $product['price'], 'quantity' => $item['quantity']];
+        });
     }
 }
