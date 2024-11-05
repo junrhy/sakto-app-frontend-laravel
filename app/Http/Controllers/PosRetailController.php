@@ -37,9 +37,16 @@ class PosRetailController extends Controller
             $inventoryProducts = $response->json()['data']['products'];
             $inventoryCategories = $response->json()['data']['categories'];
             
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+            $inventoryProducts = array_map(function($product) use ($jsonAppCurrency) {
+                $product['price_formatted'] = $jsonAppCurrency->symbol . number_format($product['price'], 2, $jsonAppCurrency->decimal_separator, $jsonAppCurrency->thousands_separator);
+                return $product;
+            }, $inventoryProducts);
+            
             return Inertia::render('PosRetail', [
                 'products' => $inventoryProducts,
-                'categories' => $inventoryCategories
+                'categories' => $inventoryCategories,
+                'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
