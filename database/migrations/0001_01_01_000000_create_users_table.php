@@ -29,7 +29,7 @@ return new class extends Migration
         });
 
         // Add default value after table creation
-        DB::statement("ALTER TABLE users ALTER app_currency SET DEFAULT (JSON_OBJECT('code', 'USD', 'symbol', '$', 'decimal_point', '.', 'thousands_separator', ','))");
+        DB::statement("ALTER TABLE users ALTER app_currency SET DEFAULT (JSON_OBJECT('symbol', '$', 'decimal_separator', '.', 'thousands_separator', ','))");
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
