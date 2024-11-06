@@ -98,7 +98,7 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
 
     const handleDelete = (id: number) => {
         if (confirm("Are you sure you want to delete this sale?")) {
-            router.delete(`/sales/${id}`, {
+            router.delete(`/retail-sale/${id}`, {
                 onSuccess: () => {
                     toast.success("Sale has been deleted successfully");
                     setData(data.filter(item => item.id !== id));
@@ -112,7 +112,7 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
 
     const handleMultipleDelete = () => {
         if (confirm("Are you sure you want to delete the selected sales?")) {
-            router.delete('/sales/bulk-delete', {
+            router.delete('/retail-sales/bulk-delete', {
                 data: { ids: selectedIds },
                 onSuccess: () => {
                     toast.success(`${selectedIds.length} sales have been deleted successfully`);

@@ -75,7 +75,7 @@ class PosRetailSaleController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/pos-retail/sales/{$id}");
+                ->delete("{$this->apiUrl}/pos-retail/sale/{$id}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -94,7 +94,7 @@ class PosRetailSaleController extends Controller
             $ids = $request->input('ids');
             
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/pos-retail/sales/bulk", [
+                ->post("{$this->apiUrl}/pos-retail/sales/bulk-delete", [
                     'ids' => $ids
                 ]);
 
