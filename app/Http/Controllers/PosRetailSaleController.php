@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\Sale;
 
 class PosRetailSaleController extends Controller
 {
@@ -68,5 +69,29 @@ class PosRetailSaleController extends Controller
             $product = collect($inventoryProducts)->firstWhere('id', $item['id']);
             return ['id' => $product['name'], 'price' => $product['price'], 'quantity' => $item['quantity']];
         });
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $sale = Sale::findOrFail($id);
+            $sale->delete();
+            
+            return response()->json(['message' => 'Sale deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete sale'], 500);
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $ids = $request->input('ids');
+            Sale::whereIn('id', $ids)->delete();
+            
+            return response()->json(['message' => 'Sales deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete sales'], 500);
+        }
     }
 }

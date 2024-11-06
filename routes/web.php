@@ -32,40 +32,13 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
     Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])
         ->name('dashboard.widgets');
 
-    Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
-    Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
-    Route::get('/retail-sale', [PosRetailSaleController::class, 'index'])->name('retail-sale');
-    Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
-    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
-    Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
-    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
-    Route::get('/rental-item', [RentalItemController::class, 'index'])->name('rental-item');
-    Route::get('/rental-property', [RentalPropertyController::class, 'index'])->name('rental-property');
-    Route::get('/loan', [LoanController::class, 'index'])->name('loan');
-    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
-    Route::get('/help', [HelpController::class, 'index'])->name('help');
-
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    Route::patch('/profile/currency', [ProfileController::class, 'updateCurrency'])
-        ->middleware(['auth'])
-        ->name('profile.currency');
-
-    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])
-        ->middleware(['auth'])
-        ->name('profile.theme');
-
-    Route::patch('/profile/color', [ProfileController::class, 'updateColor'])
-        ->middleware(['auth'])
-        ->name('profile.color');
-
+    // Widget routes
     Route::post('/widgets', [WidgetController::class, 'store'])->name('widgets.store');
     Route::delete('/widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');
     Route::patch('/widgets/{widget}', [WidgetController::class, 'update'])->name('widgets.update');
@@ -91,6 +64,55 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos-retail', [PosRetailController::class, 'store']);
     Route::put('/pos-retail/{id}', [PosRetailController::class, 'update']);
     Route::delete('/pos-retail/{id}', [PosRetailController::class, 'destroy']);
+
+    // Pos Retail Sale routes
+    Route::get('/retail-sale', [PosRetailSaleController::class, 'index'])->name('retail-sale');
+    Route::delete('/retail-sale/{id}', [PosRetailSaleController::class, 'destroy'])->name('sales.destroy');
+    Route::delete('/retail-sale/bulk-delete', [PosRetailSaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
+
+    // Clinic routes
+    Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
+
+    // Pos Restaurant routes
+    Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
+
+    // Warehousing routes
+    Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
+
+    // Transportation routes
+    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
+
+    // Rental Item routes
+    Route::get('/rental-item', [RentalItemController::class, 'index'])->name('rental-item');
+
+    // Rental Property routes
+    Route::get('/rental-property', [RentalPropertyController::class, 'index'])->name('rental-property');
+
+    // Loan routes
+    Route::get('/loan', [LoanController::class, 'index'])->name('loan');
+
+    // Payroll routes
+    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
+
+    // Help routes
+    Route::get('/help', [HelpController::class, 'index'])->name('help');
+
+    // Profile routes
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::patch('/profile/currency', [ProfileController::class, 'updateCurrency'])
+        ->middleware(['auth'])
+        ->name('profile.currency');
+
+    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])
+        ->middleware(['auth'])
+        ->name('profile.theme');
+
+    Route::patch('/profile/color', [ProfileController::class, 'updateColor'])
+        ->middleware(['auth'])
+        ->name('profile.color');
 });
 
 require __DIR__.'/auth.php';
