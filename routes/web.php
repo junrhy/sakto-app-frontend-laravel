@@ -68,7 +68,7 @@ Route::middleware('auth')->group(function () {
     // Pos Retail Sale routes
     Route::get('/retail-sale', [PosRetailSaleController::class, 'index'])->name('retail-sale');
     Route::delete('/retail-sale/{id}', [PosRetailSaleController::class, 'destroy'])->name('sales.destroy');
-    Route::delete('/retail-sale/bulk-delete', [PosRetailSaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
+    Route::delete('/retail-sales/bulk-delete', [PosRetailSaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
 
     // Clinic routes
     Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
