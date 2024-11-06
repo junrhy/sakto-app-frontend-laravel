@@ -179,6 +179,26 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
         setDateRange(newRange);
     };
 
+    // Add this function to calculate total quantities
+    const calculateTotalQuantities = (sales: Sale[]) => {
+        const itemQuantities: { [key: string]: number } = {};
+        
+        sales.forEach(sale => {
+            sale.items.forEach(item => {
+                if (itemQuantities[item.id]) {
+                    itemQuantities[item.id] += item.quantity;
+                } else {
+                    itemQuantities[item.id] = item.quantity;
+                }
+            });
+        });
+        
+        return itemQuantities;
+    };
+
+    // Get total quantities for filtered data
+    const totalQuantities = calculateTotalQuantities(filteredData);
+
     return (
         <AuthenticatedLayout
             header={
@@ -308,6 +328,23 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                         </Button>
                     </div>
                 </div>
+
+                {/* Add this section before the table */}
+                {searchTerm && (
+                    <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <h3 className="text-sm font-medium mb-2">Item Quantities for Search Results:</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {Object.entries(totalQuantities).map(([itemId, quantity]) => (
+                                itemId.toLowerCase().includes(searchTerm.toLowerCase()) && (
+                                    <div key={itemId} className="flex justify-between items-center p-2 bg-white dark:bg-gray-700 rounded-md shadow-sm">
+                                        <span className="font-medium">{itemId}:</span>
+                                        <span className="text-sm">{quantity} units</span>
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="rounded-md border">
                     <Table>

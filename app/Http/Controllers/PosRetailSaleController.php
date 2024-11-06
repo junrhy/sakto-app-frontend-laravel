@@ -45,6 +45,7 @@ class PosRetailSaleController extends Controller
                 'payment_method' => ucfirst($sale['payment_method']),
             ];
         });
+
         return Inertia::render('PosRetailSale', [
             'sales' => $sales
         ]);
