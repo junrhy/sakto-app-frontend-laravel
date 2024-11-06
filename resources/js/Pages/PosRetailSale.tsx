@@ -190,8 +190,8 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
             <Head title="Sales" />
             
             <Card className="p-6">
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="relative w-full md:w-1/4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+                    <div className="lg:col-span-2">
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                                 <Search className="h-4 w-4 text-gray-500" />
@@ -205,7 +205,7 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                             />
                         </div>
                     </div>
-                    <div className="w-full md:w-1/4">
+                    <div className="lg:col-span-2">
                         <Select 
                             value={paymentMethodFilter} 
                             onValueChange={setPaymentMethodFilter}
@@ -223,8 +223,8 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="w-full md:w-1/4">
-                        <div className="flex gap-2">
+                    <div className="lg:col-span-4">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -290,21 +290,21 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                                                 });
                                             }
                                         }}
-                                        numberOfMonths={2}
+                                        numberOfMonths={window.innerWidth >= 768 ? 2 : 1}
                                     ></Calendar>
                                 </PopoverContent>
                             </Popover>
                         </div>
                     </div>
-                    <div className="flex justify-end md:flex-1">
+                    <div className="lg:col-span-4 flex justify-end">
                         <Button 
                             variant="destructive" 
                             onClick={handleMultipleDelete} 
                             disabled={selectedIds.length === 0}
-                            className="h-10"
+                            className="h-10 w-full md:w-auto"
                         >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Delete Selected ({selectedIds.length})
+                            Delete ({selectedIds.length})
                         </Button>
                     </div>
                 </div>
