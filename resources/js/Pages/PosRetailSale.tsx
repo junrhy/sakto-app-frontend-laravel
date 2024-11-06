@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { subMonths, startOfToday, startOfWeek, startOfMonth, endOfMonth, endOfWeek } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { DateRange as CalendarDateRange } from "react-day-picker";
+import { router } from '@inertiajs/react';
+import { toast } from "sonner";
 
 type DateRange = {
     from: Date | undefined;
@@ -96,14 +98,31 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
 
     const handleDelete = (id: number) => {
         if (confirm("Are you sure you want to delete this sale?")) {
-            setData(data.filter(item => item.id !== id));
+            router.delete(`/sales/${id}`, {
+                onSuccess: () => {
+                    toast.success("Sale has been deleted successfully");
+                    setData(data.filter(item => item.id !== id));
+                },
+                onError: () => {
+                    toast.error("Failed to delete sale");
+                },
+            });
         }
     };
 
     const handleMultipleDelete = () => {
         if (confirm("Are you sure you want to delete the selected sales?")) {
-            setData(data.filter(item => !selectedIds.includes(item.id)));
-            setSelectedIds([]);
+            router.delete('/sales/bulk-delete', {
+                data: { ids: selectedIds },
+                onSuccess: () => {
+                    toast.success(`${selectedIds.length} sales have been deleted successfully`);
+                    setData(data.filter(item => !selectedIds.includes(item.id)));
+                    setSelectedIds([]);
+                },
+                onError: () => {
+                    toast.error("Failed to delete selected sales");
+                },
+            });
         }
     };
 
