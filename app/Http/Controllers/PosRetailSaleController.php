@@ -74,11 +74,16 @@ class PosRetailSaleController extends Controller
     public function destroy($id)
     {
         try {
-            $sale = Sale::findOrFail($id);
-            $sale->delete();
-            
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/pos-retail/sales/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
             return response()->json(['message' => 'Sale deleted successfully']);
         } catch (\Exception $e) {
+            Log::error('Failed to delete sale: ' . $e->getMessage());
             return response()->json(['message' => 'Failed to delete sale'], 500);
         }
     }
@@ -87,10 +92,19 @@ class PosRetailSaleController extends Controller
     {
         try {
             $ids = $request->input('ids');
-            Sale::whereIn('id', $ids)->delete();
             
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/pos-retail/sales/bulk", [
+                    'ids' => $ids
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
             return response()->json(['message' => 'Sales deleted successfully']);
         } catch (\Exception $e) {
+            Log::error('Failed to bulk delete sales: ' . $e->getMessage());
             return response()->json(['message' => 'Failed to delete sales'], 500);
         }
     }
