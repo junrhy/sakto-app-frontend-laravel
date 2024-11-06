@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { subMonths, startOfToday, startOfWeek, startOfMonth, endOfMonth, endOfWeek } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { DateRange as CalendarDateRange } from "react-day-picker";
 
 type DateRange = {
     from: Date | undefined;
@@ -56,33 +57,34 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
     const uniquePaymentMethods = Array.from(
         new Set(data.map(sale => sale.payment_method))
     );
+
     const filteredData = data.filter(sale => {
+        // Basic validation
         if (!sale.items || !Array.isArray(sale.items)) {
             return false;
         }
 
+        // Search filter
         const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-        
-        if (normalizedSearchTerm === "") {
-            return true;
-        }
-
-        const matchesSearch = sale.items.some((item: SaleItem) => {
+        const matchesSearch = normalizedSearchTerm === "" || sale.items.some((item: SaleItem) => {
             const itemId = item.id.toLowerCase();
             return itemId.includes(normalizedSearchTerm);
         });
 
+        // Payment method filter
         const matchesPaymentMethod = paymentMethodFilter === "all" || sale.payment_method === paymentMethodFilter;
+        
+        // Date range filter
         let matchesDateRange = true;
-        if (dateRange.from || dateRange.to) {
+        if (dateRange.from && dateRange.to) {
             const saleDate = new Date(sale.created_at);
-            if (dateRange.from && dateRange.to) {
-                matchesDateRange = saleDate >= dateRange.from && saleDate <= dateRange.to;
-            } else if (dateRange.from) {
-                matchesDateRange = saleDate >= dateRange.from;
-            } else if (dateRange.to) {
-                matchesDateRange = saleDate <= dateRange.to;
-            }
+            const fromDate = new Date(dateRange.from);
+            fromDate.setHours(0, 0, 0, 0);
+            
+            const toDate = new Date(dateRange.to);
+            toDate.setHours(23, 59, 59, 999);
+            
+            matchesDateRange = saleDate >= fromDate && saleDate <= toDate;
         }
 
         return matchesSearch && matchesPaymentMethod && matchesDateRange;
@@ -123,34 +125,39 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
 
     const handleDateRangeSelect = (range: string) => {
         const today = new Date();
+        let newRange: DateRange;
         
         switch (range) {
             case 'today':
-                setDateRange({
+                newRange = {
                     from: startOfToday(),
                     to: today
-                });
+                };
                 break;
             case 'this-week':
-                setDateRange({
-                    from: startOfWeek(today, { weekStartsOn: 1 }), // Week starts on Monday
+                newRange = {
+                    from: startOfWeek(today, { weekStartsOn: 1 }),
                     to: endOfWeek(today, { weekStartsOn: 1 })
-                });
+                };
                 break;
             case 'this-month':
-                setDateRange({
+                newRange = {
                     from: startOfMonth(today),
                     to: endOfMonth(today)
-                });
+                };
                 break;
             case 'last-month':
                 const lastMonth = subMonths(today, 1);
-                setDateRange({
+                newRange = {
                     from: startOfMonth(lastMonth),
                     to: endOfMonth(lastMonth)
-                });
+                };
                 break;
+            default:
+                return;
         }
+        
+        setDateRange(newRange);
     };
 
     return (
@@ -252,12 +259,15 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                                         initialFocus
                                         mode="range"
                                         defaultMonth={dateRange.from}
-                                        selected={dateRange}
-                                        onSelect={(range) => {
-                                            if (range && 'from' in range && 'to' in range) {
+                                        selected={{
+                                            from: dateRange.from,
+                                            to: dateRange.to
+                                        }}
+                                        onSelect={(range: CalendarDateRange | undefined) => {
+                                            if (range) {
                                                 setDateRange({
-                                                    from: range.from || new Date(),
-                                                    to: range.to || new Date(),
+                                                    from: range.from,
+                                                    to: range.to ?? range.from
                                                 });
                                             }
                                         }}
