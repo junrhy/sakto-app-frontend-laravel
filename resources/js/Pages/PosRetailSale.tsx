@@ -4,7 +4,7 @@ import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/Components
 import { Card } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trash2, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/Components/ui/select";
@@ -23,8 +23,8 @@ type DateRange = {
 const itemsPerPage = 5;
 
 interface SaleItem {
-    id: number;
-    price: number;
+    id: string;
+    price: string;
     quantity: number;
 }
 
@@ -58,13 +58,20 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
     );
     const filteredData = data.filter(sale => {
         if (!sale.items || !Array.isArray(sale.items)) {
-            console.log('Invalid sale items for sale:', sale);
             return false;
         }
 
-        const matchesSearch = searchTerm === "" || sale.items.some((item: { id: number }) => 
-            item.id.toString().includes(searchTerm.toLowerCase())
-        );
+        const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+        
+        if (normalizedSearchTerm === "") {
+            return true;
+        }
+
+        const matchesSearch = sale.items.some((item: SaleItem) => {
+            const itemId = item.id.toLowerCase();
+            return itemId.includes(normalizedSearchTerm);
+        });
+
         const matchesPaymentMethod = paymentMethodFilter === "all" || sale.payment_method === paymentMethodFilter;
         let matchesDateRange = true;
         if (dateRange.from || dateRange.to) {
@@ -84,13 +91,6 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentItems = filteredData.slice(startIndex, startIndex + itemsPerPage);
-
-    console.log('Sales data:', {
-        receivedSales: sales,
-        currentData: data,
-        filteredData: filteredData,
-        currentItems: currentItems
-    });
 
     const handleDelete = (id: number) => {
         if (confirm("Are you sure you want to delete this sale?")) {
@@ -321,7 +321,7 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                                             {sale.created_at ? new Date(sale.created_at).toLocaleDateString() : 'N/A'}
                                         </TableCell>
                                         <TableCell>
-                                            {sale.items.map((item: { id: number; price: number; quantity: number }, idx: number) => (
+                                            {sale.items.map((item: SaleItem, idx: number) => (
                                                 <div key={item.id}>
                                                     {item.id} (${item.price} x {item.quantity})
                                                 </div>
