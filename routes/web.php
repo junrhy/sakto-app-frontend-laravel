@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
 
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
+
+    // Pos Restaurant Menu Items routes
     Route::get('/pos-restaurant/menu-items', [PosRestaurantController::class, 'getMenuItems']);
     Route::post('/pos-restaurant/menu-items', [PosRestaurantController::class, 'storeMenuItem']);
     Route::put('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'updateMenuItem']);

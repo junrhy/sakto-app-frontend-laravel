@@ -320,12 +320,13 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
             }
 
             if (currentMenuItem?.id) {
-                router.put(`/pos-restaurant/menu-item/${currentMenuItem.id}`, {
-                    _method: 'PUT',
-                    ...Object.fromEntries(formData)
-                }, {
+                router.post(`/pos-restaurant/menu-item/${currentMenuItem.id}`, formData, {
+                    headers: {
+                        'X-HTTP-Method-Override': 'PUT'
+                    },
                     preserveScroll: true,
                     onSuccess: () => {
+                        toast.success('Menu item updated successfully');
                         setIsMenuItemDialogOpen(false);
                         setCurrentMenuItem(null);
                         setNewMenuItemImage(null);
@@ -338,6 +339,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                 router.post('/pos-restaurant/menu-items', formData, {
                     preserveScroll: true,
                     onSuccess: () => {
+                        toast.success('Menu item added successfully');
                         setIsMenuItemDialogOpen(false);
                         setCurrentMenuItem(null);
                         setNewMenuItemImage(null);
