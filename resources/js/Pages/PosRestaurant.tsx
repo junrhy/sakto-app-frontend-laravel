@@ -97,6 +97,8 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
+    const [newTableName, setNewTableName] = useState<string>("");
+    const [newTableSeats, setNewTableSeats] = useState<number>(1);
 
     const addItemToOrder = (item: MenuItem) => {
         const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -410,6 +412,26 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
         );
     };
 
+    const handleAddTable = () => {
+        if (newTableName && newTableSeats > 0) {
+            const newTable: Table = {
+                id: Date.now(), // Use a unique ID
+                name: newTableName,
+                seats: newTableSeats,
+                status: 'available'
+            };
+            setTables([...tables, newTable]);
+            setNewTableName("");
+            setNewTableSeats(1);
+        } else {
+            toast.error('Please enter valid table name and seats');
+        }
+    };
+
+    const handleRemoveTable = (id: number) => {
+        setTables(tables.filter(table => table.id !== id));
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -576,51 +598,83 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                     <TabsContent value="tables">
                     <Card>
                         <CardHeader>
-                        <CardTitle>Table Management</CardTitle>
+                            <CardTitle>Table Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                        <div className="mb-4">
-                            <Label htmlFor="tableStatusFilter">Filter by Status</Label>
-                            <Select
-                            value={tableStatusFilter}
-                            onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved') => setTableStatusFilter(value)}
-                            >
-                            <SelectTrigger id="tableStatusFilter" className="bg-white">
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="available">Available</SelectItem>
-                                <SelectItem value="occupied">Occupied</SelectItem>
-                                <SelectItem value="reserved">Reserved</SelectItem>
-                            </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {filteredTables.map((table) => (
-                            <Card key={table.id}>
-                                <CardHeader>
-                                <CardTitle>{table.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                <p>Seats: {table.seats}</p>
-                                <p>Status: {table.status}</p>
-                                </CardContent>
-                                <CardFooter className="flex justify-between">
-                                <Button
-                                    variant={table.status === 'available' ? 'outline' : 'secondary'}
-                                    onClick={() => setTableNumber(table.name)}
-                                    className="bg-gray-700 hover:bg-gray-600 text-white"
-                                >
-                                    Select
-                                </Button>
-                                <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white">
-                                    Generate QR
-                                </Button>
-                                </CardFooter>
-                            </Card>
-                            ))}
-                        </div>
+                            <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="tableStatusFilter">Filter by Status</Label>
+                                    <Select
+                                        value={tableStatusFilter}
+                                        onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved') => setTableStatusFilter(value)}
+                                    >
+                                        <SelectTrigger id="tableStatusFilter" className="bg-white">
+                                            <SelectValue placeholder="Filter by status" />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-white">
+                                            <SelectItem value="all">All</SelectItem>
+                                            <SelectItem value="available">Available</SelectItem>
+                                            <SelectItem value="occupied">Occupied</SelectItem>
+                                            <SelectItem value="reserved">Reserved</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex items-end space-x-2">
+                                    <div className="flex-1">
+                                        <Label htmlFor="newTableName">New Table Name</Label>
+                                        <Input
+                                            id="newTableName"
+                                            value={newTableName}
+                                            onChange={(e) => setNewTableName(e.target.value)}
+                                            placeholder="Enter table name"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Label htmlFor="newTableSeats">Seats</Label>
+                                        <Input
+                                            id="newTableSeats"
+                                            type="number"
+                                            value={newTableSeats}
+                                            onChange={(e) => setNewTableSeats(parseInt(e.target.value))}
+                                            min={1}
+                                            placeholder="Enter number of seats"
+                                        />
+                                    </div>
+                                    <Button onClick={handleAddTable} className="bg-blue-500 hover:bg-blue-600 text-white">
+                                        Add Table
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {filteredTables.map((table) => (
+                                    <Card key={table.id}>
+                                        <CardHeader>
+                                            <CardTitle>{table.name}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="flex flex-row justify-between h-full">
+                                            <div>
+                                                <p>Seats: {table.seats}</p>
+                                                <p>Status: {table.status}</p>
+                                            </div>
+                                            <div className="flex space-x-2 mt-4">
+                                                <Button
+                                                    variant={table.status === 'available' ? 'outline' : 'secondary'}
+                                                    onClick={() => setTableNumber(table.name)}
+                                                    className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto"
+                                                >
+                                                    Select
+                                                </Button>
+                                                <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
+                                                    Generate QR
+                                                </Button>
+                                                <Button onClick={() => handleRemoveTable(table.id)} className="bg-red-500 hover:bg-red-600 text-white w-full md:w-auto">
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         </CardContent>
                     </Card>
                     </TabsContent>
