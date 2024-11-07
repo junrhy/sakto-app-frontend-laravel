@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
+import axios from 'axios';
+import { toast } from 'sonner';
 
 interface MenuItem {
     id: number;
@@ -19,6 +21,8 @@ interface MenuItem {
     price: number;
     category: string;
     image: string;
+    created_at?: string;
+    updated_at?: string;
 }
   
 interface OrderItem extends MenuItem {
@@ -40,15 +44,6 @@ interface Reservation {
     guests: number;
     tableId: number;
 }
-  
-const MENU_ITEMS: MenuItem[] = [
-    { id: 1, name: "Burger", price: 10.99, category: "Main", image: "/images/burger.jpg" },
-    { id: 2, name: "Pizza", price: 12.99, category: "Main", image: "/images/pizza.jpg" },
-    { id: 3, name: "Salad", price: 8.99, category: "Side", image: "/images/salad.jpg" },
-    { id: 4, name: "Fries", price: 3.99, category: "Side", image: "/images/fries.jpg" },
-    { id: 5, name: "Soda", price: 2.99, category: "Drink", image: "/images/soda.jpg" },
-    { id: 6, name: "Water", price: 1.99, category: "Drink", image: "/images/water.jpg" },
-];
   
 const TABLES: Table[] = [
     { id: 1, name: "Table 1", seats: 4, status: 'available' },
@@ -82,7 +77,7 @@ export default function PosRestaurant() {
     const [tableStatusFilter, setTableStatusFilter] = useState<'all' | 'available' | 'occupied' | 'reserved'>('all');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const fullscreenRef = useRef<HTMLDivElement>(null);
-    const [menuItems, setMenuItems] = useState<MenuItem[]>(MENU_ITEMS);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [isMenuItemDialogOpen, setIsMenuItemDialogOpen] = useState(false);
     const [currentMenuItem, setCurrentMenuItem] = useState<MenuItem | null>(null);
     const [newMenuItemImage, setNewMenuItemImage] = useState<File | null>(null);
@@ -251,32 +246,72 @@ export default function PosRestaurant() {
         setIsMenuItemDialogOpen(true);
     };
 
-    const handleDeleteMenuItem = (id: number) => {
-        setMenuItems(menuItems.filter(item => item.id !== id));
-        setSelectedMenuItems(selectedMenuItems.filter(itemId => itemId !== id));
+    const handleDeleteMenuItem = async (id: number) => {
+        try {
+            await axios.delete(`/api/menu-items/${id}`);
+            toast.success('Menu item deleted successfully');
+            fetchMenuItems(); // Refresh the menu items
+            setSelectedMenuItems(selectedMenuItems.filter(itemId => itemId !== id));
+        } catch (error) {
+            console.error('Error deleting menu item:', error);
+            toast.error('Failed to delete menu item');
+        }
     };
 
-    const handleDeleteSelectedMenuItems = () => {
-        setMenuItems(menuItems.filter(item => !selectedMenuItems.includes(item.id)));
-        setSelectedMenuItems([]);
+    const handleDeleteSelectedMenuItems = async () => {
+        try {
+            await axios.post('/api/menu-items/bulk-destroy', {
+                ids: selectedMenuItems
+            });
+            toast.success('Selected items deleted successfully');
+            fetchMenuItems(); // Refresh the menu items
+            setSelectedMenuItems([]);
+        } catch (error) {
+            console.error('Error deleting selected items:', error);
+            toast.error('Failed to delete selected items');
+        }
     };
 
-    const handleSaveMenuItem = (e: React.FormEvent) => {
+    const handleSaveMenuItem = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentMenuItem) {
-        if (currentMenuItem.id) {
-            // Edit existing item
-            setMenuItems(menuItems.map(item => 
-            item.id === currentMenuItem.id ? currentMenuItem : item
-            ));
-        } else {
-            // Add new item
-            setMenuItems([...menuItems, { ...currentMenuItem, id: Date.now() }]);
+        
+        try {
+            const formData = new FormData();
+            if (currentMenuItem) {
+                formData.append('name', currentMenuItem.name);
+                formData.append('price', currentMenuItem.price.toString());
+                formData.append('category', currentMenuItem.category);
+                if (newMenuItemImage) {
+                    formData.append('image', newMenuItemImage);
+                }
+            }
+
+            if (currentMenuItem?.id) {
+                // Update existing item
+                await axios.post(`/api/menu-items/${currentMenuItem.id}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                toast.success('Menu item updated successfully');
+            } else {
+                // Add new item
+                await axios.post('/api/menu-items', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                toast.success('Menu item added successfully');
+            }
+            
+            fetchMenuItems(); // Refresh the menu items
+            setIsMenuItemDialogOpen(false);
+            setCurrentMenuItem(null);
+            setNewMenuItemImage(null);
+        } catch (error) {
+            console.error('Error saving menu item:', error);
+            toast.error('Failed to save menu item');
         }
-        }
-        setIsMenuItemDialogOpen(false);
-        setCurrentMenuItem(null);
-        setNewMenuItemImage(null);
     };
 
     const handleMenuItemImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -293,9 +328,9 @@ export default function PosRestaurant() {
 
     const categoryFilteredMenuItems = useMemo(() => {
         return selectedCategory
-        ? MENU_ITEMS.filter(item => item.category === selectedCategory)
-        : MENU_ITEMS;
-    }, [MENU_ITEMS, selectedCategory]);
+        ? menuItems.filter(item => item.category === selectedCategory)
+        : menuItems;
+    }, [menuItems, selectedCategory]);
 
     const filteredMenuItems = useMemo(() => {
         return menuItems.filter(item =>
@@ -311,6 +346,20 @@ export default function PosRestaurant() {
 
     const pageCount = Math.ceil(filteredMenuItems.length / itemsPerPage);
     
+    const fetchMenuItems = async () => {
+        try {
+            const response = await axios.get('/api/menu-items');
+            setMenuItems(response.data);
+        } catch (error) {
+            console.error('Error fetching menu items:', error);
+            toast.error('Failed to load menu items');
+        }
+    };
+
+    useEffect(() => {
+        fetchMenuItems();
+    }, []);
+
     return (
         <AuthenticatedLayout
             header={
