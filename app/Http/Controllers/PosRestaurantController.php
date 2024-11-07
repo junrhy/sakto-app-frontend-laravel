@@ -16,10 +16,12 @@ class PosRestaurantController extends Controller
         $this->apiToken = env('API_TOKEN');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $menuItems = $this->getMenuItems();
-        return Inertia::render('PosRestaurant', ['menuItems' => $menuItems]);
+        return Inertia::render('PosRestaurant', [
+            'menuItems' => $this->getMenuItems(),
+            'tab' => $request->query('tab', 'pos'),  // Get tab from query params, default to 'pos'
+        ]);
     }
 
     /**
