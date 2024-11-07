@@ -76,10 +76,10 @@ Route::middleware('auth')->group(function () {
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
     Route::get('/pos-restaurant/menu-items', [PosRestaurantController::class, 'getMenuItems']);
-    Route::post('/pos-restaurant/menu-items', [PosRestaurantController::class, 'store']);
-    Route::put('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'update']);
-    Route::delete('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'destroy']);
-    Route::post('/pos-restaurant/menu-items/bulk-destroy', [PosRestaurantController::class, 'bulkDestroy']);
+    Route::post('/pos-restaurant/menu-items', [PosRestaurantController::class, 'storeMenuItem']);
+    Route::put('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'updateMenuItem']);
+    Route::delete('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'destroyMenuItem']);
+    Route::post('/pos-restaurant/menu-items/bulk-destroy', [PosRestaurantController::class, 'bulkDestroyMenuItem']);
 
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
