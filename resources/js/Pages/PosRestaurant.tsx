@@ -296,12 +296,21 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
         }
     };
 
+    const fetchMenuItems = async () => {
+        try {
+            const response = await fetch('/pos-restaurant/menu-items');
+            const updatedMenuItems = await response.json();
+            setMenuItems(updatedMenuItems);
+        } catch (error) {
+            console.error('Error fetching menu items:', error);
+        }
+    };
+
     const handleSaveMenuItem = async (e: React.FormEvent) => {
         e.preventDefault();
         
         try {
             const formData = new FormData();
-            
             const menuItemData: MenuItemFormData = {
                 name: currentMenuItem?.name || '',
                 price: currentMenuItem?.price || 0,
@@ -319,41 +328,39 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                 formData.append('image', newMenuItemImage);
             }
 
-            if (currentMenuItem?.id) {
-                router.post(`/pos-restaurant/menu-item/${currentMenuItem.id}`, formData, {
-                    headers: {
-                        'X-HTTP-Method-Override': 'PUT'
-                    },
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        toast.success('Menu item updated successfully');
-                        setIsMenuItemDialogOpen(false);
-                        setCurrentMenuItem(null);
-                        setNewMenuItemImage(null);
-                    },
-                    onError: () => {
-                        toast.error('Failed to update menu item');
-                    }
-                });
-            } else {
-                router.post('/pos-restaurant/menu-items', formData, {
-                    preserveScroll: true,
-                    onSuccess: () => {
-                        toast.success('Menu item added successfully');
-                        setIsMenuItemDialogOpen(false);
-                        setCurrentMenuItem(null);
-                        setNewMenuItemImage(null);
-                    },
-                    onError: () => {
-                        toast.error('Failed to add menu item');
-                    }
-                });
-            }
+            const url = currentMenuItem?.id 
+                ? `/pos-restaurant/menu-item/${currentMenuItem.id}` 
+                : '/pos-restaurant/menu-items';
+
+            const method = currentMenuItem?.id ? 'PUT' : 'POST';
+
+            await router.post(url, formData, {
+                headers: {
+                    'X-HTTP-Method-Override': method
+                },
+                preserveScroll: true,
+                onSuccess: async () => {
+                    toast.success(`Menu item ${currentMenuItem?.id ? 'updated' : 'added'} successfully`);
+                    setIsMenuItemDialogOpen(false);
+                    setCurrentMenuItem(null);
+                    setNewMenuItemImage(null);
+
+                    // Fetch updated menu items
+                    await fetchMenuItems();
+                },
+                onError: () => {
+                    toast.error(`Failed to ${currentMenuItem?.id ? 'update' : 'add'} menu item`);
+                }
+            });
         } catch (error) {
             console.error('Error saving menu item:', error);
             toast.error('Failed to save menu item');
         }
     };
+
+    useEffect(() => {
+        fetchMenuItems();
+    }, []);
 
     const handleMenuItemImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
