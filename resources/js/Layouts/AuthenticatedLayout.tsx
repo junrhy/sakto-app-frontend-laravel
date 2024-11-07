@@ -35,13 +35,13 @@ export default function Authenticated({
 
     const hasRetailAccess = true;
     const hasFnbAccess = true;
-    const hasWarehousingAccess = true;
-    const hasTransportationAccess = true;
-    const hasRentalItemAccess = true;
-    const hasRentalPropertyAccess = true;
-    const hasClinicalAccess = true;
-    const hasLendingAccess = true;
-    const hasPayrollAccess = true;
+    const hasWarehousingAccess = false;
+    const hasTransportationAccess = false;
+    const hasRentalItemAccess = false;
+    const hasRentalPropertyAccess = false;
+    const hasClinicalAccess = false;
+    const hasLendingAccess = false;
+    const hasPayrollAccess = false;
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -172,7 +172,7 @@ export default function Authenticated({
                                         active={route().current('pos-restaurant')}
                                         className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                     >
-                                        Restaurant
+                                        F & B
                                     </NavLink>
                                 )}
                                 {(hasWarehousingAccess || hasTransportationAccess) && (
