@@ -88,6 +88,7 @@ class PosRestaurantController extends Controller
     public function updateMenuItem(Request $request, string $id)
     {
         try {
+            // Change the HTTP method to PUT
             $response = Http::withToken($this->apiToken)
                 ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
 
