@@ -62,6 +62,8 @@ class PosRestaurantController extends Controller
                 'image' => 'nullable|string',
             ]);
 
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/fnb-menu-items", $validated);
 
