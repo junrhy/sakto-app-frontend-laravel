@@ -20,7 +20,7 @@ interface MenuItem {
     name: string;
     price: number;
     category: string;
-    image: string;
+    image?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -45,6 +45,13 @@ interface Reservation {
     tableId: number;
 }
   
+interface MenuItemFormData {
+    name: string;
+    price: number;
+    category: string;
+    image?: string;
+}
+
 const TABLES: Table[] = [
     { id: 1, name: "Table 1", seats: 4, status: 'available' },
     { id: 2, name: "Table 2", seats: 2, status: 'occupied' },
@@ -294,23 +301,31 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
         
         try {
             const formData = new FormData();
-            if (currentMenuItem) {
-                formData.append('name', currentMenuItem.name);
-                formData.append('price', currentMenuItem.price.toString());
-                formData.append('category', currentMenuItem.category);
-                if (newMenuItemImage) {
-                    formData.append('image', newMenuItemImage);
+            
+            const menuItemData: MenuItemFormData = {
+                name: currentMenuItem?.name || '',
+                price: currentMenuItem?.price || 0,
+                category: currentMenuItem?.category || '',
+                image: currentMenuItem?.image
+            };
+
+            Object.entries(menuItemData).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    formData.append(key, value.toString());
                 }
+            });
+
+            if (newMenuItemImage) {
+                formData.append('image', newMenuItemImage);
             }
 
             if (currentMenuItem?.id) {
-                // Update existing item
-                router.post(`/pos-restaurant/menu-item/${currentMenuItem.id}`, formData, {
-                    onSuccess: (response) => {
-                        toast.success('Menu item updated successfully');
-                        setMenuItems(menuItems.map(item => 
-                            item.id === currentMenuItem.id ? response.props.menuItem as MenuItem : item
-                        ));
+                router.put(`/pos-restaurant/menu-item/${currentMenuItem.id}`, {
+                    _method: 'PUT',
+                    ...Object.fromEntries(formData)
+                }, {
+                    preserveScroll: true,
+                    onSuccess: () => {
                         setIsMenuItemDialogOpen(false);
                         setCurrentMenuItem(null);
                         setNewMenuItemImage(null);
@@ -320,11 +335,9 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                     }
                 });
             } else {
-                // Add new item
                 router.post('/pos-restaurant/menu-items', formData, {
-                    onSuccess: (response) => {
-                        toast.success('Menu item added successfully');
-                        setMenuItems([...menuItems, response.props.menuItem as MenuItem]);
+                    preserveScroll: true,
+                    onSuccess: () => {
                         setIsMenuItemDialogOpen(false);
                         setCurrentMenuItem(null);
                         setNewMenuItemImage(null);
@@ -439,7 +452,13 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                 onClick={() => addItemToOrder(item)}
                                 className="h-auto flex flex-col items-center p-2 touch-manipulation bg-gray-700 hover:bg-gray-600 text-white"
                                 >
-                                <img src={item.image} alt={item.name} width={100} height={100} className="mb-2 rounded" />
+                                <img 
+                                    src={item.image || '/placeholder-image.jpg'} 
+                                    alt={item.name} 
+                                    width={100} 
+                                    height={100} 
+                                    className="mb-2 rounded" 
+                                />
                                 <span className="text-center">{item.name}</span>
                                 <span>${item.price}</span>
                                 </Button>
@@ -734,7 +753,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                 </TableCell>
                                 <TableCell>
                                     <img 
-                                    src={item.image} 
+                                    src={item.image || '/placeholder-image.jpg'} 
                                     alt={item.name} 
                                     width={50} 
                                     height={50} 
@@ -875,15 +894,22 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                             <Input
                             id="name"
                             value={currentMenuItem?.name || ''}
-                            onChange={(e) => setCurrentMenuItem({ ...currentMenuItem!, name: e.target.value })}
+                            onChange={(e) => setCurrentMenuItem({ 
+                                ...currentMenuItem!, 
+                                name: e.target.value 
+                            })}
                             className="col-span-3"
-                            />
+                            required
+                        />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="category" className="text-right">Category</Label>
                             <Select
                             value={currentMenuItem?.category || ''}
-                            onValueChange={(value) => setCurrentMenuItem({ ...currentMenuItem!, category: value })}
+                            onValueChange={(value) => setCurrentMenuItem({ 
+                                ...currentMenuItem!, 
+                                category: value 
+                            })}
                             >
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Select category" />
@@ -902,9 +928,13 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                             type="number"
                             step="0.01"
                             value={currentMenuItem?.price || ''}
-                            onChange={(e) => setCurrentMenuItem({ ...currentMenuItem!, price: parseFloat(e.target.value) })}
+                            onChange={(e) => setCurrentMenuItem({ 
+                                ...currentMenuItem!, 
+                                price: parseFloat(e.target.value) 
+                            })}
                             className="col-span-3"
-                            />
+                            required
+                        />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="image" className="text-right">Image</Label>
@@ -913,12 +943,16 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                             type="file"
                             onChange={handleMenuItemImageChange}
                             className="col-span-3"
-                            />
+                            accept="image/*"
+                        />
                         </div>
-                        </div>
-                        <DialogFooter>
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setIsMenuItemDialogOpen(false)}>
+                            Cancel
+                        </Button>
                         <Button type="submit">Save</Button>
-                        </DialogFooter>
+                    </DialogFooter>
                     </form>
                     </DialogContent>
                 </Dialog>

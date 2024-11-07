@@ -51,26 +51,39 @@ class PosRestaurantController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function storeMenuItem(Request $request)
     {
         try {
+            // Validate the request data
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'price' => 'required|numeric|min:0',
+                'category' => 'required|string',
+                'image' => 'nullable|string',
+            ]);
+
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/fnb-menu-items", $request->all());
+                ->post("{$this->apiUrl}/fnb-menu-items", $validated);
 
             if (!$response->successful()) {
-                throw new \Exception('API request failed: ' . $response->body());
+                return redirect()->back()
+                    ->with('error', $response->json()['message'] ?? 'Failed to create menu item');
             }
 
-            return redirect()->back()->with('success', 'Menu item created successfully.');
+            return redirect()->back()
+                ->with('success', 'Menu item created successfully')
+                ->with('menuItem', $response->json()['data']);
+
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to store menu item.');
+            return redirect()->back()
+                ->with('error', 'Failed to store menu item: ' . $e->getMessage());
         }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateMenuItem(Request $request, string $id)
     {
         try {
             $response = Http::withToken($this->apiToken)
@@ -89,7 +102,7 @@ class PosRestaurantController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroyMenuItem(string $id)
     {
         try {
             $response = Http::withToken($this->apiToken)
@@ -105,7 +118,7 @@ class PosRestaurantController extends Controller
         }
     }
     
-    public function bulkDestroy(Request $request)
+    public function bulkDestroyMenuItem(Request $request)
     {
         try {
             $response = Http::withToken($this->apiToken)
