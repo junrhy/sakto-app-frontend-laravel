@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 
 interface MenuItem {
@@ -52,9 +52,14 @@ const TABLES: Table[] = [
     { id: 4, name: "Table 4", seats: 4, status: 'available' },
 ];
 
-export default function PosRestaurant(props: { menuItems: MenuItem[] }) {
+interface PageProps {
+    menuItems: MenuItem[];
+    tab?: string;
+}
+
+export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos' }: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-    const [menuItems, setMenuItems] = useState<MenuItem[]>(props.menuItems);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
     const [tableNumber, setTableNumber] = useState<string>("");
     const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -375,6 +380,14 @@ export default function PosRestaurant(props: { menuItems: MenuItem[] }) {
         }
     };
 
+    const handleTabChange = (value: string) => {
+        router.get(
+            window.location.pathname,
+            { tab: value },
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -393,7 +406,7 @@ export default function PosRestaurant(props: { menuItems: MenuItem[] }) {
                     </Button>
                 </div>
 
-                <Tabs defaultValue="pos" className="space-y-4">
+                <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
                     <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="pos">POS</TabsTrigger>
                     <TabsTrigger value="tables">Tables</TabsTrigger>
