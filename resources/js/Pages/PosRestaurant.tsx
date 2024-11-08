@@ -108,8 +108,6 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
     const qrCodeRef = useRef<HTMLDivElement>(null);
     const [customerName, setCustomerName] = useState<string>("");
     const [tableStatusFilter, setTableStatusFilter] = useState<'all' | 'available' | 'occupied' | 'reserved' | 'joined'>('all');
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const fullscreenRef = useRef<HTMLDivElement>(null);
     const [isMenuItemDialogOpen, setIsMenuItemDialogOpen] = useState(false);
     const [currentMenuItem, setCurrentMenuItem] = useState<MenuItem | null>(null);
     const [newMenuItemImage, setNewMenuItemImage] = useState<File | null>(null);
@@ -321,28 +319,6 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
         }
         return filtered;
     }, [tables, tableStatusFilter]);
-
-    const toggleFullscreen = useCallback(() => {
-        if (!document.fullscreenElement) {
-        fullscreenRef.current?.requestFullscreen();
-        setIsFullscreen(true);
-        } else {
-        document.exitFullscreen();
-        setIsFullscreen(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-        setIsFullscreen(!!document.fullscreenElement);
-        };
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-        return () => {
-        document.removeEventListener('fullscreenchange', handleFullscreenChange);
-        };
-    }, []);
 
     const handleAddMenuItem = () => {
         setCurrentMenuItem(null);
@@ -631,14 +607,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
         >
             <Head title="Dashboard" />
 
-            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700" ref={fullscreenRef}>
-                <div className="flex justify-between items-center mb-4">
-                    <Button onClick={toggleFullscreen} className="bg-gray-700 hover:bg-gray-600 text-white">
-                    {isFullscreen ? <Minimize className="mr-2 h-4 w-4" /> : <Maximize className="mr-2 h-4 w-4" />}
-                    {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                    </Button>
-                </div>
-
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
                     <TabsList className={`grid w-full ${
                         useMediaQuery('(min-width: 640px)') 
