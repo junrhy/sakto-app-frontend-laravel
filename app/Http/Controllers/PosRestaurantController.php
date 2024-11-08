@@ -239,7 +239,6 @@ class PosRestaurantController extends Controller
     public function joinTables(Request $request)
     {
         try {
-            // Validate the request data
             $validated = $request->validate([
                 'tableIds' => 'required|array',
             ]);
@@ -262,7 +261,6 @@ class PosRestaurantController extends Controller
     public function unjoinTables(Request $request)
     {
         try {
-            // Validate the request data
             $validated = $request->validate([
                 'tableIds' => 'required|array',
             ]);

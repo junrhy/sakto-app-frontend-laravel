@@ -710,11 +710,6 @@ export default function PosRestaurant({
         );
     };
 
-    useEffect(() => {
-        console.log('Tables:', tables);
-        console.log('Joined Tables:', joinedTables);
-    }, [tables, joinedTables]);
-
     return (
         <AuthenticatedLayout
             header={
