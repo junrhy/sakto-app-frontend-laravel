@@ -456,7 +456,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                         useMediaQuery('(min-width: 640px)') 
                             ? 'grid-cols-4' 
                             : 'grid-cols-2'
-                    } gap-0.5 p-0.5 min-h-0 bg-muted`}>
+                    } gap-0.5 p-0.5 min-h-0 bg-muted h-90`}>
                         <TabsTrigger 
                             value="pos" 
                             className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
@@ -786,109 +786,115 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                     <TabsContent value="menu">
                     <Card>
                         <CardHeader>
-                        <CardTitle>Menu Management</CardTitle>
+                            <CardTitle>Menu Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                        <div className="flex justify-between mb-4">
-                            <div className="flex items-center space-x-2">
-                            <Button onClick={handleAddMenuItem}>
-                                <Plus className="mr-2 h-4 w-4" /> Add Menu Item
-                            </Button>
-                            <Button 
-                                onClick={handleDeleteSelectedMenuItems} 
-                                variant="destructive" 
-                                disabled={selectedMenuItems.length === 0}
-                            >
-                                <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                            </Button>
+                            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <Button 
+                                        onClick={handleAddMenuItem}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" /> Add Menu Item
+                                    </Button>
+                                    <Button 
+                                        onClick={handleDeleteSelectedMenuItems} 
+                                        variant="destructive" 
+                                        disabled={selectedMenuItems.length === 0}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        <Trash className="mr-2 h-4 w-4" /> 
+                                        <span className="hidden sm:inline">Delete Selected</span>
+                                        <span className="sm:hidden">Delete ({selectedMenuItems.length})</span>
+                                    </Button>
+                                </div>
+                                <div className="relative w-full sm:w-64">
+                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                    <Input
+                                        placeholder="Search menu items..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-8 w-full"
+                                    />
+                                </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                            <Search className="h-4 w-4 text-gray-500" />
-                            <Input
-                                placeholder="Search menu items..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-64"
-                            />
-                            </div>
-                        </div>
-                        <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[50px]">
-                                <Checkbox
-                                    checked={selectedMenuItems.length === paginatedMenuItems.length}
-                                    onCheckedChange={handleSelectAll}
-                                />
-                                </TableHead>
-                                <TableHead>Image</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                            {paginatedMenuItems.map((item: MenuItem) => (
-                                <TableRow key={item.id}>
-                                <TableCell>
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[50px]">
                                     <Checkbox
-                                    checked={selectedMenuItems.includes(item.id)}
-                                    onCheckedChange={() => toggleMenuItemSelection(item.id)}
+                                        checked={selectedMenuItems.length === paginatedMenuItems.length}
+                                        onCheckedChange={handleSelectAll}
                                     />
-                                </TableCell>
-                                <TableCell>
-                                    <img 
-                                    src={item.image || '/placeholder-image.jpg'} 
-                                    alt={item.name} 
-                                    width={50} 
-                                    height={50} 
-                                    className="rounded-md object-cover"
-                                    />
-                                </TableCell>
-                                <TableCell>{item.name}</TableCell>
-                                <TableCell>{item.category}</TableCell>
-                                <TableCell>${item.price}</TableCell>
-                                <TableCell>
-                                    <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
-                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                    </Button>
-                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
-                                    <Trash className="mr-2 h-4 w-4" /> Delete
-                                    </Button>
-                                </TableCell>
+                                    </TableHead>
+                                    <TableHead>Image</TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Actions</TableHead>
                                 </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table>
-                        <div className="flex justify-between items-center mt-4">
-                            <div>
-                            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredMenuItems.length)} of {filteredMenuItems.length} items
-                            </div>
-                            <div className="flex space-x-2">
-                            <Button
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                disabled={currentPage === 1}
-                            >
-                                Previous
-                            </Button>
-                            {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                                </TableHeader>
+                                <TableBody>
+                                {paginatedMenuItems.map((item: MenuItem) => (
+                                    <TableRow key={item.id}>
+                                    <TableCell>
+                                        <Checkbox
+                                        checked={selectedMenuItems.includes(item.id)}
+                                        onCheckedChange={() => toggleMenuItemSelection(item.id)}
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <img 
+                                        src={item.image || '/placeholder-image.jpg'} 
+                                        alt={item.name} 
+                                        width={50} 
+                                        height={50} 
+                                        className="rounded-md object-cover"
+                                        />
+                                    </TableCell>
+                                    <TableCell>{item.name}</TableCell>
+                                    <TableCell>{item.category}</TableCell>
+                                    <TableCell>${item.price}</TableCell>
+                                    <TableCell>
+                                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
+                                        <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
+                                        <Trash className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            <div className="flex justify-between items-center mt-4">
+                                <div>
+                                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredMenuItems.length)} of {filteredMenuItems.length} items
+                                </div>
+                                <div className="flex space-x-2">
                                 <Button
-                                key={page}
-                                onClick={() => setCurrentPage(page)}
-                                variant={currentPage === page ? "default" : "outline"}
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
                                 >
-                                {page}
+                                    Previous
                                 </Button>
-                            ))}
-                            <Button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                                disabled={currentPage === pageCount}
-                            >
-                                Next
-                            </Button>
+                                {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                                    <Button
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    >
+                                    {page}
+                                    </Button>
+                                ))}
+                                <Button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                                    disabled={currentPage === pageCount}
+                                >
+                                    Next
+                                </Button>
+                                </div>
                             </div>
-                        </div>
                         </CardContent>
                     </Card>
                     </TabsContent>
