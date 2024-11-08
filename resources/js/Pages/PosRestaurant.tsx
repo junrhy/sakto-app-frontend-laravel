@@ -16,6 +16,7 @@ import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { DialogTrigger } from "@/Components/ui/dialog";
+import { Toaster } from "sonner";
 
 interface MenuItem {
     id: number;
@@ -256,16 +257,90 @@ export default function PosRestaurant({
         setIsSplitBillDialogOpen(false);
     };
 
-    const printKitchenOrder = () => {
-        const orderDetails = orderItems.map(item => `${item.quantity}x ${item.name}`).join('\n');
-        const kitchenOrder = `
-        Table: ${tableNumber}
-        Time: ${new Date().toLocaleTimeString()}
-        Order:
-        ${orderDetails}
-        `;
-        console.log("Printing kitchen order:", kitchenOrder);
-        // In a real application, you would send this to a printer or kitchen display system
+    const printKitchenOrder = async () => {
+        if (orderItems.length === 0 || !tableNumber) {
+            toast.error('Please add items and select a table before printing kitchen order');
+            return;
+        }
+
+        try {
+            const response = await router.post('/pos-restaurant/kitchen-order', {
+                tableNumber,
+                items: orderItems.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    notes: '', // Add notes field if needed
+                })),
+                orderTime: new Date().toISOString(),
+            }, {
+                preserveState: true,
+                onSuccess: () => {
+                    // Create a printable format
+                    const printWindow = window.open('', '', 'height=600,width=800');
+                    if (!printWindow) {
+                        toast.error('Please allow pop-ups to print kitchen orders');
+                        return;
+                    }
+
+                    const orderDetails = orderItems.map(item => 
+                        `<tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.quantity}x</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name}</td>
+                        </tr>`
+                    ).join('');
+
+                    printWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>Kitchen Order - Table ${tableNumber}</title>
+                                <style>
+                                    body { font-family: Arial, sans-serif; padding: 20px; }
+                                    .header { text-align: center; margin-bottom: 20px; }
+                                    table { width: 100%; border-collapse: collapse; }
+                                    .footer { margin-top: 20px; text-align: center; }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="header">
+                                    <h2>Kitchen Order</h2>
+                                    <p>Table: ${tableNumber}</p>
+                                    <p>Time: ${new Date().toLocaleTimeString()}</p>
+                                    <p>Date: ${new Date().toLocaleDateString()}</p>
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">Qty</th>
+                                            <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">Item</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${orderDetails}
+                                    </tbody>
+                                </table>
+                                <div class="footer">
+                                    <p>*** End of Order ***</p>
+                                </div>
+                            </body>
+                        </html>
+                    `);
+
+                    printWindow.document.close();
+                    printWindow.focus();
+                    printWindow.print();
+                    printWindow.close();
+
+                    toast.success('Kitchen order sent successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to send kitchen order');
+                }
+            });
+        } catch (error) {
+            console.error('Error sending kitchen order:', error);
+            toast.error('Failed to send kitchen order');
+        }
     };
 
     const handleReservation = () => {
@@ -719,6 +794,7 @@ export default function PosRestaurant({
             }
         >
             <Head title="Dashboard" />
+            <Toaster position="top-right" richColors />
 
             <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">

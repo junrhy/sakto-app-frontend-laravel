@@ -295,4 +295,38 @@ class PosRestaurantController extends Controller
             return redirect()->back()->with('error', 'Failed to fetch joined tables.');
         }
     }
+
+    public function storeKitchenOrder(Request $request)
+    {
+        dd($request->all());
+        $validated = $request->validate([
+            'tableNumber' => 'required|string',
+            'items' => 'required|array',
+            'items.*.id' => 'required|integer',
+            'items.*.name' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.notes' => 'nullable|string',
+            'orderTime' => 'required|date',
+        ]);
+
+        try {
+            // Store the kitchen order in the database
+            $kitchenOrder = KitchenOrder::create([
+                'table_number' => $validated['tableNumber'],
+                'items' => $validated['items'],
+                'order_time' => $validated['orderTime'],
+                'status' => 'pending', // You can add different statuses like 'pending', 'preparing', 'completed'
+            ]);
+
+            return response()->json([
+                'message' => 'Kitchen order created successfully',
+                'order' => $kitchenOrder
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to create kitchen order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -95,6 +95,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos-restaurant/tables/unjoin', [PosRestaurantController::class, 'unjoinTables'])
         ->name('pos-restaurant.tables.unjoin');
 
+    // Pos Restaurant Kitchen Order routes
+    Route::post('/pos-restaurant/kitchen-order', [PosRestaurantController::class, 'storeKitchenOrder']);
+
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
 
