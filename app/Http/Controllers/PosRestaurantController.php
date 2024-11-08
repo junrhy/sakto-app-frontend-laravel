@@ -265,7 +265,6 @@ class PosRestaurantController extends Controller
             // Validate the request data
             $validated = $request->validate([
                 'tableIds' => 'required|array',
-                'tableIds.*' => 'required|string'
             ]);
 
             $response = Http::withToken($this->apiToken)
