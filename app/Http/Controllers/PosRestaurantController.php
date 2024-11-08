@@ -23,6 +23,7 @@ class PosRestaurantController extends Controller
             'menuItems' => $this->getMenuItems(),
             'tab' => $request->query('tab', 'pos'),
             'tables' => $this->getTables(),
+            'joinedTables' => $this->getJoinedTables(),
         ]);
     }
 
@@ -232,6 +233,69 @@ class PosRestaurantController extends Controller
             return redirect()->back()->with('success', 'Table deleted successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to delete table.');
+        }
+    }
+
+    public function joinTables(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validated = $request->validate([
+                'tableIds' => 'required|array',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-tables/join", [
+                    'table_ids' => $validated['tableIds']
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to join tables');
+            }
+
+            return redirect()->back()->with('success', 'Tables joined successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to join tables: ' . $e->getMessage());
+        }
+    }
+
+    public function unjoinTables(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validated = $request->validate([
+                'tableIds' => 'required|array',
+                'tableIds.*' => 'required|string'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-tables/unjoin", [
+                    'table_ids' => $validated['tableIds']
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to unjoin tables');
+            }
+
+            return redirect()->back()->with('success', 'Tables unjoined successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to unjoin tables: ' . $e->getMessage());
+        }
+    }
+
+    public function getJoinedTables()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-tables/joined");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json()['data']['fnb_tables'];
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to fetch joined tables.');
         }
     }
 }
