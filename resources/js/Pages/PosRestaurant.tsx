@@ -62,19 +62,13 @@ interface JoinedTable {
     status: 'available' | 'occupied' | 'reserved';
 }
 
-const TABLES: Table[] = [
-    { id: 1, name: "Table 1", seats: 4, status: 'available' },
-    { id: 2, name: "Table 2", seats: 2, status: 'occupied' },
-    { id: 3, name: "Table 3", seats: 6, status: 'reserved' },
-    { id: 4, name: "Table 4", seats: 4, status: 'available' },
-];
-
 interface PageProps {
     menuItems: MenuItem[];
+    tables: Table[];
     tab?: string;
 }
 
-export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos' }: PageProps) {
+export default function PosRestaurant({ menuItems: initialMenuItems, tables: initialTables, tab = 'pos' }: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
     const [tableNumber, setTableNumber] = useState<string>("");
@@ -82,7 +76,6 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [isSplitBillDialogOpen, setIsSplitBillDialogOpen] = useState(false);
     const [splitAmount, setSplitAmount] = useState<number>(2);
-    const [tables, setTables] = useState<Table[]>(TABLES);
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [newReservation, setNewReservation] = useState<Omit<Reservation, 'id'>>({
         name: '',
@@ -113,6 +106,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
     const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
     const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
+    const [tables, setTables] = useState<Table[]>(initialTables);
 
     const addItemToOrder = (item: MenuItem) => {
         const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -493,24 +487,70 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
         );
     };
 
-    const handleAddTable = () => {
+    const handleAddTable = async () => {
         if (newTableName && newTableSeats > 0) {
-            const newTable: Table = {
-                id: Date.now(), // Use a unique ID
-                name: newTableName,
-                seats: newTableSeats,
-                status: 'available'
-            };
-            setTables([...tables, newTable]);
-            setNewTableName("");
-            setNewTableSeats(1);
+            try {
+                await router.post('/fnb-tables', {
+                    name: newTableName,
+                    seats: newTableSeats,
+                    status: 'available'
+                }, {
+                    onSuccess: () => {
+                        setNewTableName("");
+                        setNewTableSeats(1);
+                        setIsAddTableDialogOpen(false);
+                        toast.success('Table added successfully');
+                    },
+                    onError: () => {
+                        toast.error('Failed to add table');
+                    }
+                });
+            } catch (error) {
+                console.error('Error adding table:', error);
+                toast.error('Failed to add table');
+            }
         } else {
             toast.error('Please enter valid table name and seats');
         }
     };
 
-    const handleRemoveTable = (id: number) => {
-        setTables(tables.filter(table => table.id !== id));
+    const handleRemoveTable = async (id: number) => {
+        try {
+            await router.delete(`/fnb-tables/${id}`, {
+                onSuccess: () => {
+                    setTables(tables.filter(table => table.id !== id));
+                    toast.success('Table removed successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to remove table');
+                }
+            });
+        } catch (error) {
+            console.error('Error removing table:', error);
+            toast.error('Failed to remove table');
+        }
+    };
+
+    const updateTableStatus = async (tableId: number, status: Table['status']) => {
+        try {
+            await router.put(`/fnb-tables/${tableId}`, {
+                status: status
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+            
+            setTables(prevTables =>
+                prevTables.map(table =>
+                    table.id === tableId ? { ...table, status } : table
+                )
+            );
+            
+            toast.success('Table status updated successfully');
+        } catch (error) {
+            console.error('Error updating table status:', error);
+            toast.error('Failed to update table status');
+        }
     };
 
     return (

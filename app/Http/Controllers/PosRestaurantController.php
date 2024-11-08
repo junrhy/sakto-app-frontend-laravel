@@ -20,7 +20,8 @@ class PosRestaurantController extends Controller
     {
         return Inertia::render('PosRestaurant', [
             'menuItems' => $this->getMenuItems(),
-            'tab' => $request->query('tab', 'pos'),  // Get tab from query params, default to 'pos'
+            'tab' => $request->query('tab', 'pos'),
+            'tables' => $this->getTables(),
         ]);
     }
 
@@ -136,6 +137,29 @@ class PosRestaurantController extends Controller
             return redirect()->back();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get tables from API
+     */
+    public function getTables()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-tables");
+
+            if(!$response->json()) {
+                return response()->json(['error' => 'Failed to connect to FNB Tables API.'], 500);
+            }
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json()['data']['fnb_tables'];
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to fetch tables.');
         }
     }
 }
