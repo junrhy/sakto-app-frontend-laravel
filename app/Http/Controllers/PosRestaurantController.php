@@ -162,4 +162,61 @@ class PosRestaurantController extends Controller
             return redirect()->back()->with('error', 'Failed to fetch tables.');
         }
     }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function storeTable(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-tables", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Table created successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to store table.');
+        }
+    }       
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function updateTable(Request $request, string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-tables/{$id}", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Table updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update table.');
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroyTable(string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-tables/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return redirect()->back()->with('success', 'Table deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete table.');
+        }
+    }
 }

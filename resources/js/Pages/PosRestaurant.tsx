@@ -68,6 +68,12 @@ interface PageProps {
     tab?: string;
 }
 
+interface EditTableData {
+    id: number;
+    name: string;
+    seats: number;
+}
+
 export default function PosRestaurant({ menuItems: initialMenuItems, tables: initialTables, tab = 'pos' }: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
@@ -107,6 +113,8 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
     const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
     const [tables, setTables] = useState<Table[]>(initialTables);
+    const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
+    const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
 
     const addItemToOrder = (item: MenuItem) => {
         const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -553,6 +561,43 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
         }
     };
 
+    const handleEditTable = async () => {
+        if (!editTableData) return;
+
+        try {
+            await router.put(`/fnb-tables/${editTableData.id}`, {
+                name: editTableData.name,
+                seats: editTableData.seats
+            }, {
+                onSuccess: () => {
+                    setTables(tables.map(table => 
+                        table.id === editTableData.id 
+                            ? { ...table, name: editTableData.name, seats: editTableData.seats }
+                            : table
+                    ));
+                    setIsEditTableDialogOpen(false);
+                    setEditTableData(null);
+                    toast.success('Table updated successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to update table');
+                }
+            });
+        } catch (error) {
+            console.error('Error updating table:', error);
+            toast.error('Failed to update table');
+        }
+    };
+
+    const openEditTableDialog = (table: Table) => {
+        setEditTableData({
+            id: table.id,
+            name: table.name,
+            seats: table.seats
+        });
+        setIsEditTableDialogOpen(true);
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -781,7 +826,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {filteredTables.map((table) => (
                                     <Card 
                                         key={table.id}
@@ -815,6 +860,9 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
                                             </Button>
                                             <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
                                                 <QrCode className="h-4 w-4" />
+                                            </Button>
+                                            <Button onClick={() => openEditTableDialog(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
+                                                <Edit className="h-4 w-4" />
                                             </Button>
                                             <Button onClick={() => handleRemoveTable(table.id)} className="bg-red-500 hover:bg-red-600 text-white w-full md:w-auto">
                                                 <Trash2 className="h-4 w-4" />
@@ -1273,6 +1321,52 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
                                 disabled={!newTableName || newTableSeats < 1}
                             >
                                 Add Table
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isEditTableDialogOpen} onOpenChange={setIsEditTableDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Edit Table</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="editTableName" className="text-right">
+                                    Table Name
+                                </Label>
+                                <Input
+                                    id="editTableName"
+                                    value={editTableData?.name || ''}
+                                    onChange={(e) => setEditTableData(prev => prev ? {...prev, name: e.target.value} : null)}
+                                    className="col-span-3"
+                                    placeholder="e.g., Table 5"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="editTableSeats" className="text-right">
+                                    Number of Seats
+                                </Label>
+                                <Input
+                                    id="editTableSeats"
+                                    type="number"
+                                    min="1"
+                                    value={editTableData?.seats || 1}
+                                    onChange={(e) => setEditTableData(prev => prev ? {...prev, seats: parseInt(e.target.value)} : null)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsEditTableDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button 
+                                onClick={handleEditTable}
+                                disabled={!editTableData?.name || (editTableData?.seats || 0) < 1}
+                            >
+                                Update Table
                             </Button>
                         </DialogFooter>
                     </DialogContent>
