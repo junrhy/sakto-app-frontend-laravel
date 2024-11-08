@@ -356,23 +356,22 @@ export default function PosRestaurant({
         }
     };
 
-    const handleUnjoinTable = async (joinedTable: JoinedTable) => {
-        if (!Array.isArray(joinedTable.tableIds) || joinedTable.tableIds.length === 0) {
-            toast.error('No tables to unjoin');
+    const handleUnjoinTable = async (table: Table) => {
+        // Check if table is a joined table and has originalTableIds
+        if (!table.isJoinedTable || !table.originalTableIds) {
+            toast.error('Invalid table configuration for unjoining');
             return;
         }
 
         try {
             await router.post('/pos-restaurant/tables/unjoin', {
-                tableIds: joinedTable.tableIds
+                tableIds: table.originalTableIds
             }, {
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: (response: any) => {
                     if (response.tables) {
-                        const [processedTables, newJoinedTables] = processJoinedTables(response.tables);
-                        setTables(processedTables);
-                        setJoinedTables(newJoinedTables);
+                        setTables(response.tables);
                     }
                     toast.success('Tables unjoined successfully');
                 },
@@ -946,14 +945,25 @@ export default function PosRestaurant({
                                         }`}
                                     >
                                         <CardHeader>
-                                            <CardTitle>{table.name}</CardTitle>
+                                            <CardTitle>
+                                                {table.status === 'joined' && table.joined_with ? (
+                                                    <>
+                                                        {table.joined_with.split(',')
+                                                            .map(id => tables.find(t => t.id === parseInt(id))?.name)
+                                                            .filter(Boolean)
+                                                            .join(' & ')}
+                                                    </>
+                                                ) : (
+                                                    table.name
+                                                )}
+                                            </CardTitle>
                                         </CardHeader>
                                         <CardContent>
                                             <p>Seats: {table.seats}</p>
                                             <p>Status: {table.status}</p>
-                                            {table.joined_with && (
+                                            {table.status === 'joined' && table.joined_with && (
                                                 <p className="text-sm text-gray-500">
-                                                    Joined with: {table.joined_with.split(',')
+                                                    Combined Tables: {table.joined_with.split(',')
                                                         .map(id => tables.find(t => t.id === parseInt(id))?.name)
                                                         .filter(Boolean)
                                                         .join(', ')}
@@ -988,13 +998,7 @@ export default function PosRestaurant({
                                             </Button>
                                             {table.status === 'joined' ? (
                                                 <Button 
-                                                    onClick={() => handleUnjoinTable({
-                                                        id: typeof table.id === 'string' ? parseInt(table.id) : table.id,
-                                                        tableIds: table.joined_with ? table.joined_with.split(',').map(Number) : [],
-                                                        name: table.name,
-                                                        seats: table.seats,
-                                                        status: table.status
-                                                    })}
+                                                    onClick={() => handleUnjoinTable(table)}
                                                     className="bg-red-500 hover:bg-red-600 text-white flex-1"
                                                 >
                                                     Unjoin Table
