@@ -774,19 +774,23 @@ export default function PosRestaurant({
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {categoryFilteredMenuItems.map((item: MenuItem) => (
                                 <Button
-                                key={item.id}
-                                onClick={() => addItemToOrder(item)}
-                                className="h-auto flex flex-col items-center p-2 touch-manipulation bg-gray-700 hover:bg-gray-600 text-white"
+                                    key={item.id}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        addItemToOrder(item);
+                                    }}
+                                    className="h-auto flex flex-col items-center p-2 touch-manipulation bg-gray-700 hover:bg-gray-600 text-white"
+                                    type="button"
                                 >
-                                <img 
-                                    src={item.image || '/placeholder-image.jpg'} 
-                                    alt={item.name} 
-                                    width={100} 
-                                    height={100} 
-                                    className="mb-2 rounded" 
-                                />
-                                <span className="text-center">{item.name}</span>
-                                <span>${item.price}</span>
+                                    <img 
+                                        src={item.image || '/placeholder-image.jpg'} 
+                                        alt={item.name} 
+                                        width={100} 
+                                        height={100} 
+                                        className="mb-2 rounded" 
+                                    />
+                                    <span className="text-center">{item.name}</span>
+                                    <span>${item.price}</span>
                                 </Button>
                             ))}
                             </div>
@@ -832,7 +836,7 @@ export default function PosRestaurant({
                                         </Button>
                                     </div>
                                     </TableCell>
-                                    <TableCell>${item.price.toFixed(2)}</TableCell>
+                                    <TableCell>${item.price}</TableCell>
                                     <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
                                     <TableCell>
                                     <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
