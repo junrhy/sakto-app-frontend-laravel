@@ -848,28 +848,31 @@ export default function PosRestaurant({
                             </TableBody>
                             </Table>
                             <div className="mt-4 space-y-2">
-                            <div className="flex items-center space-x-2">
-                                <Label htmlFor="discountType">Discount Type</Label>
-                                <Select value={discountType} onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Select discount type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="percentage">Percentage</SelectItem>
-                                    <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Label htmlFor="discount">Discount</Label>
-                                <Input
-                                id="discount"
-                                type="number"
-                                value={discount}
-                                onChange={(e) => setDiscount(Number(e.target.value))}
-                                placeholder={discountType === 'percentage' ? "Enter percentage" : "Enter amount"}
-                                />
-                            </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-1/3">
+                                        <Label htmlFor="discountType">Discount Type</Label>
+                                        <Select value={discountType} onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="percentage">Percentage</SelectItem>
+                                                <SelectItem value="fixed">Fixed Amount</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="w-1/3">
+                                        <Label htmlFor="discount">Discount</Label>
+                                        <Input
+                                            id="discount"
+                                            type="number"
+                                            value={discount}
+                                            onChange={(e) => setDiscount(Number(e.target.value))}
+                                            placeholder={discountType === 'percentage' ? "%" : "$"}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                         <CardFooter className="flex flex-col items-start">
