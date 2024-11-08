@@ -15,6 +15,7 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { DialogTrigger } from "@/Components/ui/dialog";
 
 interface MenuItem {
     id: number;
@@ -111,6 +112,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
     const [joinedTables, setJoinedTables] = useState<JoinedTable[]>([]);
     const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
     const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
+    const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
 
     const addItemToOrder = (item: MenuItem) => {
         const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -701,7 +703,12 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                     <TabsContent value="tables">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Table Management</CardTitle>
+                            <div className="flex justify-between items-center">
+                                <CardTitle>Table Management</CardTitle>
+                                <Button onClick={() => setIsAddTableDialogOpen(true)} className="bg-gray-700 hover:bg-gray-600 text-white">
+                                    <Plus className="mr-2 h-4 w-4" /> Add Table
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1177,6 +1184,55 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                             </Button>
                             <Button onClick={handleJoinTables}>
                                 Join Tables
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add New Table</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tableName" className="text-right">
+                                    Table Name
+                                </Label>
+                                <Input
+                                    id="tableName"
+                                    value={newTableName}
+                                    onChange={(e) => setNewTableName(e.target.value)}
+                                    className="col-span-3"
+                                    placeholder="e.g., Table 5"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tableSeats" className="text-right">
+                                    Number of Seats
+                                </Label>
+                                <Input
+                                    id="tableSeats"
+                                    type="number"
+                                    min="1"
+                                    value={newTableSeats}
+                                    onChange={(e) => setNewTableSeats(parseInt(e.target.value))}
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsAddTableDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button 
+                                onClick={() => {
+                                    handleAddTable();
+                                    setIsAddTableDialogOpen(false);
+                                }}
+                                disabled={!newTableName || newTableSeats < 1}
+                            >
+                                Add Table
                             </Button>
                         </DialogFooter>
                     </DialogContent>
