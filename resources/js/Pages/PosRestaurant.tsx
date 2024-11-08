@@ -74,6 +74,17 @@ interface EditTableData {
     seats: number;
 }
 
+interface TableResponse {
+    props: {
+        table: {
+            id: number;
+            name: string;
+            seats: number;
+            status: 'available' | 'occupied' | 'reserved' | 'joined';
+        }
+    }
+}
+
 export default function PosRestaurant({ menuItems: initialMenuItems, tables: initialTables, tab = 'pos' }: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
@@ -498,20 +509,32 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
     const handleAddTable = async () => {
         if (newTableName && newTableSeats > 0) {
             try {
-                await router.post('/fnb-tables', {
+                await router.post('/pos-restaurant/tables', {
                     name: newTableName,
                     seats: newTableSeats,
                     status: 'available'
                 }, {
-                    onSuccess: () => {
+                    onSuccess: (response: any) => {
+                        // Safely access the table data from the response
+                        const newTable: Table = {
+                            id: response?.table?.id ?? Date.now(), // Fallback to timestamp if id is missing
+                            name: newTableName,
+                            seats: newTableSeats,
+                            status: 'available'
+                        };
+                        
+                        setTables(prevTables => [...prevTables, newTable]);
                         setNewTableName("");
                         setNewTableSeats(1);
                         setIsAddTableDialogOpen(false);
                         toast.success('Table added successfully');
                     },
-                    onError: () => {
+                    onError: (errors) => {
+                        console.error('Error adding table:', errors);
                         toast.error('Failed to add table');
-                    }
+                    },
+                    preserveState: true,
+                    preserveScroll: true
                 });
             } catch (error) {
                 console.error('Error adding table:', error);
@@ -524,7 +547,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
 
     const handleRemoveTable = async (id: number) => {
         try {
-            await router.delete(`/fnb-tables/${id}`, {
+            await router.delete(`/pos-restaurant/table/${id}`, {
                 onSuccess: () => {
                     setTables(tables.filter(table => table.id !== id));
                     toast.success('Table removed successfully');
@@ -541,7 +564,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
 
     const updateTableStatus = async (tableId: number, status: Table['status']) => {
         try {
-            await router.put(`/fnb-tables/${tableId}`, {
+            await router.put(`/pos-restaurant/table/${tableId}`, {
                 status: status
             }, {
                 preserveState: true,
@@ -565,7 +588,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
         if (!editTableData) return;
 
         try {
-            await router.put(`/fnb-tables/${editTableData.id}`, {
+            await router.put(`/pos-restaurant/table/${editTableData.id}`, {
                 name: editTableData.name,
                 seats: editTableData.seats
             }, {

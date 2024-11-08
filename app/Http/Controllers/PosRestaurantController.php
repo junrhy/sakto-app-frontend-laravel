@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
+use App\Models\Table;
 
 class PosRestaurantController extends Controller
 {
@@ -169,18 +170,32 @@ class PosRestaurantController extends Controller
     public function storeTable(Request $request)
     {
         try {
+            // Validate the request data
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'seats' => 'required|integer|min:1',
+                'status' => 'required|string|in:available,occupied,reserved,joined'
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/fnb-tables", $request->all());
+                ->post("{$this->apiUrl}/fnb-tables", $validated);
 
             if (!$response->successful()) {
-                throw new \Exception('API request failed: ' . $response->body());
+                return redirect()->back()
+                    ->with('error', $response->json()['message'] ?? 'Failed to create table');
             }
 
-            return redirect()->back()->with('success', 'Table created successfully.');
+            return redirect()->back()
+                ->with('success', 'Table created successfully')
+                ->with('table', $response->json()['data']);
+
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to store table.');
+            return redirect()->back()
+                ->with('error', 'Failed to store table: ' . $e->getMessage());
         }
-    }       
+    }
 
     /**
      * Update the specified resource in storage.
