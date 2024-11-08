@@ -32,10 +32,14 @@ interface OrderItem extends MenuItem {
 }
   
 interface Table {
-    id: number;
+    id: number | string;
+    numericId?: number;
     name: string;
     seats: number;
     status: 'available' | 'occupied' | 'reserved' | 'joined';
+    joined_with?: string;
+    isJoinedTable?: boolean;
+    originalTableIds?: number[];
 }
   
 interface Reservation {
@@ -59,13 +63,14 @@ interface JoinedTable {
     tableIds: number[];
     name: string;
     seats: number;
-    status: 'available' | 'occupied' | 'reserved';
+    status: 'available' | 'occupied' | 'reserved' | 'joined';
 }
 
 interface PageProps {
     menuItems: MenuItem[];
     tables: Table[];
     tab?: string;
+    joinedTables?: JoinedTable[];
 }
 
 interface EditTableData {
@@ -85,7 +90,64 @@ interface TableResponse {
     }
 }
 
-export default function PosRestaurant({ menuItems: initialMenuItems, tables: initialTables, tab = 'pos' }: PageProps) {
+const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
+    const joinedTables: JoinedTable[] = [];
+    const processedTables = [...tables];
+    const processedIds = new Set<number>();
+
+    // First pass: collect all joined table groups
+    const joinedGroups = new Map<string, number[]>();
+    
+    tables.forEach(table => {
+        if (table.status === 'joined' && table.joined_with) {
+            const joinedIds = table.joined_with.split(',').map(Number);
+            const key = joinedIds.sort().join(',');
+            if (!joinedGroups.has(key)) {
+                joinedGroups.set(key, joinedIds);
+            }
+        }
+    });
+
+    // Second pass: create joined table entries
+    joinedGroups.forEach((tableIds) => {
+        // Get all tables in this joined group
+        const groupTables = tableIds.map(id => 
+            tables.find(t => t.id === id)
+        ).filter((t): t is Table => t !== undefined);
+
+        if (groupTables.length > 0) {
+            // Mark these tables as processed
+            tableIds.forEach(id => processedIds.add(id));
+
+            // Create joined table entry
+            const joinedTable: JoinedTable = {
+                id: Date.now() + Math.random(),
+                tableIds: tableIds,
+                name: `Table ${groupTables.map(t => 
+                    t.name.replace('Table ', '')
+                ).join(' & ')}`,
+                seats: groupTables.reduce((sum, t) => sum + t.seats, 0),
+                status: 'joined'
+            };
+
+            joinedTables.push(joinedTable);
+        }
+    });
+
+    // Filter out individual tables that are part of joined tables
+    const remainingTables = processedTables.filter(table => 
+        !processedIds.has(table.id as number)
+    );
+
+    return [remainingTables, joinedTables];
+};
+
+export default function PosRestaurant({ 
+    menuItems: initialMenuItems, 
+    tables: initialTables, 
+    joinedTables: initialJoinedTables = [], 
+    tab = 'pos' 
+}: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
     const [tableNumber, setTableNumber] = useState<string>("");
@@ -117,13 +179,20 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
     const itemsPerPage = 5;
     const [newTableName, setNewTableName] = useState<string>("");
     const [newTableSeats, setNewTableSeats] = useState<number>(1);
-    const [joinedTables, setJoinedTables] = useState<JoinedTable[]>([]);
+    const [joinedTables, setJoinedTables] = useState<JoinedTable[]>(initialJoinedTables);
     const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
     const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
     const [tables, setTables] = useState<Table[]>(initialTables);
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
+
+    // Initialize tables and joined tables
+    useEffect(() => {
+        const [processedTables, newJoinedTables] = processJoinedTables(initialTables);
+        setTables(processedTables);
+        setJoinedTables(newJoinedTables);
+    }, [initialTables]);
 
     const addItemToOrder = (item: MenuItem) => {
         const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -246,7 +315,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
         }
     };
 
-    const handleJoinTables = () => {
+    const handleJoinTables = async () => {
         if (selectedTablesForJoin.length < 2) {
             toast.error('Please select at least 2 tables to join');
             return;
@@ -256,69 +325,103 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
             tables.find(table => table.id === id)
         ).filter((table): table is Table => table !== undefined);
 
-        // Check if all selected tables are available
         if (!selectedTableDetails.every(table => table.status === 'available')) {
             toast.error('Can only join available tables');
             return;
         }
 
-        const totalSeats = selectedTableDetails.reduce((sum, table) => sum + table.seats, 0);
-        const joinedTableNames = selectedTableDetails.map(table => table.name).join(' + ');
+        try {
+            await router.post('/pos-restaurant/tables/join', {
+                tableIds: selectedTablesForJoin
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (response: any) => {
+                    if (response.tables) {
+                        const [processedTables, newJoinedTables] = processJoinedTables(response.tables);
+                        setTables(processedTables);
+                        setJoinedTables(newJoinedTables);
+                    }
+                    setSelectedTablesForJoin([]);
+                    setIsJoinTableDialogOpen(false);
+                    toast.success('Tables joined successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to join tables');
+                }
+            });
+        } catch (error) {
+            console.error('Error joining tables:', error);
+            toast.error('Failed to join tables');
+        }
+    };
 
-        const newJoinedTable: JoinedTable = {
-            id: Date.now(),
-            tableIds: selectedTablesForJoin,
-            name: joinedTableNames,
-            seats: totalSeats,
-            status: 'available'
-        };
+    const handleUnjoinTable = async (joinedTable: JoinedTable) => {
+        if (!Array.isArray(joinedTable.tableIds) || joinedTable.tableIds.length === 0) {
+            toast.error('No tables to unjoin');
+            return;
+        }
 
-        setJoinedTables([...joinedTables, newJoinedTable]);
+        try {
+            await router.post('/pos-restaurant/tables/unjoin', {
+                tableIds: joinedTable.tableIds
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (response: any) => {
+                    if (response.tables) {
+                        const [processedTables, newJoinedTables] = processJoinedTables(response.tables);
+                        setTables(processedTables);
+                        setJoinedTables(newJoinedTables);
+                    }
+                    toast.success('Tables unjoined successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to unjoin tables');
+                }
+            });
+        } catch (error) {
+            console.error('Error unjoining tables:', error);
+            toast.error('Failed to unjoin tables');
+        }
+    };
+
+    const toggleTableSelection = (tableId: number | string) => {
+        const numericId = typeof tableId === 'string' 
+            ? Number(tableId.replace('joined_', '')) 
+            : tableId;
         
-        // Update original tables' status to indicate they're part of a joined table
-        setTables(tables.map(table => 
-            selectedTablesForJoin.includes(table.id) 
-                ? { ...table, status: 'joined' } 
-                : table
-        ));
-
-        setSelectedTablesForJoin([]);
-        setIsJoinTableDialogOpen(false);
-        toast.success('Tables joined successfully');
-    };
-
-    const handleUnjoinTable = (joinedTable: JoinedTable) => {
-        // Restore original tables to available status
-        setTables(tables.map(table => 
-            joinedTable.tableIds.includes(table.id)
-                ? { ...table, status: 'available' }
-                : table
-        ));
-
-        // Remove the joined table
-        setJoinedTables(joinedTables.filter(jt => jt.id !== joinedTable.id));
-        toast.success('Tables unjoined successfully');
-    };
-
-    const toggleTableSelection = (tableId: number) => {
         setSelectedTablesForJoin(prev => 
-            prev.includes(tableId)
-                ? prev.filter(id => id !== tableId)
-                : [...prev, tableId]
+            prev.includes(numericId)
+                ? prev.filter(id => id !== numericId)
+                : [...prev, numericId]
         );
     };
 
     const filteredTables = useMemo(() => {
-        let filtered = tables;
+        let filtered = [...tables];
+        
+        // Add joined tables if not filtered out
+        if (tableStatusFilter === 'all' || tableStatusFilter === 'joined') {
+            const joinedTableEntries = joinedTables.map(jt => ({
+                id: `joined_${jt.id}`,
+                numericId: jt.id,
+                name: jt.name,
+                seats: jt.seats,
+                status: 'joined' as const,
+                isJoinedTable: true,
+                originalTableIds: jt.tableIds
+            }));
+            filtered = [...filtered, ...joinedTableEntries];
+        }
+
+        // Apply status filter
         if (tableStatusFilter !== 'all') {
-            filtered = tables.filter(table => table.status === tableStatusFilter);
+            filtered = filtered.filter(table => table.status === tableStatusFilter);
         }
-        // Don't show tables that are part of joined tables unless specifically filtering for them
-        if (tableStatusFilter !== 'joined') {
-            filtered = filtered.filter(table => table.status !== 'joined');
-        }
+
         return filtered;
-    }, [tables, tableStatusFilter]);
+    }, [tables, tableStatusFilter, joinedTables]);
 
     const handleAddMenuItem = () => {
         setCurrentMenuItem(null);
@@ -521,9 +624,10 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
         }
     };
 
-    const handleRemoveTable = async (id: number) => {
+    const handleRemoveTable = async (id: number | string) => {
+        const numericId = typeof id === 'string' ? Number(id.replace('joined_', '')) : id;
         try {
-            await router.delete(`/pos-restaurant/table/${id}`, {
+            await router.delete(`/pos-restaurant/table/${numericId}`, {
                 onSuccess: () => {
                     setTables(tables.filter(table => table.id !== id));
                     toast.success('Table removed successfully');
@@ -590,12 +694,27 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
 
     const openEditTableDialog = (table: Table) => {
         setEditTableData({
-            id: table.id,
+            id: typeof table.id === 'string' ? parseInt(table.id) : table.id,
             name: table.name,
             seats: table.seats
         });
         setIsEditTableDialogOpen(true);
     };
+
+    const handleTableSelection = (tableName: string) => {
+        setTableNumber(tableName);
+        // Redirect to POS tab
+        router.get(
+            window.location.pathname,
+            { tab: 'pos' },
+            { preserveState: true, preserveScroll: true }
+        );
+    };
+
+    useEffect(() => {
+        console.log('Tables:', tables);
+        console.log('Joined Tables:', joinedTables);
+    }, [tables, joinedTables]);
 
     return (
         <AuthenticatedLayout
@@ -823,7 +942,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
                                     <Card 
                                         key={table.id}
                                         className={`${
-                                            selectedTablesForJoin.includes(table.id) ? 'ring-2 ring-blue-500' : ''
+                                            selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? 'ring-2 ring-blue-500' : ''
                                         }`}
                                     >
                                         <CardHeader>
@@ -832,65 +951,74 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
                                         <CardContent>
                                             <p>Seats: {table.seats}</p>
                                             <p>Status: {table.status}</p>
+                                            {table.joined_with && (
+                                                <p className="text-sm text-gray-500">
+                                                    Joined with: {table.joined_with.split(',')
+                                                        .map(id => tables.find(t => t.id === parseInt(id))?.name)
+                                                        .filter(Boolean)
+                                                        .join(', ')}
+                                                </p>
+                                            )}
                                         </CardContent>
-                                        <CardFooter className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0">
-                                            {table.status === 'available' && (
+                                        <CardFooter className="flex flex-wrap gap-2">
+                                            {table.status === 'available' && !table.joined_with && (
                                                 <Button
                                                     onClick={() => toggleTableSelection(table.id)}
-                                                    variant={selectedTablesForJoin.includes(table.id) ? "default" : "outline"}
-                                                    className="w-full md:w-auto"
+                                                    variant={selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? "default" : "outline"}
+                                                    className="flex-1"
                                                 >
-                                                    {selectedTablesForJoin.includes(table.id) ? (
+                                                    {selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? (
                                                         <Check className="h-4 w-4" />
                                                     ) : (
                                                         <Link2 className="h-4 w-4" />
                                                     )}
                                                 </Button>
                                             )}
-                                            <Button onClick={() => setTableNumber(table.name)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
+                                            <Button 
+                                                onClick={() => handleTableSelection(table.name)} 
+                                                className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                            >
                                                 <Plus className="h-4 w-4" />
                                             </Button>
-                                            <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
+                                            <Button 
+                                                onClick={() => handleGenerateQR(table)} 
+                                                className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                            >
                                                 <QrCode className="h-4 w-4" />
                                             </Button>
-                                            <Button onClick={() => openEditTableDialog(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button onClick={() => handleRemoveTable(table.id)} className="bg-red-500 hover:bg-red-600 text-white w-full md:w-auto">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            {table.status === 'joined' ? (
+                                                <Button 
+                                                    onClick={() => handleUnjoinTable({
+                                                        id: typeof table.id === 'string' ? parseInt(table.id) : table.id,
+                                                        tableIds: table.joined_with ? table.joined_with.split(',').map(Number) : [],
+                                                        name: table.name,
+                                                        seats: table.seats,
+                                                        status: table.status
+                                                    })}
+                                                    className="bg-red-500 hover:bg-red-600 text-white flex-1"
+                                                >
+                                                    Unjoin Table
+                                                </Button>
+                                            ) : (
+                                                <>
+                                                    <Button 
+                                                        onClick={() => openEditTableDialog(table)} 
+                                                        className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button 
+                                                        onClick={() => handleRemoveTable(table.id)} 
+                                                        className="bg-red-500 hover:bg-red-600 text-white flex-1"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            )}
                                         </CardFooter>
                                     </Card>
                                 ))}
                             </div>
-
-                            {joinedTables.length > 0 && (
-                                <div className="mt-8">
-                                    <h3 className="text-lg font-semibold mb-4">Joined Tables</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {joinedTables.map((joinedTable) => (
-                                            <Card key={joinedTable.id}>
-                                                <CardHeader>
-                                                    <CardTitle>{joinedTable.name}</CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p>Total Seats: {joinedTable.seats}</p>
-                                                    <p>Status: {joinedTable.status}</p>
-                                                </CardContent>
-                                                <CardFooter>
-                                                    <Button
-                                                        onClick={() => handleUnjoinTable(joinedTable)}
-                                                        variant="destructive"
-                                                        className="w-full"
-                                                    >
-                                                        Unjoin Tables
-                                                    </Button>
-                                                </CardFooter>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                     </TabsContent>
@@ -1149,7 +1277,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tables: ini
                         <div className="flex flex-col items-center" ref={qrCodeRef}>
                         {selectedTable && (
                             <QRCodeSVG
-                            value={`https://your-restaurant-domain.com/menu?table=${selectedTable.id}${customerName ? `&customer=${encodeURIComponent(customerName)}` : ''}`}
+                            value={`https://sakto.app/fnb/menu?table=${selectedTable.id}${customerName ? `&customer=${encodeURIComponent(customerName)}` : ''}`}
                             size={200}
                             />
                         )}
