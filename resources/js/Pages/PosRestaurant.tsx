@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2 } from "lucide-react";
+import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2, Link2, Check } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -34,7 +34,7 @@ interface Table {
     id: number;
     name: string;
     seats: number;
-    status: 'available' | 'occupied' | 'reserved';
+    status: 'available' | 'occupied' | 'reserved' | 'joined';
 }
   
 interface Reservation {
@@ -51,6 +51,14 @@ interface MenuItemFormData {
     price: number;
     category: string;
     image?: string;
+}
+
+interface JoinedTable {
+    id: number;
+    tableIds: number[];
+    name: string;
+    seats: number;
+    status: 'available' | 'occupied' | 'reserved';
 }
 
 const TABLES: Table[] = [
@@ -88,7 +96,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
     const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
     const qrCodeRef = useRef<HTMLDivElement>(null);
     const [customerName, setCustomerName] = useState<string>("");
-    const [tableStatusFilter, setTableStatusFilter] = useState<'all' | 'available' | 'occupied' | 'reserved'>('all');
+    const [tableStatusFilter, setTableStatusFilter] = useState<'all' | 'available' | 'occupied' | 'reserved' | 'joined'>('all');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const fullscreenRef = useRef<HTMLDivElement>(null);
     const [isMenuItemDialogOpen, setIsMenuItemDialogOpen] = useState(false);
@@ -100,6 +108,9 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
     const itemsPerPage = 5;
     const [newTableName, setNewTableName] = useState<string>("");
     const [newTableSeats, setNewTableSeats] = useState<number>(1);
+    const [joinedTables, setJoinedTables] = useState<JoinedTable[]>([]);
+    const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
+    const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
 
     const addItemToOrder = (item: MenuItem) => {
         const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -222,11 +233,78 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
         }
     };
 
-    const filteredTables = useMemo(() => {
-        if (tableStatusFilter === 'all') {
-        return tables;
+    const handleJoinTables = () => {
+        if (selectedTablesForJoin.length < 2) {
+            toast.error('Please select at least 2 tables to join');
+            return;
         }
-        return tables.filter(table => table.status === tableStatusFilter);
+
+        const selectedTableDetails = selectedTablesForJoin.map(id => 
+            tables.find(table => table.id === id)
+        ).filter((table): table is Table => table !== undefined);
+
+        // Check if all selected tables are available
+        if (!selectedTableDetails.every(table => table.status === 'available')) {
+            toast.error('Can only join available tables');
+            return;
+        }
+
+        const totalSeats = selectedTableDetails.reduce((sum, table) => sum + table.seats, 0);
+        const joinedTableNames = selectedTableDetails.map(table => table.name).join(' + ');
+
+        const newJoinedTable: JoinedTable = {
+            id: Date.now(),
+            tableIds: selectedTablesForJoin,
+            name: joinedTableNames,
+            seats: totalSeats,
+            status: 'available'
+        };
+
+        setJoinedTables([...joinedTables, newJoinedTable]);
+        
+        // Update original tables' status to indicate they're part of a joined table
+        setTables(tables.map(table => 
+            selectedTablesForJoin.includes(table.id) 
+                ? { ...table, status: 'joined' } 
+                : table
+        ));
+
+        setSelectedTablesForJoin([]);
+        setIsJoinTableDialogOpen(false);
+        toast.success('Tables joined successfully');
+    };
+
+    const handleUnjoinTable = (joinedTable: JoinedTable) => {
+        // Restore original tables to available status
+        setTables(tables.map(table => 
+            joinedTable.tableIds.includes(table.id)
+                ? { ...table, status: 'available' }
+                : table
+        ));
+
+        // Remove the joined table
+        setJoinedTables(joinedTables.filter(jt => jt.id !== joinedTable.id));
+        toast.success('Tables unjoined successfully');
+    };
+
+    const toggleTableSelection = (tableId: number) => {
+        setSelectedTablesForJoin(prev => 
+            prev.includes(tableId)
+                ? prev.filter(id => id !== tableId)
+                : [...prev, tableId]
+        );
+    };
+
+    const filteredTables = useMemo(() => {
+        let filtered = tables;
+        if (tableStatusFilter !== 'all') {
+            filtered = tables.filter(table => table.status === tableStatusFilter);
+        }
+        // Don't show tables that are part of joined tables unless specifically filtering for them
+        if (tableStatusFilter !== 'joined') {
+            filtered = filtered.filter(table => table.status !== 'joined');
+        }
+        return filtered;
     }, [tables, tableStatusFilter]);
 
     const toggleFullscreen = useCallback(() => {
@@ -626,12 +704,21 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                             <CardTitle>Table Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex items-end space-x-2">
+                                    <Button 
+                                        onClick={() => setIsJoinTableDialogOpen(true)}
+                                        className="bg-gray-700 hover:bg-gray-600 text-white"
+                                        disabled={selectedTablesForJoin.length < 2}
+                                    >
+                                        Join Selected Tables
+                                    </Button>
+                                </div>
                                 <div>
                                     <Label htmlFor="tableStatusFilter">Filter by Status</Label>
                                     <Select
                                         value={tableStatusFilter}
-                                        onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved') => setTableStatusFilter(value)}
+                                        onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved' | 'joined') => setTableStatusFilter(value)}
                                     >
                                         <SelectTrigger id="tableStatusFilter" className="bg-white">
                                             <SelectValue placeholder="Filter by status" />
@@ -641,38 +728,20 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                             <SelectItem value="available">Available</SelectItem>
                                             <SelectItem value="occupied">Occupied</SelectItem>
                                             <SelectItem value="reserved">Reserved</SelectItem>
+                                            <SelectItem value="joined">Joined</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="flex items-end space-x-2">
-                                    <div className="flex-1">
-                                        <Label htmlFor="newTableName">New Table Name</Label>
-                                        <Input
-                                            id="newTableName"
-                                            value={newTableName}
-                                            onChange={(e) => setNewTableName(e.target.value)}
-                                            placeholder="Enter table name"
-                                        />
-                                    </div>
-                                    <div className="flex-1">
-                                        <Label htmlFor="newTableSeats">Seats</Label>
-                                        <Input
-                                            id="newTableSeats"
-                                            type="number"
-                                            value={newTableSeats}
-                                            onChange={(e) => setNewTableSeats(parseInt(e.target.value))}
-                                            min={1}
-                                            placeholder="Enter number of seats"
-                                        />
-                                    </div>
-                                    <Button onClick={handleAddTable} className="bg-gray-700 hover:bg-gray-600 text-white">
-                                        Add Table
-                                    </Button>
-                                </div>
                             </div>
+
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {filteredTables.map((table) => (
-                                    <Card key={table.id}>
+                                    <Card 
+                                        key={table.id}
+                                        className={`${
+                                            selectedTablesForJoin.includes(table.id) ? 'ring-2 ring-blue-500' : ''
+                                        }`}
+                                    >
                                         <CardHeader>
                                             <CardTitle>{table.name}</CardTitle>
                                         </CardHeader>
@@ -681,11 +750,20 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                             <p>Status: {table.status}</p>
                                         </CardContent>
                                         <CardFooter className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0">
-                                            <Button
-                                                variant={table.status === 'available' ? 'outline' : 'secondary'}
-                                                onClick={() => setTableNumber(table.name)}
-                                                className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto"
-                                            >
+                                            {table.status === 'available' && (
+                                                <Button
+                                                    onClick={() => toggleTableSelection(table.id)}
+                                                    variant={selectedTablesForJoin.includes(table.id) ? "default" : "outline"}
+                                                    className="w-full md:w-auto"
+                                                >
+                                                    {selectedTablesForJoin.includes(table.id) ? (
+                                                        <Check className="h-4 w-4" />
+                                                    ) : (
+                                                        <Link2 className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            )}
+                                            <Button onClick={() => setTableNumber(table.name)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
                                                 <Plus className="h-4 w-4" />
                                             </Button>
                                             <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
@@ -698,6 +776,34 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                     </Card>
                                 ))}
                             </div>
+
+                            {joinedTables.length > 0 && (
+                                <div className="mt-8">
+                                    <h3 className="text-lg font-semibold mb-4">Joined Tables</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {joinedTables.map((joinedTable) => (
+                                            <Card key={joinedTable.id}>
+                                                <CardHeader>
+                                                    <CardTitle>{joinedTable.name}</CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <p>Total Seats: {joinedTable.seats}</p>
+                                                    <p>Status: {joinedTable.status}</p>
+                                                </CardContent>
+                                                <CardFooter>
+                                                    <Button
+                                                        onClick={() => handleUnjoinTable(joinedTable)}
+                                                        variant="destructive"
+                                                        className="w-full"
+                                                    >
+                                                        Unjoin Tables
+                                                    </Button>
+                                                </CardFooter>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                     </TabsContent>
@@ -1046,6 +1152,33 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                         <Button type="submit">Save</Button>
                     </DialogFooter>
                     </form>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isJoinTableDialogOpen} onOpenChange={setIsJoinTableDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Join Tables</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p>Selected Tables:</p>
+                            <ul className="list-disc list-inside">
+                                {selectedTablesForJoin.map(id => {
+                                    const table = tables.find(t => t.id === id);
+                                    return table ? (
+                                        <li key={id}>{table.name} ({table.seats} seats)</li>
+                                    ) : null;
+                                })}
+                            </ul>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsJoinTableDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleJoinTables}>
+                                Join Tables
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
