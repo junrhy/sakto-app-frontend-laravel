@@ -168,7 +168,7 @@ export default function Authenticated({
                                 )}
                                 {hasFnbAccess && (
                                     <NavLink
-                                        href={route('pos-restaurant')}
+                                        href={route('pos-restaurant', { tab: "tables" })}
                                         active={route().current('pos-restaurant')}
                                         className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
                                     >
