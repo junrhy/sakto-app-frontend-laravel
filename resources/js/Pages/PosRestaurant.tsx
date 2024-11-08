@@ -10,10 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search } from "lucide-react";
+import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2 } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface MenuItem {
     id: number;
@@ -451,11 +452,35 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                 </div>
 
                 <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
-                    <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="pos">POS</TabsTrigger>
-                    <TabsTrigger value="tables">Tables</TabsTrigger>
-                    <TabsTrigger value="reservations">Reservations</TabsTrigger>
-                    <TabsTrigger value="menu">Menu Management</TabsTrigger>
+                    <TabsList className={`grid w-full ${
+                        useMediaQuery('(min-width: 640px)') 
+                            ? 'grid-cols-4' 
+                            : 'grid-cols-2'
+                    } gap-0.5 p-0.5 min-h-0 bg-muted`}>
+                        <TabsTrigger 
+                            value="pos" 
+                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
+                        >
+                            POS
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="tables" 
+                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
+                        >
+                            Tables
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="reservations" 
+                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
+                        >
+                            Reservations
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="menu" 
+                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
+                        >
+                            Menu
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="pos">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -640,7 +665,7 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                             placeholder="Enter number of seats"
                                         />
                                     </div>
-                                    <Button onClick={handleAddTable} className="bg-blue-500 hover:bg-blue-600 text-white">
+                                    <Button onClick={handleAddTable} className="bg-gray-700 hover:bg-gray-600 text-white">
                                         Add Table
                                     </Button>
                                 </div>
@@ -651,27 +676,25 @@ export default function PosRestaurant({ menuItems: initialMenuItems, tab = 'pos'
                                         <CardHeader>
                                             <CardTitle>{table.name}</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="flex flex-row justify-between h-full">
-                                            <div>
-                                                <p>Seats: {table.seats}</p>
-                                                <p>Status: {table.status}</p>
-                                            </div>
-                                            <div className="flex space-x-2 mt-4">
-                                                <Button
-                                                    variant={table.status === 'available' ? 'outline' : 'secondary'}
-                                                    onClick={() => setTableNumber(table.name)}
-                                                    className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto"
-                                                >
-                                                    Select
-                                                </Button>
-                                                <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
-                                                    Generate QR
-                                                </Button>
-                                                <Button onClick={() => handleRemoveTable(table.id)} className="bg-red-500 hover:bg-red-600 text-white w-full md:w-auto">
-                                                    Remove
-                                                </Button>
-                                            </div>
+                                        <CardContent>
+                                            <p>Seats: {table.seats}</p>
+                                            <p>Status: {table.status}</p>
                                         </CardContent>
+                                        <CardFooter className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0">
+                                            <Button
+                                                variant={table.status === 'available' ? 'outline' : 'secondary'}
+                                                onClick={() => setTableNumber(table.name)}
+                                                className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                            <Button onClick={() => handleGenerateQR(table)} className="bg-gray-700 hover:bg-gray-600 text-white w-full md:w-auto">
+                                                <QrCode className="h-4 w-4" />
+                                            </Button>
+                                            <Button onClick={() => handleRemoveTable(table.id)} className="bg-red-500 hover:bg-red-600 text-white w-full md:w-auto">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </CardFooter>
                                     </Card>
                                 ))}
                             </div>
