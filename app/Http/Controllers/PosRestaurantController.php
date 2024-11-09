@@ -364,7 +364,7 @@ class PosRestaurantController extends Controller
         try {
             $response = Http::withToken($this->apiToken)
                 ->delete("{$this->apiUrl}/fnb-orders/{$table}/item/{$itemId}");
-dd($response->json());
+
             if (!$response->successful()) {
                 throw new \Exception($response->json()['message'] ?? 'Failed to remove item');
             }
@@ -372,6 +372,25 @@ dd($response->json());
             return redirect()->back()->with('success', 'Item removed successfully');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to remove item: ' . $e->getMessage());
+        }
+    }
+
+    public function getCurrentOrder($tableNumber)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            // Get current order from API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-orders/client/{$clientIdentifier}/table/{$tableNumber}");
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to fetch current order');
+            }
+
+            return response()->json($response->json());
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to fetch current order: ' . $e->getMessage());
         }
     }
 }
