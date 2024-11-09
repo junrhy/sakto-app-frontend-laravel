@@ -250,8 +250,50 @@ export default function PosRestaurant({
         }
     };
 
-    const removeItemFromOrder = (id: number) => {
-        setOrderItems(orderItems.filter(item => item.id !== id));
+    const removeItemFromOrder = async (id: number) => {
+        if (!tableNumber) {
+            toast.error('No table selected');
+            return;
+        }
+
+        try {
+            // Store current order items for rollback if needed
+            const previousOrderItems = [...orderItems];
+            
+            // Optimistically update UI
+            setOrderItems(orderItems.filter(item => item.id !== id));
+
+            // Send request to backend
+            await router.delete(`/pos-restaurant/current-order/${tableNumber}/item/${id}`, {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Item removed from order');
+                    
+                    // If this was the last item, update table status to available
+                    if (orderItems.length === 1) {
+                        setTables(prevTables => 
+                            prevTables.map(table => 
+                                table.name === tableNumber 
+                                    ? { ...table, status: 'available' } 
+                                    : table
+                            )
+                        );
+                    }
+                },
+                onError: () => {
+                    // Rollback on error
+                    setOrderItems(previousOrderItems);
+                    toast.error('Failed to remove item from order');
+                }
+            });
+
+        } catch (error) {
+            console.error('Error removing item from order:', error);
+            // Rollback on error
+            setOrderItems(orderItems);
+            toast.error('Failed to remove item from order');
+        }
     };
 
     const updateItemQuantity = (id: number, newQuantity: number) => {
