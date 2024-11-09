@@ -98,6 +98,10 @@ Route::middleware('auth')->group(function () {
     // Pos Restaurant Kitchen Order routes
     Route::post('/pos-restaurant/kitchen-order', [PosRestaurantController::class, 'storeKitchenOrder']);
 
+    // Pos Restaurant Current Order routes
+    Route::post('/pos-restaurant/current-order/{tableNumber}', [PosRestaurantController::class, 'updateCurrentOrder'])
+        ->name('pos-restaurant.update-current-order');
+
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
 
