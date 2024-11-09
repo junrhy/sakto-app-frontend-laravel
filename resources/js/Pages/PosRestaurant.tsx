@@ -195,14 +195,58 @@ export default function PosRestaurant({
         setJoinedTables(newJoinedTables);
     }, [initialTables]);
 
-    const addItemToOrder = (item: MenuItem) => {
-        const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
-        if (existingItem) {
-        setOrderItems(orderItems.map(orderItem =>
-            orderItem.id === item.id ? { ...orderItem, quantity: orderItem.quantity + 1 } : orderItem
-        ));
-        } else {
-        setOrderItems([...orderItems, { ...item, quantity: 1 }]);
+    const addItemToOrder = async (item: MenuItem) => {
+        if (!tableNumber) {
+            toast.error('Please select a table first');
+            return;
+        }
+
+        try {
+            // First update the local state for immediate UI feedback
+            const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
+            const updatedOrderItems = existingItem 
+                ? orderItems.map(orderItem =>
+                    orderItem.id === item.id 
+                        ? { ...orderItem, quantity: orderItem.quantity + 1 } 
+                        : orderItem
+                )
+                : [...orderItems, { ...item, quantity: 1 }];
+            
+            setOrderItems(updatedOrderItems);
+
+            // Then send the update to the server
+            await router.post(`/pos-restaurant/current-order/${tableNumber}`, {
+                items: updatedOrderItems.map(item => ({
+                    id: item.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    total: item.price * item.quantity
+                }))
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onError: (errors) => {
+                    // Revert the local state if the server request fails
+                    setOrderItems(orderItems);
+                    toast.error('Failed to update order');
+                    console.error('Error updating order:', errors);
+                }
+            });
+
+            // Update table status to occupied if it was available
+            setTables(prevTables => 
+                prevTables.map(table => 
+                    table.name === tableNumber && table.status === 'available'
+                        ? { ...table, status: 'occupied' }
+                        : table
+                )
+            );
+
+        } catch (error) {
+            console.error('Error adding item to order:', error);
+            toast.error('Failed to add item to order');
+            // Revert the local state
+            setOrderItems(orderItems);
         }
     };
 

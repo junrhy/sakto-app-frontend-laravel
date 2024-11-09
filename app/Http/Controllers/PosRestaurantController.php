@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use App\Models\Table;
+use Illuminate\Support\Facades\Cache;
 
 class PosRestaurantController extends Controller
 {
@@ -327,6 +328,33 @@ class PosRestaurantController extends Controller
                 'message' => 'Failed to create kitchen order',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function updateCurrentOrder(Request $request, string $tableNumber)
+    {
+        try {
+            $request->validate([
+                'items' => 'required|array',
+                'items.*.id' => 'required|integer',
+                'items.*.quantity' => 'required|integer|min:1',
+            ]);
+
+            // Update table status to occupied
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/{$tableNumber}", [
+                    'items' => $request->items,
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update order');
+            }
+
+            return redirect()->back()->with('success', 'Order updated successfully');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update order: ' . $e->getMessage());
         }
     }
 }
