@@ -211,7 +211,7 @@ export default function PosRestaurant({
                         : orderItem
                 )
                 : [...orderItems, { ...item, quantity: 1 }];
-            
+
             setOrderItems(updatedOrderItems);
 
             // Then send the update to the server
@@ -861,14 +861,38 @@ export default function PosRestaurant({
         setIsEditTableDialogOpen(true);
     };
 
-    const handleTableSelection = (tableName: string) => {
-        setTableNumber(tableName);
-        // Redirect to POS tab
-        router.get(
-            window.location.pathname,
-            { tab: 'pos' },
-            { preserveState: true, preserveScroll: true }
-        );
+    const handleTableSelection = async (tableName: string) => {
+        try {
+            // First update the table number in state
+            setTableNumber(tableName);
+            
+            // Fetch current order for this table
+            const response = await fetch(`/pos-restaurant/current-order/${tableName}`);
+            const data = await response.json();
+            // Add null check and default to empty array if no items
+            if (data.orders.items && Array.isArray(data.orders.items)) {
+                setOrderItems(data.orders.items.map((item: any) => ({
+                    id: item.id,
+                    name: item.item,
+                    price: item.price,
+                    quantity: item.quantity,
+                    total: item.total
+                })));
+            } else {
+                setOrderItems([]);
+            }
+
+            // Redirect to POS tab
+            router.get(
+                window.location.pathname,
+                { tab: 'pos' },
+                { preserveState: true, preserveScroll: true }
+            );
+        } catch (error) {
+            console.error('Error fetching current order:', error);
+            toast.error('Failed to fetch current order');
+            setOrderItems([]);
+        }
     };
 
     return (
