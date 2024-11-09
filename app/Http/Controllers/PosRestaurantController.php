@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use App\Models\Table;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Order;
 
 class PosRestaurantController extends Controller
 {
@@ -355,6 +356,22 @@ class PosRestaurantController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update order: ' . $e->getMessage());
+        }
+    }
+
+    public function removeOrderItem(Request $request, $table, $itemId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-orders/{$table}/item/{$itemId}");
+dd($response->json());
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to remove item');
+            }
+
+            return redirect()->back()->with('success', 'Item removed successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to remove item: ' . $e->getMessage());
         }
     }
 }
