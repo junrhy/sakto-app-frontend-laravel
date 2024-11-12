@@ -100,11 +100,11 @@ Route::middleware('auth')->group(function () {
 
     // Pos Restaurant Current Order routes
     Route::get('/pos-restaurant/current-order/{tableNumber}', [PosRestaurantController::class, 'getCurrentOrder']);
-    Route::post('/pos-restaurant/current-order/{tableNumber}', [PosRestaurantController::class, 'updateCurrentOrder'])
-        ->name('pos-restaurant.update-current-order');
+    Route::post('/pos-restaurant/orders/add-item', [PosRestaurantController::class, 'addItemToOrder'])
+        ->name('pos-restaurant.add-item-to-order');
     Route::delete('/pos-restaurant/current-order/{table}/item/{id}', [PosRestaurantController::class, 'removeOrderItem'])
         ->name('pos-restaurant.remove-order-item');
-    
+
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
 
