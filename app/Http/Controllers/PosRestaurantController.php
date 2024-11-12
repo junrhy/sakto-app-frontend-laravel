@@ -332,31 +332,23 @@ class PosRestaurantController extends Controller
         }
     }
 
-    public function updateCurrentOrder(Request $request, string $tableNumber)
+    public function addItemToOrder(Request $request)
     {
         try {
-            $request->validate([
-                'items' => 'required|array',
-                'items.*.id' => 'required|integer',
-                'items.*.quantity' => 'required|integer|min:1',
-                'order_id' => 'required|string',
-            ]);
+            $request['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/fnb-orders/{$tableNumber}", [
-                    'items' => $request->items,
-                    'order_id' => $request->order_id,
-                    'client_identifier' => auth()->user()->identifier
-                ]);
+                ->post("{$this->apiUrl}/fnb-orders/add-item", $request->all()); 
 
             if (!$response->successful()) {
-                throw new \Exception($response->json()['message'] ?? 'Failed to update order');
+                throw new \Exception($response->json()['message'] ?? 'Failed to add item to order');
             }
 
-            return redirect()->back()->with('success', 'Order updated successfully');
-
+            return response()->json($response->json());
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update order: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to add item to order: ' . $e->getMessage()
+            ], 500);
         }
     }
 

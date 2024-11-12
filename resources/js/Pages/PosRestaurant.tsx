@@ -91,6 +91,15 @@ interface TableResponse {
     }
 }
 
+interface Order {
+    id: number;
+    table_number: string;
+    items: OrderItem[];
+    status: 'pending' | 'completed';
+    created_at?: string;
+    updated_at?: string;
+}
+
 const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
     const joinedTables: JoinedTable[] = [];
     const processedTables = [...tables];
@@ -187,6 +196,11 @@ export default function PosRestaurant({
     const [tables, setTables] = useState<Table[]>(initialTables);
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
+    const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+
+    // Get the CSRF token from the page props
+    const { props } = usePage();
+    const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
 
     // Initialize tables and joined tables
     useEffect(() => {
@@ -200,40 +214,40 @@ export default function PosRestaurant({
             toast.error('Please select a table first');
             return;
         }
-        console.log("Adding item to order:", item);
+        
         try {
-            // First update the local state for immediate UI feedback
-            const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
-            const updatedOrderItems = existingItem 
-                ? orderItems.map(orderItem =>
-                    orderItem.id === item.id 
-                        ? { ...orderItem, quantity: orderItem.quantity + 1 } 
-                        : orderItem
-                )
-                : [...orderItems, { ...item, quantity: 1 }];
-
-            setOrderItems(updatedOrderItems);
-
-            // Then send the update to the server
-            await router.post(`/pos-restaurant/current-order/${tableNumber}`, {
-                items: updatedOrderItems.map(item => ({
-                    id: item.id,
-                    quantity: item.quantity,
+            const response = await fetch('/pos-restaurant/orders/add-item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                },
+                body: JSON.stringify({
+                    table_number: tableNumber,
+                    item_id: item.id,
+                    quantity: 1,
                     price: item.price,
-                    total: item.price * item.quantity
-                }))
-            }, {
-                preserveState: true,
-                preserveScroll: true,
-                onError: (errors) => {
-                    // Revert the local state if the server request fails
-                    setOrderItems(orderItems);
-                    toast.error('Failed to update order');
-                    console.error('Error updating order:', errors);
-                }
+                    order_id: currentOrder?.id,
+                    total: item.price
+                })
             });
 
-            // Update table status to occupied if it was available
+            if (!response.ok) {
+                throw new Error('Failed to add item to order');
+            }
+
+            const data = await response.json();
+            console.log(data);
+            // Update the current order with the response data
+            setCurrentOrder(data);
+            setOrderItems(data.items.map((orderItem: any) => ({
+                ...orderItem,
+                name: item.name,
+                price: item.price,
+            })));
+
+            // Update table status if needed
             setTables(prevTables => 
                 prevTables.map(table => 
                     table.name === tableNumber && table.status === 'available'
@@ -242,11 +256,11 @@ export default function PosRestaurant({
                 )
             );
 
+            toast.success('Item added to order');
+
         } catch (error) {
             console.error('Error adding item to order:', error);
             toast.error('Failed to add item to order');
-            // Revert the local state
-            setOrderItems(orderItems);
         }
     };
 
@@ -495,6 +509,9 @@ export default function PosRestaurant({
             await router.post('/pos-restaurant/tables/join', {
                 tableIds: selectedTablesForJoin
             }, {
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken || '',
+                },
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: (response: any) => {
@@ -863,7 +880,6 @@ export default function PosRestaurant({
 
     const handleTableSelection = async (tableName: string) => {
         try {
-            // Fetch current order items for the table
             const response = await fetch(`/pos-restaurant/current-order/${tableName}`);
             const data = await response.json();
             
@@ -871,25 +887,23 @@ export default function PosRestaurant({
                 throw new Error(data.error || 'Failed to fetch order items');
             }
 
-            // Store the table number
             setTableNumber(tableName);
 
-            // Map the order items to the expected format
-            if (data.orders?.items && Array.isArray(data.orders.items)) {
-                const formattedItems = data.orders.items.map((item: any) => ({
+            if (data.order) {
+                setCurrentOrder(data.order);
+                setOrderItems(data.order.items.map((item: any) => ({
                     id: item.id,
                     name: item.item,
                     price: parseFloat(item.price),
                     quantity: parseInt(item.quantity),
-                    category: item.category || '', // Add default category if needed
+                    category: item.category || '',
                     total: parseFloat(item.total)
-                }));
-                setOrderItems(formattedItems);
+                })));
             } else {
+                setCurrentOrder(null);
                 setOrderItems([]);
             }
 
-            // Redirect to POS tab
             router.get(
                 window.location.pathname,
                 { tab: 'pos' },
@@ -900,6 +914,7 @@ export default function PosRestaurant({
             console.error('Error fetching current order:', error);
             toast.error('Failed to fetch current order');
             setOrderItems([]);
+            setCurrentOrder(null);
         }
     };
 
