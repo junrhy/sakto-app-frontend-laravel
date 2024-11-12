@@ -200,7 +200,7 @@ export default function PosRestaurant({
             toast.error('Please select a table first');
             return;
         }
-
+        console.log("Adding item to order:", item);
         try {
             // First update the local state for immediate UI feedback
             const existingItem = orderItems.find(orderItem => orderItem.id === item.id);
@@ -255,7 +255,7 @@ export default function PosRestaurant({
             toast.error('No table selected');
             return;
         }
-
+        console.log("Removing item from order:", id);
         try {
             // Store current order items for rollback if needed
             const previousOrderItems = [...orderItems];
@@ -863,21 +863,28 @@ export default function PosRestaurant({
 
     const handleTableSelection = async (tableName: string) => {
         try {
-            // First update the table number in state
-            setTableNumber(tableName);
-            
-            // Fetch current order for this table
+            // Fetch current order items for the table
             const response = await fetch(`/pos-restaurant/current-order/${tableName}`);
             const data = await response.json();
-            // Add null check and default to empty array if no items
-            if (data.orders.items && Array.isArray(data.orders.items)) {
-                setOrderItems(data.orders.items.map((item: any) => ({
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch order items');
+            }
+
+            // Store the table number
+            setTableNumber(tableName);
+
+            // Map the order items to the expected format
+            if (data.orders?.items && Array.isArray(data.orders.items)) {
+                const formattedItems = data.orders.items.map((item: any) => ({
                     id: item.id,
                     name: item.item,
-                    price: item.price,
-                    quantity: item.quantity,
-                    total: item.total
-                })));
+                    price: parseFloat(item.price),
+                    quantity: parseInt(item.quantity),
+                    category: item.category || '', // Add default category if needed
+                    total: parseFloat(item.total)
+                }));
+                setOrderItems(formattedItems);
             } else {
                 setOrderItems([]);
             }
@@ -888,6 +895,7 @@ export default function PosRestaurant({
                 { tab: 'pos' },
                 { preserveState: true, preserveScroll: true }
             );
+
         } catch (error) {
             console.error('Error fetching current order:', error);
             toast.error('Failed to fetch current order');

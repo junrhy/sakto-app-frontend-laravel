@@ -339,12 +339,13 @@ class PosRestaurantController extends Controller
                 'items' => 'required|array',
                 'items.*.id' => 'required|integer',
                 'items.*.quantity' => 'required|integer|min:1',
+                'order_id' => 'required|string',
             ]);
 
-            // Update table status to occupied
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/fnb-orders/{$tableNumber}", [
                     'items' => $request->items,
+                    'order_id' => $request->order_id,
                     'client_identifier' => auth()->user()->identifier
                 ]);
 
@@ -384,13 +385,17 @@ class PosRestaurantController extends Controller
                 ->get("{$this->apiUrl}/fnb-orders/client/{$clientIdentifier}/table/{$tableNumber}");
 
             if (!$response->successful()) {
-                throw new \Exception($response->json()['message'] ?? 'Failed to fetch current order');
+                return response()->json([
+                    'error' => $response->json()['message'] ?? 'Failed to fetch current order'
+                ], $response->status());
             }
 
             return response()->json($response->json());
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to fetch current order: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to fetch current order: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
