@@ -238,23 +238,23 @@ export default function PosRestaurant({
             }
 
             const data = await response.json();
-            console.log(data);
-            // Update the current order with the response data
-            setCurrentOrder(data);
-            setOrderItems(data.items.map((orderItem: any) => ({
-                ...orderItem,
-                name: item.name,
-                price: item.price,
-            })));
-
-            // Update table status if needed
-            setTables(prevTables => 
-                prevTables.map(table => 
-                    table.name === tableNumber && table.status === 'available'
-                        ? { ...table, status: 'occupied' }
-                        : table
-                )
-            );
+            
+            // Create a new order if none exists, or update existing
+            const updatedOrder: Order = {
+                id: data.id,
+                table_number: data.table_number,
+                status: 'pending',
+                items: [{
+                    id: data.id,
+                    name: data.item,
+                    quantity: data.quantity,
+                    price: parseFloat(data.price),
+                    category: '',  // Add if available in response
+                }]
+            };
+            
+            setCurrentOrder(updatedOrder);
+            setOrderItems(updatedOrder.items);
 
             toast.success('Item added to order');
 
