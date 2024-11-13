@@ -888,7 +888,7 @@ export default function PosRestaurant({
             }
 
             setTableNumber(tableName);
-
+console.log(data);
             if (data.order) {
                 setCurrentOrder(data.order);
                 setOrderItems(data.order.items.map((item: any) => ({
