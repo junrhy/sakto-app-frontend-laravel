@@ -239,23 +239,38 @@ export default function PosRestaurant({
 
             const data = await response.json();
             
-            // Create a new order if none exists, or update existing
+            // Check if the item already exists in the order
+            const existingItemIndex = orderItems.findIndex(orderItem => orderItem.id === item.id);
+            
+            if (existingItemIndex !== -1) {
+                // If item exists, update its quantity
+                const updatedOrderItems = [...orderItems];
+                updatedOrderItems[existingItemIndex] = {
+                    ...updatedOrderItems[existingItemIndex],
+                    quantity: updatedOrderItems[existingItemIndex].quantity + 1
+                };
+                setOrderItems(updatedOrderItems);
+            } else {
+                // If item doesn't exist, add it as a new row
+                const newOrderItem: OrderItem = {
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    category: item.category,
+                    quantity: 1
+                };
+                setOrderItems(prevItems => [...prevItems, newOrderItem]);
+            }
+
+            // Update current order
             const updatedOrder: Order = {
                 id: data.id,
                 table_number: data.table_number,
                 status: 'pending',
-                items: [{
-                    id: data.id,
-                    name: data.item,
-                    quantity: data.quantity,
-                    price: parseFloat(data.price),
-                    category: '',  // Add if available in response
-                }]
+                items: orderItems
             };
             
             setCurrentOrder(updatedOrder);
-            setOrderItems(updatedOrder.items);
-
             toast.success('Item added to order');
 
         } catch (error) {
@@ -888,7 +903,7 @@ export default function PosRestaurant({
             }
 
             setTableNumber(tableName);
-console.log(data);
+
             if (data.order) {
                 setCurrentOrder(data.order);
                 setOrderItems(data.order.items.map((item: any) => ({
