@@ -51,6 +51,9 @@ interface Reservation {
     time: string;
     guests: number;
     tableId: number;
+    status: 'pending' | 'confirmed' | 'cancelled';
+    notes?: string;
+    contact?: string;
 }
   
 interface MenuItemFormData {
@@ -167,12 +170,14 @@ export default function PosRestaurant({
     const [isSplitBillDialogOpen, setIsSplitBillDialogOpen] = useState(false);
     const [splitAmount, setSplitAmount] = useState<number>(2);
     const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [newReservation, setNewReservation] = useState<Omit<Reservation, 'id'>>({
+    const [newReservation, setNewReservation] = useState<Omit<Reservation, 'id' | 'status'>>({
         name: '',
         date: '',
         time: '',
         guests: 1,
         tableId: 0,
+        notes: '',
+        contact: ''
     });
     const [discount, setDiscount] = useState<number>(0);
     const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
@@ -651,14 +656,76 @@ export default function PosRestaurant({
         }
     };
 
-    const handleReservation = () => {
-        const newReservationWithId = { ...newReservation, id: Date.now() };
-        setReservations([...reservations, newReservationWithId]);
-        // Update table status
-        setTables(tables.map(table => 
-        table.id === newReservation.tableId ? { ...table, status: 'reserved' } : table
-        ));
-        setNewReservation({ name: '', date: '', time: '', guests: 1, tableId: 0 });
+    const handleReservation = async () => {
+        if (!newReservation.name || !newReservation.date || !newReservation.time || !newReservation.tableId) {
+            toast.error('Please fill in all required fields');
+            return;
+        }
+
+        try {
+            const response = await router.post('/pos-restaurant/reservations', {
+                ...newReservation,
+                status: 'pending'
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Reservation created successfully');
+                    // Update table status
+                    setTables(tables.map(table => 
+                        table.id === newReservation.tableId ? { ...table, status: 'reserved' } : table
+                    ));
+                    // Reset form
+                    setNewReservation({
+                        name: '',
+                        date: '',
+                        time: '',
+                        guests: 1,
+                        tableId: 0,
+                        notes: '',
+                        contact: ''
+                    });
+                    // Refresh reservations
+                    fetchReservations();
+                },
+                onError: () => {
+                    toast.error('Failed to create reservation');
+                }
+            });
+        } catch (error) {
+            console.error('Error creating reservation:', error);
+            toast.error('Failed to create reservation');
+        }
+    };
+
+    const fetchReservations = async () => {
+        try {
+            const response = await fetch('/pos-restaurant/reservations');
+            const data = await response.json();
+            setReservations(data);
+        } catch (error) {
+            console.error('Error fetching reservations:', error);
+            toast.error('Failed to fetch reservations');
+        }
+    };
+
+    const handleCancelReservation = async (id: number) => {
+        try {
+            await router.delete(`/pos-restaurant/reservations/${id}`, {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Reservation cancelled successfully');
+                    fetchReservations();
+                },
+                onError: () => {
+                    toast.error('Failed to cancel reservation');
+                }
+            });
+        } catch (error) {
+            console.error('Error cancelling reservation:', error);
+            toast.error('Failed to cancel reservation');
+        }
     };
 
     const handleGenerateQR = (table: Table) => {
@@ -920,6 +987,7 @@ export default function PosRestaurant({
 
     useEffect(() => {
         fetchMenuItems();
+        fetchReservations();
     }, []);
 
     const handleMenuItemImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1590,82 +1658,151 @@ export default function PosRestaurant({
                     <TabsContent value="reservations">
                     <Card>
                         <CardHeader>
-                        <CardTitle>Reservations</CardTitle>
+                            <CardTitle>Reservations</CardTitle>
                         </CardHeader>
                         <CardContent>
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                            <Label htmlFor="reservationName">Name</Label>
-                            <Input
-                                id="reservationName"
-                                value={newReservation.name}
-                                onChange={(e) => setNewReservation({ ...newReservation, name: e.target.value })}
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <Label htmlFor="reservationName">Name *</Label>
+                                    <Input
+                                        id="reservationName"
+                                        value={newReservation.name}
+                                        onChange={(e) => setNewReservation({ ...newReservation, name: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="reservationContact">Contact Number</Label>
+                                    <Input
+                                        id="reservationContact"
+                                        value={newReservation.contact}
+                                        onChange={(e) => setNewReservation({ ...newReservation, contact: e.target.value })}
+                                        placeholder="Phone number"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="reservationDate">Date *</Label>
+                                    <Input
+                                        id="reservationDate"
+                                        type="date"
+                                        value={newReservation.date}
+                                        onChange={(e) => setNewReservation({ ...newReservation, date: e.target.value })}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="reservationTime">Time *</Label>
+                                    <Input
+                                        id="reservationTime"
+                                        type="time"
+                                        value={newReservation.time}
+                                        onChange={(e) => setNewReservation({ ...newReservation, time: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="reservationGuests">Number of Guests *</Label>
+                                    <Input
+                                        id="reservationGuests"
+                                        type="number"
+                                        min="1"
+                                        value={newReservation.guests}
+                                        onChange={(e) => setNewReservation({ ...newReservation, guests: parseInt(e.target.value) })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="reservationTable">Table *</Label>
+                                    <Select 
+                                        value={newReservation.tableId.toString()} 
+                                        onValueChange={(value) => setNewReservation({ ...newReservation, tableId: parseInt(value) })}
+                                    >
+                                        <SelectTrigger className="bg-white">
+                                            <SelectValue placeholder="Select table" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {tables
+                                                .filter(table => table.status === 'available')
+                                                .map((table) => (
+                                                    <SelectItem key={table.id} value={table.id.toString()}>
+                                                        {table.name} ({table.seats} seats)
+                                                    </SelectItem>
+                                                ))
+                                            }
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <Label htmlFor="reservationNotes">Notes</Label>
+                                    <Input
+                                        id="reservationNotes"
+                                        value={newReservation.notes}
+                                        onChange={(e) => setNewReservation({ ...newReservation, notes: e.target.value })}
+                                        placeholder="Special requests or additional information"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                            <Label htmlFor="reservationDate">Date</Label>
-                            <Input
-                                id="reservationDate"
-                                type="date"
-                                value={newReservation.date}
-                                onChange={(e) => setNewReservation({ ...newReservation, date: e.target.value })}
-                            />
+                            <Button 
+                                onClick={handleReservation} 
+                                className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white"
+                                disabled={!newReservation.name || !newReservation.date || !newReservation.time || !newReservation.tableId}
+                            >
+                                Make Reservation
+                            </Button>
+
+                            <div className="mt-8">
+                                <h3 className="text-lg font-semibold mb-4">Current Reservations</h3>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Contact</TableHead>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Time</TableHead>
+                                            <TableHead>Guests</TableHead>
+                                            <TableHead>Table</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {reservations.map((reservation) => (
+                                            <TableRow key={reservation.id}>
+                                                <TableCell>{reservation.name}</TableCell>
+                                                <TableCell>{reservation.contact || '-'}</TableCell>
+                                                <TableCell>{new Date(reservation.date).toLocaleDateString()}</TableCell>
+                                                <TableCell>{reservation.time}</TableCell>
+                                                <TableCell>{reservation.guests}</TableCell>
+                                                <TableCell>
+                                                    {tables.find(table => table.id === reservation.tableId)?.name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                                        reservation.status === 'confirmed' 
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : reservation.status === 'cancelled'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {reservation.status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleCancelReservation(reservation.id)}
+                                                        disabled={reservation.status === 'cancelled'}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </div>
-                            <div>
-                            <Label htmlFor="reservationTime">Time</Label>
-                            <Input
-                                id="reservationTime"
-                                type="time"
-                                value={newReservation.time}
-                                onChange={(e) => setNewReservation({ ...newReservation, time: e.target.value })}
-                            />
-                            </div>
-                            <div>
-                            <Label htmlFor="reservationGuests">Guests</Label>
-                            <Input
-                                id="reservationGuests"
-                                type="number"
-                                value={newReservation.guests}
-                                onChange={(e) => setNewReservation({ ...newReservation, guests: parseInt(e.target.value) })}
-                            />
-                            </div>
-                            <div>
-                            <Label htmlFor="reservationTable">Table</Label>
-                            <Select onValueChange={(value) => setNewReservation({ ...newReservation, tableId: parseInt(value) })}>
-                                <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Select table" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white">
-                                {tables.filter(table => table.status === 'available').map((table) => (
-                                    <SelectItem key={table.id} value={table.id.toString()}>{table.name}</SelectItem>
-                                ))}
-                                </SelectContent>
-                            </Select>
-                            </div>
-                        </div>
-                        <Button onClick={handleReservation} className="bg-blue-500 hover:bg-blue-600 text-white">Make Reservation</Button>
-                        <Table>
-                            <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Time</TableHead>
-                                <TableHead>Guests</TableHead>
-                                <TableHead>Table</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                            {reservations.map((reservation) => (
-                                <TableRow key={reservation.id}>
-                                <TableCell>{reservation.name}</TableCell>
-                                <TableCell>{reservation.date}</TableCell>
-                                <TableCell>{reservation.time}</TableCell>
-                                <TableCell>{reservation.guests}</TableCell>
-                                <TableCell>{tables.find(table => table.id === reservation.tableId)?.name}</TableCell>
-                                </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table>
                         </CardContent>
                     </Card>
                     </TabsContent>
