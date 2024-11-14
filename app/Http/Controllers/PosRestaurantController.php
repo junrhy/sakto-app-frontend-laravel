@@ -403,7 +403,7 @@ class PosRestaurantController extends Controller
                 throw new \Exception($response->json()['message'] ?? 'Failed to complete order');
             }
 
-            return response()->json($response->json());
+            return redirect()->back()->with('success', 'Order completed successfully');
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to complete order: ' . $e->getMessage()
