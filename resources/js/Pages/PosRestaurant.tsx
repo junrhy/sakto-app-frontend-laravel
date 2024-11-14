@@ -353,14 +353,26 @@ export default function PosRestaurant({
     };
 
     const confirmCompleteSale = () => {
-        console.log("Order completed for table", tableNumber, "Total:", finalTotal.toFixed(2));
-        setOrderItems([]);
-        setTableNumber("");
-        setIsCompleteSaleDialogOpen(false);
-        // Update table status
-        setTables(tables.map(table => 
-        table.name === tableNumber ? { ...table, status: 'available' } : table
-        ));
+        router.post('/pos-restaurant/orders/complete', {
+            table_number: tableNumber,
+            items: JSON.stringify(orderItems),
+            subtotal: totalAmount,
+            discount: discount,
+            discount_type: discountType,
+            total: finalTotal
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setOrderItems([]);
+                setTableNumber("");
+                setIsCompleteSaleDialogOpen(false);
+                // Update table status
+                setTables(tables.map(table => 
+                    table.name === tableNumber ? { ...table, status: 'available' } : table
+                ));
+            }
+        });
     };
 
     const handleSplitBill = () => {
