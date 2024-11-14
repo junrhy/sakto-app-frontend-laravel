@@ -382,7 +382,70 @@ export default function PosRestaurant({
     const confirmSplitBill = () => {
         const amountPerPerson = finalTotal / splitAmount;
         console.log(`Bill split into ${splitAmount} parts. Each person pays: $${amountPerPerson.toFixed(2)}`);
-        setIsSplitBillDialogOpen(false);
+        
+        // Print the split bill details including order items
+        const orderItemsDetails = orderItems.map(item => `
+            <tr>
+                <td>${item.name}</td>
+                <td>x${item.quantity}</td>
+                <td>$${item.price.toFixed(2)}</td>
+                <td>$${(item.price * item.quantity).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        const printContent = `
+            <html>
+                <head>
+                    <title>Split Bill</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 20px; }
+                        .footer { margin-top: 20px; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>Split Bill</h2>
+                        <p>Table Number: ${tableNumber}</p>
+                    </div>
+                    <div>
+                        <p>Total Amount: $${finalTotal.toFixed(2)}</p>
+                        <p>Split into ${splitAmount} parts</p>
+                        <p>Amount per person: $${amountPerPerson.toFixed(2)}</p>
+                        <h3>Order Items:</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orderItemsDetails}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer">
+                        <p>Thank you for dining with us!</p>
+                    </div>
+                </body>
+            </html>
+        `;
+
+        const printWindow = window.open('', '', 'height=600,width=800');
+        if (printWindow) {
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        setIsSplitBillDialogOpen(false); // Close the dialog after confirmation
     };
 
     const printKitchenOrder = async () => {
@@ -1496,23 +1559,51 @@ export default function PosRestaurant({
 
                 <Dialog open={isSplitBillDialogOpen} onOpenChange={setIsSplitBillDialogOpen}>
                     <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Split Bill</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Label htmlFor="splitAmount">Number of ways to split</Label>
-                        <Input
-                        id="splitAmount"
-                        type="number"
-                        value={splitAmount}
-                        onChange={(e) => setSplitAmount(parseInt(e.target.value))}
-                        min={2}
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsSplitBillDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
-                        <Button onClick={confirmSplitBill} className="bg-blue-500 hover:bg-blue-600 text-white">Split Bill</Button>
-                    </DialogFooter>
+                        <DialogHeader>
+                            <DialogTitle>Split Bill</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <Label htmlFor="splitAmount">Number of ways to split</Label>
+                            <div className="flex items-center">
+                                <Button onClick={() => setSplitAmount(Math.max(splitAmount - 1, 2))} className="mr-2">-</Button>
+                                <Input
+                                    id="splitAmount"
+                                    type="number"
+                                    value={splitAmount}
+                                    onChange={(e) => setSplitAmount(Math.max(2, parseInt(e.target.value)))}
+                                    min={2}
+                                    className="w-16 text-center"
+                                />
+                                <Button onClick={() => setSplitAmount(splitAmount + 1)} className="ml-2">+</Button>
+                            </div>
+                            <p className="mt-2">Total Amount: ${finalTotal.toFixed(2)}</p>
+                            <p>Amount per person: ${(finalTotal / splitAmount).toFixed(2)}</p>
+                            <h3>Order Items:</h3>
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left">Item</th>
+                                        <th className="text-left">Quantity</th>
+                                        <th className="text-left">Price</th>
+                                        <th className="text-left">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orderItems.map(item => (
+                                        <tr key={item.id}>
+                                            <td>{item.name}</td>
+                                            <td>x{item.quantity}</td>
+                                            <td>${item.price.toFixed(2)}</td>
+                                            <td>${(item.price * item.quantity).toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsSplitBillDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
+                            <Button onClick={confirmSplitBill} className="bg-blue-500 hover:bg-blue-600 text-white">Split Bill</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
 
