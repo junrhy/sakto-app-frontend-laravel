@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2, Link2, Check } from "lucide-react";
+import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2, Link2, Check, UtensilsCrossed, Calculator, ShoppingCart } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
 import { router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -351,7 +351,51 @@ export default function PosRestaurant({
     const finalTotal = totalAmount - discountAmount;
 
     const handleCompleteSale = () => {
-        setIsCompleteSaleDialogOpen(true);
+        if (!tableNumber) {
+            toast.error('Please select a table first');
+            return;
+        }
+        
+        if (orderItems.length === 0) {
+            toast.error('Please add items to the order');
+            return;
+        }
+
+        // Show confirmation toast
+        toast.custom((t) => (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-md w-full">
+                <h3 className="font-semibold text-lg mb-2">Complete Order Confirmation</h3>
+                <p className="mb-2">Are you sure you want to complete this order?</p>
+                <div className="text-sm space-y-1 mb-4">
+                    <p>Table: {tableNumber}</p>
+                    <p>Total Items: {orderItems.length}</p>
+                    <p>Subtotal: ${totalAmount.toFixed(2)}</p>
+                    <p>Discount: ${discountAmount.toFixed(2)}</p>
+                    <p className="font-semibold">Final Total: ${finalTotal.toFixed(2)}</p>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => toast.dismiss(t)}
+                    >
+                        Cancel
+                    </Button>
+                    <Button 
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                        onClick={() => {
+                            toast.dismiss(t);
+                            setIsCompleteSaleDialogOpen(true);
+                        }}
+                    >
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ), {
+            duration: 5000,
+        });
     };
 
     const confirmCompleteSale = () => {
@@ -1088,6 +1132,109 @@ export default function PosRestaurant({
         ));
     };
 
+    const printCurrentBill = () => {
+        if (orderItems.length === 0 || !tableNumber) {
+            toast.error('No items in current order');
+            return;
+        }
+
+        const printWindow = window.open('', '', 'height=600,width=800');
+        if (!printWindow) {
+            toast.error('Please allow pop-ups to print bills');
+            return;
+        }
+
+        const orderItemsDetails = orderItems.map(item => `
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">x${item.quantity}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">$${item.price.toFixed(2)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">$${(item.price * item.quantity).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        const printContent = `
+            <html>
+                <head>
+                    <title>Bill - Table ${tableNumber}</title>
+                    <style>
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            padding: 20px; 
+                            max-width: 800px; 
+                            margin: 0 auto; 
+                        }
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 20px; 
+                            padding-bottom: 10px;
+                            border-bottom: 2px solid #333;
+                        }
+                        table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin: 15px 0;
+                        }
+                        th, td { 
+                            text-align: left; 
+                            padding: 8px; 
+                            border-bottom: 1px solid #ddd; 
+                        }
+                        .totals {
+                            margin-top: 15px;
+                            padding: 10px;
+                            border-top: 2px solid #333;
+                        }
+                        .footer { 
+                            margin-top: 20px; 
+                            text-align: center;
+                            padding-top: 10px;
+                            border-top: 1px solid #ddd;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>Bill</h2>
+                        <p>Table: ${tableNumber}</p>
+                        <p>Date: ${new Date().toLocaleDateString()}</p>
+                        <p>Time: ${new Date().toLocaleTimeString()}</p>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orderItemsDetails}
+                        </tbody>
+                    </table>
+
+                    <div class="totals">
+                        <p><strong>Subtotal:</strong> $${totalAmount.toFixed(2)}</p>
+                        <p><strong>Discount:</strong> $${discountAmount.toFixed(2)}</p>
+                        <p style="font-size: 1.2em;"><strong>Total Amount:</strong> $${finalTotal.toFixed(2)}</p>
+                    </div>
+
+                    <div class="footer">
+                        <p>Thank you for dining with us!</p>
+                    </div>
+                </body>
+            </html>
+        `;
+
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -1267,10 +1414,43 @@ export default function PosRestaurant({
                             <span className="font-bold">Total:</span>
                             <span className="font-bold">${finalTotal.toFixed(2)}</span>
                             </div>
-                            <div className="w-full flex justify-end space-x-2 mt-4">
-                            <Button onClick={printKitchenOrder} disabled={orderItems.length === 0} className="text-lg py-6 bg-gray-700 hover:bg-gray-600 text-white">Print Kitchen Order</Button>
-                            <Button onClick={handleSplitBill} disabled={orderItems.length === 0} className="text-lg py-6 bg-gray-700 hover:bg-gray-600 text-white">Split Bill</Button>
-                            <Button onClick={handleCompleteSale} disabled={orderItems.length === 0 || !tableNumber} className="text-lg py-6 bg-blue-500 hover:bg-blue-600 text-white">Complete Order</Button>
+                            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:justify-end gap-2 mt-4">
+                                <Button 
+                                    onClick={printCurrentBill} 
+                                    disabled={orderItems.length === 0} 
+                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
+                                >
+                                    <Printer className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">Print Bill</span>
+                                    <span className="sm:hidden">Bill</span>
+                                </Button>
+                                <Button 
+                                    onClick={printKitchenOrder} 
+                                    disabled={orderItems.length === 0} 
+                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
+                                >
+                                    <UtensilsCrossed className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">Kitchen Order</span>
+                                    <span className="sm:hidden">Kitchen</span>
+                                </Button>
+                                <Button 
+                                    onClick={handleSplitBill} 
+                                    disabled={orderItems.length === 0} 
+                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
+                                >
+                                    <Calculator className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">Split Bill</span>
+                                    <span className="sm:hidden">Split</span>
+                                </Button>
+                                <Button 
+                                    onClick={handleCompleteSale} 
+                                    disabled={orderItems.length === 0 || !tableNumber} 
+                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
+                                >
+                                    <ShoppingCart className="mr-2 h-4 w-4" />
+                                    <span className="hidden sm:inline">Complete Order</span>
+                                    <span className="sm:hidden">Complete</span>
+                                </Button>
                             </div>
                         </CardFooter>
                         </Card>
