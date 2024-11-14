@@ -216,6 +216,7 @@ export default function PosRestaurant({
         }
         
         try {
+            console.log("csrfToken: ", csrfToken);
             const response = await fetch('/pos-restaurant/orders/add-item', {
                 method: 'POST',
                 headers: {
@@ -1457,7 +1458,21 @@ export default function PosRestaurant({
                         <DialogTitle>Complete Order</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                        <p>Table Number: {tableNumber}</p>
+                        <p className="mb-2">Table Number: {tableNumber}</p>
+                        <p className="mb-2">Order Items: 
+                            <table className="w-full text-sm">
+                            {orderItems.map(item => {
+                                return <tr key={item.id}>
+                                    <td className="pl-2">{item.name}</td>
+                                    <td className="text-right">x{item.quantity}</td>
+                                    <td className="text-right">${item.price}</td>
+                                    <td className="text-right">${(item.price * item.quantity).toFixed(2)}</td>
+                                </tr>
+                            })}
+                            </table>
+                        </p>
+                        <p className="mb-2">Subtotal: ${totalAmount.toFixed(2)}</p>
+                        <p className="mb-2">Discount: ${discountAmount.toFixed(2)}</p>
                         <p>Total Amount: ${finalTotal.toFixed(2)}</p>
                     </div>
                     <DialogFooter>
