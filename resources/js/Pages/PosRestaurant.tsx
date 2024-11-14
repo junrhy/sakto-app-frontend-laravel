@@ -1602,40 +1602,33 @@ export default function PosRestaurant({
                                             )}
                                         </CardContent>
                                         <CardFooter className="flex flex-wrap gap-2">
-                                            {table.status === 'available' && !table.joined_with && (
-                                                <Button
-                                                    onClick={() => toggleTableSelection(table.id)}
-                                                    variant={selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? "default" : "outline"}
-                                                    className="flex-1"
-                                                >
-                                                    {selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? (
-                                                        <Check className="h-4 w-4" />
-                                                    ) : (
-                                                        <Link2 className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                            )}
-                                            <Button 
-                                                onClick={() => handleTableSelection(table.name)} 
-                                                className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                            </Button>
-                                            <Button 
-                                                onClick={() => handleGenerateQR(table)} 
-                                                className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                            >
-                                                <QrCode className="h-4 w-4" />
-                                            </Button>
-                                            {table.status === 'joined' ? (
-                                                <Button 
-                                                    onClick={() => handleUnjoinTable(table)}
-                                                    className="bg-red-500 hover:bg-red-600 text-white flex-1"
-                                                >
-                                                    Unjoin Table
-                                                </Button>
-                                            ) : (
+                                            {table.status === 'available' && (
                                                 <>
+                                                    <Button
+                                                        onClick={() => handleTableSelection(table.name)} 
+                                                        className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                    {/* Only show join table selection for available tables */}
+                                                    <Button
+                                                        onClick={() => toggleTableSelection(table.id)}
+                                                        variant={selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? "default" : "outline"}
+                                                        className="flex-1"
+                                                    >
+                                                        {selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? (
+                                                            <Check className="h-4 w-4" />
+                                                        ) : (
+                                                            <Link2 className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                    {/* Generate QR, Edit, and Delete buttons for available tables */}
+                                                    <Button 
+                                                        onClick={() => handleGenerateQR(table)} 
+                                                        className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                                    >
+                                                        <QrCode className="h-4 w-4" />
+                                                    </Button>
                                                     <Button 
                                                         onClick={() => openEditTableDialog(table)} 
                                                         className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
@@ -1649,6 +1642,23 @@ export default function PosRestaurant({
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </>
+                                            )}
+                                            {(table.status === 'occupied' || table.status === 'reserved') && (
+                                                <Button 
+                                                    onClick={() => handleTableSelection(table.name)} 
+                                                    className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {/* For joined tables, show unjoin button */}
+                                            {table.status === 'joined' && (
+                                                <Button 
+                                                    onClick={() => handleUnjoinTable(table)}
+                                                    className="bg-red-500 hover:bg-red-600 text-white flex-1"
+                                                >
+                                                    Unjoin Table
+                                                </Button>
                                             )}
                                         </CardFooter>
                                     </Card>
