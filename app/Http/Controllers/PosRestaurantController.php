@@ -21,11 +21,15 @@ class PosRestaurantController extends Controller
 
     public function index(Request $request)
     {
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+    
         return Inertia::render('PosRestaurant', [
             'menuItems' => $this->getMenuItems(),
             'tab' => $request->query('tab', 'pos'),
             'tables' => $this->getTables(),
             'joinedTables' => $this->getJoinedTables(),
+            'reservations' => $this->getReservations(),
+            'currency_symbol' => $jsonAppCurrency->symbol
         ]);
     }
 
