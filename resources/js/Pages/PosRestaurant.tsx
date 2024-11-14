@@ -393,7 +393,7 @@ export default function PosRestaurant({
 
         try {
             const response = await router.post('/pos-restaurant/kitchen-order', {
-                tableNumber,
+                table_number: tableNumber,
                 items: orderItems.map(item => ({
                     id: item.id,
                     name: item.name,

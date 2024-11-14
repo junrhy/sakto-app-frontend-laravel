@@ -300,35 +300,19 @@ class PosRestaurantController extends Controller
 
     public function storeKitchenOrder(Request $request)
     {
-        dd($request->all());
-        $validated = $request->validate([
-            'tableNumber' => 'required|string',
-            'items' => 'required|array',
-            'items.*.id' => 'required|integer',
-            'items.*.name' => 'required|string',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.notes' => 'nullable|string',
-            'orderTime' => 'required|date',
-        ]);
-
         try {
-            // Store the kitchen order in the database
-            $kitchenOrder = KitchenOrder::create([
-                'table_number' => $validated['tableNumber'],
-                'items' => $validated['items'],
-                'order_time' => $validated['orderTime'],
-                'status' => 'pending', // You can add different statuses like 'pending', 'preparing', 'completed'
-            ]);
+            $request['client_identifier'] = auth()->user()->identifier;
 
-            return response()->json([
-                'message' => 'Kitchen order created successfully',
-                'order' => $kitchenOrder
-            ]);
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/kitchen-order", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to store kitchen order');
+            }
+
+            return redirect()->back()->with('success', 'Kitchen order created successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to create kitchen order',
-                'error' => $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Failed to store kitchen order: ' . $e->getMessage());
         }
     }
 
