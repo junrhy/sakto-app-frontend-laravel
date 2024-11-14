@@ -390,4 +390,24 @@ class PosRestaurantController extends Controller
             ], 500);
         }
     }
+
+    public function completeOrder(Request $request)
+    {
+        try {
+            $request['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-orders/complete", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to complete order');
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to complete order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

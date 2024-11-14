@@ -104,6 +104,8 @@ Route::middleware('auth')->group(function () {
         ->name('pos-restaurant.add-item-to-order');
     Route::delete('/pos-restaurant/current-order/{table}/item/{id}', [PosRestaurantController::class, 'removeOrderItem'])
         ->name('pos-restaurant.remove-order-item');
+    Route::post('/pos-restaurant/orders/complete', [PosRestaurantController::class, 'completeOrder'])
+        ->name('pos-restaurant.complete-order');
 
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
