@@ -76,6 +76,7 @@ interface PageProps {
     tables: Table[];
     tab?: string;
     joinedTables?: JoinedTable[];
+    currency_symbol?: string;
 }
 
 interface EditTableData {
@@ -160,7 +161,8 @@ export default function PosRestaurant({
     menuItems: initialMenuItems, 
     tables: initialTables, 
     joinedTables: initialJoinedTables = [], 
-    tab = 'pos' 
+    tab = 'pos',
+    currency_symbol
 }: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
@@ -374,9 +376,9 @@ export default function PosRestaurant({
                 <div className="text-sm space-y-1 mb-4">
                     <p>Table: {tableNumber}</p>
                     <p>Total Items: {orderItems.length}</p>
-                    <p>Subtotal: ${totalAmount.toFixed(2)}</p>
-                    <p>Discount: ${discountAmount.toFixed(2)}</p>
-                    <p className="font-semibold">Final Total: ${finalTotal.toFixed(2)}</p>
+                    <p>Subtotal: {totalAmount.toFixed(2)}</p>
+                    <p>Discount: {discountAmount.toFixed(2)}</p>
+                    <p className="font-semibold">Final Total: {finalTotal.toFixed(2)}</p>
                 </div>
                 <div className="flex justify-end gap-2">
                     <Button 
@@ -1216,8 +1218,8 @@ export default function PosRestaurant({
             <tr>
                 <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #ddd;">x${item.quantity}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">$${item.price.toFixed(2)}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">$${(item.price * item.quantity).toFixed(2)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.price.toFixed(2)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${(item.price * item.quantity).toFixed(2)}</td>
             </tr>
         `).join('');
 
@@ -1284,9 +1286,9 @@ export default function PosRestaurant({
                     </table>
 
                     <div class="totals">
-                        <p><strong>Subtotal:</strong> $${totalAmount.toFixed(2)}</p>
-                        <p><strong>Discount:</strong> $${discountAmount.toFixed(2)}</p>
-                        <p style="font-size: 1.2em;"><strong>Total Amount:</strong> $${finalTotal.toFixed(2)}</p>
+                        <p><strong>Subtotal:</strong> ${totalAmount.toFixed(2)}</p>
+                        <p><strong>Discount:</strong> ${discountAmount.toFixed(2)}</p>
+                        <p style="font-size: 1.2em;"><strong>Total Amount:</strong> ${finalTotal.toFixed(2)}</p>
                     </div>
 
                     <div class="footer">
@@ -1384,7 +1386,7 @@ export default function PosRestaurant({
                                         className="mb-2 rounded" 
                                     />
                                     <span className="text-center">{item.name}</span>
-                                    <span>${item.price}</span>
+                                    <span>{currency_symbol}{item.price}</span>
                                 </Button>
                             ))}
                             </div>
@@ -1430,8 +1432,8 @@ export default function PosRestaurant({
                                         </Button>
                                     </div>
                                     </TableCell>
-                                    <TableCell>${item.price}</TableCell>
-                                    <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                    <TableCell>{currency_symbol}{item.price}</TableCell>
+                                    <TableCell>{currency_symbol}{(item.price * item.quantity).toFixed(2)}</TableCell>
                                     <TableCell>
                                     <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
                                         Remove
@@ -1472,15 +1474,15 @@ export default function PosRestaurant({
                         <CardFooter className="flex flex-col items-start">
                             <div className="w-full flex justify-between mb-2">
                             <span>Subtotal:</span>
-                            <span>${totalAmount.toFixed(2)}</span>
+                            <span>{currency_symbol}{totalAmount.toFixed(2)}</span>
                             </div>
                             <div className="w-full flex justify-between mb-2">
                             <span>Discount:</span>
-                            <span>${discountAmount.toFixed(2)}</span>
+                            <span>{currency_symbol}{discountAmount.toFixed(2)}</span>
                             </div>
                             <div className="w-full flex justify-between mb-4">
                             <span className="font-bold">Total:</span>
-                            <span className="font-bold">${finalTotal.toFixed(2)}</span>
+                            <span className="font-bold">{currency_symbol}{finalTotal.toFixed(2)}</span>
                             </div>
                             <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:justify-end gap-2 mt-4">
                                 <Button 
@@ -1877,7 +1879,7 @@ export default function PosRestaurant({
                                     </TableCell>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell>{item.category}</TableCell>
-                                    <TableCell>${item.price}</TableCell>
+                                    <TableCell>{currency_symbol}{item.price}</TableCell>
                                     <TableCell>
                                         <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
                                         <Edit className="h-4 w-4" />
@@ -1935,16 +1937,15 @@ export default function PosRestaurant({
                             {orderItems.map(item => {
                                 return <tr key={item.id}>
                                     <td className="pl-2">{item.name}</td>
-                                    <td className="text-right">x{item.quantity}</td>
-                                    <td className="text-right">${item.price}</td>
-                                    <td className="text-right">${(item.price * item.quantity).toFixed(2)}</td>
+                                    <td className="text-right">{currency_symbol}{item.price}</td>
+                                    <td className="text-right">{currency_symbol}{(item.price * item.quantity).toFixed(2)}</td>
                                 </tr>
                             })}
                             </table>
                         </p>
-                        <p className="mb-2">Subtotal: ${totalAmount.toFixed(2)}</p>
-                        <p className="mb-2">Discount: ${discountAmount.toFixed(2)}</p>
-                        <p>Total Amount: ${finalTotal.toFixed(2)}</p>
+                        <p className="mb-2">Subtotal: {currency_symbol}{totalAmount.toFixed(2)}</p>
+                        <p className="mb-2">Discount: {currency_symbol}{discountAmount.toFixed(2)}</p>
+                        <p>Total Amount: {currency_symbol}{finalTotal.toFixed(2)}</p>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
@@ -2036,8 +2037,8 @@ export default function PosRestaurant({
                                                 )}
                                                 <TableCell>{item.name}</TableCell>
                                                 <TableCell>x{item.quantity}</TableCell>
-                                                <TableCell>${item.price.toFixed(2)}</TableCell>
-                                                <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                                <TableCell>{currency_symbol}{item.price}</TableCell>
+                                                <TableCell>{currency_symbol}{(item.price * item.quantity)}</TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -2047,23 +2048,21 @@ export default function PosRestaurant({
                             <div className="mt-4 space-y-2 border-t pt-4">
                                 <div className="flex justify-between">
                                     <span>Total Amount:</span>
-                                    <span>${finalTotal.toFixed(2)}</span>
+                                    <span>{currency_symbol}{finalTotal.toFixed(2)}</span>
                                 </div>
                                 {splitMethod === 'item' && (
                                     <div className="flex justify-between text-blue-600">
                                         <span>Selected Items Total:</span>
-                                        <span>
-                                            ${orderItems
-                                                .filter(item => item.selected)
-                                                .reduce((total, item) => total + (item.price * item.quantity), 0)
-                                                .toFixed(2)}
-                                        </span>
+                                        <span>{currency_symbol}{orderItems
+                                            .filter(item => item.selected)
+                                            .reduce((total, item) => total + (item.price * item.quantity), 0)
+                                            .toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between font-semibold">
                                     <span>Amount per person:</span>
                                     <span>
-                                        ${(splitMethod === 'equal' 
+                                        {currency_symbol}{(splitMethod === 'equal' 
                                             ? finalTotal / splitAmount 
                                             : orderItems
                                                 .filter(item => item.selected)
