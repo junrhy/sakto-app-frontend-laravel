@@ -107,6 +107,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos-restaurant/orders/complete', [PosRestaurantController::class, 'completeOrder'])
         ->name('pos-restaurant.complete-order');
 
+    // Pos Restaurant Reservations routes
+    Route::get('/pos-restaurant/reservations', [PosRestaurantController::class, 'getReservations']);
+    Route::post('/pos-restaurant/reservations', [PosRestaurantController::class, 'storeReservation']);
+    Route::delete('/pos-restaurant/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
+
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
 

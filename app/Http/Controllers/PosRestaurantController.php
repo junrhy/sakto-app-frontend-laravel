@@ -394,4 +394,56 @@ class PosRestaurantController extends Controller
             ], 500);
         }
     }
+
+    public function getReservations()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-reservations");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to fetch reservations.');
+        }
+    }
+
+    public function storeReservation(Request $request)
+    {
+        try {
+            $request['table_id'] = $request->tableId;
+            $request['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-reservations", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to store reservation');
+            }
+
+            return redirect()->back()->with('success', 'Reservation created successfully')
+                ->with('reservation', $response->json()['data']);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to store reservation: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyReservation($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-reservations/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to delete reservation');
+            }
+
+            return redirect()->back()->with('success', 'Reservation deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete reservation: ' . $e->getMessage());
+        }
+    }
 }
