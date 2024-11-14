@@ -30,6 +30,7 @@ interface MenuItem {
   
 interface OrderItem extends MenuItem {
     quantity: number;
+    selected?: boolean;
 }
   
 interface Table {
@@ -197,6 +198,7 @@ export default function PosRestaurant({
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+    const [splitMethod, setSplitMethod] = useState<'equal' | 'item'>('equal');
 
     // Get the CSRF token from the page props
     const { props } = usePage();
@@ -380,55 +382,126 @@ export default function PosRestaurant({
     };
 
     const confirmSplitBill = () => {
-        const amountPerPerson = finalTotal / splitAmount;
-        console.log(`Bill split into ${splitAmount} parts. Each person pays: $${amountPerPerson.toFixed(2)}`);
+        let amountPerPerson: number;
+        const selectedItemsTotal = orderItems
+            .filter(item => splitMethod === 'item' ? item.selected : true)
+            .reduce((total, item) => total + (item.price * item.quantity), 0);
         
+        amountPerPerson = splitMethod === 'equal' 
+            ? finalTotal / splitAmount 
+            : selectedItemsTotal / splitAmount;
+
         // Print the split bill details including order items
-        const orderItemsDetails = orderItems.map(item => `
-            <tr>
-                <td>${item.name}</td>
-                <td>x${item.quantity}</td>
-                <td>$${item.price.toFixed(2)}</td>
-                <td>$${(item.price * item.quantity).toFixed(2)}</td>
-            </tr>
-        `).join('');
+        const orderItemsDetails = orderItems.map(item => {
+            const isSelected = splitMethod === 'item' ? item.selected : true;
+            return `
+                <tr class="${isSelected ? 'selected-item' : 'unselected-item'}">
+                    <td>${item.name}</td>
+                    <td>x${item.quantity}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>$${(item.price * item.quantity).toFixed(2)}</td>
+                    ${splitMethod === 'item' ? `<td>${isSelected ? '✓' : '-'}</td>` : ''}
+                </tr>
+            `;
+        }).join('');
 
         const printContent = `
             <html>
                 <head>
                     <title>Split Bill</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; }
-                        .header { text-align: center; margin-bottom: 20px; }
-                        .footer { margin-top: 20px; text-align: center; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            padding: 20px; 
+                            max-width: 800px; 
+                            margin: 0 auto; 
+                        }
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 20px; 
+                            padding-bottom: 10px;
+                            border-bottom: 2px solid #333;
+                        }
+                        .split-details {
+                            margin: 20px 0;
+                            padding: 10px;
+                            background: #f5f5f5;
+                            border-radius: 5px;
+                        }
+                        .footer { 
+                            margin-top: 20px; 
+                            text-align: center;
+                            padding-top: 10px;
+                            border-top: 1px solid #ddd;
+                        }
+                        table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin: 15px 0;
+                        }
+                        th, td { 
+                            padding: 8px; 
+                            text-align: left; 
+                            border-bottom: 1px solid #ddd; 
+                        }
+                        .selected-item {
+                            background-color: #f0f7ff;
+                        }
+                        .unselected-item {
+                            color: #666;
+                        }
+                        .totals {
+                            margin-top: 15px;
+                            padding: 10px;
+                            border-top: 2px solid #333;
+                        }
+                        .split-amount {
+                            font-size: 1.2em;
+                            font-weight: bold;
+                            color: #2563eb;
+                            margin: 10px 0;
+                        }
                     </style>
                 </head>
                 <body>
                     <div class="header">
                         <h2>Split Bill</h2>
                         <p>Table Number: ${tableNumber}</p>
+                        <p>Date: ${new Date().toLocaleDateString()}</p>
+                        <p>Time: ${new Date().toLocaleTimeString()}</p>
                     </div>
-                    <div>
-                        <p>Total Amount: $${finalTotal.toFixed(2)}</p>
-                        <p>Split into ${splitAmount} parts</p>
-                        <p>Amount per person: $${amountPerPerson.toFixed(2)}</p>
-                        <h3>Order Items:</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${orderItemsDetails}
-                            </tbody>
-                        </table>
+
+                    <div class="split-details">
+                        <h3>Split Method: ${splitMethod === 'equal' ? 'Equal Split' : 'Split by Item'}</h3>
+                        <p>Number of ways to split: ${splitAmount}</p>
                     </div>
+
+                    <h3>Order Items:</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                ${splitMethod === 'item' ? '<th>Selected</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${orderItemsDetails}
+                        </tbody>
+                    </table>
+
+                    <div class="totals">
+                        <p>Original Total: $${finalTotal.toFixed(2)}</p>
+                        ${splitMethod === 'item' ? `
+                            <p>Selected Items Total: $${selectedItemsTotal.toFixed(2)}</p>
+                        ` : ''}
+                        <div class="split-amount">
+                            Amount per person: $${amountPerPerson.toFixed(2)}
+                        </div>
+                    </div>
+
                     <div class="footer">
                         <p>Thank you for dining with us!</p>
                     </div>
@@ -445,7 +518,7 @@ export default function PosRestaurant({
             printWindow.close();
         }
 
-        setIsSplitBillDialogOpen(false); // Close the dialog after confirmation
+        setIsSplitBillDialogOpen(false);
     };
 
     const printKitchenOrder = async () => {
@@ -1009,6 +1082,12 @@ export default function PosRestaurant({
         }
     };
 
+    const toggleItemSelection = (itemId: number) => {
+        setOrderItems(orderItems.map(item => 
+            item.id === itemId ? { ...item, selected: !item.selected } : item
+        ));
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -1558,51 +1637,138 @@ export default function PosRestaurant({
                 </Dialog>
 
                 <Dialog open={isSplitBillDialogOpen} onOpenChange={setIsSplitBillDialogOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-w-3xl">
                         <DialogHeader>
                             <DialogTitle>Split Bill</DialogTitle>
                         </DialogHeader>
                         <div className="py-4">
-                            <Label htmlFor="splitAmount">Number of ways to split</Label>
-                            <div className="flex items-center">
-                                <Button onClick={() => setSplitAmount(Math.max(splitAmount - 1, 2))} className="mr-2">-</Button>
-                                <Input
-                                    id="splitAmount"
-                                    type="number"
-                                    value={splitAmount}
-                                    onChange={(e) => setSplitAmount(Math.max(2, parseInt(e.target.value)))}
-                                    min={2}
-                                    className="w-16 text-center"
-                                />
-                                <Button onClick={() => setSplitAmount(splitAmount + 1)} className="ml-2">+</Button>
+                            <Label>Split Method</Label>
+                            <div className="flex items-center mb-4">
+                                <label className="mr-4 flex items-center space-x-2">
+                                    <input
+                                        type="radio"
+                                        value="equal"
+                                        checked={splitMethod === 'equal'}
+                                        onChange={() => setSplitMethod('equal')}
+                                        className="form-radio"
+                                    />
+                                    <span>Equal Split</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                    <input
+                                        type="radio"
+                                        value="item"
+                                        checked={splitMethod === 'item'}
+                                        onChange={() => setSplitMethod('item')}
+                                        className="form-radio"
+                                    />
+                                    <span>Split by Item</span>
+                                </label>
                             </div>
-                            <p className="mt-2">Total Amount: ${finalTotal.toFixed(2)}</p>
-                            <p>Amount per person: ${(finalTotal / splitAmount).toFixed(2)}</p>
-                            <h3>Order Items:</h3>
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr>
-                                        <th className="text-left">Item</th>
-                                        <th className="text-left">Quantity</th>
-                                        <th className="text-left">Price</th>
-                                        <th className="text-left">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orderItems.map(item => (
-                                        <tr key={item.id}>
-                                            <td>{item.name}</td>
-                                            <td>x{item.quantity}</td>
-                                            <td>${item.price.toFixed(2)}</td>
-                                            <td>${(item.price * item.quantity).toFixed(2)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+
+                            <div className="mb-4">
+                                <Label htmlFor="splitAmount">Number of ways to split</Label>
+                                <div className="flex items-center">
+                                    <Button 
+                                        onClick={() => setSplitAmount(Math.max(splitAmount - 1, 2))} 
+                                        className="mr-2"
+                                    >
+                                        <Minus className="h-4 w-4" />
+                                    </Button>
+                                    <Input
+                                        id="splitAmount"
+                                        type="number"
+                                        value={splitAmount}
+                                        onChange={(e) => setSplitAmount(Math.max(2, parseInt(e.target.value)))}
+                                        min={2}
+                                        className="w-20 text-center"
+                                    />
+                                    <Button 
+                                        onClick={() => setSplitAmount(splitAmount + 1)} 
+                                        className="ml-2"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <h3 className="font-semibold mb-2">Order Items:</h3>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            {splitMethod === 'item' && (
+                                                <TableHead className="w-[50px]">Select</TableHead>
+                                            )}
+                                            <TableHead>Item</TableHead>
+                                            <TableHead>Quantity</TableHead>
+                                            <TableHead>Price</TableHead>
+                                            <TableHead>Total</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {orderItems.map(item => (
+                                            <TableRow key={item.id}>
+                                                {splitMethod === 'item' && (
+                                                    <TableCell>
+                                                        <Checkbox
+                                                            checked={item.selected}
+                                                            onCheckedChange={() => toggleItemSelection(item.id)}
+                                                        />
+                                                    </TableCell>
+                                                )}
+                                                <TableCell>{item.name}</TableCell>
+                                                <TableCell>x{item.quantity}</TableCell>
+                                                <TableCell>${item.price.toFixed(2)}</TableCell>
+                                                <TableCell>${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            <div className="mt-4 space-y-2 border-t pt-4">
+                                <div className="flex justify-between">
+                                    <span>Total Amount:</span>
+                                    <span>${finalTotal.toFixed(2)}</span>
+                                </div>
+                                {splitMethod === 'item' && (
+                                    <div className="flex justify-between text-blue-600">
+                                        <span>Selected Items Total:</span>
+                                        <span>
+                                            ${orderItems
+                                                .filter(item => item.selected)
+                                                .reduce((total, item) => total + (item.price * item.quantity), 0)
+                                                .toFixed(2)}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between font-semibold">
+                                    <span>Amount per person:</span>
+                                    <span>
+                                        ${(splitMethod === 'equal' 
+                                            ? finalTotal / splitAmount 
+                                            : orderItems
+                                                .filter(item => item.selected)
+                                                .reduce((total, item) => total + (item.price * item.quantity), 0) / splitAmount
+                                        ).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsSplitBillDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
-                            <Button onClick={confirmSplitBill} className="bg-blue-500 hover:bg-blue-600 text-white">Split Bill</Button>
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setIsSplitBillDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                onClick={confirmSplitBill}
+                                disabled={splitMethod === 'item' && !orderItems.some(item => item.selected)}
+                            >
+                                Split Bill
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
