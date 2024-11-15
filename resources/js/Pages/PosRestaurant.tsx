@@ -23,7 +23,7 @@ interface MenuItem {
     name: string;
     price: number;
     category: string;
-    image?: string;
+    public_image_url?: string;
     created_at?: string;
     updated_at?: string;
 }
@@ -944,7 +944,7 @@ export default function PosRestaurant({
                 name: currentMenuItem?.name || '',
                 price: currentMenuItem?.price || 0,
                 category: currentMenuItem?.category || '',
-                image: currentMenuItem?.image
+                image: currentMenuItem?.public_image_url
             };
 
             Object.entries(menuItemData).forEach(([key, value]) => {
@@ -1379,7 +1379,7 @@ export default function PosRestaurant({
                                     type="button"
                                 >
                                     <img 
-                                        src={item.image || '/placeholder-image.jpg'} 
+                                        src={item.public_image_url || '/images/no-image.jpg'} 
                                         alt={item.name} 
                                         width={100} 
                                         height={100} 
@@ -1880,7 +1880,7 @@ export default function PosRestaurant({
                                     </TableCell>
                                     <TableCell>
                                         <img 
-                                        src={item.image || '/placeholder-image.jpg'} 
+                                        src={item.public_image_url || '/images/no-image.jpg'} 
                                         alt={item.name} 
                                         width={50} 
                                         height={50} 
