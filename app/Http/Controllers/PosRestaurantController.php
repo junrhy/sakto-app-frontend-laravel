@@ -68,13 +68,24 @@ class PosRestaurantController extends Controller
                 'name' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'category' => 'required|string',
-                'image' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
 
             $validated['client_identifier'] = auth()->user()->identifier;
 
-            $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/fnb-menu-items", $validated);
+            // Handle multipart form data with image
+            if ($request->hasFile('image')) {
+                $response = Http::withToken($this->apiToken)
+                    ->attach(
+                        'image', 
+                        file_get_contents($request->file('image')->path()),
+                        $request->file('image')->getClientOriginalName()
+                    )
+                    ->post("{$this->apiUrl}/fnb-menu-items", $validated);
+            } else {
+                $response = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/fnb-menu-items", $validated);
+            }
 
             if (!$response->successful()) {
                 return redirect()->back()
