@@ -488,4 +488,22 @@ class PosRestaurantController extends Controller
             ], 500);
         }
     }
+
+    public function getKitchenOrdersOverview()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/kitchen-orders-overview");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json();   
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch kitchen orders overview: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
