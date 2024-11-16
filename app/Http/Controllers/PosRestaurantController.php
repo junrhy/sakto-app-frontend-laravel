@@ -108,9 +108,18 @@ class PosRestaurantController extends Controller
     public function updateMenuItem(Request $request, string $id)
     {
         try {
-            // Change the HTTP method to PUT
-            $response = Http::withToken($this->apiToken)
-                ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
+            if ($request->hasFile('image')) {
+                $response = Http::withToken($this->apiToken)
+                    ->attach(
+                        'image', 
+                        file_get_contents($request->file('image')->path()),
+                        $request->file('image')->getClientOriginalName()
+                    )
+                    ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
+            } else {
+                $response = Http::withToken($this->apiToken)
+                    ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
+            }
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
