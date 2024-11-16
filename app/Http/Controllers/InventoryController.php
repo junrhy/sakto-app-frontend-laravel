@@ -340,4 +340,27 @@ class InventoryController extends Controller
             return response()->json(['error' => 'Failed to export products'], 500);
         }
     }
+
+    public function getProductsOverview()
+    {
+        try {
+            // Fetch data from API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products-overview");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $items = $response->json()['data']['products'];
+            $categories = $response->json()['data']['categories'];
+
+            return response()->json([
+                'items' => $items,
+                'categories' => $categories
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
