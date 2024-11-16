@@ -1,59 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface TableData {
-    tableNumber: string;
+    name: string;
     seats: number;
     status: 'available' | 'occupied' | 'reserved' | 'cleaning';
-    timeRemaining: string | null;
-    server: string | null;
 }
 
 export function FnbTablesWidget() {
-    const sampleTableData: TableData[] = [
-        {
-            tableNumber: "1",
-            seats: 4,
-            status: "available",
-            timeRemaining: null,
-            server: null,
-        },
-        {
-            tableNumber: "2",
-            seats: 2,
-            status: "occupied",
-            timeRemaining: "45 min",
-            server: "John Smith",
-        },
-        {
-            tableNumber: "3",
-            seats: 6,
-            status: "reserved",
-            timeRemaining: "Arriving in 15 min",
-            server: null,
-        },
-        {
-            tableNumber: "4",
-            seats: 4,
-            status: "cleaning",
-            timeRemaining: "5 min",
-            server: null,
-        },
-        {
-            tableNumber: "5",
-            seats: 4,
-            status: "available",
-            timeRemaining: null,
-            server: null,
-        },
-        {
-            tableNumber: "6",
-            seats: 4,
-            status: "available",
-            timeRemaining: null,
-            server: null,
-        },
-    ];
+    const [tables, setTables] = useState<TableData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTables = async () => {
+            try {
+                const response = await fetch('/pos-restaurant/tables-overview');
+                const data = await response.json();
+                console.log(data);
+                setTables(data);
+            } catch (error) {
+                console.error('Error fetching tables:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTables();
+    }, []);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -70,6 +44,14 @@ export function FnbTablesWidget() {
         }
     };
 
+    const groupedTables = tables.reduce((acc, table) => {
+        if (!acc[table.status]) {
+            acc[table.status] = [];
+        }
+        acc[table.status].push(table);
+        return acc;
+    }, {} as Record<string, TableData[]>);
+
     return (
         <Card>
             <CardHeader className="pb-3">
@@ -83,53 +65,39 @@ export function FnbTablesWidget() {
                             )}`}
                         >
                             <span className="capitalize">{status}</span>
+                            <span className="text-xs">({groupedTables[status]?.length || 0})</span>
                         </div>
                     ))}
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {sampleTableData.map((table) => (
-                        <div
-                            key={table.tableNumber}
-                            className={`p-3 sm:p-4 rounded-lg border transition-colors ${getStatusColor(table.status)} ${
-                                table.status === 'available' ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''
-                            }`}
-                        >
-                            <div className="flex justify-between items-center mb-2 sm:mb-3">
-                                <div className="flex items-center gap-1.5 sm:gap-2">
-                                    <span className="text-base sm:text-md font-semibold">Table {table.tableNumber}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Users className="text-gray-400 w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                    <span className="text-xs sm:text-sm text-gray-500">{table.seats}</span>
-                                </div>
+                {['available', 'occupied', 'reserved', 'cleaning'].map((status) => (
+                    groupedTables[status]?.length > 0 && (
+                        <div key={status} className="mb-6 last:mb-0">
+                            <h3 className="text-sm font-medium mb-3 capitalize">{status} Tables</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                {groupedTables[status]?.map((table) => (
+                                    <div
+                                        key={table.name}
+                                        className={`p-3 sm:p-4 rounded-lg border transition-colors ${getStatusColor(table.status)} ${
+                                            table.status === 'available' ? 'cursor-pointer hover:brightness-95 dark:hover:brightness-110' : ''
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                                <span className="text-base sm:text-md font-semibold">{table.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Users className="text-gray-400 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                <span className="text-xs sm:text-sm text-gray-500">{table.seats}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            {(table.timeRemaining || table.server) && (
-                                <div className="space-y-1.5 mt-2 border-t pt-2 dark:border-gray-800">
-                                    {table.timeRemaining && (
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-3 sm:h-3">
-                                                <circle cx="12" cy="12" r="10"/>
-                                                <polyline points="12 6 12 12 16 14"/>
-                                            </svg>
-                                            <span className="line-clamp-1">{table.timeRemaining}</span>
-                                        </div>
-                                    )}
-                                    {table.server && (
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-3 sm:h-3">
-                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                                <circle cx="12" cy="7" r="4"/>
-                                            </svg>
-                                            <span className="line-clamp-1">{table.server}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
                         </div>
-                    ))}
-                </div>
+                    )
+                ))}
             </CardContent>
         </Card>
     );
