@@ -1,12 +1,12 @@
 import { Card, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { X, ChevronLeft, ChevronRight, MoveUp, MoveDown, Trash2 } from "lucide-react";
-import { SalesWidget } from "./SalesWidget";
-import { InventoryWidget } from "./InventoryWidget";
-import { OrdersWidget } from "./OrdersWidget";
-import { TablesWidget } from "./TablesWidget";
-import { KitchenWidget } from "./KitchenWidget";
-import { ReservationsWidget } from "./ReservationsWidget";
+import { RetailSalesWidget } from "./RetailSalesWidget";
+import { RetailInventoryWidget } from "./RetailInventoryWidget";
+import { RetailOrdersWidget } from "./RetailOrdersWidget";
+import { FnbTablesWidget } from "./FnbTablesWidget";
+import { FnbKitchenWidget } from "./FnbKitchenWidget";
+import { FnbReservationsWidget } from "./FnbReservationsWidget";
 import { Widget } from "@/types";
 import { MouseEventHandler } from "react";
 
@@ -41,40 +41,40 @@ export function WidgetComponent({
         <Card className="h-full mb-4 relative shadow-md border-2 border-gray-300 hover:shadow-lg transition-shadow duration-200 dark:border-gray-600">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 border-b dark:border-gray-700">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    {(widget.type as string) === "sales" && (
+                    {(widget.type as string) === "retail_sales" && (
                         <>
                             <span className="h-2 w-2 bg-green-500 rounded-full"></span>
-                            Sales Overview
+                            Retail Sales Overview
                         </>
                     )}
-                    {(widget.type as string) === "inventory" && (
+                    {(widget.type as string) === "retail_inventory" && (
                         <>
                             <span className="h-2 w-2 bg-blue-500 rounded-full"></span>
-                            Inventory Status
+                            Retail Inventory Status
                         </>
                     )}
-                    {(widget.type as string) === "orders" && (
+                    {(widget.type as string) === "retail_orders" && (
                         <>
                             <span className="h-2 w-2 bg-purple-500 rounded-full"></span>
-                            Recent Orders
+                            Retail Recent Orders
                         </>
                     )}
-                    {(widget.type as string) === "tables" && (
+                    {(widget.type as string) === "fnb_tables" && (
                         <>
                             <span className="h-2 w-2 bg-orange-500 rounded-full"></span>
-                            Table Status
+                            F&B Table Status
                         </>
                     )}
-                    {(widget.type as string) === "kitchen" && (
+                    {(widget.type as string) === "fnb_kitchen" && (
                         <>
                             <span className="h-2 w-2 bg-red-500 rounded-full"></span>
-                            Kitchen Orders
+                            F&B Kitchen Orders
                         </>
                     )}
-                    {(widget.type as string) === "reservations" && (
+                    {(widget.type as string) === "fnb_reservations" && (
                         <>
                             <span className="h-2 w-2 bg-yellow-500 rounded-full"></span>
-                            Reservations
+                            F&B Reservations
                         </>
                     )}
                 </CardTitle>
@@ -91,12 +91,12 @@ export function WidgetComponent({
             </CardHeader>
 
             <div className="h-fit">
-                {(widget.type as string) === "sales" && <SalesWidget />}
-                {(widget.type as string) === "inventory" && <InventoryWidget />}
-                {(widget.type as string) === "orders" && <OrdersWidget />}
-                {(widget.type as string) === "tables" && <TablesWidget />}
-                {(widget.type as string) === "kitchen" && <KitchenWidget />}
-                {(widget.type as string) === "reservations" && <ReservationsWidget />}
+                {(widget.type as string) === "retail_sales" && <RetailSalesWidget />}
+                {(widget.type as string) === "retail_inventory" && <RetailInventoryWidget />}
+                {(widget.type as string) === "retail_orders" && <RetailOrdersWidget />}
+                {(widget.type as string) === "fnb_tables" && <FnbTablesWidget />}
+                {(widget.type as string) === "fnb_kitchen" && <FnbKitchenWidget />}
+                {(widget.type as string) === "fnb_reservations" && <FnbReservationsWidget />}
             </div>
 
             {isEditMode && (

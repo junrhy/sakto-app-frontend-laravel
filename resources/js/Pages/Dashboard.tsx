@@ -1,8 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/Components/ui/button";
-import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, MoveUp, MoveDown, Edit } from "lucide-react";
+import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, Edit } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -41,53 +41,9 @@ interface DashboardType {
     is_default?: boolean;
 }
 
-const sampleSalesData = [
-    { name: 'Mon', sales: 4000 },
-    { name: 'Tue', sales: 3000 },
-    { name: 'Wed', sales: 5000 },
-    { name: 'Thu', sales: 2780 },
-    { name: 'Fri', sales: 1890 },
-    { name: 'Sat', sales: 2390 },
-    { name: 'Sun', sales: 3490 },
-];
-
-const sampleInventoryData = [
-    { category: 'Electronics', stock: 856 },
-    { category: 'Clothing', stock: 432 },
-    { category: 'Books', stock: 234 },
-    { category: 'Sports', stock: 389 },
-    { category: 'Home', stock: 178 },
-];
-
-const sampleOrdersData = [
-    { id: '1234', customer: 'John Doe', status: 'pending', amount: 234.50, time: '2 mins ago' },
-    { id: '1235', customer: 'Jane Smith', status: 'processing', amount: 129.00, time: '15 mins ago' },
-    { id: '1236', customer: 'Bob Johnson', status: 'pending', amount: 445.80, time: '45 mins ago' },
-    { id: '1237', customer: 'Alice Brown', status: 'processing', amount: 55.20, time: '1 hour ago' },
-];
-
-const sampleTableData = [
-    { tableNumber: '1', seats: 4, status: 'occupied', timeRemaining: '45 min', server: 'John D.' },
-    { tableNumber: '2', seats: 2, status: 'available', timeRemaining: null, server: null },
-    { tableNumber: '3', seats: 6, status: 'reserved', timeRemaining: null, server: null },
-    { tableNumber: '4', seats: 4, status: 'occupied', timeRemaining: '15 min', server: 'Sarah M.' },
-    { tableNumber: '5', seats: 8, status: 'cleaning', timeRemaining: null, server: null },
-    { tableNumber: '6', seats: 2, status: 'occupied', timeRemaining: '90 min', server: 'Mike R.' },
-];
-
 interface Props {
     dashboards: DashboardType[];
     currentDashboard: DashboardType;
-}
-
-interface WidgetResponse {
-    widget: Widget;
-}
-
-interface PageProps {
-    props: {
-        currentDashboard?: DashboardType;
-    };
 }
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
@@ -113,18 +69,18 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         column: number;
         dashboard_id: number;
     }>({
-        type: 'sales' as WidgetTypeImport,
+        type: 'retail_sales' as WidgetTypeImport,
         column: 0,
         dashboard_id: currentDashboard.id
     });
 
     const availableWidgets = [
-        'sales',
-        'inventory',
-        'orders',
-        'tables',
-        'kitchen',
-        'reservations'
+        'retail_sales',
+        'retail_inventory',
+        'retail_orders',
+        'fnb_tables',
+        'fnb_kitchen',
+        'fnb_reservations'
     ] as const satisfies WidgetTypeImport[];
 
     // Modify the addWidget function to use the form from component level
@@ -440,7 +396,13 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                         <SelectContent>
                                             {availableWidgets.map((type) => (
                                                 <SelectItem key={type} value={type}>
-                                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                                    {type === "retail_sales" ? "Retail Sales" 
+                                                    : type === "retail_inventory" ? "Retail Inventory" 
+                                                    : type === "retail_orders" ? "Retail Orders" 
+                                                    : type === "fnb_tables" ? "F&B Tables" 
+                                                    : type === "fnb_kitchen" ? "F&B Kitchen" 
+                                                    : type === "fnb_reservations" ? "F&B Reservations"
+                                                    : (type as string).replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase())}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

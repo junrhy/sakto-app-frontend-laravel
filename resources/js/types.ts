@@ -1,4 +1,10 @@
-export type WidgetType = "sales" | "inventory" | "orders" | "tables" | "kitchen" | "reservations";
+export type WidgetType = 
+    | 'retail_sales'
+    | 'retail_inventory'
+    | 'retail_orders'
+    | 'fnb_tables'
+    | 'fnb_kitchen'
+    | 'fnb_reservations';
 
 export interface Widget {
     id: number;
