@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
         ->name('pos-restaurant.remove-order-item');
     Route::post('/pos-restaurant/orders/complete', [PosRestaurantController::class, 'completeOrder'])
         ->name('pos-restaurant.complete-order');
-
+    Route::get('/pos-restaurant/kitchen-orders/overview', [PosRestaurantController::class, 'getKitchenOrdersOverview']);
     // Pos Restaurant Reservations routes
     Route::get('/pos-restaurant/reservations', [PosRestaurantController::class, 'getReservations']);
     Route::post('/pos-restaurant/reservations', [PosRestaurantController::class, 'storeReservation']);
