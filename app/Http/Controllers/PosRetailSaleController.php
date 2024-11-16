@@ -109,4 +109,28 @@ class PosRetailSaleController extends Controller
             return response()->json(['message' => 'Failed to delete sales'], 500);
         }
     }
+
+    public function getSalesOverview()
+    {
+        try {
+            // Fetch data from API
+            $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/pos-retail/sales/overview");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+
+            return [
+                'todaySales' => $response->json()['todaySales'],
+                'weeklySales' => $response->json()['weeklySales'],
+                'currency_symbol' => $jsonAppCurrency->symbol
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to get sales overview: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to get sales overview'], 500);
+        }
+    }
 }
