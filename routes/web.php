@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventory/low-stock', [InventoryController::class, 'checkLowStock']);
     Route::get('/inventory/{id}/history', [InventoryController::class, 'getInventoryHistory']);
     Route::get('/inventory/{sku}/barcode', [InventoryController::class, 'generateBarcode']);
+    Route::get('/inventory/products-overview', [InventoryController::class, 'getProductsOverview']);
 
     // Pos Retail routes
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
