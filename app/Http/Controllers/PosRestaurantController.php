@@ -470,4 +470,22 @@ class PosRestaurantController extends Controller
             return redirect()->back()->with('error', 'Failed to delete reservation: ' . $e->getMessage());
         }
     }
+
+    public function getTablesOverview()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/tables-overview");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch tables overview: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
