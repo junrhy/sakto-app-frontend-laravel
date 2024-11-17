@@ -506,4 +506,22 @@ class PosRestaurantController extends Controller
             ], 500);
         }
     }
+
+    public function getReservationsOverview()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/reservations-overview");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch reservations overview: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

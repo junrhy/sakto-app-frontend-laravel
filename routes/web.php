@@ -113,7 +113,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pos-restaurant/reservations', [PosRestaurantController::class, 'getReservations']);
     Route::post('/pos-restaurant/reservations', [PosRestaurantController::class, 'storeReservation']);
     Route::delete('/pos-restaurant/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
-
+    Route::get('/pos-restaurant/reservations-overview', [PosRestaurantController::class, 'getReservationsOverview']);
     // Warehousing routes
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
 
