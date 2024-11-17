@@ -1,9 +1,10 @@
 import { CardContent } from "@/Components/ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { Badge } from "@/Components/ui/badge";
 import { ScrollArea } from "@/Components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 
 interface Reservation {
     id: number;
@@ -53,6 +54,92 @@ export function FnbReservationsWidget() {
         return colors[status];
     };
 
+    const groupReservationsByDate = (reservations: Reservation[]) => {
+        return reservations.reduce((groups, reservation) => {
+            const date = reservation.date;
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(reservation);
+            return groups;
+        }, {} as Record<string, Reservation[]>);
+    };
+
+    const renderReservationsList = (filteredReservations: Reservation[]) => {
+        const groupedReservations = groupReservationsByDate(filteredReservations);
+        const dates = Object.keys(groupedReservations).sort();
+
+        return (
+            <ScrollArea className="h-[400px] pr-2">
+                <div className="space-y-4">
+                    {filteredReservations.length === 0 ? (
+                        <div className="text-center text-gray-500 py-4">
+                            No reservations found
+                        </div>
+                    ) : (
+                        dates.map((date) => (
+                            <div key={date} className="space-y-2">
+                                <h4 className="font-medium text-sm text-gray-600 sticky top-0 bg-white py-1 border-b">
+                                    {format(new Date(date), 'EEE, MMM d')}
+                                </h4>
+                                {groupedReservations[date].map((reservation) => (
+                                    <div
+                                        key={reservation.id}
+                                        className="p-2 rounded-md border border-gray-200 hover:border-gray-300 transition-colors"
+                                    >
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-medium truncate">
+                                                        {reservation.name}
+                                                    </h4>
+                                                    <Badge className={`${getStatusColor(reservation.status)} text-xs`}>
+                                                        {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                                                    </Badge>
+                                                </div>
+                                                <div className="text-sm text-gray-500 grid grid-cols-2 gap-x-4 gap-y-0.5 mt-1">
+                                                    <p className="flex items-center gap-1">
+                                                        <span className="text-xs">🕒</span> {reservation.time}
+                                                    </p>
+                                                    <p className="flex items-center gap-1">
+                                                        <span className="text-xs">👥</span> {reservation.guests}
+                                                    </p>
+                                                    <p className="flex items-center gap-1">
+                                                        <span className="text-xs">📱</span> {reservation.contact}
+                                                    </p>
+                                                    {reservation.table_id && (
+                                                        <p className="flex items-center gap-1">
+                                                            <span className="text-xs">🪑</span> Table {reservation.table_id}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {reservation.notes && (
+                                                    <div className="mt-1 text-sm text-gray-600 bg-gray-50 p-1.5 rounded">
+                                                        <span className="text-xs">📝</span> {reservation.notes}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))
+                    )}
+                </div>
+            </ScrollArea>
+        );
+    };
+
+    const isTomorrow = (date: Date) => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return (
+            date.getDate() === tomorrow.getDate() &&
+            date.getMonth() === tomorrow.getMonth() &&
+            date.getFullYear() === tomorrow.getFullYear()
+        );
+    };
+
     if (loading) {
         return (
             <CardContent>
@@ -63,62 +150,45 @@ export function FnbReservationsWidget() {
         );
     }
 
+    const todayReservations = reservations.filter(r => isToday(new Date(r.date)));
+    const tomorrowReservations = reservations.filter(r => isTomorrow(new Date(r.date)));
+    const upcomingReservations = reservations.filter(r => {
+        const date = new Date(r.date);
+        return !isToday(date) && !isTomorrow(date);
+    });
+
     return (
-        <CardContent>
-            <div className="space-y-4">
+        <CardContent className="p-4">
+            <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-lg">Today's Reservations</h3>
+                    <h3 className="font-semibold text-lg">Reservations</h3>
                     <Badge variant="outline">
                         {reservations.length} Total
                     </Badge>
                 </div>
-                
-                <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-3">
-                        {reservations.length === 0 ? (
-                            <div className="text-center text-gray-500 py-8">
-                                No reservations for today
-                            </div>
-                        ) : (
-                            reservations.map((reservation) => (
-                                <div
-                                    key={reservation.id}
-                                    className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-                                >
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-medium">{reservation.name}</h4>
-                                            <div className="text-sm text-gray-500 space-y-1">
-                                                <p>
-                                                    🕒 {reservation.time}
-                                                </p>
-                                                <p>
-                                                    👥 Party of {reservation.guests}
-                                                </p>
-                                                <p>
-                                                    📱 {reservation.contact}
-                                                </p>
-                                                {reservation.table_id && (
-                                                    <p>
-                                                        🪑 Table {reservation.table_id}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <Badge className={getStatusColor(reservation.status)}>
-                                            {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
-                                        </Badge>
-                                    </div>
-                                    {reservation.notes && (
-                                        <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                                            📝 {reservation.notes}
-                                        </div>
-                                    )}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </ScrollArea>
+
+                <Tabs defaultValue="today" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="today">
+                            Today's ({todayReservations.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="tomorrow">
+                            Tomorrow's ({tomorrowReservations.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="upcoming">
+                            Upcoming ({upcomingReservations.length})
+                        </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="today" className="mt-4">
+                        {renderReservationsList(todayReservations)}
+                    </TabsContent>
+                    <TabsContent value="tomorrow" className="mt-4">
+                        {renderReservationsList(tomorrowReservations)}
+                    </TabsContent>
+                    <TabsContent value="upcoming" className="mt-4">
+                        {renderReservationsList(upcomingReservations)}
+                    </TabsContent>
+                </Tabs>
             </div>
         </CardContent>
     );
