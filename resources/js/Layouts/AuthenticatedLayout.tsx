@@ -9,6 +9,7 @@ import { ModeToggle } from "@/Components/ModeToggle";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface DashboardType {
     id: number;
@@ -50,6 +51,15 @@ export default function Authenticated({
 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
+    const [hideNav, setHideNav] = useState(() => {
+        // Get stored preference from localStorage, default to false
+        return localStorage.getItem('hideNav') === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('hideNav', hideNav.toString());
+    }, [hideNav]);
+
     const createNewDashboard = () => {
         if (newDashboardName.trim()) {
             // You can implement the dashboard creation logic here
@@ -61,8 +71,8 @@ export default function Authenticated({
 
     return (
         <ThemeProvider>
-        <div className="min-h-screen bg-white dark:bg-gray-800">
-            <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80 sticky top-0 z-50">
+        <div className="min-h-screen bg-white dark:bg-gray-800 relative">
+            <nav className={`border-b border-gray-100 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80 sticky top-0 z-50 transition-transform duration-300 ${hideNav ? '-translate-y-full' : 'translate-y-0'}`}>
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -528,19 +538,33 @@ export default function Authenticated({
                 </div>
             </nav>
 
-            {header && (
-                <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
-                    <div className="px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
+            <div className={`transition-all duration-300 ${hideNav ? '-translate-y-16' : 'translate-y-0'}`}>
+                {header && (
+                    <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
+                        <div className="px-4 py-6 sm:px-6 lg:px-8">
+                            {header}
+                        </div>
+                    </header>
+                )}
 
-            <main className="py-6">
-                <div className="px-4 sm:px-6 lg:px-8">
-                    {children}
-                </div>
-            </main>
+                <main className="py-6">
+                    <div className="px-4 sm:px-6 lg:px-8">
+                        {children}
+                    </div>
+                </main>
+            </div>
+
+            <button
+                onClick={() => setHideNav(!hideNav)}
+                className="fixed top-2 right-2 z-50 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors duration-200"
+                aria-label="Toggle navigation"
+            >
+                {hideNav ? (
+                    <ChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                ) : (
+                    <ChevronUp className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                )}
+            </button>
         </div>
 
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
