@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\User;
+use App\Models\UserAddress;
+
 class ProfileController extends Controller
 {
     /**
@@ -22,6 +24,7 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'currency' => json_decode($request->user()->app_currency),
+            'addresses' => UserAddress::where('user_id', auth()->user()->id)->get(),
         ]);
     }
 
@@ -67,6 +70,40 @@ class ProfileController extends Controller
         $user = User::find(auth()->user()->id);
         $user->fill(['app_currency' => json_encode($request->all())]);
         $user->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    public function updateTheme(Request $request): RedirectResponse
+    {
+        $user = User::find(auth()->user()->id);
+        $user->fill(['theme' => $request->theme]);
+        $user->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    public function updateColor(Request $request): RedirectResponse
+    {
+        $user = User::find(auth()->user()->id);
+        $user->fill(['theme_color' => $request->color]);
+        $user->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    public function updateAddresses(Request $request): RedirectResponse
+    {
+        dd($request->all());
+        foreach ($request->addresses as $address) {
+            if (isset($address['id'])) {
+                $address['user_id'] = auth()->user()->id;
+                UserAddress::find($address['id'])->update($address);
+            } else {
+                $address['user_id'] = auth()->user()->id;
+                UserAddress::create($address);
+            }
+        }
 
         return Redirect::route('profile.edit');
     }

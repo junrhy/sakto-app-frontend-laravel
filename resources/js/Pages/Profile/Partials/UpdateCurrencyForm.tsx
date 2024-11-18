@@ -1,10 +1,13 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 
 export default function UpdateCurrencyForm({ className = '', currency }: { className?: string, currency: any }) {
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [showError, setShowError] = useState(false);
+
     const { data, setData, patch, errors, processing } = useForm({
         symbol: currency.symbol,
         decimal_separator: currency.decimal_separator,
@@ -15,16 +18,29 @@ export default function UpdateCurrencyForm({ className = '', currency }: { class
         e.preventDefault();
         patch(route('profile.currency'), {
             onSuccess: () => {
-                // Handle success response if needed
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
             },
             onError: () => {
-                // Handle error response if needed
+                setShowError(true);
+                setTimeout(() => setShowError(false), 3000);
             }
         });
     };
 
     return (
         <section className={className}>
+            {showSuccess && (
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50">
+                    Currency settings updated successfully
+                </div>
+            )}
+            {showError && (
+                <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50">
+                    Failed to update currency settings
+                </div>
+            )}
+
             <header>
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     Currency Settings

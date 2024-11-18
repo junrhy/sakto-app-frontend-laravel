@@ -150,6 +150,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/color', [ProfileController::class, 'updateColor'])
         ->middleware(['auth'])
         ->name('profile.color');
+
+    Route::post('/profile/addresses', [ProfileController::class, 'updateAddresses'])
+        ->middleware(['auth'])
+        ->name('profile.addresses.update');
 });
 
 require __DIR__.'/auth.php';
