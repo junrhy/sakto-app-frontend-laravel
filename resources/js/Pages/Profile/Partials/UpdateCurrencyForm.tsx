@@ -5,8 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 
 export default function UpdateCurrencyForm({ className = '', currency }: { className?: string, currency: any }) {
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [showError, setShowError] = useState(false);
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     const { data, setData, patch, errors, processing } = useForm({
         symbol: currency.symbol,
@@ -16,31 +15,26 @@ export default function UpdateCurrencyForm({ className = '', currency }: { class
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        setAlert(null);
+        
         patch(route('profile.currency'), {
             onSuccess: () => {
-                setShowSuccess(true);
-                setTimeout(() => setShowSuccess(false), 3000);
+                setAlert({
+                    type: 'success',
+                    message: 'Currency settings updated successfully.'
+                });
             },
             onError: () => {
-                setShowError(true);
-                setTimeout(() => setShowError(false), 3000);
+                setAlert({
+                    type: 'error',
+                    message: 'Failed to update currency settings.'
+                });
             }
         });
     };
 
     return (
         <section className={className}>
-            {showSuccess && (
-                <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50">
-                    Currency settings updated successfully
-                </div>
-            )}
-            {showError && (
-                <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50">
-                    Failed to update currency settings
-                </div>
-            )}
-
             <header>
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     Currency Settings
@@ -49,6 +43,16 @@ export default function UpdateCurrencyForm({ className = '', currency }: { class
                     Update your currency preferences and format settings.
                 </p>
             </header>
+
+            {alert && (
+                <div className={`mt-4 p-4 rounded-md ${
+                    alert.type === 'success' 
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                        : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {alert.message}
+                </div>
+            )}
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>

@@ -4,7 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 interface User {
     name: string;
@@ -23,7 +23,8 @@ export default function UpdateProfileInformation({
     className?: string;
 }) {
     const user = usePage<{ auth: { user: User } }>().props.auth.user;
-
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
@@ -33,8 +34,22 @@ export default function UpdateProfileInformation({
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
-        patch(route('profile.update'));
+        setAlert(null);
+        
+        patch(route('profile.update'), {
+            onSuccess: () => {
+                setAlert({
+                    type: 'success',
+                    message: 'Profile information updated successfully.'
+                });
+            },
+            onError: () => {
+                setAlert({
+                    type: 'error',
+                    message: 'Failed to update profile information.'
+                });
+            }
+        });
     };
 
     return (
@@ -48,6 +63,16 @@ export default function UpdateProfileInformation({
                     Update your account's profile information and email address.
                 </p>
             </header>
+
+            {alert && (
+                <div className={`mt-4 p-4 rounded-md ${
+                    alert.type === 'success' 
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                        : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {alert.message}
+                </div>
+            )}
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>

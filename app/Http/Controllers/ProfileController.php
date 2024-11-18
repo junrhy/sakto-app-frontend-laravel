@@ -94,7 +94,7 @@ class ProfileController extends Controller
 
     public function updateAddresses(Request $request): RedirectResponse
     {
-        dd($request->all());
+        // dd($request->all());
         foreach ($request->addresses as $address) {
             if (isset($address['id'])) {
                 $address['user_id'] = auth()->user()->id;

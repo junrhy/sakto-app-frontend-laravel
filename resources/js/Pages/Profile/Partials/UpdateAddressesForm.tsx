@@ -1,4 +1,4 @@
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -37,6 +37,8 @@ const ADDRESS_TYPES = [
 ];
 
 export default function UpdateAddressesForm({ className = '', addresses = [] }: Props) {
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
     const { data, setData, post, processing, errors } = useForm<{ addresses: Address[] }>({
         addresses: addresses.length ? addresses : [{
             address_type: 'Home',
@@ -95,7 +97,22 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('profile.addresses.update'));
+        setAlert(null);
+        
+        post(route('profile.addresses.update'), {
+            onSuccess: () => {
+                setAlert({
+                    type: 'success',
+                    message: 'Addresses updated successfully.'
+                });
+            },
+            onError: () => {
+                setAlert({
+                    type: 'error',
+                    message: 'There was an error updating your addresses. Please try again.'
+                });
+            }
+        });
     };
 
     const getError = (index: number, field: keyof Address): string | undefined => {
@@ -112,6 +129,16 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
                     Manage your delivery addresses. You can add multiple addresses and set one as primary.
                 </p>
             </header>
+
+            {alert && (
+                <div className={`mt-4 p-4 rounded-md ${
+                    alert.type === 'success' 
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                        : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {alert.message}
+                </div>
+            )}
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 {data.addresses.map((address, index) => (
