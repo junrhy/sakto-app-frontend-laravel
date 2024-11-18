@@ -16,8 +16,8 @@ interface Product {
     name: string;
     price: number;
     price_formatted: string;
-    images: string[];
-    quantity: number; // Add this line to include inventory quantity
+    images: string[] | null;
+    quantity: number;
 }
   
 interface OrderItem {
@@ -238,7 +238,7 @@ export default function PosRetail(props: { products: Product[], appCurrency: any
                                         <TableRow key={product.id}>
                                             <TableCell>
                                                 <div className="flex gap-1">
-                                                    {product.images.length > 0 ? (
+                                                    {product.images && product.images.length > 0 ? (
                                                         product.images.slice(0, 3).map((image, index) => (
                                                             <div 
                                                                 key={index}
