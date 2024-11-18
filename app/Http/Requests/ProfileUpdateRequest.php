@@ -26,6 +26,8 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
             'contact_number' => ['nullable', 'string', 'max:255'],
+            'theme' => ['nullable', 'string'],
+            'theme_color' => ['nullable', 'string'],
         ];
     }
 }

@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'contact_number',
         'app_currency',
+        'theme',
+        'theme_color',
     ];
 
     /**
