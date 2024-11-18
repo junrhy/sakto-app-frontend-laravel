@@ -85,8 +85,10 @@ export function RetailInventoryWidget() {
                 {Object.entries(categoryData).map(([categoryId, category]) => (
                     <div key={categoryId} className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">{category.name} Stock Items</span>
-                            <span className="text-lg font-bold text-blue-600">
+                            <span className="text-sm font-medium dark:text-gray-200">
+                                {category.name} Stock Items
+                            </span>
+                            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                                 {category.totalStock.toLocaleString()}
                             </span>
                         </div>
@@ -120,10 +122,11 @@ export function RetailInventoryWidget() {
                                     />
                                     <Tooltip 
                                         contentStyle={{ 
-                                            backgroundColor: 'white', 
+                                            backgroundColor: 'var(--background)', 
                                             border: 'none',
                                             borderRadius: '8px',
-                                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                            color: 'var(--foreground)'
                                         }}
                                         formatter={(value) => [`${value}`, 'Items']}
                                     />
@@ -131,6 +134,7 @@ export function RetailInventoryWidget() {
                                         dataKey="quantity" 
                                         fill="#3b82f6"
                                         radius={[4, 4, 0, 0]}
+                                        className="dark:fill-blue-400"
                                     />
                                 </BarChart>
                             </ResponsiveContainer>

@@ -45,11 +45,11 @@ export function FnbReservationsWidget() {
 
     const getStatusColor = (status: Reservation['status']) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            confirmed: 'bg-blue-100 text-blue-800',
-            seated: 'bg-green-100 text-green-800',
-            completed: 'bg-gray-100 text-gray-800',
-            cancelled: 'bg-red-100 text-red-800',
+            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+            confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            seated: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+            completed: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300',
+            cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
         };
         return colors[status];
     };
@@ -79,25 +79,25 @@ export function FnbReservationsWidget() {
                     ) : (
                         dates.map((date) => (
                             <div key={date} className="space-y-2">
-                                <h4 className="font-medium text-sm text-gray-600 sticky top-0 bg-white py-1 border-b">
+                                <h4 className="font-medium text-sm text-gray-600 dark:text-gray-400 sticky top-0 bg-white dark:bg-gray-900 py-1 border-b dark:border-gray-800">
                                     {format(new Date(date), 'EEE, MMM d')}
                                 </h4>
                                 {groupedReservations[date].map((reservation) => (
                                     <div
                                         key={reservation.id}
-                                        className="p-2 rounded-md border border-gray-200 hover:border-gray-300 transition-colors"
+                                        className="p-2 rounded-md border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors dark:bg-gray-800/50"
                                     >
                                         <div className="flex justify-between items-start gap-2">
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <h4 className="font-medium truncate">
+                                                    <h4 className="font-medium truncate dark:text-gray-200">
                                                         {reservation.name}
                                                     </h4>
                                                     <Badge className={`${getStatusColor(reservation.status)} text-xs`}>
                                                         {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                                                     </Badge>
                                                 </div>
-                                                <div className="text-sm text-gray-500 grid grid-cols-2 gap-x-4 gap-y-0.5 mt-1">
+                                                <div className="text-sm text-gray-500 dark:text-gray-400 grid grid-cols-2 gap-x-4 gap-y-0.5 mt-1">
                                                     <p className="flex items-center gap-1">
                                                         <span className="text-xs">🕒</span> {reservation.time}
                                                     </p>
@@ -114,7 +114,7 @@ export function FnbReservationsWidget() {
                                                     )}
                                                 </div>
                                                 {reservation.notes && (
-                                                    <div className="mt-1 text-sm text-gray-600 bg-gray-50 p-1.5 rounded">
+                                                    <div className="mt-1 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/80 p-1.5 rounded">
                                                         <span className="text-xs">📝</span> {reservation.notes}
                                                     </div>
                                                 )}
@@ -144,7 +144,7 @@ export function FnbReservationsWidget() {
         return (
             <CardContent>
                 <div className="flex items-center justify-center h-48">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100" />
                 </div>
             </CardContent>
         );
@@ -161,7 +161,7 @@ export function FnbReservationsWidget() {
         <CardContent className="p-4">
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-lg">Reservations</h3>
+                    <h3 className="font-semibold text-lg dark:text-gray-100">Reservations</h3>
                     <Badge variant="outline">
                         {reservations.length} Total
                     </Badge>
