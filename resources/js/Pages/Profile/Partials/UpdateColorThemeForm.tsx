@@ -1,16 +1,33 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function UpdateColorThemeForm({ className = '' }: { className?: string }) {
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
     const { data, setData, patch, errors, processing } = useForm({
         color: 'zinc', // default shadcn color
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        patch(route('profile.color'));
+        setAlert(null);
+        
+        patch(route('profile.color'), {
+            onSuccess: () => {
+                setAlert({
+                    type: 'success',
+                    message: 'Color theme updated successfully.'
+                });
+            },
+            onError: () => {
+                setAlert({
+                    type: 'error',
+                    message: 'Failed to update color theme.'
+                });
+            }
+        });
     };
 
     return (
@@ -23,6 +40,16 @@ export default function UpdateColorThemeForm({ className = '' }: { className?: s
                     Choose your preferred color scheme.
                 </p>
             </header>
+
+            {alert && (
+                <div className={`mt-4 p-4 rounded-md ${
+                    alert.type === 'success' 
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                        : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {alert.message}
+                </div>
+            )}
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>

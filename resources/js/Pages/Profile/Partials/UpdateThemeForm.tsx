@@ -1,16 +1,27 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 export default function UpdateThemeForm({ className = '' }: { className?: string }) {
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
     const { data, setData, patch, errors, processing } = useForm({
         theme: 'system', // 'light' | 'dark' | 'system'
     });
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        patch(route('profile.theme'));
+        setAlert(null);
+        
+        patch(route('profile.theme'), {
+            onSuccess: () => {
+                setAlert({
+                    type: 'success',
+                    message: 'Theme settings updated successfully.'
+                });
+            }
+        });
     };
 
     return (
@@ -23,6 +34,16 @@ export default function UpdateThemeForm({ className = '' }: { className?: string
                     Choose your preferred theme mode.
                 </p>
             </header>
+
+            {alert && (
+                <div className={`mt-4 p-4 rounded-md ${
+                    alert.type === 'success' 
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                        : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {alert.message}
+                </div>
+            )}
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>

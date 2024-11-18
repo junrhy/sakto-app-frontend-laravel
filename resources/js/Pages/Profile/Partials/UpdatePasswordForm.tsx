@@ -4,13 +4,15 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useRef } from 'react';
+import { FormEventHandler, useRef, useState } from 'react';
 
 export default function UpdatePasswordForm({
     className = '',
 }: {
     className?: string;
 }) {
+    const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
@@ -33,7 +35,13 @@ export default function UpdatePasswordForm({
 
         put(route('password.update'), {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                setAlert({
+                    type: 'success',
+                    message: 'Password updated successfully.'
+                });
+                reset();
+            },
             onError: (errors) => {
                 if (errors.password) {
                     reset('password', 'password_confirmation');
@@ -60,6 +68,16 @@ export default function UpdatePasswordForm({
                     secure.
                 </p>
             </header>
+
+            {alert && (
+                <div className={`mt-4 p-4 rounded-md ${
+                    alert.type === 'success' 
+                        ? 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                        : 'bg-red-50 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {alert.message}
+                </div>
+            )}
 
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
                 <div>
