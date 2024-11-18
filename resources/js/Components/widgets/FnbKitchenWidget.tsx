@@ -41,10 +41,10 @@ export function FnbKitchenWidget() {
 
     const getStatusColor = (status: KitchenOrder['status']) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            preparing: 'bg-blue-100 text-blue-800',
-            ready: 'bg-green-100 text-green-800',
-            served: 'bg-gray-100 text-gray-800',
+            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+            preparing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            ready: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+            served: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300',
         };
         return colors[status];
     };
@@ -59,29 +59,27 @@ export function FnbKitchenWidget() {
     const OrderCard = ({ order }: { order: KitchenOrder }) => (
         <div 
             key={order.id} 
-            className="p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
+            className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow dark:bg-gray-800/50"
         >
             <div className="flex justify-between items-start mb-3">
                 <div>
-                    <span className="font-medium text-lg">{order.table_number}</span>
-                    <Badge 
-                        className={`ml-2 ${getStatusColor(order.status)}`}
-                    >
+                    <span className="font-medium text-lg dark:text-gray-100">{order.table_number}</span>
+                    <Badge className={`ml-2 ${getStatusColor(order.status)}`}>
                         {order.status}
                     </Badge>
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(order.created_at).toLocaleTimeString()}
                 </span>
             </div>
             <ul className="space-y-2">
                 {order.items.map((item, index) => (
                     <li key={index} className="text-sm flex items-start">
-                        <span className="font-medium min-w-[2rem]">{item.quantity}x</span>
+                        <span className="font-medium min-w-[2rem] dark:text-gray-300">{item.quantity}x</span>
                         <div>
-                            <div>{item.name}</div>
+                            <div className="dark:text-gray-200">{item.name}</div>
                             {item.notes && (
-                                <div className="text-gray-500 italic text-xs">
+                                <div className="text-gray-500 dark:text-gray-400 italic text-xs">
                                     {item.notes}
                                 </div>
                             )}
