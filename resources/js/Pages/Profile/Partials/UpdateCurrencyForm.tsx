@@ -4,11 +4,11 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 
-export default function UpdateCurrencyForm({ className = '' }: { className?: string }) {
+export default function UpdateCurrencyForm({ className = '', currency }: { className?: string, currency: any }) {
     const { data, setData, patch, errors, processing } = useForm({
-        symbol: '$', // Default value, should come from user preferences
-        decimal_separator: '.',
-        thousands_separator: ',',
+        symbol: currency.symbol,
+        decimal_separator: currency.decimal_separator,
+        thousands_separator: currency.thousands_separator,
     });
 
     const submit: FormEventHandler = (e) => {

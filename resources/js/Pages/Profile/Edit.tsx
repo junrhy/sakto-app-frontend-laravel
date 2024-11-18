@@ -12,10 +12,12 @@ export default function Edit({
     mustVerifyEmail,
     status,
     addresses,
+    currency,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
     addresses: Array<any>;
+    currency: any;
 }) {
     return (
         <AuthenticatedLayout
@@ -49,7 +51,10 @@ export default function Edit({
                     </div>
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                        <UpdateCurrencyForm className="max-w-xl" />
+                        <UpdateCurrencyForm 
+                            currency={currency}
+                            className="max-w-xl" 
+                        />
                     </div>
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
