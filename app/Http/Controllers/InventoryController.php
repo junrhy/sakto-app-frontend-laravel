@@ -84,13 +84,50 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->request->add(['client_identifier' => auth()->user()->identifier]);
+            // Add client identifier to the request
+            $formData = array_merge($request->except('images'), [
+                'client_identifier' => auth()->user()->identifier
+            ]);
 
-            $response = Http::withToken($this->apiToken)
-                ->timeout(30)
-                ->post("{$this->apiUrl}/inventory", $request->all());
+            // Initialize response variable
+            $response = null;
+
+            // Handle multiple image uploads
+            if ($request->hasFile('images')) {
+                // Create a new HTTP client instance for multipart request
+                $client = Http::withToken($this->apiToken)
+                    ->timeout(30)
+                    ->asMultipart();
+
+                // Add all form data fields
+                foreach ($formData as $key => $value) {
+                    $client = $client->attach($key, (string)$value);
+                }
+
+                // Add all images with proper 'contents' key
+                foreach ($request->file('images') as $image) {
+                    $client = $client->attach(
+                        'images[]', 
+                        file_get_contents($image->getPathname()),
+                        $image->getClientOriginalName(),
+                        ['Content-Type' => $image->getMimeType()]
+                    );
+                }
+
+                // Send the request
+                $response = $client->post("{$this->apiUrl}/inventory");
+            } else {
+                // If no images, send regular request
+                $response = Http::withToken($this->apiToken)
+                    ->timeout(30)
+                    ->post("{$this->apiUrl}/inventory", $formData);
+            }
             
             if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'response' => $response->body(),
+                    'status' => $response->status()
+                ]);
                 throw new \Exception('API request failed: ' . $response->body());
             }
             
@@ -98,7 +135,8 @@ class InventoryController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to create product', [
                 'error' => $e->getMessage(),
-                'request_data' => $request->all()
+                'request_data' => $request->except('images'),
+                'files' => $request->hasFile('images') ? 'Has files' : 'No files'
             ]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -151,53 +189,6 @@ class InventoryController extends Controller
             return redirect()->back();
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function uploadImages(Request $request)
-    {
-        try {
-            if (!$request->hasFile('images')) {
-                return response()->json(['error' => 'No images provided'], 400);
-            }
-
-            $timeout = (int)env('API_UPLOAD_TIMEOUT', 300);
-            $files = $request->file('images');
-            $files = is_array($files) ? $files : [$files];
-            
-            $response = Http::withToken($this->apiToken)
-                ->timeout($timeout)
-                ->withHeaders([
-                    'Accept' => 'application/json',
-                    'Connection' => 'keep-alive'
-                ])
-                ->attach('images[]', function() use ($files) {
-                    $attachments = [];
-                    foreach ($files as $file) {
-                        $attachments[] = [
-                            'contents' => fopen($file->getRealPath(), 'r'),
-                            'filename' => $file->getClientOriginalName()
-                        ];
-                    }
-                    return $attachments;
-                })
-                ->post("{$this->apiUrl}/inventory/upload-images");
-            
-            if (!$response->successful()) {
-                Log::error('Upload failed with response', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                throw new \Exception('Image upload failed: ' . $response->body());
-            }
-            
-            return response()->json($response->json());
-        } catch (\Exception $e) {
-            Log::error('Failed to upload images', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json(['error' => 'Failed to upload images: ' . $e->getMessage()], 500);
         }
     }
 
