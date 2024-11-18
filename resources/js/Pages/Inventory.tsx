@@ -31,7 +31,7 @@ interface Product {
     quantity: number;
     price: number;
     price_formatted: string;
-    images: string[];
+    images?: string[];
     category_id: number;
     description?: string;
     status: 'in_stock' | 'low_stock' | 'out_of_stock';
@@ -123,18 +123,29 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
     const addOrUpdateProduct = async () => {
         try {
             setIsLoading(true);
+            const formData = new FormData();
+            
+            // Add all product fields to formData
+            formData.append('name', newProduct.name);
+            formData.append('sku', newProduct.sku);
+            formData.append('quantity', newProduct.quantity.toString());
+            formData.append('price', newProduct.price.toString());
+            formData.append('category_id', newProduct.category_id.toString());
+            formData.append('description', newProduct.description || '');
+            formData.append('status', newProduct.status);
+            formData.append('barcode', newProduct.barcode || '');
+
+            // Get file input element and append all selected files
+            const fileInput = document.getElementById('images') as HTMLInputElement;
+            if (fileInput && fileInput.files) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('images[]', fileInput.files[i]);
+                }
+            }
+
             if (isEditing) {
-                router.put(`/inventory/${newProduct.id}`, {
-                    name: newProduct.name,
-                    sku: newProduct.sku,
-                    quantity: newProduct.quantity,
-                    price: newProduct.price,
-                    images: newProduct.images,
-                    category_id: newProduct.category_id,
-                    description: newProduct.description,
-                    status: newProduct.status,
-                    barcode: newProduct.barcode,
-                }, {
+                router.post(`/inventory/${newProduct.id}`, formData, {
+                    forceFormData: true,
                     preserveState: true,
                     onSuccess: () => {
                         setProducts(products.map((product) => 
@@ -149,17 +160,8 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                     onFinish: () => setIsLoading(false),
                 });
             } else {
-                router.post('/inventory', {
-                    name: newProduct.name,
-                    sku: newProduct.sku,
-                    quantity: newProduct.quantity,
-                    price: newProduct.price,
-                    images: newProduct.images,
-                    category_id: newProduct.category_id,
-                    description: newProduct.description,
-                    status: newProduct.status,
-                    barcode: newProduct.barcode,
-                }, {
+                router.post('/inventory', formData, {
+                    forceFormData: true,
                     preserveState: true,
                     onSuccess: (page: any) => {
                         setProducts([...products, page.props.inventory]);
@@ -231,38 +233,10 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
         }
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (files) {
-            try {
-                const formData = new FormData();
-                Array.from(files).forEach((file) => {
-                    formData.append('images[]', file);
-                });
-
-                router.post('/inventory/upload-images', formData, {
-                    forceFormData: true,
-                    preserveState: true,
-                    onSuccess: (response) => {
-                        setNewProduct({ 
-                            ...newProduct, 
-                            images: [...newProduct.images, ...(response.props.urls as string[])] 
-                        });
-                        toast.success('Images uploaded successfully');
-                    },
-                    onError: () => toast.error('Failed to upload images'),
-                });
-            } catch (error) {
-                console.error('Error uploading images:', error);
-                toast.error('Failed to upload images');
-            }
-        }
-    };
-
     const removeImage = (index: number) => {
         setNewProduct({
-        ...newProduct,
-        images: newProduct.images.filter((_, i) => i !== index)
+            ...newProduct,
+            images: newProduct.images?.filter((_, i) => i !== index) || []
         });
     };
 
@@ -582,21 +556,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                                     type="file"
                                     accept="image/*"
                                     multiple
-                                    onChange={handleImageUpload}
                                     />
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                    {newProduct.images.map((image, index) => (
-                                        <div key={index} className="relative">
-                                        <img src={image} alt={`Product ${index + 1}`} width={100} height={100} />
-                                        <button
-                                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                                            onClick={() => removeImage(index)}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                        </div>
-                                    ))}
-                                    </div>
                                 </div>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
@@ -667,7 +627,7 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                             </TableCell>
                             <TableCell>
                                 <div className="flex gap-1">
-                                {product.images.length > 0 ? (
+                                {product.images && product.images.length > 0 ? (
                                     product.images.slice(0, 3).map((image, index) => (
                                         <div 
                                             key={index}
@@ -689,11 +649,11 @@ export default function Inventory(props: { inventory: Product[], categories: Cat
                                         <Upload className="h-6 w-6 text-gray-400" />
                                     </div>
                                 )}
-                                {product.images.length > 3 && (
+                                {product.images && product.images.length > 3 && (
                                     <div 
                                         className="w-[50px] h-[50px] bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300"
                                         onClick={() => {
-                                            setSelectedImageUrl(product.images[3]);
+                                            setSelectedImageUrl(product.images![3]);
                                             setIsImagePreviewOpen(true);
                                         }}
                                     >
