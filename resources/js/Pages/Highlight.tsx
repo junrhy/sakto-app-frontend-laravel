@@ -31,7 +31,7 @@ export default function Highlight({ auth }: Props) {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 pt-[100px] landscape:pt-[30px] md:pt-[50px]">
+            <div className="container mx-auto px-4 pt-[100px] landscape:pt-[100px] md:pt-[100px]">
                 {/* Add your highlights content here */}
                 <div className="max-w-4xl mx-auto">
                     <h1>Highlights Content Goes Here</h1>
