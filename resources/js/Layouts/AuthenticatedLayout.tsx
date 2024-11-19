@@ -30,19 +30,21 @@ export default function Authenticated({
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const { auth: { user } } = usePage<PageProps>().props;
+    const url = usePage().url;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
-    const hasRetailAccess = true;
-    const hasFnbAccess = true;
-    const hasWarehousingAccess = false;
-    const hasTransportationAccess = false;
-    const hasRentalItemAccess = false;
-    const hasRentalPropertyAccess = false;
-    const hasClinicalAccess = false;
-    const hasLendingAccess = false;
-    const hasPayrollAccess = false;
+    const hasRetailAccess = url.includes('retail');
+    const hasFnbAccess = url.includes('fnb');
+    const hasWarehousingAccess = url.includes('warehousing');
+    const hasTransportationAccess = url.includes('transportation');
+    const hasRentalItemAccess = url.includes('rental-item');
+    const hasRentalPropertyAccess = url.includes('real-estate');
+    const hasClinicalAccess = url.includes('clinic');
+    const hasLendingAccess = url.includes('lending');
+    const hasPayrollAccess = url.includes('payroll');
+
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -77,7 +79,7 @@ export default function Authenticated({
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/" className="transition-transform hover:scale-105">
+                                <Link href="/home" className="transition-transform hover:scale-105">
                                     <div className="flex items-center">
                                         <ApplicationLogo className="block h-9 w-auto" />
                                         <span className="text-xl font-black ml-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">

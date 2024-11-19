@@ -41,6 +41,30 @@ Route::middleware('auth')->group(function () {
         ]);
     });
 
+    Route::get('/shop', function () {
+        return Inertia::render('Shop', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    });
+
+    Route::get('/highlights', function () {
+        return Inertia::render('Highlight', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    });
+
+    Route::get('/chat', function () {
+        return Inertia::render('Chat', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    });
+
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
