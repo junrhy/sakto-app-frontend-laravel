@@ -108,6 +108,7 @@ export function RetailInventoryWidget() {
                                                 x={props.x}
                                                 y={props.y + 10}
                                                 fontSize={12}
+                                                className="fill-gray-900 dark:fill-gray-200"
                                             >
                                                 {props.payload.value}
                                             </text>
@@ -119,16 +120,23 @@ export function RetailInventoryWidget() {
                                         tickLine={false}
                                         axisLine={false}
                                         tickFormatter={(value) => `${value}`}
+                                        tick={{ fill: 'currentColor' }}
+                                        className="fill-gray-900 dark:fill-gray-200"
                                     />
                                     <Tooltip 
                                         contentStyle={{ 
-                                            backgroundColor: 'var(--background)', 
-                                            border: 'none',
+                                            backgroundColor: 'white', 
+                                            border: '1px solid #e2e8f0',
                                             borderRadius: '8px',
                                             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                            color: 'var(--foreground)'
+                                            color: '#1f2937',
+                                            padding: '8px'
                                         }}
                                         formatter={(value) => [`${value}`, 'Items']}
+                                        cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+                                        wrapperStyle={{
+                                            outline: 'none'
+                                        }}
                                     />
                                     <Bar 
                                         dataKey="quantity" 
