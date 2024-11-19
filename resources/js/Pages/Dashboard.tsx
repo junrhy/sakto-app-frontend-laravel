@@ -46,9 +46,12 @@ interface Props {
     currentDashboard: DashboardType;
 }
 
+// Add this type definition near the top with other interfaces
+type AppType = 'retail' | 'fnb' | null;
+
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
     const url = usePage().url;
-    const appParam = new URLSearchParams(url.split('?')[1]).get('app');
+    const appParam = new URLSearchParams(url.split('?')[1]).get('app') as AppType;
 
     const [dashboards, setDashboards] = useState<DashboardType[]>(initialDashboards);
     const [currentDashboard, setCurrentDashboard] = useState<DashboardType>({
@@ -77,22 +80,23 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         dashboard_id: currentDashboard.id
     });
 
-    const availableWidgets = (() => {
+    // Update the availableWidgets function to be more type-safe
+    const availableWidgets: WidgetTypeImport[] = (() => {
         switch (appParam) {
             case 'retail':
                 return [
                     'retail_sales',
                     'retail_inventory',
                     'retail_orders'
-                ] as WidgetTypeImport[];
+                ] as const;
             case 'fnb':
                 return [
                     'fnb_tables',
                     'fnb_kitchen',
                     'fnb_reservations'
-                ] as WidgetTypeImport[];
+                ] as const;
             default:
-                return [] as WidgetTypeImport[];
+                return [];
         }
     })();
 
@@ -628,6 +632,16 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                         {[...Array(columnCount)].map((_, colIndex) => (
                             <div key={colIndex} className="space-y-4">
                                 {currentDashboard.widgets
+                                    .filter((widget: WidgetImport) => {
+                                        // Filter widgets based on app parameter
+                                        if (appParam === 'retail') {
+                                            return ['retail_sales', 'retail_inventory', 'retail_orders'].includes(widget.type);
+                                        }
+                                        if (appParam === 'fnb') {
+                                            return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'].includes(widget.type);
+                                        }
+                                        return false;
+                                    })
                                     .filter((widget: WidgetImport) => widget.column === colIndex)
                                     .sort((a, b) => a.order - b.order)
                                     .map((widget: WidgetImport, index: number, filteredWidgets: WidgetImport[]) => (
