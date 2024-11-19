@@ -39,9 +39,10 @@ class PosRestaurantController extends Controller
     public function getMenuItems()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             // Fetch data from API
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/fnb-menu-items");
+                ->get("{$this->apiUrl}/fnb-menu-items?client_identifier={$clientIdentifier}");
 
             if(!$response->json()) {
                 return response()->json(['error' => 'Failed to connect to FNB Menu Items API.'], 500);
@@ -309,8 +310,9 @@ class PosRestaurantController extends Controller
     public function getJoinedTables()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/fnb-tables/joined");
+                ->get("{$this->apiUrl}/fnb-tables/joined?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -422,8 +424,9 @@ class PosRestaurantController extends Controller
     public function getReservations()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/fnb-reservations");
+                ->get("{$this->apiUrl}/fnb-reservations?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -474,8 +477,9 @@ class PosRestaurantController extends Controller
     public function getTablesOverview()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/tables-overview");
+                ->get("{$this->apiUrl}/tables-overview?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -492,8 +496,9 @@ class PosRestaurantController extends Controller
     public function getKitchenOrdersOverview()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/kitchen-orders-overview");
+                ->get("{$this->apiUrl}/kitchen-orders-overview?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -510,8 +515,9 @@ class PosRestaurantController extends Controller
     public function getReservationsOverview()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/reservations-overview");
+                ->get("{$this->apiUrl}/reservations-overview?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());

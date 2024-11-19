@@ -22,9 +22,10 @@ class PosRetailController extends Controller
     public function index()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             // Fetch data from API
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/inventory");
+                ->get("{$this->apiUrl}/inventory?client_identifier={$clientIdentifier}");
 
             if(!$response->json()) {
                 return response()->json(['error' => 'Failed to connect to Retail POS API.'], 500);
