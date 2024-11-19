@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useState } from "react";
 import { Button } from "@/Components/ui/button";
 import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, Edit } from "lucide-react";
@@ -47,6 +47,9 @@ interface Props {
 }
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
+    const url = usePage().url;
+    const appParam = new URLSearchParams(url.split('?')[1]).get('app');
+
     const [dashboards, setDashboards] = useState<DashboardType[]>(initialDashboards);
     const [currentDashboard, setCurrentDashboard] = useState<DashboardType>({
         ...initialCurrentDashboard,
@@ -74,14 +77,24 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         dashboard_id: currentDashboard.id
     });
 
-    const availableWidgets = [
-        'retail_sales',
-        'retail_inventory',
-        'retail_orders',
-        'fnb_tables',
-        'fnb_kitchen',
-        'fnb_reservations'
-    ] as const satisfies WidgetTypeImport[];
+    const availableWidgets = (() => {
+        switch (appParam) {
+            case 'retail':
+                return [
+                    'retail_sales',
+                    'retail_inventory',
+                    'retail_orders'
+                ] as WidgetTypeImport[];
+            case 'fnb':
+                return [
+                    'fnb_tables',
+                    'fnb_kitchen',
+                    'fnb_reservations'
+                ] as WidgetTypeImport[];
+            default:
+                return [] as WidgetTypeImport[];
+        }
+    })();
 
     // Modify the addWidget function to use the form from component level
     const addWidget = (type: WidgetTypeImport) => {
