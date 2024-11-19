@@ -157,7 +157,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
 
     // Help routes
-    Route::get('/help', [HelpController::class, 'index'])->name('help');
+    Route::get('/help', [HelpController::class, 'index'])->middleware(['auth', 'verified'])->name('help');
 
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
