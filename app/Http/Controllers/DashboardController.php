@@ -45,6 +45,7 @@ class DashboardController extends Controller
             'name' => 'sometimes|string|max:255',
             'column_count' => 'sometimes|integer|in:1,2,3',
             'is_starred' => 'sometimes|boolean',
+            'app' => 'sometimes|string',
             // ... other validation rules
         ]);
 
