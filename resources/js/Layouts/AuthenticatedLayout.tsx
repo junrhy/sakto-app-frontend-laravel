@@ -25,6 +25,35 @@ interface PageProps extends Record<string, any> {
     };
 }
 
+const getHeaderColorClass = (url: string): string => {
+    const appParam = new URLSearchParams(url.split('?')[1]).get('app');
+    
+    switch (appParam) {
+        case 'retail':
+            return 'from-blue-500 to-blue-600';
+        case 'fnb':
+            return 'from-orange-500 to-orange-600';
+        case 'clinic':
+            return 'from-green-500 to-green-600';
+        case 'lending':
+            return 'from-purple-500 to-purple-600';
+        case 'rental-item':
+            return 'from-indigo-500 to-indigo-600';
+        case 'real-estate':
+            return 'from-red-500 to-red-600';
+        case 'transportation':
+            return 'from-yellow-500 to-yellow-600';
+        case 'warehousing':
+            return 'from-teal-500 to-teal-600';
+        case 'payroll':
+            return 'from-cyan-500 to-cyan-600';
+        case 'travel':
+            return 'from-pink-500 to-pink-600';
+        default:
+            return 'from-blue-500 to-purple-600'; // Default gradient
+    }
+};
+
 export default function Authenticated({
     header,
     children,
@@ -74,15 +103,15 @@ export default function Authenticated({
     return (
         <ThemeProvider>
         <div className="min-h-screen bg-white dark:bg-gray-800 relative">
-            <nav className={`border-b border-gray-100 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80 sticky top-0 z-50 transition-transform duration-300 ${hideNav ? '-translate-y-full' : 'translate-y-0'}`}>
+            <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url)} sticky top-0 z-50 transition-transform duration-300 ${hideNav ? '-translate-y-full' : 'translate-y-0'}`}>
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/home" className="transition-transform hover:scale-105">
                                     <div className="flex items-center">
-                                        <ApplicationLogo className="block h-9 w-auto" />
-                                        <span className="text-xl font-black ml-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                        <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
+                                        <span className="text-xl font-black ml-2 text-white">
                                             Sakto
                                         </span>
                                     </div>
@@ -96,7 +125,7 @@ export default function Authenticated({
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                 >
                                                     <span className="mt-[1px]">Dashboards</span>
                                                     <svg
@@ -145,7 +174,7 @@ export default function Authenticated({
                                                 <span className="inline-flex rounded-md">
                                                     <button
                                                         type="button"
-                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                     >
                                                         <span className="mt-[1px]">Retail</span>
                                                         <svg
@@ -182,7 +211,7 @@ export default function Authenticated({
                                     <NavLink
                                         href={route('pos-restaurant', { tab: "tables" })}
                                         active={route().current('pos-restaurant')}
-                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
                                         F & B
                                     </NavLink>
@@ -194,7 +223,7 @@ export default function Authenticated({
                                                 <span className="inline-flex rounded-md">
                                                     <button
                                                         type="button"
-                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                     >
                                                         <span className="mt-[1px]">Distribution</span>
                                                         <svg
@@ -235,7 +264,7 @@ export default function Authenticated({
                                                 <span className="inline-flex rounded-md">
                                                     <button
                                                         type="button"
-                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-600 dark:text-gray-200 transition-all duration-200 ease-in-out hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                     >
                                                         <span className="mt-[1px]">Rental</span>
                                                         <svg
@@ -273,7 +302,7 @@ export default function Authenticated({
                                     <NavLink
                                         href={route('clinic')}
                                         active={route().current('clinic')}
-                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
                                         Clinic
                                     </NavLink>
@@ -282,7 +311,7 @@ export default function Authenticated({
                                     <NavLink
                                         href={route('loan')}
                                         active={route().current('loan')}
-                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
                                         Loans
                                     </NavLink>
@@ -291,7 +320,7 @@ export default function Authenticated({
                                     <NavLink
                                         href={route('payroll')}
                                         active={route().current('payroll')}
-                                        className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
                                         Payroll
                                     </NavLink>
@@ -307,7 +336,7 @@ export default function Authenticated({
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-full border border-gray-200 bg-white/80 px-4 py-2 text-sm font-medium leading-4 text-gray-500 transition-all duration-200 ease-in-out hover:bg-gray-50 hover:text-blue-600 focus:outline-none dark:border-gray-600 dark:bg-gray-800/80 dark:text-gray-400 dark:hover:bg-gray-700/80 dark:hover:text-blue-400"
+                                                className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium leading-4 text-white transition-all duration-200 ease-in-out hover:bg-white/20 focus:outline-none"
                                             >
                                                 {user.name}
                                                 <svg
@@ -353,7 +382,7 @@ export default function Authenticated({
                                         (previousState: any) => !previousState,
                                     )
                                 }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-gray-900 dark:hover:text-gray-400 dark:focus:bg-gray-900 dark:focus:text-gray-400"
+                                className="inline-flex items-center justify-center rounded-md p-2 text-white/80 transition duration-150 ease-in-out hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none"
                             >
                                 <svg
                                     className="h-6 w-6"
