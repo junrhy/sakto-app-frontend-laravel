@@ -19,14 +19,6 @@ class WidgetController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -48,22 +40,6 @@ class WidgetController extends Controller
         $widget = Widget::create($validated);
         
         return redirect()->back()->with('widget', $widget);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Widget $widget)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Widget $widget)
-    {
-        //
     }
 
     /**

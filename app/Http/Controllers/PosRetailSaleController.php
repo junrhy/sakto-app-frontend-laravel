@@ -20,9 +20,10 @@ class PosRetailSaleController extends Controller
 
     public function index()
     {
+        $clientIdentifier = auth()->user()->identifier;
         // Fetch data from API
         $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/pos-retail/sales");
+            ->get("{$this->apiUrl}/pos-retail/sales?client_identifier={$clientIdentifier}");
 
         if(!$response->json()) {
             return response()->json(['error' => 'Failed to connect to Retail POS Sales API.'], 500);
@@ -52,9 +53,10 @@ class PosRetailSaleController extends Controller
     }
 
     private function mapSaleItems($items) {
+        $clientIdentifier = auth()->user()->identifier;
         // Fetch data from API
         $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/inventory");
+            ->get("{$this->apiUrl}/inventory?client_identifier={$clientIdentifier}");
 
         if(!$response->json()) {
             return response()->json(['error' => 'Failed to connect to Retail POS Sales API.'], 500);
@@ -113,9 +115,10 @@ class PosRetailSaleController extends Controller
     public function getSalesOverview()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             // Fetch data from API
             $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/pos-retail/sales/overview");
+            ->get("{$this->apiUrl}/pos-retail/sales/overview?client_identifier={$clientIdentifier}");
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
