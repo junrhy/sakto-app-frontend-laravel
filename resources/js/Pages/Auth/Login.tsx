@@ -127,7 +127,7 @@ export default function Login({
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <SocialButton
                                         provider="Google"
                                         icon="/images/google.svg"
@@ -135,16 +135,6 @@ export default function Login({
                                         type="button"
                                     >
                                         Google
-                                    </SocialButton>
-
-                                    <SocialButton
-                                        provider="Apple"
-                                        icon="/images/apple.svg"
-                                        onClick={() => window.location.href = route('apple.redirect')}
-                                        type="button"
-                                        className="dark:text-white"
-                                    >
-                                        Apple
                                     </SocialButton>
                                 </div>
 
@@ -170,27 +160,14 @@ export default function Login({
                     </div>
                 </div>
 
-                {/* Right side - Marketing Video */}
-                <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600">
-                    <div className="w-full h-full flex flex-col items-center justify-center p-12">
-                        <div className="w-full max-w-xl aspect-video bg-black/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
-                            <iframe
-                                className="w-full h-full"
-                                src="https://www.youtube.com/embed/your-video-id"
-                                title="Marketing Video"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
-                        <div className="mt-8 text-center">
-                            <h3 className="text-2xl font-semibold text-white">
-                                Why Choose Us?
-                            </h3>
-                            <p className="mt-3 text-lg text-white/80 max-w-lg">
-                                All in one online software that can run any business simpler, faster, and more efficient.
-                            </p>
-                        </div>
+                {/* Right side - Image */}
+                <div className="hidden md:block md:w-1/2">
+                    <div className="w-full h-full">
+                        <img
+                            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
+                            alt="Office workspace with laptop and coffee"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                 </div>
             </div>
