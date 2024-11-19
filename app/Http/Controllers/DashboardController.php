@@ -19,9 +19,9 @@ class DashboardController extends Controller
 
         $user = auth()->user();
         $dashboards = Dashboard::where('user_id', $user->id)->get();
-        $currentDashboard = Dashboard::where('user_id', $user->id)->where('is_default', true)->first();
+        $currentDashboard = Dashboard::where('user_id', $user->id)->where('is_default', true)->where('app', $request->app)->first();
         $currentDashboard->widgets = Widget::where('dashboard_id', $currentDashboard->id)->get();
-
+        
         return Inertia::render('Dashboard', [
             'dashboards' => $dashboards,
             'currentDashboard' => $currentDashboard,
