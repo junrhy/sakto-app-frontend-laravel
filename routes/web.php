@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
                 'user' => Auth::user()
             ]
         ]);
-    });
+    })->name('home');
 
     Route::get('/shop', function () {
         return Inertia::render('Shop', [
@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
                 'user' => Auth::user()
             ]
         ]);
-    });
+    })->name('shop');
 
     Route::get('/highlights', function () {
         return Inertia::render('Highlight', [
@@ -55,7 +55,7 @@ Route::middleware('auth')->group(function () {
                 'user' => Auth::user()
             ]
         ]);
-    });
+    })->name('highlights');
 
     Route::get('/chat', function () {
         return Inertia::render('Chat', [
@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
                 'user' => Auth::user()
             ]
         ]);
-    });
+    })->name('chat');
 
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
