@@ -60,6 +60,7 @@ export default function Authenticated({
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const { auth: { user } } = usePage<PageProps>().props;
     const url = usePage().url;
+    const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
     const hasDashboardAccess = !url.includes('help') && !url.includes('profile');
 
@@ -157,7 +158,7 @@ export default function Authenticated({
 
                                             <Dropdown.Content>
                                                 <Dropdown.Link 
-                                                    href="/dashboard"
+                                                    href={`/dashboard?app=${appParam}`}
                                                     as="button"
                                                     className="w-full text-left"
                                                 >
@@ -206,13 +207,13 @@ export default function Authenticated({
                                             </Dropdown.Trigger>
 
                                             <Dropdown.Content>
-                                                <Dropdown.Link href={route('pos-retail')}>
+                                                <Dropdown.Link href={`/pos-retail?app=${appParam}`}>
                                                     POS
                                                 </Dropdown.Link>
-                                                <Dropdown.Link href={route('inventory')}>
+                                                <Dropdown.Link href={`/inventory?app=${appParam}`}>
                                                     Inventory
                                                 </Dropdown.Link>
-                                                <Dropdown.Link href={route('retail-sale')}>
+                                                <Dropdown.Link href={`/retail-sale?app=${appParam}`}>
                                                     Sales
                                                 </Dropdown.Link>
                                             </Dropdown.Content>
@@ -221,7 +222,7 @@ export default function Authenticated({
                                 )}
                                 {hasFnbAccess && (
                                     <NavLink
-                                        href={route('pos-restaurant', { tab: "tables" })}
+                                        href={`/pos-restaurant?app=${appParam}&tab=tables`}
                                         active={route().current('pos-restaurant')}
                                         className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
@@ -256,12 +257,12 @@ export default function Authenticated({
 
                                             <Dropdown.Content>
                                                 {hasWarehousingAccess && (
-                                                    <Dropdown.Link href={route('warehousing')}>
+                                                    <Dropdown.Link href={`/warehousing?app=${appParam}`}>
                                                         Warehousing
                                                     </Dropdown.Link>
                                                 )}
                                                 {hasTransportationAccess && (
-                                                    <Dropdown.Link href={route('transportation')}>
+                                                    <Dropdown.Link href={`/transportation?app=${appParam}`}>
                                                         Transportation
                                                     </Dropdown.Link>
                                                 )}
@@ -297,12 +298,12 @@ export default function Authenticated({
 
                                             <Dropdown.Content>
                                                 {hasRentalItemAccess && (
-                                                    <Dropdown.Link href={route('rental-item')}>
+                                                    <Dropdown.Link href={`/rental-item?app=${appParam}`}>
                                                         Rental Items
                                                     </Dropdown.Link>
                                                 )}
                                                 {hasRentalPropertyAccess && (
-                                                    <Dropdown.Link href={route('rental-property')}>
+                                                    <Dropdown.Link href={`/rental-property?app=${appParam}`}>
                                                         Rental Properties
                                                     </Dropdown.Link>
                                                 )}
@@ -312,7 +313,7 @@ export default function Authenticated({
                                 )}
                                 {hasClinicalAccess && (
                                     <NavLink
-                                        href={route('clinic')}
+                                        href={`/clinic?app=${appParam}`}
                                         active={route().current('clinic')}
                                         className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
@@ -321,7 +322,7 @@ export default function Authenticated({
                                 )}
                                 {hasLendingAccess && (
                                     <NavLink
-                                        href={route('loan')}
+                                        href={`/loan?app=${appParam}`}
                                         active={route().current('loan')}
                                         className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
@@ -330,7 +331,7 @@ export default function Authenticated({
                                 )}
                                 {hasPayrollAccess && (
                                     <NavLink
-                                        href={route('payroll')}
+                                        href={`/payroll?app=${appParam}`}
                                         active={route().current('payroll')}
                                         className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
@@ -393,7 +394,7 @@ export default function Authenticated({
                         {hasDashboardAccess && (
                             <div className="px-4 py-2">
                                 <div className="font-medium text-base text-white">Dashboard</div>
-                                <ResponsiveNavLink href={route('dashboard')} className="ml-2 text-white">
+                                <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="ml-2 text-white">
                                     View Dashboards
                                 </ResponsiveNavLink>
                                 <button 
@@ -411,10 +412,10 @@ export default function Authenticated({
                         {hasRetailAccess && (
                             <div className="px-4 py-2">
                                 <div className="font-medium text-base text-white">Retail</div>
-                                <ResponsiveNavLink href={route('pos-retail')} className="ml-3">
+                                <ResponsiveNavLink href={`/pos-retail?app=${appParam}`} className="ml-3">
                                     Retail
                                 </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('inventory')} className="ml-3">
+                                <ResponsiveNavLink href={`/inventory?app=${appParam}`} className="ml-3">
                                     Inventory
                                 </ResponsiveNavLink>
                             </div>
@@ -423,7 +424,7 @@ export default function Authenticated({
                         {hasFnbAccess && (
                             <div className="px-4 py-2">
                                 <div className="font-medium text-base text-white">Restaurant</div>
-                                <ResponsiveNavLink href={route('pos-restaurant')} className="ml-3">
+                                <ResponsiveNavLink href={`/pos-restaurant?app=${appParam}&tab=tables`} className="ml-3">
                                     Restaurant
                                 </ResponsiveNavLink>
                             </div>
@@ -433,12 +434,12 @@ export default function Authenticated({
                             <div className="px-4 py-2">
                                 <div className="font-medium text-base text-white">Distribution</div>
                                 {hasWarehousingAccess && (
-                                    <ResponsiveNavLink href={route('warehousing')} className="ml-3">
+                                    <ResponsiveNavLink href={`/warehousing?app=${appParam}`} className="ml-3">
                                         Warehousing
                                     </ResponsiveNavLink>
                                 )}
                                 {hasTransportationAccess && (
-                                    <ResponsiveNavLink href={route('transportation')} className="ml-3">
+                                    <ResponsiveNavLink href={`/transportation?app=${appParam}`} className="ml-3">
                                         Transportation
                                     </ResponsiveNavLink>
                                 )}
@@ -449,12 +450,12 @@ export default function Authenticated({
                             <div className="px-4 py-2">
                                 <div className="font-medium text-base text-white">Rental</div>
                                 {hasRentalItemAccess && (
-                                    <ResponsiveNavLink href={route('rental-item')} className="ml-3">
+                                    <ResponsiveNavLink href={`/rental-item?app=${appParam}`} className="ml-3">
                                         Rental Items
                                     </ResponsiveNavLink>
                                 )}
                                 {hasRentalPropertyAccess && (
-                                    <ResponsiveNavLink href={route('rental-property')} className="ml-3">
+                                    <ResponsiveNavLink href={`/rental-property?app=${appParam}`} className="ml-3">
                                         Rental Properties
                                     </ResponsiveNavLink>
                                 )}
@@ -463,7 +464,7 @@ export default function Authenticated({
 
                         {hasClinicalAccess && (
                             <ResponsiveNavLink
-                                href={route('clinic')}
+                                href={`/clinic?app=${appParam}`}
                                 active={route().current('clinic')}
                                 className="text-white"
                             >
@@ -473,7 +474,7 @@ export default function Authenticated({
 
                         {hasLendingAccess && (
                             <ResponsiveNavLink
-                                href={route('loan')}
+                                href={`/loan?app=${appParam}`}
                                 active={route().current('loan')}
                                 className="text-white"
                             >
@@ -483,7 +484,7 @@ export default function Authenticated({
 
                         {hasPayrollAccess && (
                             <ResponsiveNavLink
-                                href={route('payroll')}
+                                href={`/payroll?app=${appParam}`}
                                 active={route().current('payroll')}
                                 className="text-white"
                             >
