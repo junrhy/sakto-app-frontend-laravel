@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -32,6 +32,15 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Home routes
+    Route::get('/home', function () {
+        return Inertia::render('Home', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    });
+
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
