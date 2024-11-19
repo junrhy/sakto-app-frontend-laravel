@@ -11,7 +11,9 @@ import {
     FaBus,
     FaWarehouse,
     FaQuestionCircle,
-    FaPlane
+    FaPlane,
+    FaKey,
+    FaUsers
 } from 'react-icons/fa';
 
 interface AppCard {
@@ -33,49 +35,61 @@ const apps: AppCard[] = [
     {
         icon: <FaStore />,
         title: 'Retail',
-        route: '/retail',
+        route: '/dashboard?app=retail',
         bgColor: 'bg-blue-500'
     },
     {
         icon: <FaUtensils />,
         title: 'F&B',
-        route: '/fnb',
+        route: '/dashboard?app=fnb',
         bgColor: 'bg-orange-500'
     },
     {
         icon: <FaHospital />,
         title: 'Clinic',
-        route: '/clinic',
+        route: '/dashboard?app=clinic',
         bgColor: 'bg-green-500'
     },
     {
         icon: <FaHandHoldingUsd />,
         title: 'Lending',
-        route: '/lending',
+        route: '/dashboard?app=lending',
         bgColor: 'bg-purple-500'
+    },
+    {
+        icon: <FaKey />,
+        title: 'Rental',
+        route: '/dashboard?app=rental-item',
+        bgColor: 'bg-indigo-500'
     },
     {
         icon: <FaBuilding />,
         title: 'Real Estate',
-        route: '/real-estate',
+        route: '/dashboard?app=real-estate',
         bgColor: 'bg-red-500'
     },
     {
         icon: <FaBus />,
         title: 'Transportation',
-        route: '/transportation',
+        route: '/dashboard?app=transportation',
         bgColor: 'bg-yellow-500'
     },
     {
         icon: <FaWarehouse />,
         title: 'Warehousing',
-        route: '/warehousing',
+        route: '/dashboard?app=warehousing',
         bgColor: 'bg-teal-500'
+    },
+    {
+        icon: <FaUsers />,
+        title: 'Payroll',
+        route: '/dashboard?app=payroll',
+        bgColor: 'bg-cyan-500'
     },
     {
         icon: <FaPlane />,
         title: 'Travel',
-        route: '/travel',
+        route: '/dashboard?app=travel',
         bgColor: 'bg-pink-500'
     }
 ];
