@@ -53,8 +53,8 @@ export default function BottomNav() {
                         key={index}
                         href={item.route}
                         className={`relative flex flex-col items-center justify-center w-full h-full ${
-                            url === item.route ? 'text-blue-500' : 'text-gray-600'
-                        } hover:text-blue-500`}
+                            url === item.route ? 'text-black' : 'text-gray-600'
+                        } hover:text-black`}
                     >
                         <div className="relative text-xl mb-1">
                             {item.icon}
