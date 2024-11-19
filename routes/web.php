@@ -15,6 +15,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\WidgetController;
+use App\Http\Controllers\Auth\GoogleController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,13 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
+// Add these routes with your other auth routes
+Route::get('auth/google', [GoogleController::class, 'redirect'])
+    ->name('google.redirect');
+Route::get('auth/google/callback', [GoogleController::class, 'callback'])
+    ->name('google.callback');
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
