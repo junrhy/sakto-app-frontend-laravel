@@ -121,6 +121,14 @@ export default function Authenticated({
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink
+                                    href={route('home')}
+                                    active={route().current('home')}
+                                    className="transition-all duration-200 text-white/90 hover:text-white"
+                                >
+                                    Home
+                                </NavLink>
+
                                 {hasDashboardAccess && (
                                     <div className="inline-flex items-center">
                                         <Dropdown>
