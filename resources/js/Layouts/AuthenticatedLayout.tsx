@@ -50,7 +50,7 @@ const getHeaderColorClass = (url: string): string => {
         case 'travel':
             return 'from-pink-600 via-pink-500 to-pink-400';
         default:
-            return 'from-purple-600 via-purple-500 to-blue-400'; // Default gradient
+            return 'from-black via-gray-900 to-black'; // Default gradient
     }
 };
 

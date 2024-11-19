@@ -58,7 +58,7 @@ const dummyProducts: Product[] = [
         name: "Cotton Basic Tee",
         price: 24.99,
         rating: 4.5,
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=400&fit=crop",
         category: "Clothing"
     },
     {
@@ -74,7 +74,7 @@ const dummyProducts: Product[] = [
         name: "Slim Fit Jeans",
         price: 59.99,
         rating: 4.7,
-        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=300&h=400&fit=crop",
         category: "Clothing"
     },
 
@@ -92,7 +92,7 @@ const dummyProducts: Product[] = [
         name: "Casual Loafers",
         price: 79.99,
         rating: 4.2,
-        image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=300&h=400&fit=crop",
         category: "Shoes"
     },
     {
@@ -110,7 +110,7 @@ const dummyProducts: Product[] = [
         name: "Wireless Earbuds",
         price: 159.99,
         rating: 4.7,
-        image: "https://images.unsplash.com/photo-1605464315542-bda3e2f4e605?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1605464315542-bda3e2f4e605?w=300&h=400&fit=crop",
         category: "Consumer Electronics"
     },
     {
@@ -126,7 +126,7 @@ const dummyProducts: Product[] = [
         name: "Bluetooth Speaker",
         price: 89.99,
         rating: 4.4,
-        image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=400&fit=crop",
         category: "Consumer Electronics"
     },
 
@@ -144,7 +144,7 @@ const dummyProducts: Product[] = [
         name: "Video Game Console",
         price: 299.99,
         rating: 4.8,
-        image: "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=300&h=400&fit=crop",
         category: "Books, Movies, Music & Games"
     },
     {
@@ -162,7 +162,7 @@ const dummyProducts: Product[] = [
         name: "Gourmet Coffee Beans",
         price: 29.99,
         rating: 4.7,
-        image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=300&h=400&fit=crop",
         category: "Food and Beverage"
     },
     {
@@ -178,7 +178,7 @@ const dummyProducts: Product[] = [
         name: "Chocolate Gift Box",
         price: 39.99,
         rating: 4.6,
-        image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=300&h=400&fit=crop",
         category: "Food and Beverage"
     },
 
@@ -188,7 +188,7 @@ const dummyProducts: Product[] = [
         name: "4K Webcam",
         price: 129.99,
         rating: 4.4,
-        image: "https://images.unsplash.com/photo-1623949556303-b0d17d198863?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1623949556303-b0d17d198863?w=300&h=400&fit=crop",
         category: "Electronics & Gadgets"
     },
     {
@@ -204,7 +204,7 @@ const dummyProducts: Product[] = [
         name: "Gaming Mouse",
         price: 79.99,
         rating: 4.6,
-        image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=400&fit=crop",
         category: "Electronics & Gadgets"
     },
 
@@ -230,7 +230,7 @@ const dummyProducts: Product[] = [
         name: "Wall Art Print",
         price: 49.99,
         rating: 4.5,
-        image: "https://images.unsplash.com/photo-1582045253062-f63cfbd45bcb?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1582045253062-f63cfbd45bcb?w=300&h=400&fit=crop",
         category: "Furniture and Decor"
     },
 
@@ -248,7 +248,7 @@ const dummyProducts: Product[] = [
         name: "Hair Care Bundle",
         price: 69.99,
         rating: 4.4,
-        image: "https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=300&h=400&fit=crop",
         category: "Health & Beauty"
     },
     {
@@ -266,7 +266,7 @@ const dummyProducts: Product[] = [
         name: "Car Phone Mount",
         price: 24.99,
         rating: 4.3,
-        image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=300&h=400&fit=crop",
         category: "Auto and Parts"
     },
     {
@@ -282,7 +282,7 @@ const dummyProducts: Product[] = [
         name: "Car Vacuum Cleaner",
         price: 59.99,
         rating: 4.4,
-        image: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=300&h=300&fit=crop",
+        image: "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=300&h=400&fit=crop",
         category: "Auto and Parts"
     }
 ];
@@ -320,24 +320,18 @@ export default function Shop({ auth }: Props) {
 
     return (
         <div className="relative min-h-screen pb-16">
-            <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 to-purple-600 z-10">
+            <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-black to-gray-900 z-10">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center">
                             <ApplicationLogo className="h-10 w-auto fill-current text-white" />
-                            <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                            <span className="ml-2 text-xl font-bold text-white">Sakto Shop</span>
                         </div>
-                        <Link 
-                            href="/help"
-                            className="text-white hover:text-blue-100 transition-colors duration-200"
-                        >
-                            <span className="text-md font-semibold">Help</span>
-                        </Link>
                     </div>
                 </div>
             </div>
 
-            <div className="px-4 pt-[100px] md:pt-[80px]">
+            <div className="container mx-auto px-4 pt-[100px] md:pt-[80px]">
                 <div>
                     <div className="flex items-center justify-between mb-6">
                         <button 
@@ -376,38 +370,38 @@ export default function Shop({ auth }: Props) {
                 </div>
             </div>
             
-            <div className="container mx-auto mt-8 px-4">
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="container mx-auto mt-8 mb-8 px-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                     {dummyProducts.map((product) => (
-                        <div key={product.id} className="bg-white rounded-lg shadow-sm p-2">
-                            <div className="relative">
+                        <div key={product.id} className="bg-white rounded-lg shadow-sm p-2 h-fit">
+                            <div className="relative group">
                                 <img 
                                     src={product.image} 
                                     alt={product.name}
-                                    className={`w-full object-cover rounded-md ${
-                                        // Clothing, Shoes - portrait format
-                                        product.category === 'Clothing' || product.category === 'Shoes' 
-                                            ? 'h-32 sm:h-40' 
-                                        // Electronics, Gadgets - square format
-                                        : product.category === 'Consumer Electronics' || product.category === 'Electronics & Gadgets'
-                                            ? 'h-24 sm:h-32'
-                                        // Books, Food - landscape format
-                                        : product.category === 'Books, Movies, Music & Games' || product.category === 'Food and Beverage'
-                                            ? 'h-20 sm:h-28'
-                                        // Default square format for others
-                                        : 'h-24 sm:h-32'
-                                    }`}
+                                    className="w-full object-cover rounded-md h-fit"
                                 />
                                 <button
                                     onClick={() => toggleWishlist(product.id)}
-                                    className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm"
+                                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md 
+                                             hover:scale-110 transform transition-all duration-200 
+                                             group-hover:opacity-100 opacity-90"
                                 >
                                     {wishlist.includes(product.id) ? (
-                                        <HeartSolidIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
+                                        <HeartSolidIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 
+                                                                  transform transition-transform duration-200 
+                                                                  hover:scale-110" />
                                     ) : (
-                                        <HeartIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+                                        <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 
+                                                            hover:text-gray-600 transition-colors duration-200" />
                                     )}
                                 </button>
+                                {wishlist.includes(product.id) && (
+                                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs 
+                                                  px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 
+                                                  transition-opacity duration-200">
+                                        Wishlisted
+                                    </div>
+                                )}
                             </div>
                             <h3 className="mt-1 text-xs sm:text-sm font-medium text-gray-900 truncate">
                                 {product.name}
@@ -424,9 +418,10 @@ export default function Shop({ auth }: Props) {
                                 </span>
                                 <button
                                     onClick={() => addToCart(product.id)}
-                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded-full transition-colors duration-200"
+                                    className="p-1.5 text-white bg-black hover:bg-gray-800 rounded-lg transition-colors duration-200 flex items-center gap-1"
                                 >
                                     <ShoppingCartIcon className="w-4 h-4" />
+                                    <span className="text-xs">Add to Cart</span>
                                 </button>
                             </div>
                         </div>
