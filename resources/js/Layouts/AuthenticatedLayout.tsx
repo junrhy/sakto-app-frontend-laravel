@@ -30,27 +30,27 @@ const getHeaderColorClass = (url: string): string => {
     
     switch (appParam) {
         case 'retail':
-            return 'from-blue-500 to-blue-600';
+            return 'from-blue-600 via-blue-500 to-blue-400';
         case 'fnb':
-            return 'from-orange-500 to-orange-600';
+            return 'from-orange-600 via-orange-500 to-orange-400';
         case 'clinic':
-            return 'from-green-500 to-green-600';
+            return 'from-emerald-600 via-emerald-500 to-emerald-400';
         case 'lending':
-            return 'from-purple-500 to-purple-600';
+            return 'from-purple-600 via-purple-500 to-purple-400';
         case 'rental-item':
-            return 'from-indigo-500 to-indigo-600';
+            return 'from-indigo-600 via-indigo-500 to-indigo-400';
         case 'real-estate':
-            return 'from-red-500 to-red-600';
+            return 'from-red-600 via-red-500 to-red-400';
         case 'transportation':
-            return 'from-yellow-500 to-yellow-600';
+            return 'from-amber-600 via-amber-500 to-amber-400';
         case 'warehousing':
-            return 'from-teal-500 to-teal-600';
+            return 'from-teal-600 via-teal-500 to-teal-400';
         case 'payroll':
-            return 'from-cyan-500 to-cyan-600';
+            return 'from-cyan-600 via-cyan-500 to-cyan-400';
         case 'travel':
-            return 'from-pink-500 to-pink-600';
+            return 'from-pink-600 via-pink-500 to-pink-400';
         default:
-            return 'from-blue-500 to-purple-600'; // Default gradient
+            return 'from-purple-600 via-purple-500 to-blue-400'; // Default gradient
     }
 };
 
