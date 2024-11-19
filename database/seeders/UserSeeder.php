@@ -16,6 +16,7 @@ class UserSeeder extends Seeder
     {
         User::create([
             'id' => 1,
+            'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0002',
             'name' => 'Test User 1',
             'email' => 'client1@sakto.app',
             'password' => Hash::make('password'),

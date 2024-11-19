@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('identifier')->unique()->default(DB::raw('(UUID())'));
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('google_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('contact_number')->nullable();
