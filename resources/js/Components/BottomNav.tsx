@@ -30,13 +30,7 @@ const navItems: NavItem[] = [
         route: '/shop'
     },
     {
-        icon: <FaStar />,
-        label: 'Highlights',
-        route: '/highlights',
-        notifications: 6
-    },
-    {
-        icon: <FaComments />,
+        icon: <FaInbox />,
         label: 'Inbox',
         route: '/inbox',
         notifications: 3
