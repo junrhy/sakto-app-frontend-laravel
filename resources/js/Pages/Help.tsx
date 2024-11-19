@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/Components/ui/accordion";
 import { Input } from "@/Components/ui/input";
 import { Search } from "lucide-react";
-import { Button } from "@/Components/ui/button";
+import BottomNav from '@/Components/BottomNav';
 
 interface FAQItem {
     question: string;
@@ -70,7 +70,7 @@ export default function Help() {
         >
             <Head title="Help" />
 
-            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-4 mb-16 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <Card className="mb-6">
                     <CardHeader>
                     <CardTitle>Frequently Asked Questions</CardTitle>
@@ -109,6 +109,8 @@ export default function Help() {
                     </CardContent>
                 </Card>
             </div>
+            
+            <BottomNav />
         </AuthenticatedLayout>
     );
 }
