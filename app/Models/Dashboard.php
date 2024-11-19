@@ -12,6 +12,7 @@ class Dashboard extends Model
         'widgets',
         'is_starred',
         'column_count',
+        'app',
         'is_default'
     ];
 
