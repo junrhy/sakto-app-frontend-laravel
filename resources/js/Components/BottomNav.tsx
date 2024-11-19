@@ -37,8 +37,8 @@ const navItems: NavItem[] = [
     },
     {
         icon: <FaComments />,
-        label: 'Chat',
-        route: '/chat',
+        label: 'Inbox',
+        route: '/inbox',
         notifications: 3
     },
     {

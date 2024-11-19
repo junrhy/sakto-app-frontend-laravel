@@ -166,7 +166,7 @@ export default function Authenticated({
 
                                             <Dropdown.Content>
                                                 <Dropdown.Link href={route('pos-retail')}>
-                                                    Retail
+                                                    POS
                                                 </Dropdown.Link>
                                                 <Dropdown.Link href={route('inventory')}>
                                                     Inventory
@@ -296,18 +296,11 @@ export default function Authenticated({
                                         Payroll
                                     </NavLink>
                                 )}
-                                <NavLink
-                                    href={route('help')}
-                                    active={route().current('help')}
-                                    className="transition-all duration-200 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
-                                >
-                                    Help
-                                </NavLink>
                             </div>
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
-                            <ModeToggle />
+                            {/* <ModeToggle /> */}
                             <div className="relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -498,20 +491,6 @@ export default function Authenticated({
                                 Payroll
                             </ResponsiveNavLink>
                         )}
-
-                        <ResponsiveNavLink
-                            href={route('help')}
-                            active={route().current('help')}
-                        >
-                            Help
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <div className="border-t border-gray-200 dark:border-gray-600 px-4 py-4">
-                        <div className="flex items-center">
-                            <ModeToggle />
-                            <span className="ml-3 text-sm text-gray-600 dark:text-gray-300">Toggle theme</span>
-                        </div>
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">

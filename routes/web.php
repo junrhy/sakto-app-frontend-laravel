@@ -57,13 +57,13 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('highlights');
 
-    Route::get('/chat', function () {
-        return Inertia::render('Chat', [
+    Route::get('/inbox', function () {
+        return Inertia::render('Inbox', [
             'auth' => [
                 'user' => Auth::user()
             ]
         ]);
-    })->name('chat');
+    })->name('inbox');
 
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

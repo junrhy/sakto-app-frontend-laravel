@@ -11,7 +11,7 @@ interface Props {
     };
 }
 
-export default function Chat({ auth }: Props) {
+export default function Inbox({ auth }: Props) {
     return (
         <div className="relative min-h-screen pb-16">
             <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 to-purple-600 z-10">
@@ -34,7 +34,7 @@ export default function Chat({ auth }: Props) {
             <div className="container mx-auto px-4 pt-[100px] landscape:pt-[80px] md:pt-[100px]">
                 {/* Add your chat content here */}
                 <div className="max-w-4xl mx-auto">
-                    <h1>Chat Content Goes Here</h1>
+                    <h1>Inbox Content Goes Here</h1>
                 </div>
             </div>
             

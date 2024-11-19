@@ -2,6 +2,18 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { 
+    TagIcon,
+    ShoppingBagIcon,
+    DevicePhoneMobileIcon,
+    BookOpenIcon,
+    CakeIcon,
+    ComputerDesktopIcon,
+    TruckIcon,
+    HomeIcon,
+    SparklesIcon,
+    WrenchIcon 
+} from '@heroicons/react/24/outline';
 
 interface Props {
     auth: {
@@ -10,6 +22,19 @@ interface Props {
         };
     };
 }
+
+const categories = [
+    { name: 'Clothing', icon: TagIcon },
+    { name: 'Shoes', icon: ShoppingBagIcon },
+    { name: 'Consumer Electronics', icon: DevicePhoneMobileIcon },
+    { name: 'Books, Movies, Music & Games', icon: BookOpenIcon },
+    { name: 'Food and Beverage', icon: CakeIcon },
+    { name: 'Electronics & Gadgets', icon: ComputerDesktopIcon },
+    { name: 'Apparel and Accessories', icon: ShoppingBagIcon },
+    { name: 'Furniture and Decor', icon: HomeIcon },
+    { name: 'Health & Beauty', icon: SparklesIcon },
+    { name: 'Auto and Parts', icon: WrenchIcon },
+];
 
 export default function Shop({ auth }: Props) {
     return (
@@ -32,9 +57,22 @@ export default function Shop({ auth }: Props) {
             </div>
 
             <div className="container mx-auto px-4 pt-[100px] md:pt-[80px]">
-                {/* Add your shop content here */}
                 <div className="max-w-4xl mx-auto">
-                    <h1>Shop Content Goes Here</h1>
+                    <h1 className="text-2xl font-bold mb-6">Categories</h1>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {categories.map((category) => (
+                            <Link
+                                key={category.name}
+                                href={`/shop/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
+                                className="flex flex-col items-center p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                            >
+                                <category.icon className="w-8 h-8 text-gray-600 mb-2" />
+                                <span className="text-sm text-center font-medium text-gray-800">
+                                    {category.name}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </div>
             
