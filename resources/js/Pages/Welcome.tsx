@@ -28,7 +28,7 @@ export default function Welcome({
                             <div className="flex items-center">
                                 {auth.user ? (
                                     <Link
-                                        href={route('dashboard')}
+                                        href={route('home')}
                                         className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                     >
                                         Dashboard

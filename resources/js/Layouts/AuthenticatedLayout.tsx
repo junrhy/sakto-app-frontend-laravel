@@ -61,6 +61,8 @@ export default function Authenticated({
     const { auth: { user } } = usePage<PageProps>().props;
     const url = usePage().url;
 
+    const hasDashboardAccess = !url.includes('help') && !url.includes('profile');
+
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -119,53 +121,55 @@ export default function Authenticated({
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <div className="inline-flex items-center">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
-                                                >
-                                                    <span className="mt-[1px]">Dashboards</span>
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
+                                {hasDashboardAccess && (
+                                    <div className="inline-flex items-center">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <span className="inline-flex rounded-md">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                     >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        </Dropdown.Trigger>
+                                                        <span className="mt-[1px]">Dashboards</span>
+                                                        <svg
+                                                            className="ml-2 -mr-0.5 h-4 w-4"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            </Dropdown.Trigger>
 
-                                        <Dropdown.Content>
-                                            <Dropdown.Link 
-                                                href="/dashboard"
-                                                as="button"
-                                                className="w-full text-left"
-                                            >
-                                                View Dashboard
-                                            </Dropdown.Link>
-                                            <Dropdown.Link 
-                                                href="#"
-                                                as="button"
-                                                className="w-full text-left"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setIsCreateDialogOpen(true);
-                                                }}
-                                            >
-                                                Create Dashboard
-                                            </Dropdown.Link>
-                                        </Dropdown.Content>
-                                    </Dropdown>
-                                </div>
+                                            <Dropdown.Content>
+                                                <Dropdown.Link 
+                                                    href="/dashboard"
+                                                    as="button"
+                                                    className="w-full text-left"
+                                                >
+                                                    View Dashboard
+                                                </Dropdown.Link>
+                                                <Dropdown.Link 
+                                                    href="#"
+                                                    as="button"
+                                                    className="w-full text-left"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setIsCreateDialogOpen(true);
+                                                    }}
+                                                >
+                                                    Create Dashboard
+                                                </Dropdown.Link>
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
+                                )}
 
                                 {hasRetailAccess && (
                                     <div className="inline-flex items-center">
@@ -328,53 +332,6 @@ export default function Authenticated({
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
-                            {/* <ModeToggle /> */}
-                            <div className="relative">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium leading-4 text-white transition-all duration-200 ease-in-out hover:bg-white/20 focus:outline-none"
-                                            >
-                                                {user.name}
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
-
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                            className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                                        >
-                                            Profile
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('logout')}
-                                            method="post"
-                                            as="button"
-                                            className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                                        >
-                                            Log Out
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
-                        </div>
-
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
                                 onClick={() =>
@@ -425,25 +382,27 @@ export default function Authenticated({
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <div className="px-4 py-2">
-                            <div className="font-medium text-base text-gray-700 dark:text-gray-200">Dashboard</div>
-                            <ResponsiveNavLink href={route('dashboard')} className="ml-3">
-                                View Dashboards
-                            </ResponsiveNavLink>
-                            <button 
-                                className="w-full text-left ml-3 block pl-3 pr-4 py-2 text-base font-medium text-gray-600 transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:text-gray-800 focus:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setIsCreateDialogOpen(true);
-                                }}
-                            >
-                                Create Dashboard
-                            </button>
-                        </div>
+                        {hasDashboardAccess && (
+                            <div className="px-4 py-2">
+                                <div className="font-medium text-base text-white">Dashboard</div>
+                                <ResponsiveNavLink href={route('dashboard')} className="ml-2 text-white">
+                                    View Dashboards
+                                </ResponsiveNavLink>
+                                <button 
+                                    className="w-full text-left ml-3 block pl-3 pr-4 py-2 text-base font-medium text-white transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:text-gray-800 focus:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setIsCreateDialogOpen(true);
+                                    }}
+                                >
+                                    Create Dashboard
+                                </button>
+                            </div>
+                        )}
 
                         {hasRetailAccess && (
                             <div className="px-4 py-2">
-                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Retail</div>
+                                <div className="font-medium text-base text-white">Retail</div>
                                 <ResponsiveNavLink href={route('pos-retail')} className="ml-3">
                                     Retail
                                 </ResponsiveNavLink>
@@ -455,7 +414,7 @@ export default function Authenticated({
 
                         {hasFnbAccess && (
                             <div className="px-4 py-2">
-                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Restaurant</div>
+                                <div className="font-medium text-base text-white">Restaurant</div>
                                 <ResponsiveNavLink href={route('pos-restaurant')} className="ml-3">
                                     Restaurant
                                 </ResponsiveNavLink>
@@ -464,7 +423,7 @@ export default function Authenticated({
 
                         {(hasWarehousingAccess || hasTransportationAccess) && (
                             <div className="px-4 py-2">
-                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Distribution</div>
+                                <div className="font-medium text-base text-white">Distribution</div>
                                 {hasWarehousingAccess && (
                                     <ResponsiveNavLink href={route('warehousing')} className="ml-3">
                                         Warehousing
@@ -480,7 +439,7 @@ export default function Authenticated({
 
                         {(hasRentalItemAccess || hasRentalPropertyAccess) && (
                             <div className="px-4 py-2">
-                                <div className="font-medium text-base text-gray-700 dark:text-gray-200">Rental</div>
+                                <div className="font-medium text-base text-white">Rental</div>
                                 {hasRentalItemAccess && (
                                     <ResponsiveNavLink href={route('rental-item')} className="ml-3">
                                         Rental Items
@@ -498,6 +457,7 @@ export default function Authenticated({
                             <ResponsiveNavLink
                                 href={route('clinic')}
                                 active={route().current('clinic')}
+                                className="text-white"
                             >
                                 Clinic
                             </ResponsiveNavLink>
@@ -507,6 +467,7 @@ export default function Authenticated({
                             <ResponsiveNavLink
                                 href={route('loan')}
                                 active={route().current('loan')}
+                                className="text-white"
                             >
                                 Loans
                             </ResponsiveNavLink>
@@ -516,34 +477,11 @@ export default function Authenticated({
                             <ResponsiveNavLink
                                 href={route('payroll')}
                                 active={route().current('payroll')}
+                                className="text-white"
                             >
                                 Payroll
                             </ResponsiveNavLink>
                         )}
-                    </div>
-
-                    <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800 dark:text-gray-200">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
                     </div>
                 </div>
             </nav>

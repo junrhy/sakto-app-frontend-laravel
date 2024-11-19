@@ -11,8 +11,12 @@ class DashboardController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        if (!$request->app) {
+            return abort(404);
+        }
+
         $user = auth()->user();
         $dashboards = Dashboard::where('user_id', $user->id)->get();
         $currentDashboard = Dashboard::where('user_id', $user->id)->where('is_default', true)->first();

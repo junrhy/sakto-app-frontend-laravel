@@ -49,14 +49,6 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('shop');
 
-    Route::get('/highlights', function () {
-        return Inertia::render('Highlight', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
-    })->name('highlights');
-
     Route::get('/inbox', function () {
         return Inertia::render('Inbox', [
             'auth' => [
