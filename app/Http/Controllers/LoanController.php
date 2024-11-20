@@ -34,9 +34,11 @@ class LoanController extends Controller
             }
 
             $loans = $response->json()['data']['loans'];
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Loan', [
-                'initialLoans' => $loans
+                'initialLoans' => $loans,
+                'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching loans: ' . $e->getMessage());
