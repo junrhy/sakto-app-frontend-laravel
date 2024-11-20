@@ -37,7 +37,7 @@ interface Loan {
     payments?: Payment[];
 }
 
-export default function Loan({ initialLoans }: { initialLoans: Loan[] }) {
+export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan[], appCurrency: any }) {
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
@@ -308,16 +308,16 @@ export default function Loan({ initialLoans }: { initialLoans: Loan[] }) {
                                 />
                                 </TableCell>
                                 <TableCell>{loan.borrower_name}</TableCell>
-                                <TableCell>${parseFloat(loan.amount).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{parseFloat(loan.amount).toFixed(2)}</TableCell>
                                 <TableCell>{parseFloat(loan.interest_rate)}%</TableCell>
                                 <TableCell>{loan.start_date}</TableCell>
                                 <TableCell>{loan.end_date}</TableCell>
                                 <TableCell>{loan.compounding_frequency}</TableCell>
                                 <TableCell>{loan.status}</TableCell>
-                                <TableCell>${parseFloat(loan.total_amount).toFixed(2)}</TableCell>
-                                <TableCell>${parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
-                                <TableCell>${parseFloat(loan.remaining_amount).toFixed(2)}</TableCell>
-                                <TableCell>${parseFloat(loan.overpayment_balance).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{parseFloat(loan.total_amount).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{parseFloat(loan.remaining_amount).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{parseFloat(loan.overpayment_balance).toFixed(2)}</TableCell>
                                 <TableCell className="flex">
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
                                     <Edit className="h-4 w-4" />
@@ -507,7 +507,7 @@ export default function Loan({ initialLoans }: { initialLoans: Loan[] }) {
                         {currentLoan?.payments?.map((payment) => (
                             <TableRow key={payment.id}>
                             <TableCell>{payment.date}</TableCell>
-                            <TableCell>${payment.amount.toFixed(2)}</TableCell>
+                            <TableCell>{appCurrency.symbol}{payment.amount.toFixed(2)}</TableCell>
                             </TableRow>
                         ))}
                         </TableBody>
