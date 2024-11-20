@@ -166,7 +166,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
 
     // Travel routes
-    Route::get('/travel', [TravelController::class, 'index'])->name('travel');
+    Route::prefix('travel')->group(function () {
+        Route::get('/', [TravelController::class, 'index'])->name('travel');
+        Route::get('/packages', [TravelController::class, 'getPackages']);
+        Route::post('/packages', [TravelController::class, 'storePackage']);
+        Route::put('/packages/{id}', [TravelController::class, 'updatePackage']);
+        Route::delete('/packages/{id}', [TravelController::class, 'deletePackage']);
+        Route::get('/bookings', [TravelController::class, 'getBookings']);
+        Route::post('/bookings', [TravelController::class, 'storeBooking']);
+        Route::put('/bookings/{id}', [TravelController::class, 'updateBooking']);
+        Route::delete('/bookings/{id}', [TravelController::class, 'deleteBooking']);
+    });
 
     // Help routes
     Route::get('/help', [HelpController::class, 'index'])->middleware(['auth', 'verified'])->name('help');
