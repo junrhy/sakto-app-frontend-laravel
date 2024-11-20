@@ -10,6 +10,7 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Plus, Edit, Trash, Search, Calculator, DollarSign, History } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
+import axios from 'axios';
 
 interface Payment {
     id: number;
@@ -19,26 +20,25 @@ interface Payment {
 
 interface Loan {
     id: number;
-    borrowerName: string;
-    amount: number;
-    interestRate: number;
-    startDate: string;
-    endDate: string;
+    borrower_name: string;
+    amount: string;
+    interest_rate: string;
+    start_date: string;
+    end_date: string;
     status: 'active' | 'paid' | 'defaulted';
-    compoundingFrequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
-    paidAmount: number;
-    payments: Payment[];
-    overpaymentBalance: number;
+    compounding_frequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
+    total_amount: string;
+    paid_amount: string;
+    remaining_amount: string;
+    overpayment_balance: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+    payments?: Payment[];
 }
 
-const INITIAL_LOANS: Loan[] = [
-    { id: 1, borrowerName: "John Doe", amount: 5000, interestRate: 5, startDate: "2023-01-01", endDate: "2023-12-31", status: 'active', compoundingFrequency: 'monthly', paidAmount: 0, payments: [], overpaymentBalance: 0 },
-    { id: 2, borrowerName: "Jane Smith", amount: 10000, interestRate: 4.5, startDate: "2023-02-15", endDate: "2024-02-14", status: 'active', compoundingFrequency: 'quarterly', paidAmount: 2000, payments: [{ id: 1, date: "2023-03-15", amount: 2000 }], overpaymentBalance: 0 },
-    { id: 3, borrowerName: "Bob Johnson", amount: 7500, interestRate: 6, startDate: "2022-11-01", endDate: "2023-10-31", status: 'paid', compoundingFrequency: 'annually', paidAmount: 7500, payments: [{ id: 1, date: "2023-05-01", amount: 7500 }], overpaymentBalance: 0 },
-];
-
-export default function Loan() {
-    const [loans, setLoans] = useState<Loan[]>(INITIAL_LOANS);
+export default function Loan({ initialLoans }: { initialLoans: Loan[] }) {
+    const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
@@ -59,31 +59,59 @@ export default function Loan() {
         setIsLoanDialogOpen(true);
     };
 
-    const handleDeleteLoan = (id: number) => {
-        setLoans(loans.filter(loan => loan.id !== id));
-        setSelectedLoans(selectedLoans.filter(loanId => loanId !== id));
+    const handleDeleteLoan = async (id: number) => {
+        try {
+            await axios.delete(`/loan/${id}`);
+            setLoans(loans.filter(loan => loan.id !== id));
+            setSelectedLoans(selectedLoans.filter(loanId => loanId !== id));
+        } catch (error) {
+            console.error('Error deleting loan:', error);
+            // Add error handling here
+        }
     };
 
-    const handleDeleteSelectedLoans = () => {
-        setLoans(loans.filter(loan => !selectedLoans.includes(loan.id)));
-        setSelectedLoans([]);
+    const handleDeleteSelectedLoans = async () => {
+        try {
+            await axios.post('/loan/bulk-delete', { ids: selectedLoans });
+            setLoans(loans.filter(loan => !selectedLoans.includes(loan.id)));
+            setSelectedLoans([]);
+        } catch (error) {
+            console.error('Error deleting selected loans:', error);
+            // Add error handling here
+        }
     };
 
-    const handleSaveLoan = (e: React.FormEvent) => {
+    const handleSaveLoan = async (e: React.FormEvent) => {
         e.preventDefault();
         if (currentLoan) {
-        if (currentLoan.id) {
-            // Edit existing loan
-            setLoans(loans.map(loan => 
-            loan.id === currentLoan.id ? currentLoan : loan
-            ));
-        } else {
-            // Add new loan
-            setLoans([...loans, { ...currentLoan, id: Date.now() }]);
+            try {
+                const loanData = {
+                    ...currentLoan,
+                    amount: parseFloat(currentLoan.amount).toString(),
+                    interest_rate: parseFloat(currentLoan.interest_rate).toString(),
+                };
+
+                const response = await (currentLoan.id ? 
+                    axios.put(`/loan/${currentLoan.id}`, loanData) :
+                    axios.post('/loan', loanData));
+                
+                const savedLoan = response.data;
+                
+                if (currentLoan.id) {
+                    setLoans(loans.map(loan => 
+                        loan.id === savedLoan.id ? savedLoan : loan
+                    ));
+                } else {
+                    setLoans([...loans, savedLoan]);
+                }
+                
+                setIsLoanDialogOpen(false);
+                setCurrentLoan(null);
+            } catch (error) {
+                console.error('Error saving loan:', error);
+                // Add error handling here
+            }
         }
-        }
-        setIsLoanDialogOpen(false);
-        setCurrentLoan(null);
     };
 
     const toggleLoanSelection = (id: number) => {
@@ -94,7 +122,7 @@ export default function Loan() {
 
     const filteredLoans = useMemo(() => {
         return loans.filter(loan =>
-        loan.borrowerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loan.borrower_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         loan.status.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [loans, searchTerm]);
@@ -112,37 +140,46 @@ export default function Loan() {
         setIsPaymentDialogOpen(true);
     };
 
-    const confirmPayment = () => {
+    const confirmPayment = async () => {
         if (currentLoan && paymentAmount) {
-        const payment = parseFloat(paymentAmount);
-        const { totalAmount } = calculateCompoundInterest(currentLoan);
-        const remainingAmount = parseFloat(totalAmount) - currentLoan.paidAmount;
-        let newPaidAmount = currentLoan.paidAmount + payment;
-        let newOverpaymentBalance = currentLoan.overpaymentBalance;
-        let newStatus = currentLoan.status;
+            try {
+                const response = await axios.post(`/loan/${currentLoan.id}/payment`, {
+                    amount: parseFloat(paymentAmount)
+                });
 
-        if (newPaidAmount > parseFloat(totalAmount)) {
-            newOverpaymentBalance = newPaidAmount - parseFloat(totalAmount);
-            newPaidAmount = parseFloat(totalAmount);
-            newStatus = 'paid';
-        } else if (newPaidAmount === parseFloat(totalAmount)) {
-            newStatus = 'paid';
-        }
+                const payment = response.data.payment;
+                const { totalAmount } = calculateCompoundInterest(currentLoan);
+                let newPaidAmount = parseFloat(currentLoan.paid_amount) + payment.amount;
+                let newOverpaymentBalance = parseFloat(currentLoan.overpayment_balance);
+                let newStatus = currentLoan.status;
 
-        const updatedLoan = {
-            ...currentLoan,
-            paidAmount: newPaidAmount,
-            overpaymentBalance: newOverpaymentBalance,
-            status: newStatus,
-            payments: [...currentLoan.payments, { id: Date.now(), date: new Date().toISOString().split('T')[0], amount: payment }]
-        };
+                if (newPaidAmount > parseFloat(totalAmount)) {
+                    newOverpaymentBalance = newPaidAmount - parseFloat(totalAmount);
+                    newPaidAmount = parseFloat(totalAmount);
+                    newStatus = 'paid';
+                } else if (newPaidAmount === parseFloat(totalAmount)) {
+                    newStatus = 'paid';
+                }
 
-        setLoans(loans.map(loan => 
-            loan.id === currentLoan.id ? updatedLoan : loan
-        ));
-        setIsPaymentDialogOpen(false);
-        setCurrentLoan(null);
-        setPaymentAmount("");
+                const updatedLoan = {
+                    ...currentLoan,
+                    paid_amount: newPaidAmount.toString(),
+                    overpayment_balance: newOverpaymentBalance.toString(),
+                    status: newStatus,
+                    payments: [...(currentLoan.payments || []), payment]
+                };
+
+                setLoans(loans.map(loan => 
+                    loan.id === currentLoan.id ? updatedLoan : loan
+                ));
+                
+                setIsPaymentDialogOpen(false);
+                setCurrentLoan(null);
+                setPaymentAmount("");
+            } catch (error) {
+                console.error('Error recording payment:', error);
+                // Add error handling here
+            }
         }
     };
 
@@ -152,42 +189,42 @@ export default function Loan() {
     };
 
     const calculateCompoundInterest = (loan: Loan) => {
-        const principal = loan.amount;
-        const rate = loan.interestRate / 100;
-        const startDate = new Date(loan.startDate);
-        const endDate = new Date(loan.endDate);
+        const principal = parseFloat(loan.amount);
+        const rate = parseFloat(loan.interest_rate) / 100;
+        const startDate = new Date(loan.start_date);
+        const endDate = new Date(loan.end_date);
         const timeInYears = (endDate.getTime() - startDate.getTime()) / (365 * 24 * 60 * 60 * 1000);
         
         let n: number;
-        switch (loan.compoundingFrequency) {
-        case 'daily':
-            n = 365;
-            break;
-        case 'monthly':
-            n = 12;
-            break;
-        case 'quarterly':
-            n = 4;
-            break;
-        case 'annually':
-            n = 1;
-            break;
-        default:
-            n = 12; // Default to monthly
+        switch (loan.compounding_frequency) {
+            case 'daily':
+                n = 365;
+                break;
+            case 'monthly':
+                n = 12;
+                break;
+            case 'quarterly':
+                n = 4;
+                break;
+            case 'annually':
+                n = 1;
+                break;
+            default:
+                n = 12; // Default to monthly
         }
 
         const amount = principal * Math.pow((1 + rate / n), n * timeInYears);
         const interest = amount - principal;
 
         return {
-        totalAmount: amount.toFixed(2),
-        interestEarned: interest.toFixed(2)
+            totalAmount: amount.toFixed(2),
+            interestEarned: interest.toFixed(2)
         };
     };
 
     const getRemainingAmount = (loan: Loan) => {
         const { totalAmount } = calculateCompoundInterest(loan);
-        const remaining = parseFloat(totalAmount) - loan.paidAmount;
+        const remaining = parseFloat(totalAmount) - parseFloat(loan.paid_amount);
         return remaining > 0 ? remaining.toFixed(2) : '0.00';
     };
     
@@ -270,17 +307,17 @@ export default function Loan() {
                                     onCheckedChange={() => toggleLoanSelection(loan.id)}
                                 />
                                 </TableCell>
-                                <TableCell>{loan.borrowerName}</TableCell>
-                                <TableCell>${loan.amount.toFixed(2)}</TableCell>
-                                <TableCell>{loan.interestRate}%</TableCell>
-                                <TableCell>{loan.startDate}</TableCell>
-                                <TableCell>{loan.endDate}</TableCell>
-                                <TableCell>{loan.compoundingFrequency}</TableCell>
+                                <TableCell>{loan.borrower_name}</TableCell>
+                                <TableCell>${parseFloat(loan.amount).toFixed(2)}</TableCell>
+                                <TableCell>{parseFloat(loan.interest_rate)}%</TableCell>
+                                <TableCell>{loan.start_date}</TableCell>
+                                <TableCell>{loan.end_date}</TableCell>
+                                <TableCell>{loan.compounding_frequency}</TableCell>
                                 <TableCell>{loan.status}</TableCell>
-                                <TableCell>${totalAmount}</TableCell>
-                                <TableCell>${loan.paidAmount.toFixed(2)}</TableCell>
-                                <TableCell>${getRemainingAmount(loan)}</TableCell>
-                                <TableCell>${loan.overpaymentBalance.toFixed(2)}</TableCell>
+                                <TableCell>${parseFloat(loan.total_amount).toFixed(2)}</TableCell>
+                                <TableCell>${parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
+                                <TableCell>${parseFloat(loan.remaining_amount).toFixed(2)}</TableCell>
+                                <TableCell>${parseFloat(loan.overpayment_balance).toFixed(2)}</TableCell>
                                 <TableCell className="flex">
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
                                     <Edit className="h-4 w-4" />
@@ -344,8 +381,8 @@ export default function Loan() {
                             <Label htmlFor="borrowerName" className="text-right">Borrower Name</Label>
                             <Input
                             id="borrowerName"
-                            value={currentLoan?.borrowerName || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, borrowerName: e.target.value })}
+                            value={currentLoan?.borrower_name || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, borrower_name: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
@@ -355,7 +392,7 @@ export default function Loan() {
                             id="amount"
                             type="number"
                             value={currentLoan?.amount || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, amount: parseFloat(e.target.value) })}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, amount: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
@@ -365,8 +402,8 @@ export default function Loan() {
                             id="interestRate"
                             type="number"
                             step="0.1"
-                            value={currentLoan?.interestRate || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, interestRate: parseFloat(e.target.value) })}
+                            value={currentLoan?.interest_rate || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, interest_rate: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
@@ -375,8 +412,8 @@ export default function Loan() {
                             <Input
                             id="startDate"
                             type="date"
-                            value={currentLoan?.startDate || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, startDate: e.target.value })}
+                            value={currentLoan?.start_date || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, start_date: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
@@ -385,16 +422,16 @@ export default function Loan() {
                             <Input
                             id="endDate"
                             type="date"
-                            value={currentLoan?.endDate || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, endDate: e.target.value })}
+                            value={currentLoan?.end_date || ''}
+                            onChange={(e) => setCurrentLoan({ ...currentLoan!, end_date: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="compoundingFrequency" className="text-right">Compounding Frequency</Label>
                             <Select
-                            value={currentLoan?.compoundingFrequency || ''}
-                            onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => setCurrentLoan({ ...currentLoan!, compoundingFrequency: value })}
+                            value={currentLoan?.compounding_frequency || ''}
+                            onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => setCurrentLoan({ ...currentLoan!, compounding_frequency: value })}
                             >
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Select frequency" />
@@ -467,7 +504,7 @@ export default function Loan() {
                         </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {currentLoan?.payments.map((payment) => (
+                        {currentLoan?.payments?.map((payment) => (
                             <TableRow key={payment.id}>
                             <TableCell>{payment.date}</TableCell>
                             <TableCell>${payment.amount.toFixed(2)}</TableCell>
