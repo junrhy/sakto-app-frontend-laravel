@@ -12,7 +12,7 @@ import {
     FaWarehouse,
     FaQuestionCircle,
     FaPlane,
-    FaKey,
+    FaBoxOpen,
     FaUsers
 } from 'react-icons/fa';
 
@@ -57,7 +57,7 @@ const apps: AppCard[] = [
         bgColor: 'text-purple-500'
     },
     {
-        icon: <FaKey />,
+        icon: <FaBoxOpen />,
         title: 'Rental',
         route: '/dashboard?app=rental-item',
         bgColor: 'text-indigo-500'
@@ -95,6 +95,22 @@ const apps: AppCard[] = [
 ];
 
 export default function Home({ auth }: Props) {
+    const getBorderColor = (colorClass: string) => {
+        const colorMap: { [key: string]: string } = {
+            'text-blue-500': '#3B82F6',
+            'text-orange-500': '#F97316',
+            'text-green-500': '#22C55E',
+            'text-purple-500': '#A855F7',
+            'text-indigo-500': '#6366F1',
+            'text-red-500': '#EF4444',
+            'text-yellow-500': '#EAB308',
+            'text-teal-500': '#14B8A6',
+            'text-cyan-500': '#06B6D4',
+            'text-pink-500': '#EC4899',
+        };
+        return colorMap[colorClass] || '#3B82F6'; // default to blue if color not found
+    };
+
     const firstName = auth.user.name.split(' ')[0];
 
     return (
@@ -128,17 +144,22 @@ export default function Home({ auth }: Props) {
             </div>
 
             <div className="container mx-auto px-4 pt-[180px] landscape:pt-[120px] md:pt-[200px] overflow-y-auto mb-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mx-auto">
+                <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                     {apps.map((app, index) => (
                         <Link
                             key={index}
                             href={app.route}
-                            className={`bg-white ${app.bgColor} hover:opacity-90 transition-opacity duration-200 rounded-lg p-6 flex flex-col items-center justify-center transform hover:-translate-y-1 transition-transform duration-200`}
+                            className="flex flex-col items-center"
                         >
-                            <div className="text-5xl mb-4">
-                                {app.icon}
+                            <div 
+                                className={`w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200`}
+                                style={{ borderWidth: '2px', borderColor: getBorderColor(app.bgColor) }}
+                            >
+                                <div className={`text-4xl ${app.bgColor}`}>
+                                    {app.icon}
+                                </div>
                             </div>
-                            <h2 className="text-xl font-semibold">
+                            <h2 className="text-sm font-medium text-gray-700 text-center">
                                 {app.title}
                             </h2>
                         </Link>
