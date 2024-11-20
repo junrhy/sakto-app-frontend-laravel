@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Plus, Edit, Trash, Search, Calculator, DollarSign, History } from "lucide-react";
+import { Plus, Edit, Trash, Search, Calculator, DollarSign, History, Receipt } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
 import axios from 'axios';
 
@@ -42,12 +42,16 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
+    const [isBillHistoryDialogOpen, setIsBillHistoryDialogOpen] = useState(false);
     const [currentLoan, setCurrentLoan] = useState<Loan | null>(null);
     const [paymentAmount, setPaymentAmount] = useState<string>("");
     const [selectedLoans, setSelectedLoans] = useState<number[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [loanToDelete, setLoanToDelete] = useState<number | null>(null);
+    const [isDeleteSelectedDialogOpen, setIsDeleteSelectedDialogOpen] = useState(false);
 
     const handleAddLoan = () => {
         setCurrentLoan(null);
@@ -60,21 +64,35 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
     };
 
     const handleDeleteLoan = async (id: number) => {
-        try {
-            await axios.delete(`/loan/${id}`);
-            setLoans(loans.filter(loan => loan.id !== id));
-            setSelectedLoans(selectedLoans.filter(loanId => loanId !== id));
-        } catch (error) {
-            console.error('Error deleting loan:', error);
-            // Add error handling here
+        setLoanToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDeleteLoan = async () => {
+        if (loanToDelete) {
+            try {
+                await axios.delete(`/loan/${loanToDelete}`);
+                setLoans(loans.filter(loan => loan.id !== loanToDelete));
+                setSelectedLoans(selectedLoans.filter(loanId => loanId !== loanToDelete));
+                setIsDeleteDialogOpen(false);
+                setLoanToDelete(null);
+            } catch (error) {
+                console.error('Error deleting loan:', error);
+                // Add error handling here
+            }
         }
     };
 
-    const handleDeleteSelectedLoans = async () => {
+    const handleDeleteSelectedLoans = () => {
+        setIsDeleteSelectedDialogOpen(true);
+    };
+
+    const confirmDeleteSelectedLoans = async () => {
         try {
             await axios.post('/loan/bulk-delete', { ids: selectedLoans });
             setLoans(loans.filter(loan => !selectedLoans.includes(loan.id)));
             setSelectedLoans([]);
+            setIsDeleteSelectedDialogOpen(false);
         } catch (error) {
             console.error('Error deleting selected loans:', error);
             // Add error handling here
@@ -186,6 +204,11 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
     const handleShowPaymentHistory = (loan: Loan) => {
         setCurrentLoan(loan);
         setIsPaymentHistoryDialogOpen(true);
+    };
+
+    const handleShowBillHistory = (loan: Loan) => {
+        setCurrentLoan(loan);
+        setIsBillHistoryDialogOpen(true);
     };
 
     const calculateCompoundInterest = (loan: Loan) => {
@@ -330,8 +353,11 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                                     <DollarSign className="h-4 w-4" />
                                     </Button>
                                 )}
-                                <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(loan)}>
+                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowPaymentHistory(loan)}>
                                     <History className="h-4 w-4" />
+                                </Button>
+                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowBillHistory(loan)}>
+                                    <Receipt className="h-4 w-4" />
                                 </Button>
                                 </TableCell>
                             </TableRow>
@@ -515,6 +541,67 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                     <DialogFooter>
                         <Button onClick={() => setIsPaymentHistoryDialogOpen(false)}>Close</Button>
                     </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isBillHistoryDialogOpen} onOpenChange={setIsBillHistoryDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Bill History</DialogTitle>
+                        </DialogHeader>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Due Date</TableHead>
+                                    <TableHead>Principal</TableHead>
+                                    <TableHead>Interest</TableHead>
+                                    <TableHead>Total Amount</TableHead>
+                                    <TableHead>Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell>No bill history available</TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                        <DialogFooter>
+                            <Button onClick={() => setIsBillHistoryDialogOpen(false)}>Close</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Delete</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p>Are you sure you want to delete this loan? This action cannot be undone.</p>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+                            <Button variant="destructive" onClick={confirmDeleteLoan}>Delete</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isDeleteSelectedDialogOpen} onOpenChange={setIsDeleteSelectedDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Delete Selected</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p>Are you sure you want to delete {selectedLoans.length} selected loans? This action cannot be undone.</p>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDeleteSelectedDialogOpen(false)}>Cancel</Button>
+                            <Button variant="destructive" onClick={confirmDeleteSelectedLoans}>Delete</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
