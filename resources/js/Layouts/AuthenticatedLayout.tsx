@@ -76,7 +76,7 @@ export default function Authenticated({
     const hasClinicalAccess = url.includes('clinic');
     const hasLendingAccess = url.includes('lending');
     const hasPayrollAccess = url.includes('payroll');
-
+    const hasTravelAccess = url.includes('travel');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -336,6 +336,15 @@ export default function Authenticated({
                                         className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
                                         Payroll
+                                    </NavLink>
+                                )}
+                                {hasTravelAccess && (
+                                    <NavLink
+                                        href={`/travel?app=${appParam}`}
+                                        active={route().current('travel')}
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
+                                    >
+                                        Travel
                                     </NavLink>
                                 )}
                             </div>

@@ -1035,7 +1035,7 @@ export default function PosRestaurant({
     const handleTabChange = (value: string) => {
         router.get(
             window.location.pathname,
-            { tab: value },
+            { app: "fnb", tab: value },
             { preserveState: true, preserveScroll: true, replace: true }
         );
     };

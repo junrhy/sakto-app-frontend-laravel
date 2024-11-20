@@ -13,6 +13,7 @@ use App\Http\Controllers\RentalItemController;
 use App\Http\Controllers\RentalPropertyController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\TravelController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\WidgetController;
 use App\Http\Controllers\Auth\GoogleController;
@@ -163,6 +164,9 @@ Route::middleware('auth')->group(function () {
 
     // Payroll routes
     Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
+
+    // Travel routes
+    Route::get('/travel', [TravelController::class, 'index'])->name('travel');
 
     // Help routes
     Route::get('/help', [HelpController::class, 'index'])->middleware(['auth', 'verified'])->name('help');
