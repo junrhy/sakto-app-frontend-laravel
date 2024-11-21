@@ -49,54 +49,99 @@ class LoanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'borrowerName' => 'required|string',
+            'borrower_name' => 'required|string',
             'amount' => 'required|numeric|min:0',
-            'interestRate' => 'required|numeric|min:0',
-            'startDate' => 'required|date',
-            'endDate' => 'required|date|after:startDate',
-            'compoundingFrequency' => 'required|in:daily,monthly,quarterly,annually',
+            'interest_rate' => 'required|numeric|min:0',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'compounding_frequency' => 'required|in:daily,monthly,quarterly,annually',
             'status' => 'required|in:active,paid,defaulted'
         ]);
 
-        // For now, just return the validated data with a new ID
-        return response()->json([
-            'id' => time(),
-            ...$validated,
-            'paidAmount' => 0,
-            'payments' => [],
-            'overpaymentBalance' => 0
-        ]);
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending", [
+                    ...$validated,
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $loan = $response->json();
+
+            return response()->json($loan);
+        } catch (\Exception $e) {
+            Log::error('Error storing loan: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to store loan.'], 500);
+        }
     }
 
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'borrowerName' => 'required|string',
+            'borrower_name' => 'required|string',
             'amount' => 'required|numeric|min:0',
-            'interestRate' => 'required|numeric|min:0',
-            'startDate' => 'required|date',
-            'endDate' => 'required|date|after:startDate',
-            'compoundingFrequency' => 'required|in:daily,monthly,quarterly,annually',
+            'interest_rate' => 'required|numeric|min:0',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'compounding_frequency' => 'required|in:daily,monthly,quarterly,annually',
             'status' => 'required|in:active,paid,defaulted'
         ]);
 
-        return response()->json([
-            'id' => $id,
-            ...$validated,
-            'paidAmount' => $request->input('paidAmount', 0),
-            'payments' => $request->input('payments', []),
-            'overpaymentBalance' => $request->input('overpaymentBalance', 0)
-        ]);
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/lending/{$id}", [
+                    ...$validated,
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $loan = $response->json();
+            return response()->json($loan);
+        } catch (\Exception $e) {
+            Log::error('Error updating loan: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update loan.'], 500);
+        }
     }
 
     public function destroy(string $id)
     {
-        return response()->json(['success' => true]);
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/lending/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting loan: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete loan.'], 500);
+        }
     }
 
     public function bulkDestroy(Request $request)
     {
-        return response()->json(['success' => true]);
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/bulk-destroy", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting loans: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete loans.'], 500);
+        }
     }
 
     public function recordPayment(Request $request, string $id)
@@ -105,13 +150,18 @@ class LoanController extends Controller
             'amount' => 'required|numeric|min:0'
         ]);
 
-        return response()->json([
-            'success' => true,
-            'payment' => [
-                'id' => time(),
-                'date' => now()->toDateString(),
-                'amount' => $validated['amount']
-            ]
-        ]);
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/record-payment/{$id}", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error recording payment: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to record payment.'], 500);
+        }
     }
 }

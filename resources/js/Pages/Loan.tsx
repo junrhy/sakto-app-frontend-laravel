@@ -27,10 +27,8 @@ interface Loan {
     end_date: string;
     status: 'active' | 'paid' | 'defaulted';
     compounding_frequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
-    total_amount: string;
+    total_balance: string;
     paid_amount: string;
-    remaining_amount: string;
-    overpayment_balance: string;
     client_identifier: string;
     created_at: string;
     updated_at: string;
@@ -117,7 +115,7 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                 
                 if (currentLoan.id) {
                     setLoans(loans.map(loan => 
-                        loan.id === savedLoan.id ? savedLoan : loan
+                        loan.id === savedLoan.data.loan.id ? savedLoan.data.loan : loan
                     ));
                 } else {
                     setLoans([...loans, savedLoan]);
@@ -168,21 +166,16 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                 const payment = response.data.payment;
                 const { totalAmount } = calculateCompoundInterest(currentLoan);
                 let newPaidAmount = parseFloat(currentLoan.paid_amount) + payment.amount;
-                let newOverpaymentBalance = parseFloat(currentLoan.overpayment_balance);
                 let newStatus = currentLoan.status;
 
-                if (newPaidAmount > parseFloat(totalAmount)) {
-                    newOverpaymentBalance = newPaidAmount - parseFloat(totalAmount);
+                if (newPaidAmount >= parseFloat(totalAmount)) {
                     newPaidAmount = parseFloat(totalAmount);
-                    newStatus = 'paid';
-                } else if (newPaidAmount === parseFloat(totalAmount)) {
                     newStatus = 'paid';
                 }
 
                 const updatedLoan = {
                     ...currentLoan,
                     paid_amount: newPaidAmount.toString(),
-                    overpayment_balance: newOverpaymentBalance.toString(),
                     status: newStatus,
                     payments: [...(currentLoan.payments || []), payment]
                 };
@@ -245,12 +238,6 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
         };
     };
 
-    const getRemainingAmount = (loan: Loan) => {
-        const { totalAmount } = calculateCompoundInterest(loan);
-        const remaining = parseFloat(totalAmount) - parseFloat(loan.paid_amount);
-        return remaining > 0 ? remaining.toFixed(2) : '0.00';
-    };
-    
     return (
         <AuthenticatedLayout
             header={
@@ -312,10 +299,8 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                             <TableHead>End Date</TableHead>
                             <TableHead>Compounding</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Total Amount</TableHead>
+                            <TableHead>Total Balance</TableHead>
                             <TableHead>Paid Amount</TableHead>
-                            <TableHead>Remaining</TableHead>
-                            <TableHead>Overpayment</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
                         </TableHeader>
@@ -337,10 +322,8 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                                 <TableCell>{loan.end_date}</TableCell>
                                 <TableCell>{loan.compounding_frequency}</TableCell>
                                 <TableCell>{loan.status}</TableCell>
-                                <TableCell>{appCurrency.symbol}{parseFloat(loan.total_amount).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{parseFloat(loan.total_balance).toFixed(2)}</TableCell>
                                 <TableCell>{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
-                                <TableCell>{appCurrency.symbol}{parseFloat(loan.remaining_amount).toFixed(2)}</TableCell>
-                                <TableCell>{appCurrency.symbol}{parseFloat(loan.overpayment_balance).toFixed(2)}</TableCell>
                                 <TableCell className="flex">
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
                                     <Edit className="h-4 w-4" />
