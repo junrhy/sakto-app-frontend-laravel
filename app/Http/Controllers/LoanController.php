@@ -35,11 +35,13 @@ class LoanController extends Controller
 
             $loans = $response->json()['data']['loans'];
             $payments = $response->json()['data']['loan_payments'];
+            $bills = $response->json()['data']['loan_bills'];
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Loan', [
                 'initialLoans' => $loans,
                 'initialPayments' => $payments,
+                'initialBills' => $bills,
                 'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
