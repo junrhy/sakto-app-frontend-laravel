@@ -75,6 +75,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
     const [billDueDate, setBillDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [paymentError, setPaymentError] = useState<string>("");
     const [dateError, setDateError] = useState<string>("");
+    const [bills, setBills] = useState<Bill[]>([]);
 
     const handleAddLoan = () => {
         setCurrentLoan(null);
@@ -257,9 +258,15 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
         setIsPaymentHistoryDialogOpen(true);
     };
 
-    const handleShowBillHistory = (loan: Loan) => {
-        setCurrentLoan(loan);
-        setIsBillHistoryDialogOpen(true);
+    const handleShowBillHistory = async (loan: Loan) => {
+        try {
+            const response = await axios.get(`/loan/${loan.id}/bills`);
+            setBills(response.data.bills);
+            setCurrentLoan(loan);
+            setIsBillHistoryDialogOpen(true);
+        } catch (error) {
+            console.error('Error fetching bills:', error);
+        }
     };
 
     const calculateCompoundInterest = (loan: Loan) => {
@@ -314,12 +321,15 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                     due_date: billDueDate,
                 });
 
+                // Fetch updated bills
+                const billsResponse = await axios.get(`/loan/${currentLoan.id}/bills`);
+                setBills(billsResponse.data.bills);
+
                 // Close dialog and reset state
                 setIsCreateBillDialogOpen(false);
                 setCurrentLoan(null);
                 setBillDueDate(new Date().toISOString().split('T')[0]);
 
-                // You might want to refresh the loan data here
                 console.log('Bill created successfully');
             } catch (error) {
                 console.error('Error creating bill:', error);
@@ -369,88 +379,130 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                     </div>
                     <Table>
                         <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[50px]">
-                            <Checkbox
-                                checked={selectedLoans.length === paginatedLoans.length}
-                                onCheckedChange={(checked) => {
-                                if (checked) {
-                                    setSelectedLoans(paginatedLoans.map(loan => loan.id));
-                                } else {
-                                    setSelectedLoans([]);
-                                }
-                                }}
-                            />
-                            </TableHead>
-                            <TableHead>Borrower Name</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Interest Rate</TableHead>
-                            <TableHead>Start Date</TableHead>
-                            <TableHead>End Date</TableHead>
-                            <TableHead>Compounding</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Total Interest</TableHead>
-                            <TableHead>Total Balance</TableHead>
-                            <TableHead>Total Paid</TableHead>
-                            <TableHead>Total Remaining</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
+                            <TableRow>
+                                <TableHead className="w-[50px]">
+                                    <Checkbox
+                                        checked={selectedLoans.length === paginatedLoans.length}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) {
+                                                setSelectedLoans(paginatedLoans.map(loan => loan.id));
+                                            } else {
+                                                setSelectedLoans([]);
+                                            }
+                                        }}
+                                    />
+                                </TableHead>
+                                <TableHead>Borrower Details</TableHead>
+                                <TableHead>Loan Terms</TableHead>
+                                <TableHead>Duration</TableHead>
+                                <TableHead>Financial Details</TableHead>
+                                <TableHead>Payment Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {paginatedLoans.map((loan) => {
-                            const { interestEarned } = calculateCompoundInterest(loan);
-                            const totalRemaining = (parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)).toFixed(2);
-                            return (
-                            <TableRow key={loan.id}>
-                                <TableCell>
-                                <Checkbox
-                                    checked={selectedLoans.includes(loan.id)}
-                                    onCheckedChange={() => toggleLoanSelection(loan.id)}
-                                />
-                                </TableCell>
-                                <TableCell>{loan.borrower_name}</TableCell>
-                                <TableCell>{appCurrency.symbol}{parseFloat(loan.amount).toFixed(2)}</TableCell>
-                                <TableCell>{parseFloat(loan.interest_rate)}%</TableCell>
-                                <TableCell>{loan.start_date}</TableCell>
-                                <TableCell>{loan.end_date}</TableCell>
-                                <TableCell>{loan.compounding_frequency}</TableCell>
-                                <TableCell>{loan.status}</TableCell>
-                                <TableCell>{appCurrency.symbol}{interestEarned}</TableCell>
-                                <TableCell>{appCurrency.symbol}{parseFloat(loan.total_balance).toFixed(2)}</TableCell>
-                                <TableCell>{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
-                                <TableCell>{appCurrency.symbol}{totalRemaining}</TableCell>
-                                <TableCell className="flex">
-                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="destructive" size="sm" className="mr-2" onClick={() => handleDeleteLoan(loan.id)}>
-                                    <Trash className="h-4 w-4" />
-                                </Button>
-                                {(parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)) > 0 && (
-                                    <Button variant="default" size="sm" className="mr-2" onClick={() => handlePayment(loan)}>
-                                        <span className="flex items-center">
-                                            Pay
-                                        </span>
-                                    </Button>
-                                )}
-                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowPaymentHistory(loan)}>
-                                    <History className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                    variant="default" 
-                                    size="sm" 
-                                    className="mr-2 bg-black hover:bg-gray-800" 
-                                    onClick={() => handleCreateBill(loan)}
-                                >
-                                    Bill
-                                </Button>
-                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowBillHistory(loan)}>
-                                    <Receipt className="h-4 w-4" />
-                                </Button>
-                                </TableCell>
-                            </TableRow>
-                            );
-                        })}
+                            {paginatedLoans.map((loan) => {
+                                const { interestEarned } = calculateCompoundInterest(loan);
+                                const totalRemaining = (parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)).toFixed(2);
+                                return (
+                                    <TableRow key={loan.id}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedLoans.includes(loan.id)}
+                                                onCheckedChange={() => toggleLoanSelection(loan.id)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <p className="font-medium">{loan.borrower_name}</p>
+                                                <p className="text-sm text-gray-500">ID: {loan.client_identifier}</p>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <p className="font-medium">{appCurrency.symbol}{parseFloat(loan.amount).toFixed(2)}</p>
+                                                <p className="text-sm text-gray-500">{parseFloat(loan.interest_rate)}% ({loan.compounding_frequency})</p>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <p className="text-sm">Start: {new Date(loan.start_date).toLocaleDateString()}</p>
+                                                <p className="text-sm">End: {new Date(loan.end_date).toLocaleDateString()}</p>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-sm">
+                                                    <span>Total Balance:</span>
+                                                    <span className="font-medium">{appCurrency.symbol}{parseFloat(loan.total_balance).toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span>Interest:</span>
+                                                    <span className="font-medium">{appCurrency.symbol}{interestEarned}</span>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${
+                                                        loan.status === 'active' ? 'bg-green-500' :
+                                                        loan.status === 'paid' ? 'bg-blue-500' :
+                                                        'bg-red-500'
+                                                    }`} />
+                                                    <span className="capitalize text-sm">{loan.status}</span>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between text-sm">
+                                                        <span>Paid:</span>
+                                                        <span className="text-green-600">{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm">
+                                                        <span>Remaining:</span>
+                                                        <span className="text-red-600">{appCurrency.symbol}{totalRemaining}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="outline" size="sm" onClick={() => handleEditLoan(loan)}>
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="destructive" size="sm" onClick={() => handleDeleteLoan(loan.id)}>
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                                {(parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)) > 0 && (
+                                                    <Button variant="default" size="sm" onClick={() => handlePayment(loan)}>
+                                                        <span className="ml-1">Pay</span>
+                                                    </Button>
+                                                )}
+                                                <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(loan)}>
+                                                    <History className="h-4 w-4" />
+                                                    <span className="ml-1">Payment</span>
+                                                </Button>
+                                                <Button 
+                                                    variant="default" 
+                                                    size="sm" 
+                                                    className="bg-black hover:bg-gray-800" 
+                                                    onClick={() => handleCreateBill(loan)}
+                                                >
+                                                    <span className="ml-1">Bill</span>
+                                                </Button>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => handleShowBillHistory(loan)}
+                                                    className="bg-gray-100 hover:bg-gray-200"
+                                                >
+                                                    <History className="h-4 w-4" />
+                                                    <span className="ml-1">Bill</span>
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                     <div className="flex justify-between items-center mt-4">
@@ -689,9 +741,9 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                 </Dialog>
 
                 <Dialog open={isBillHistoryDialogOpen} onOpenChange={setIsBillHistoryDialogOpen}>
-                    <DialogContent>
+                    <DialogContent className="max-w-3xl">
                         <DialogHeader>
-                            <DialogTitle>Bill History</DialogTitle>
+                            <DialogTitle>Bill History - {currentLoan?.borrower_name}</DialogTitle>
                         </DialogHeader>
                         <Table>
                             <TableHeader>
@@ -704,13 +756,41 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow>
-                                    <TableCell>No bill history available</TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell></TableCell>
-                                </TableRow>
+                                {bills.length > 0 ? (
+                                    bills.map((bill) => (
+                                        <TableRow key={bill.id}>
+                                            <TableCell>
+                                                {new Date(bill.due_date).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                {appCurrency.symbol}{bill.principal_amount.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {appCurrency.symbol}{bill.interest_amount.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {appCurrency.symbol}{bill.total_amount.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                    bill.status === 'paid' 
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : bill.status === 'overdue'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                    {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
+                                                </span>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center py-4">
+                                            No bills found for this loan
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                         <DialogFooter>
