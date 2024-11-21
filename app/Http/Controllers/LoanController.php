@@ -34,10 +34,12 @@ class LoanController extends Controller
             }
 
             $loans = $response->json()['data']['loans'];
+            $payments = $response->json()['data']['loan_payments'];
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Loan', [
                 'initialLoans' => $loans,
+                'initialPayments' => $payments,
                 'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
@@ -147,18 +149,20 @@ class LoanController extends Controller
     public function recordPayment(Request $request, string $id)
     {
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:0'
+            'amount' => 'required|numeric|min:0',
+            'payment_date' => 'required|date'
         ]);
 
         try {
+            $validated['client_identifier'] = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/lending/record-payment/{$id}", $validated);
+                ->post("{$this->apiUrl}/loan-payments/{$id}", $validated);
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return response()->json(['success' => true]);
+            return response()->json($response->json());
         } catch (\Exception $e) {
             Log::error('Error recording payment: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to record payment.'], 500);
