@@ -46,10 +46,13 @@ interface Bill {
     id: number;
     loan_id: number;
     due_date: string;
-    principal_amount: number;
-    interest_amount: number;
-    total_amount: number;
+    principal: string;
+    interest: string;
+    total_amount: string;
     status: 'pending' | 'paid' | 'overdue';
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
 }
 
 const formatAmount = (amount: string | number, currency: any): string => {
@@ -59,11 +62,10 @@ const formatAmount = (amount: string | number, currency: any): string => {
     return `${currency.symbol}${parts.join('.')}`;
 };
 
-export default function Loan({ initialLoans, initialPayments, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], appCurrency: any }) {
-    console.log('Initial Payments:', initialPayments);
-    console.log('Initial Loans:', initialLoans);
+export default function Loan({ initialLoans, initialPayments, initialBills, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], initialBills: Bill[], appCurrency: any }) {
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
+    const [bills, setBills] = useState<Bill[]>(initialBills);
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
@@ -82,7 +84,6 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
     const [billDueDate, setBillDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [paymentError, setPaymentError] = useState<string>("");
     const [dateError, setDateError] = useState<string>("");
-    const [bills, setBills] = useState<Bill[]>([]);
 
     const handleAddLoan = () => {
         setCurrentLoan(null);
@@ -224,25 +225,6 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                 const newPayment = response.data.payment;
                 
                 setPayments(prevPayments => [...prevPayments, newPayment]);
-
-                let newPaidAmount = parseFloat(currentLoan.paid_amount) + paymentAmountFloat;
-                let newStatus = currentLoan.status;
-
-                if (newPaidAmount >= parseFloat(currentLoan.total_interest)) {
-                    newPaidAmount = parseFloat(currentLoan.total_interest);
-                    newStatus = 'paid';
-                }
-
-                const updatedLoan = {
-                    ...currentLoan,
-                    paid_amount: newPaidAmount.toString(),
-                    status: newStatus,
-                    payments: [...(currentLoan.payments || []), newPayment]
-                };
-
-                setLoans(loans.map(loan => 
-                    loan.id === currentLoan.id ? updatedLoan : loan
-                ));
                 
                 setIsPaymentDialogOpen(false);
                 setCurrentLoan(null);
@@ -266,8 +248,6 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
 
     const handleShowBillHistory = async (loan: Loan) => {
         try {
-            const response = await axios.get(`/loan/${loan.id}/bills`);
-            setBills(response.data.bills);
             setCurrentLoan(loan);
             setIsBillHistoryDialogOpen(true);
         } catch (error) {
@@ -293,15 +273,11 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
             try {
                 const response = await axios.post(`/loan/bill/${currentLoan.id}`, {
                     due_date: billDueDate,
-                    total_amount: (parseFloat(currentLoan.total_interest) - parseFloat(currentLoan.paid_amount)).toString(),
+                    total_amount: (parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toString(),
                     principal: currentLoan.amount,
                     interest: currentLoan.total_interest,
-                    status: 'unpaid'
+                    status: 'pending'
                 });
-
-                // Fetch updated bills
-                const billsResponse = await axios.get(`/loan/bills/${currentLoan.id}`);
-                setBills(billsResponse.data.bills);
 
                 // Close dialog and reset state
                 setIsCreateBillDialogOpen(false);
@@ -726,44 +702,60 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                     <TableHead>Interest</TableHead>
                                     <TableHead>Total Amount</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Created At</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {bills.length > 0 ? (
-                                    bills.map((bill) => (
-                                        <TableRow key={bill.id}>
-                                            <TableCell>
-                                                {new Date(bill.due_date).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatAmount(bill.principal_amount, appCurrency)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatAmount(bill.interest_amount, appCurrency)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {formatAmount(bill.total_amount, appCurrency)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    bill.status === 'paid' 
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : bill.status === 'overdue'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                    {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
-                                                </span>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-4">
-                                            No bills found for this loan
-                                        </TableCell>
-                                    </TableRow>
-                                )}
+                                {(() => {
+                                    const filteredBills = currentLoan 
+                                        ? bills.filter(bill => bill.loan_id === currentLoan.id)
+                                        : [];
+
+                                    if (filteredBills.length === 0) {
+                                        return (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center py-4">
+                                                    No bills found for this loan
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    }
+
+                                    return filteredBills.map((bill) => {
+                                        const status = bill.status || 'pending';
+                                        const statusColor = 
+                                            status === 'paid' ? 'bg-green-100 text-green-800' :
+                                            status === 'overdue' ? 'bg-red-100 text-red-800' :
+                                            'bg-yellow-100 text-yellow-800';
+
+                                        const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1);
+
+                                        return (
+                                            <TableRow key={bill.id}>
+                                                <TableCell>
+                                                    {new Date(bill.due_date).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatAmount(bill.principal, appCurrency)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatAmount(bill.interest, appCurrency)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatAmount(bill.total_amount, appCurrency)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
+                                                        {formattedStatus}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {new Date(bill.created_at).toLocaleString()}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    });
+                                })()}
                             </TableBody>
                         </Table>
                         <DialogFooter>
@@ -869,7 +861,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                                     ? 'bg-red-100 text-red-800'
                                                     : 'bg-blue-100 text-blue-800'
                                             }`}>
-                                                {currentLoan.status.charAt(0).toUpperCase() + currentLoan.status.slice(1)}
+                                                {(currentLoan.status || 'active').charAt(0).toUpperCase() + (currentLoan.status || 'active').slice(1)}
                                             </span>
                                         </div>
                                     </div>
