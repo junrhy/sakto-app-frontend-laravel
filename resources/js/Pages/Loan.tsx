@@ -426,11 +426,11 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                 <Button variant="destructive" size="sm" className="mr-2" onClick={() => handleDeleteLoan(loan.id)}>
                                     <Trash className="h-4 w-4" />
                                 </Button>
-                                {loan.status === 'active' && (
+                                {(parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)) > 0 && (
                                     <Button variant="default" size="sm" className="mr-2" onClick={() => handlePayment(loan)}>
-                                    <span className="flex items-center">
-                                        Pay
-                                    </span>
+                                        <span className="flex items-center">
+                                            Pay
+                                        </span>
                                     </Button>
                                 )}
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowPaymentHistory(loan)}>
