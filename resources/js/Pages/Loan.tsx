@@ -14,7 +14,8 @@ import axios from 'axios';
 
 interface Payment {
     id: number;
-    date: string;
+    loan_id: number;
+    payment_date: string;
     amount: number;
 }
 
@@ -27,6 +28,7 @@ interface Loan {
     end_date: string;
     status: 'active' | 'paid' | 'defaulted';
     compounding_frequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
+    total_interest: string;
     total_balance: string;
     paid_amount: string;
     client_identifier: string;
@@ -40,8 +42,11 @@ interface DeleteWarningInfo {
     totalAmount: number;
 }
 
-export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan[], appCurrency: any }) {
+export default function Loan({ initialLoans, initialPayments, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], appCurrency: any }) {
+    console.log('Initial Payments:', initialPayments);
+    console.log('Initial Loans:', initialLoans);
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
+    const [payments, setPayments] = useState<Payment[]>(initialPayments);
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
@@ -55,6 +60,7 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [loanToDelete, setLoanToDelete] = useState<number | null>(null);
     const [isDeleteSelectedDialogOpen, setIsDeleteSelectedDialogOpen] = useState(false);
+    const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
     const handleAddLoan = () => {
         setCurrentLoan(null);
@@ -115,7 +121,7 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                 const response = await (currentLoan.id ? 
                     axios.put(`/loan/${currentLoan.id}`, loanData) :
                     axios.post('/loan', loanData));
-                
+
                 const savedLoan = response.data;
                 
                 if (currentLoan.id) {
@@ -143,8 +149,8 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
 
     const filteredLoans = useMemo(() => {
         return loans.filter(loan =>
-        loan.borrower_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.status.toLowerCase().includes(searchTerm.toLowerCase())
+            (loan.borrower_name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (loan.status?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
         );
     }, [loans, searchTerm]);
 
@@ -165,12 +171,16 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
         if (currentLoan && paymentAmount) {
             try {
                 const response = await axios.post(`/loan/${currentLoan.id}/payment`, {
-                    amount: parseFloat(paymentAmount)
+                    amount: parseFloat(paymentAmount),
+                    payment_date: paymentDate
                 });
 
-                const payment = response.data.payment;
+                const newPayment = response.data.payment;
+                
+                setPayments(prevPayments => [...prevPayments, newPayment]);
+                
                 const { interestEarned } = calculateCompoundInterest(currentLoan);
-                let newPaidAmount = parseFloat(currentLoan.paid_amount) + payment.amount;
+                let newPaidAmount = parseFloat(currentLoan.paid_amount) + parseFloat(paymentAmount);
                 let newStatus = currentLoan.status;
 
                 if (newPaidAmount >= parseFloat(interestEarned)) {
@@ -182,7 +192,7 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                     ...currentLoan,
                     paid_amount: newPaidAmount.toString(),
                     status: newStatus,
-                    payments: [...(currentLoan.payments || []), payment]
+                    payments: [...(currentLoan.payments || []), newPayment]
                 };
 
                 setLoans(loans.map(loan => 
@@ -192,6 +202,8 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                 setIsPaymentDialogOpen(false);
                 setCurrentLoan(null);
                 setPaymentAmount("");
+                
+                console.log('Payment recorded successfully');
             } catch (error) {
                 console.error('Error recording payment:', error);
                 // Add error handling here
@@ -200,6 +212,8 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
     };
 
     const handleShowPaymentHistory = (loan: Loan) => {
+        console.log('Showing payment history for loan:', loan);
+        console.log('Available payments:', payments);
         setCurrentLoan(loan);
         setIsPaymentHistoryDialogOpen(true);
     };
@@ -346,7 +360,9 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                                 </Button>
                                 {loan.status === 'active' && (
                                     <Button variant="default" size="sm" className="mr-2" onClick={() => handlePayment(loan)}>
-                                    <DollarSign className="h-4 w-4" />
+                                    <span className="flex items-center">
+                                        Pay
+                                    </span>
                                     </Button>
                                 )}
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowPaymentHistory(loan)}>
@@ -506,6 +522,16 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                             className="col-span-3"
                         />
                         </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="paymentDate" className="text-right">Payment Date</Label>
+                            <Input
+                                id="paymentDate"
+                                type="date"
+                                value={paymentDate}
+                                onChange={(e) => setPaymentDate(e.target.value)}
+                                className="col-span-3"
+                            />
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button onClick={confirmPayment}>Confirm Payment</Button>
@@ -515,28 +541,46 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
 
                 <Dialog open={isPaymentHistoryDialogOpen} onOpenChange={setIsPaymentHistoryDialogOpen}>
                     <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Payment History</DialogTitle>
-                    </DialogHeader>
-                    <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Amount</TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {currentLoan?.payments?.map((payment) => (
-                            <TableRow key={payment.id}>
-                            <TableCell>{payment.date}</TableCell>
-                            <TableCell>{appCurrency.symbol}{payment.amount.toFixed(2)}</TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                    <DialogFooter>
-                        <Button onClick={() => setIsPaymentHistoryDialogOpen(false)}>Close</Button>
-                    </DialogFooter>
+                        <DialogHeader>
+                            <DialogTitle>Payment History - {currentLoan?.borrower_name}</DialogTitle>
+                        </DialogHeader>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {payments && payments.length > 0 ? (
+                                    payments
+                                        .filter(payment => currentLoan && payment.loan_id === currentLoan.id)
+                                        .map((payment) => (
+                                            <TableRow key={payment.id}>
+                                                <TableCell>
+                                                    {payment.payment_date ? 
+                                                        new Date(payment.payment_date).toLocaleDateString() : 
+                                                        'N/A'
+                                                    }
+                                                </TableCell>
+                                                <TableCell>
+                                                    {appCurrency.symbol}
+                                                    {payment.amount}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={2} className="text-center">
+                                            No payment records found
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                        <DialogFooter>
+                            <Button onClick={() => setIsPaymentHistoryDialogOpen(false)}>Close</Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
 
