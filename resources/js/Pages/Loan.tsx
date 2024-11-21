@@ -35,6 +35,11 @@ interface Loan {
     payments?: Payment[];
 }
 
+interface DeleteWarningInfo {
+    activeLoans: number;
+    totalAmount: number;
+}
+
 export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan[], appCurrency: any }) {
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
@@ -164,12 +169,12 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                 });
 
                 const payment = response.data.payment;
-                const { totalAmount } = calculateCompoundInterest(currentLoan);
+                const { interestEarned } = calculateCompoundInterest(currentLoan);
                 let newPaidAmount = parseFloat(currentLoan.paid_amount) + payment.amount;
                 let newStatus = currentLoan.status;
 
-                if (newPaidAmount >= parseFloat(totalAmount)) {
-                    newPaidAmount = parseFloat(totalAmount);
+                if (newPaidAmount >= parseFloat(interestEarned)) {
+                    newPaidAmount = parseFloat(interestEarned);
                     newStatus = 'paid';
                 }
 
@@ -229,12 +234,18 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                 n = 12; // Default to monthly
         }
 
-        const amount = principal * Math.pow((1 + rate / n), n * timeInYears);
-        const interest = amount - principal;
+        const interest = parseFloat(loan.amount) * parseFloat(loan.interest_rate) / 100;
 
         return {
-            totalAmount: amount.toFixed(2),
             interestEarned: interest.toFixed(2)
+        };
+    };
+
+    const getDeleteWarningInfo = (loanIds: number[]): DeleteWarningInfo => {
+        const selectedLoanDetails = loans.filter(loan => loanIds.includes(loan.id));
+        return {
+            activeLoans: selectedLoanDetails.filter(loan => loan.status === 'active').length,
+            totalAmount: selectedLoanDetails.reduce((sum, loan) => sum + parseFloat(loan.amount), 0)
         };
     };
 
@@ -299,14 +310,15 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                             <TableHead>End Date</TableHead>
                             <TableHead>Compounding</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Total Interest</TableHead>
                             <TableHead>Total Balance</TableHead>
-                            <TableHead>Paid Amount</TableHead>
+                            <TableHead>Total Paid</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
                         {paginatedLoans.map((loan) => {
-                            const { totalAmount } = calculateCompoundInterest(loan);
+                            const { interestEarned } = calculateCompoundInterest(loan);
                             return (
                             <TableRow key={loan.id}>
                                 <TableCell>
@@ -322,6 +334,7 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                                 <TableCell>{loan.end_date}</TableCell>
                                 <TableCell>{loan.compounding_frequency}</TableCell>
                                 <TableCell>{loan.status}</TableCell>
+                                <TableCell>{appCurrency.symbol}{interestEarned}</TableCell>
                                 <TableCell>{appCurrency.symbol}{parseFloat(loan.total_balance).toFixed(2)}</TableCell>
                                 <TableCell>{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
                                 <TableCell className="flex">
@@ -578,12 +591,42 @@ export default function Loan({ initialLoans, appCurrency }: { initialLoans: Loan
                         <DialogHeader>
                             <DialogTitle>Confirm Delete Selected</DialogTitle>
                         </DialogHeader>
-                        <div className="py-4">
-                            <p>Are you sure you want to delete {selectedLoans.length} selected loans? This action cannot be undone.</p>
+                        <div className="py-4 space-y-4">
+                            <p className="text-red-600 font-semibold">Warning! This action cannot be undone.</p>
+                            {(() => {
+                                const { activeLoans, totalAmount } = getDeleteWarningInfo(selectedLoans);
+                                return (
+                                    <div className="space-y-2">
+                                        <p>You are about to delete:</p>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            <li><span className="font-semibold">{selectedLoans.length}</span> total loans</li>
+                                            {activeLoans > 0 && (
+                                                <li className="text-red-600">
+                                                    <span className="font-semibold">{activeLoans}</span> active loans
+                                                </li>
+                                            )}
+                                            <li>Total loan amount: <span className="font-semibold">
+                                                {appCurrency.symbol}{totalAmount.toFixed(2)}
+                                            </span></li>
+                                        </ul>
+                                        {activeLoans > 0 && (
+                                            <p className="text-red-600 text-sm">
+                                                ⚠️ Warning: You are about to delete active loans. Make sure all payments are properly recorded before proceeding.
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsDeleteSelectedDialogOpen(false)}>Cancel</Button>
-                            <Button variant="destructive" onClick={confirmDeleteSelectedLoans}>Delete</Button>
+                            <Button 
+                                variant="destructive" 
+                                onClick={confirmDeleteSelectedLoans}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                Delete {selectedLoans.length} Loans
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
