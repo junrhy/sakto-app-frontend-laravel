@@ -52,6 +52,13 @@ interface Bill {
     status: 'pending' | 'paid' | 'overdue';
 }
 
+const formatAmount = (amount: string | number, currency: any): string => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const parts = numAmount.toFixed(2).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, currency.thousands_separator);
+    return `${currency.symbol}${parts.join('.')}`;
+};
+
 export default function Loan({ initialLoans, initialPayments, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], appCurrency: any }) {
     console.log('Initial Payments:', initialPayments);
     console.log('Initial Loans:', initialLoans);
@@ -217,13 +224,12 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                 const newPayment = response.data.payment;
                 
                 setPayments(prevPayments => [...prevPayments, newPayment]);
-                
-                const { interestEarned } = calculateCompoundInterest(currentLoan);
+
                 let newPaidAmount = parseFloat(currentLoan.paid_amount) + paymentAmountFloat;
                 let newStatus = currentLoan.status;
 
-                if (newPaidAmount >= parseFloat(interestEarned)) {
-                    newPaidAmount = parseFloat(interestEarned);
+                if (newPaidAmount >= parseFloat(currentLoan.total_interest)) {
+                    newPaidAmount = parseFloat(currentLoan.total_interest);
                     newStatus = 'paid';
                 }
 
@@ -269,38 +275,6 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
         }
     };
 
-    const calculateCompoundInterest = (loan: Loan) => {
-        const principal = parseFloat(loan.amount);
-        const rate = parseFloat(loan.interest_rate) / 100;
-        const startDate = new Date(loan.start_date);
-        const endDate = new Date(loan.end_date);
-        const timeInYears = (endDate.getTime() - startDate.getTime()) / (365 * 24 * 60 * 60 * 1000);
-        
-        let n: number;
-        switch (loan.compounding_frequency) {
-            case 'daily':
-                n = 365;
-                break;
-            case 'monthly':
-                n = 12;
-                break;
-            case 'quarterly':
-                n = 4;
-                break;
-            case 'annually':
-                n = 1;
-                break;
-            default:
-                n = 12; // Default to monthly
-        }
-
-        const interest = parseFloat(loan.amount) * parseFloat(loan.interest_rate) / 100;
-
-        return {
-            interestEarned: interest.toFixed(2)
-        };
-    };
-
     const getDeleteWarningInfo = (loanIds: number[]): DeleteWarningInfo => {
         const selectedLoanDetails = loans.filter(loan => loanIds.includes(loan.id));
         return {
@@ -317,12 +291,16 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
     const confirmCreateBill = async () => {
         if (currentLoan) {
             try {
-                const response = await axios.post(`/loan/${currentLoan.id}/bill`, {
+                const response = await axios.post(`/loan/bill/${currentLoan.id}`, {
                     due_date: billDueDate,
+                    total_amount: (parseFloat(currentLoan.total_interest) - parseFloat(currentLoan.paid_amount)).toString(),
+                    principal: currentLoan.amount,
+                    interest: currentLoan.total_interest,
+                    status: 'unpaid'
                 });
 
                 // Fetch updated bills
-                const billsResponse = await axios.get(`/loan/${currentLoan.id}/bills`);
+                const billsResponse = await axios.get(`/loan/bills/${currentLoan.id}`);
                 setBills(billsResponse.data.bills);
 
                 // Close dialog and reset state
@@ -402,7 +380,6 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                         </TableHeader>
                         <TableBody>
                             {paginatedLoans.map((loan) => {
-                                const { interestEarned } = calculateCompoundInterest(loan);
                                 const totalRemaining = (parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)).toFixed(2);
                                 return (
                                     <TableRow key={loan.id}>
@@ -415,12 +392,11 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                         <TableCell>
                                             <div className="space-y-1">
                                                 <p className="font-medium">{loan.borrower_name}</p>
-                                                <p className="text-sm text-gray-500">ID: {loan.client_identifier}</p>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
-                                                <p className="font-medium">{appCurrency.symbol}{parseFloat(loan.amount).toFixed(2)}</p>
+                                                <p className="font-medium">{formatAmount(loan.amount, appCurrency)}</p>
                                                 <p className="text-sm text-gray-500">{parseFloat(loan.interest_rate)}% ({loan.compounding_frequency})</p>
                                             </div>
                                         </TableCell>
@@ -434,11 +410,11 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                             <div className="space-y-1">
                                                 <div className="flex justify-between text-sm">
                                                     <span>Total Balance:</span>
-                                                    <span className="font-medium">{appCurrency.symbol}{parseFloat(loan.total_balance).toFixed(2)}</span>
+                                                    <span className="font-medium">{formatAmount(loan.total_balance, appCurrency)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-sm">
                                                     <span>Interest:</span>
-                                                    <span className="font-medium">{appCurrency.symbol}{interestEarned}</span>
+                                                    <span className="font-medium">{formatAmount(loan.total_interest, appCurrency)}</span>
                                                 </div>
                                             </div>
                                         </TableCell>
@@ -455,11 +431,11 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-sm">
                                                         <span>Paid:</span>
-                                                        <span className="text-green-600">{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</span>
+                                                        <span className="text-green-600">{formatAmount(loan.paid_amount, appCurrency)}</span>
                                                     </div>
                                                     <div className="flex justify-between text-sm">
                                                         <span>Remaining:</span>
-                                                        <span className="text-red-600">{appCurrency.symbol}{totalRemaining}</span>
+                                                        <span className="text-red-600">{formatAmount(totalRemaining, appCurrency)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -493,7 +469,6 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                                     variant="outline" 
                                                     size="sm" 
                                                     onClick={() => handleShowBillHistory(loan)}
-                                                    className="bg-gray-100 hover:bg-gray-200"
                                                 >
                                                     <History className="h-4 w-4" />
                                                     <span className="ml-1">Bill</span>
@@ -683,8 +658,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label className="text-right">Remaining Balance</Label>
                                 <div className="col-span-3">
-                                    {appCurrency.symbol}
-                                    {(parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toFixed(2)}
+                                    {formatAmount(parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount), appCurrency)}
                                 </div>
                             </div>
                         )}
@@ -720,8 +694,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                                     }
                                                 </TableCell>
                                                 <TableCell>
-                                                    {appCurrency.symbol}
-                                                    {payment.amount}
+                                                    {formatAmount(payment.amount, appCurrency)}
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -763,13 +736,13 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                                 {new Date(bill.due_date).toLocaleDateString()}
                                             </TableCell>
                                             <TableCell>
-                                                {appCurrency.symbol}{bill.principal_amount.toFixed(2)}
+                                                {formatAmount(bill.principal_amount, appCurrency)}
                                             </TableCell>
                                             <TableCell>
-                                                {appCurrency.symbol}{bill.interest_amount.toFixed(2)}
+                                                {formatAmount(bill.interest_amount, appCurrency)}
                                             </TableCell>
                                             <TableCell>
-                                                {appCurrency.symbol}{bill.total_amount.toFixed(2)}
+                                                {formatAmount(bill.total_amount, appCurrency)}
                                             </TableCell>
                                             <TableCell>
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -834,7 +807,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                                 </li>
                                             )}
                                             <li>Total loan amount: <span className="font-semibold">
-                                                {appCurrency.symbol}{totalAmount.toFixed(2)}
+                                                {formatAmount(totalAmount, appCurrency)}
                                             </span></li>
                                         </ul>
                                         {activeLoans > 0 && (
@@ -876,12 +849,31 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                 />
                             </div>
                             {currentLoan && (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label className="text-right">Loan Amount</Label>
-                                    <div className="col-span-3">
-                                        {appCurrency.symbol}{parseFloat(currentLoan.amount).toFixed(2)}
+                                <>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label className="text-right">Remaining Balance</Label>
+                                        <div className="col-span-3">
+                                            {formatAmount(
+                                                parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount),
+                                                appCurrency
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label className="text-right">Status</Label>
+                                        <div className="col-span-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                currentLoan.status === 'active' 
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : currentLoan.status === 'defaulted'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-blue-100 text-blue-800'
+                                            }`}>
+                                                {currentLoan.status.charAt(0).toUpperCase() + currentLoan.status.slice(1)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </div>
                         <DialogFooter>
