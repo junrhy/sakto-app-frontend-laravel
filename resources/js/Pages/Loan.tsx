@@ -74,6 +74,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
     const [isCreateBillDialogOpen, setIsCreateBillDialogOpen] = useState(false);
     const [billDueDate, setBillDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [paymentError, setPaymentError] = useState<string>("");
+    const [dateError, setDateError] = useState<string>("");
 
     const handleAddLoan = () => {
         setCurrentLoan(null);
@@ -124,6 +125,18 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
     const handleSaveLoan = async (e: React.FormEvent) => {
         e.preventDefault();
         if (currentLoan) {
+            // Clear any previous error
+            setDateError("");
+
+            // Validate dates
+            const startDate = new Date(currentLoan.start_date);
+            const endDate = new Date(currentLoan.end_date);
+
+            if (endDate < startDate) {
+                setDateError("End date cannot be earlier than start date");
+                return;
+            }
+
             try {
                 const loanData = {
                     ...currentLoan,
@@ -511,22 +524,33 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="startDate" className="text-right">Start Date</Label>
                             <Input
-                            id="startDate"
-                            type="date"
-                            value={currentLoan?.start_date || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, start_date: e.target.value })}
-                            className="col-span-3"
+                                id="startDate"
+                                type="date"
+                                value={currentLoan?.start_date || ''}
+                                onChange={(e) => {
+                                    setDateError("");
+                                    setCurrentLoan({ ...currentLoan!, start_date: e.target.value });
+                                }}
+                                className="col-span-3"
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="endDate" className="text-right">End Date</Label>
-                            <Input
-                            id="endDate"
-                            type="date"
-                            value={currentLoan?.end_date || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, end_date: e.target.value })}
-                            className="col-span-3"
-                            />
+                            <div className="col-span-3 space-y-1">
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    value={currentLoan?.end_date || ''}
+                                    onChange={(e) => {
+                                        setDateError("");
+                                        setCurrentLoan({ ...currentLoan!, end_date: e.target.value });
+                                    }}
+                                    className={dateError ? "border-red-500" : ""}
+                                />
+                                {dateError && (
+                                    <p className="text-sm text-red-500">{dateError}</p>
+                                )}
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="compoundingFrequency" className="text-right">Compounding Frequency</Label>
