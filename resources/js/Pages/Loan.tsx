@@ -42,6 +42,16 @@ interface DeleteWarningInfo {
     totalAmount: number;
 }
 
+interface Bill {
+    id: number;
+    loan_id: number;
+    due_date: string;
+    principal_amount: number;
+    interest_amount: number;
+    total_amount: number;
+    status: 'pending' | 'paid' | 'overdue';
+}
+
 export default function Loan({ initialLoans, initialPayments, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], appCurrency: any }) {
     console.log('Initial Payments:', initialPayments);
     console.log('Initial Loans:', initialLoans);
@@ -61,6 +71,9 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
     const [loanToDelete, setLoanToDelete] = useState<number | null>(null);
     const [isDeleteSelectedDialogOpen, setIsDeleteSelectedDialogOpen] = useState(false);
     const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [isCreateBillDialogOpen, setIsCreateBillDialogOpen] = useState(false);
+    const [billDueDate, setBillDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [paymentError, setPaymentError] = useState<string>("");
 
     const handleAddLoan = () => {
         setCurrentLoan(null);
@@ -169,9 +182,21 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
 
     const confirmPayment = async () => {
         if (currentLoan && paymentAmount) {
+            const remainingBalance = parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount);
+            const paymentAmountFloat = parseFloat(paymentAmount);
+
+            // Clear any previous error
+            setPaymentError("");
+
+            // Validate payment amount
+            if (paymentAmountFloat > remainingBalance) {
+                setPaymentError(`Payment amount cannot exceed remaining balance of ${appCurrency.symbol}${remainingBalance.toFixed(2)}`);
+                return;
+            }
+
             try {
                 const response = await axios.post(`/loan/${currentLoan.id}/payment`, {
-                    amount: parseFloat(paymentAmount),
+                    amount: paymentAmountFloat,
                     payment_date: paymentDate
                 });
 
@@ -180,7 +205,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                 setPayments(prevPayments => [...prevPayments, newPayment]);
                 
                 const { interestEarned } = calculateCompoundInterest(currentLoan);
-                let newPaidAmount = parseFloat(currentLoan.paid_amount) + parseFloat(paymentAmount);
+                let newPaidAmount = parseFloat(currentLoan.paid_amount) + paymentAmountFloat;
                 let newStatus = currentLoan.status;
 
                 if (newPaidAmount >= parseFloat(interestEarned)) {
@@ -202,6 +227,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                 setIsPaymentDialogOpen(false);
                 setCurrentLoan(null);
                 setPaymentAmount("");
+                setPaymentError("");
                 
                 console.log('Payment recorded successfully');
             } catch (error) {
@@ -261,6 +287,32 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
             activeLoans: selectedLoanDetails.filter(loan => loan.status === 'active').length,
             totalAmount: selectedLoanDetails.reduce((sum, loan) => sum + parseFloat(loan.amount), 0)
         };
+    };
+
+    const handleCreateBill = (loan: Loan) => {
+        setCurrentLoan(loan);
+        setIsCreateBillDialogOpen(true);
+    };
+
+    const confirmCreateBill = async () => {
+        if (currentLoan) {
+            try {
+                const response = await axios.post(`/loan/${currentLoan.id}/bill`, {
+                    due_date: billDueDate,
+                });
+
+                // Close dialog and reset state
+                setIsCreateBillDialogOpen(false);
+                setCurrentLoan(null);
+                setBillDueDate(new Date().toISOString().split('T')[0]);
+
+                // You might want to refresh the loan data here
+                console.log('Bill created successfully');
+            } catch (error) {
+                console.error('Error creating bill:', error);
+                // Add error handling here
+            }
+        }
     };
 
     return (
@@ -327,12 +379,14 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                             <TableHead>Total Interest</TableHead>
                             <TableHead>Total Balance</TableHead>
                             <TableHead>Total Paid</TableHead>
+                            <TableHead>Total Remaining</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
                         {paginatedLoans.map((loan) => {
                             const { interestEarned } = calculateCompoundInterest(loan);
+                            const totalRemaining = (parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)).toFixed(2);
                             return (
                             <TableRow key={loan.id}>
                                 <TableCell>
@@ -351,6 +405,7 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                 <TableCell>{appCurrency.symbol}{interestEarned}</TableCell>
                                 <TableCell>{appCurrency.symbol}{parseFloat(loan.total_balance).toFixed(2)}</TableCell>
                                 <TableCell>{appCurrency.symbol}{parseFloat(loan.paid_amount).toFixed(2)}</TableCell>
+                                <TableCell>{appCurrency.symbol}{totalRemaining}</TableCell>
                                 <TableCell className="flex">
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditLoan(loan)}>
                                     <Edit className="h-4 w-4" />
@@ -367,6 +422,14 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                 )}
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowPaymentHistory(loan)}>
                                     <History className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                    variant="default" 
+                                    size="sm" 
+                                    className="mr-2 bg-black hover:bg-gray-800" 
+                                    onClick={() => handleCreateBill(loan)}
+                                >
+                                    Bill
                                 </Button>
                                 <Button variant="outline" size="sm" className="mr-2" onClick={() => handleShowBillHistory(loan)}>
                                     <Receipt className="h-4 w-4" />
@@ -518,10 +581,18 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                             id="paymentAmount"
                             type="number"
                             value={paymentAmount}
-                            onChange={(e) => setPaymentAmount(e.target.value)}
+                            onChange={(e) => {
+                                setPaymentAmount(e.target.value);
+                                setPaymentError(""); // Clear error when input changes
+                            }}
                             className="col-span-3"
                         />
                         </div>
+                        {paymentError && (
+                            <div className="col-span-4 text-red-500 text-sm">
+                                {paymentError}
+                            </div>
+                        )}
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="paymentDate" className="text-right">Payment Date</Label>
                             <Input
@@ -532,6 +603,15 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                                 className="col-span-3"
                             />
                         </div>
+                        {currentLoan && (
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Remaining Balance</Label>
+                                <div className="col-span-3">
+                                    {appCurrency.symbol}
+                                    {(parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toFixed(2)}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button onClick={confirmPayment}>Confirm Payment</Button>
@@ -671,6 +751,38 @@ export default function Loan({ initialLoans, initialPayments, appCurrency }: { i
                             >
                                 Delete {selectedLoans.length} Loans
                             </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isCreateBillDialogOpen} onOpenChange={setIsCreateBillDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Create Bill</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="billDueDate" className="text-right">Due Date</Label>
+                                <Input
+                                    id="billDueDate"
+                                    type="date"
+                                    value={billDueDate}
+                                    onChange={(e) => setBillDueDate(e.target.value)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                            {currentLoan && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label className="text-right">Loan Amount</Label>
+                                    <div className="col-span-3">
+                                        {appCurrency.symbol}{parseFloat(currentLoan.amount).toFixed(2)}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsCreateBillDialogOpen(false)}>Cancel</Button>
+                            <Button onClick={confirmCreateBill}>Create Bill</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
