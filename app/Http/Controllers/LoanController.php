@@ -168,4 +168,31 @@ class LoanController extends Controller
             return response()->json(['error' => 'Failed to record payment.'], 500);
         }
     }
+
+    public function getBills(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/loan-bills/{$id}?client_identifier={$clientIdentifier}");
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error getting bills: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get bills.'], 500);
+        }
+    }
+
+    public function createBill(Request $request, string $id)
+    {
+        try {
+            $request['client_identifier'] = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/loan-bills/{$id}", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error creating bill: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to create bill.'], 500);
+        }
+    }
 }

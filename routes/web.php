@@ -167,6 +167,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [LoanController::class, 'destroy']);
         Route::post('/bulk-delete', [LoanController::class, 'bulkDestroy']);
         Route::post('/{id}/payment', [LoanController::class, 'recordPayment']);
+        Route::get('/bills/{id}', [LoanController::class, 'getBills']);
+        Route::post('/bill/{id}', [LoanController::class, 'createBill']);
     });
 
     // Payroll routes
