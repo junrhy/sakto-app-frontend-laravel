@@ -57,10 +57,11 @@ interface Bill {
 
 interface LoanDuration {
     label: string;
-    days: number;
+    days: number | null;
 }
 
 const LOAN_DURATIONS: LoanDuration[] = [
+    { label: 'Custom', days: null },
     { label: '1 Week', days: 7 },
     { label: '2 Weeks', days: 14 },
     { label: '1 Month', days: 30 },
@@ -314,7 +315,9 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
         }
     };
 
-    const handleDurationChange = (days: number) => {
+    const handleDurationChange = (days: number | null) => {
+        if (days === null) return;
+        
         const startDate = new Date();
         const endDate = new Date();
         endDate.setDate(startDate.getDate() + days);
@@ -565,14 +568,25 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="duration" className="text-right">Duration</Label>
                             <Select
-                                onValueChange={(value) => handleDurationChange(parseInt(value))}
+                                value={(() => {
+                                    if (!currentLoan?.start_date || !currentLoan?.end_date) return '';
+                                    const startDate = new Date(currentLoan.start_date);
+                                    const endDate = new Date(currentLoan.end_date);
+                                    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+                                    const matchingDuration = LOAN_DURATIONS.find(d => d.days === diffDays);
+                                    return matchingDuration ? diffDays.toString() : 'null';
+                                })()}
+                                onValueChange={(value) => handleDurationChange(value === 'null' ? null : parseInt(value))}
                             >
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Select loan duration" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {LOAN_DURATIONS.map((duration) => (
-                                        <SelectItem key={duration.days} value={duration.days.toString()}>
+                                        <SelectItem 
+                                            key={duration.label} 
+                                            value={duration.days?.toString() ?? 'null'}
+                                        >
                                             {duration.label}
                                         </SelectItem>
                                     ))}
@@ -587,7 +601,10 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                 value={currentLoan?.start_date || ''}
                                 onChange={(e) => {
                                     setDateError("");
-                                    setCurrentLoan({ ...currentLoan!, start_date: e.target.value });
+                                    setCurrentLoan({ 
+                                        ...currentLoan!, 
+                                        start_date: e.target.value,
+                                    });
                                 }}
                                 className="col-span-3"
                             />
@@ -601,7 +618,10 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     value={currentLoan?.end_date || ''}
                                     onChange={(e) => {
                                         setDateError("");
-                                        setCurrentLoan({ ...currentLoan!, end_date: e.target.value });
+                                        setCurrentLoan({ 
+                                            ...currentLoan!, 
+                                            end_date: e.target.value,
+                                        });
                                     }}
                                     className={dateError ? "border-red-500" : ""}
                                 />
