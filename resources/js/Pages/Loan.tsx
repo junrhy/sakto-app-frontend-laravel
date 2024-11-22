@@ -36,6 +36,8 @@ interface Loan {
     created_at: string;
     updated_at: string;
     payments?: Payment[];
+    installment_frequency?: 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'annually' | null;
+    installment_amount?: string | null;
 }
 
 interface DeleteWarningInfo {
@@ -67,6 +69,12 @@ interface CreditScore {
     color: string;
 }
 
+interface InstallmentOption {
+    label: string;
+    value: 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'annually';
+    daysInterval: number;
+}
+
 const LOAN_DURATIONS: LoanDuration[] = [
     { label: 'Custom', days: null },
     { label: '1 Week', days: 7 },
@@ -83,6 +91,14 @@ const LOAN_DURATIONS: LoanDuration[] = [
     { label: '20 Years', days: 7300 },
     { label: '25 Years', days: 9125 },
     { label: '30 Years', days: 10950 },
+];
+
+const INSTALLMENT_OPTIONS: InstallmentOption[] = [
+    { label: 'Weekly', value: 'weekly', daysInterval: 7 },
+    { label: 'Bi-weekly', value: 'bi-weekly', daysInterval: 14 },
+    { label: 'Monthly', value: 'monthly', daysInterval: 30 },
+    { label: 'Quarterly', value: 'quarterly', daysInterval: 90 },
+    { label: 'Annually', value: 'annually', daysInterval: 365 },
 ];
 
 const formatAmount = (amount: string | number, currency: any): string => {
@@ -143,6 +159,20 @@ const calculateCreditScore = (loan: Loan, payments: Payment[]): CreditScore => {
     return { score, label, color };
 };
 
+const calculateInstallmentAmount = (
+    totalAmount: number,
+    startDate: string,
+    endDate: string,
+    frequency: InstallmentOption['value']
+): number => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const daysInterval = INSTALLMENT_OPTIONS.find(opt => opt.value === frequency)?.daysInterval || 30;
+    const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const numberOfInstallments = Math.ceil(totalDays / daysInterval);
+    return totalAmount / numberOfInstallments;
+};
+
 export default function Loan({ initialLoans, initialPayments, initialBills, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], initialBills: Bill[], appCurrency: any }) {
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
@@ -173,6 +203,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
         amount: '',
         interest_rate: ''
     });
+    const [installmentAmount, setInstallmentAmount] = useState<string>('0');
 
     const handleAddLoan = () => {
         setCurrentLoan({
@@ -313,10 +344,25 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
             }
 
             try {
+                let installmentData = {};
+                if (currentLoan.installment_frequency) {
+                    const amount = calculateInstallmentAmount(
+                        parseFloat(currentLoan.total_balance || currentLoan.amount),
+                        currentLoan.start_date,
+                        currentLoan.end_date,
+                        currentLoan.installment_frequency
+                    );
+                    installmentData = {
+                        installment_frequency: currentLoan.installment_frequency,
+                        installment_amount: amount.toFixed(2)
+                    };
+                }
+
                 const loanData = {
                     ...currentLoan,
                     amount: parseFloat(currentLoan.amount).toString(),
                     interest_rate: parseFloat(currentLoan.interest_rate).toString(),
+                    ...installmentData
                 };
 
                 const response = await (currentLoan.id ? 
@@ -599,6 +645,16 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                         </span>
                                                     )}
                                                 </div>
+                                                {loan.installment_frequency && loan.installment_amount && (
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                        <span className="font-medium">
+                                                            {formatAmount(loan.installment_amount, appCurrency)}
+                                                        </span>
+                                                        <span className="ml-1">
+                                                            per {loan.installment_frequency.replace('-', ' ')}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -930,6 +986,86 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     )}
                                 </div>
                             </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="installmentFrequency" className="text-right">
+                                    Installment Frequency
+                                </Label>
+                                <div className="col-span-3">
+                                    <Select
+                                        value={currentLoan?.installment_frequency || ''}
+                                        onValueChange={(value: InstallmentOption['value'] | 'none') => {
+                                            if (value === 'none') {
+                                                // Clear installment-related fields
+                                                setInstallmentAmount('0');
+                                                setCurrentLoan({ 
+                                                    ...currentLoan!, 
+                                                    installment_frequency: null,
+                                                    installment_amount: null
+                                                });
+                                            } else if (currentLoan && currentLoan.total_balance && currentLoan.start_date && currentLoan.end_date) {
+                                                const amount = calculateInstallmentAmount(
+                                                    parseFloat(currentLoan.total_balance),
+                                                    currentLoan.start_date,
+                                                    currentLoan.end_date,
+                                                    value as InstallmentOption['value']
+                                                );
+                                                setInstallmentAmount(amount.toFixed(2));
+                                                setCurrentLoan({ 
+                                                    ...currentLoan, 
+                                                    installment_frequency: value as InstallmentOption['value'],
+                                                    installment_amount: amount.toFixed(2)
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select frequency (optional)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">No installments</SelectItem>
+                                            {INSTALLMENT_OPTIONS.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            {currentLoan?.installment_frequency && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label className="text-right">Installment Amount</Label>
+                                    <div className="col-span-3">
+                                        <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <span className="font-medium">
+                                                        {formatAmount(currentLoan.installment_amount || installmentAmount, appCurrency)}
+                                                    </span>
+                                                    <span className="text-sm text-gray-500 ml-2">
+                                                        per {currentLoan.installment_frequency.replace('-', ' ')}
+                                                    </span>
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    {(() => {
+                                                        const option = INSTALLMENT_OPTIONS.find(opt => 
+                                                            opt.value === currentLoan.installment_frequency
+                                                        );
+                                                        if (!option) return null;
+                                                        const totalDays = Math.ceil(
+                                                            (new Date(currentLoan.end_date).getTime() - 
+                                                            new Date(currentLoan.start_date).getTime()) / 
+                                                            (1000 * 60 * 60 * 24)
+                                                        );
+                                                        const numberOfInstallments = Math.ceil(totalDays / option.daysInterval);
+                                                        return `${numberOfInstallments} installments total`;
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <DialogFooter>
                             <Button type="submit">Save</Button>
