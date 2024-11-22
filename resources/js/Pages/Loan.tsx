@@ -391,7 +391,6 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                 <TableHead>Loan Terms</TableHead>
                                 <TableHead>Duration</TableHead>
                                 <TableHead>Financial Details</TableHead>
-                                <TableHead>Payment Status</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -424,35 +423,35 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="space-y-1">
+                                            <div className="space-y-2">
                                                 <div className="flex justify-between text-sm">
-                                                    <span>Total Balance:</span>
-                                                    <span className="font-medium">{formatAmount(loan.total_balance, appCurrency)}</span>
+                                                    <span>Principal:</span>
+                                                    <span className="font-medium">{formatAmount(loan.amount, appCurrency)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-sm">
                                                     <span>Interest:</span>
-                                                    <span className="font-medium">{formatAmount(loan.total_interest, appCurrency)}</span>
+                                                    <span className="font-medium text-blue-600 dark:text-blue-400">
+                                                        + {formatAmount(loan.total_interest, appCurrency)}
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${
-                                                        loan.status === 'active' ? 'bg-green-500' :
-                                                        loan.status === 'paid' ? 'bg-blue-500' :
-                                                        'bg-red-500'
-                                                    }`} />
-                                                    <span className="capitalize text-sm">{loan.status}</span>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span>Paid:</span>
-                                                        <span className="text-green-600">{formatAmount(loan.paid_amount, appCurrency)}</span>
+                                                <div className="border-t border-gray-200 dark:border-gray-700 pt-1">
+                                                    <div className="flex justify-between text-sm font-semibold">
+                                                        <span>Total Balance:</span>
+                                                        <span>{formatAmount(loan.total_balance, appCurrency)}</span>
                                                     </div>
+                                                </div>
+                                                <div className="space-y-1 pt-1">
                                                     <div className="flex justify-between text-sm">
-                                                        <span>Remaining:</span>
-                                                        <span className="text-red-600">{formatAmount(totalRemaining, appCurrency)}</span>
+                                                        <span>Paid Amount:</span>
+                                                        <span className="text-green-600 dark:text-green-400">
+                                                            - {formatAmount(loan.paid_amount, appCurrency)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm font-medium border-t border-gray-200 dark:border-gray-700 pt-1">
+                                                        <span>Outstanding:</span>
+                                                        <span className="text-red-600 dark:text-red-400">
+                                                            {formatAmount((parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)).toString(), appCurrency)}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
