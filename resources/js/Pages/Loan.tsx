@@ -308,27 +308,31 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                     <CardTitle>Loans</CardTitle>
                     </CardHeader>
                     <CardContent>
-                    <div className="flex justify-between mb-4">
-                        <div className="flex items-center space-x-2">
-                        <Button onClick={handleAddLoan}>
-                            <Plus className="mr-2 h-4 w-4" /> Add Loan
-                        </Button>
-                        <Button 
-                            onClick={handleDeleteSelectedLoans} 
-                            variant="destructive" 
-                            disabled={selectedLoans.length === 0}
-                        >
-                            <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                        </Button>
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Button 
+                                onClick={handleAddLoan}
+                                className="w-full sm:w-auto"
+                            >
+                                <Plus className="mr-2 h-4 w-4" /> Add Loan
+                            </Button>
+                            <Button 
+                                onClick={handleDeleteSelectedLoans} 
+                                variant="destructive" 
+                                disabled={selectedLoans.length === 0}
+                                className="w-full sm:w-auto"
+                            >
+                                <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                            </Button>
                         </div>
-                        <div className="flex items-center space-x-2">
-                        <Search className="h-4 w-4 text-gray-500" />
-                        <Input
-                            placeholder="Search loans..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-64"
-                        />
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                            <Input
+                                placeholder="Search loans..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-8 w-full"
+                            />
                         </div>
                     </div>
                     <Table>
@@ -367,7 +371,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-y-1">
-                                                <p className="font-medium">{loan.borrower_name}</p>
+                                                <p className="font-medium text-lg">{loan.borrower_name}</p>
                                             </div>
                                         </TableCell>
                                         <TableCell>
