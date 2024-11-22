@@ -577,8 +577,9 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
     const handleBillStatusUpdate = async (billId: number, update: BillStatusUpdate) => {
         try {
             const response = await axios.patch(`/loan/bill/${billId}/status`, update);
-            const updatedBill = response.data.bill;
-            
+
+            const updatedBill = response.data.data.bill;
+            console.log('Updated bill:', updatedBill);
             // Validate the updated bill before setting state
             if (!updatedBill || typeof updatedBill.loan_id !== 'number') {
                 throw new Error('Invalid bill data received from server');
