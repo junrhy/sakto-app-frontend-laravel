@@ -60,6 +60,12 @@ interface LoanDuration {
     days: number | null;
 }
 
+interface CreditScore {
+    score: number;
+    label: string;
+    color: string;
+}
+
 const LOAN_DURATIONS: LoanDuration[] = [
     { label: 'Custom', days: null },
     { label: '1 Week', days: 7 },
@@ -83,6 +89,57 @@ const formatAmount = (amount: string | number, currency: any): string => {
     const parts = numAmount.toFixed(2).split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, currency.thousands_separator);
     return `${currency.symbol}${parts.join('.')}`;
+};
+
+const calculateCreditScore = (loan: Loan, payments: Payment[]): CreditScore => {
+    // Base score starts at 650
+    let score = 650;
+    
+    // Get loan payments for this specific loan
+    const loanPayments = payments.filter(payment => payment.loan_id === loan.id);
+    
+    // Payment history impact (max +200 points)
+    const paymentRatio = parseFloat(loan.paid_amount) / parseFloat(loan.total_balance);
+    score += Math.round(paymentRatio * 200);
+    
+    // Loan status impact
+    switch(loan.status) {
+        case 'paid':
+            score += 150; // Fully paid loans boost score significantly
+            break;
+        case 'active':
+            // No impact for active loans
+            break;
+        case 'defaulted':
+            score -= 300; // Major penalty for defaulted loans
+            break;
+    }
+    
+    // Final score adjustments
+    score = Math.max(300, Math.min(850, score)); // Keep score between 300-850
+    
+    // Determine credit rating label and color
+    let label: string;
+    let color: string;
+    
+    if (score >= 800) {
+        label = 'Excellent';
+        color = 'text-green-600 dark:text-green-400';
+    } else if (score >= 740) {
+        label = 'Very Good';
+        color = 'text-emerald-600 dark:text-emerald-400';
+    } else if (score >= 670) {
+        label = 'Good';
+        color = 'text-blue-600 dark:text-blue-400';
+    } else if (score >= 580) {
+        label = 'Fair';
+        color = 'text-yellow-600 dark:text-yellow-400';
+    } else {
+        label = 'Poor';
+        color = 'text-red-600 dark:text-red-400';
+    }
+    
+    return { score, label, color };
 };
 
 export default function Loan({ initialLoans, initialPayments, initialBills, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], initialBills: Bill[], appCurrency: any }) {
@@ -406,8 +463,38 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <div className="space-y-1">
-                                                <p className="font-medium text-lg">{loan.borrower_name}</p>
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <p className="font-medium text-lg">{loan.borrower_name}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        ID: {(() => {
+                                                            const date = new Date(loan.created_at);
+                                                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                            const year = date.getFullYear().toString().slice(-2);
+                                                            const sequence = String(loan.id).padStart(4, '0');
+                                                            return `${year}${month}-${sequence}`;
+                                                        })()}
+                                                        <span className="text-xs ml-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">
+                                                            BRW
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                                {(() => {
+                                                    const creditScore = calculateCreditScore(loan, payments);
+                                                    return (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="text-sm text-gray-500">Credit Score:</span>
+                                                                <span className={`font-medium ${creditScore.color}`}>
+                                                                    {creditScore.score}
+                                                                </span>
+                                                            </div>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full border ${creditScore.color} border-current`}>
+                                                                {creditScore.label}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </TableCell>
                                         <TableCell>
