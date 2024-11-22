@@ -11,6 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Edit, Trash, Search, Calculator, DollarSign, History, Receipt } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
 import axios from 'axios';
+import { 
+    DropdownMenu, 
+    DropdownMenuContent, 
+    DropdownMenuItem, 
+    DropdownMenuTrigger 
+} from "@/Components/ui/dropdown-menu";
+import { Badge } from "@/Components/ui/badge";
+import { MoreVertical, FileText, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
 interface Payment {
     id: number;
@@ -48,14 +56,19 @@ interface DeleteWarningInfo {
 interface Bill {
     id: number;
     loan_id: number;
+    bill_number: number;
     due_date: string;
     principal: string;
     interest: string;
     total_amount: string;
+    total_amount_due: string;
+    penalty_amount: string;
+    note: string | null;
     status: 'pending' | 'paid' | 'overdue';
     client_identifier: string;
     created_at: string;
     updated_at: string;
+    installment_amount?: string | null;
 }
 
 interface LoanDuration {
@@ -73,6 +86,11 @@ interface InstallmentOption {
     label: string;
     value: 'weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'annually';
     daysInterval: number;
+}
+
+interface BillStatusUpdate {
+    status: 'pending' | 'paid' | 'overdue';
+    note?: string;
 }
 
 const LOAN_DURATIONS: LoanDuration[] = [
@@ -204,6 +222,15 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
         interest_rate: ''
     });
     const [installmentAmount, setInstallmentAmount] = useState<string>('0');
+    const [billFilter, setBillFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all');
+    const [billNote, setBillNote] = useState<string>("");
+    const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+    const [isBillDetailsDialogOpen, setIsBillDetailsDialogOpen] = useState(false);
+    const [billPrincipal, setBillPrincipal] = useState<string>("");
+    const [billInterest, setBillInterest] = useState<string>("");
+    const [billPenalty, setBillPenalty] = useState<string>("");
+    const [billTotalAmount, setBillTotalAmount] = useState<string>("");
+    const [billStatus, setBillStatus] = useState<'pending' | 'sent'>('pending');
 
     const handleAddLoan = () => {
         setCurrentLoan({
@@ -483,23 +510,45 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
     const confirmCreateBill = async () => {
         if (currentLoan) {
             try {
-                const response = await axios.post(`/loan/bill/${currentLoan.id}`, {
+                const baseAmount = currentLoan.installment_amount || 
+                    (parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toString();
+                
+                const totalAmount = (parseFloat(baseAmount) + parseFloat(billPenalty || "0")).toString();
+
+                const billData = {
                     due_date: billDueDate,
-                    total_amount: (parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toString(),
                     principal: currentLoan.amount,
                     interest: currentLoan.total_interest,
-                    status: 'pending'
-                });
+                    total_amount: baseAmount,
+                    total_amount_due: totalAmount,
+                    penalty_amount: billPenalty || "0",
+                    note: billNote,
+                    status: 'pending',
+                    ...(currentLoan.installment_amount && {
+                        installment_amount: currentLoan.installment_amount
+                    })
+                };
 
-                // Close dialog and reset state
+                const response = await axios.post(`/loan/bill/${currentLoan.id}`, billData);
+                const newBill = response.data.bill;
+
+                // Make sure newBill has all required properties before adding to state
+                if (newBill && newBill.id && newBill.loan_id) {
+                    setBills(prevBills => [...(prevBills || []), newBill]);
+                } else {
+                    console.error('Invalid bill data received:', newBill);
+                }
+
+                // Reset form
+                setBillDueDate(new Date().toISOString().split('T')[0]);
+                setBillPenalty("");
+                setBillNote("");
                 setIsCreateBillDialogOpen(false);
                 setCurrentLoan(null);
-                setBillDueDate(new Date().toISOString().split('T')[0]);
 
                 console.log('Bill created successfully');
             } catch (error) {
                 console.error('Error creating bill:', error);
-                // Add error handling here
             }
         }
     };
@@ -517,6 +566,38 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
             end_date: endDate.toISOString().split('T')[0]
         });
     };
+
+    const handleBillStatusUpdate = async (billId: number, update: BillStatusUpdate) => {
+        try {
+            const response = await axios.patch(`/loan/bill/${billId}/status`, update);
+            const updatedBill = response.data.bill;
+            
+            setBills(prevBills => 
+                prevBills.map(bill => 
+                    bill.id === billId ? updatedBill : bill
+                )
+            );
+            
+            // Close details dialog if open
+            setIsBillDetailsDialogOpen(false);
+        } catch (error) {
+            console.error('Error updating bill status:', error);
+        }
+    };
+
+    const handleShowBillDetails = (bill: Bill) => {
+        setSelectedBill(bill);
+        setIsBillDetailsDialogOpen(true);
+    };
+
+    // Update the bills filtering logic to handle undefined bills
+    const filteredBills = useMemo(() => {
+        if (!currentLoan || !Array.isArray(bills)) return [];
+        
+        return bills
+            .filter(bill => bill && bill.loan_id === currentLoan.id)
+            .filter(bill => billFilter === 'all' || bill.status === billFilter);
+    }, [currentLoan, bills, billFilter]);
 
     return (
         <AuthenticatedLayout
@@ -1183,77 +1264,236 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                 </Dialog>
 
                 <Dialog open={isBillHistoryDialogOpen} onOpenChange={setIsBillHistoryDialogOpen}>
-                    <DialogContent className="max-w-3xl">
+                    <DialogContent className="max-w-4xl">
                         <DialogHeader>
                             <DialogTitle>Bill History - {currentLoan?.borrower_name}</DialogTitle>
                         </DialogHeader>
+                        
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex gap-2">
+                                <Button 
+                                    variant={billFilter === 'all' ? 'default' : 'outline'}
+                                    onClick={() => setBillFilter('all')}
+                                >
+                                    All
+                                </Button>
+                                <Button 
+                                    variant={billFilter === 'pending' ? 'default' : 'outline'}
+                                    onClick={() => setBillFilter('pending')}
+                                >
+                                    Pending
+                                </Button>
+                                <Button 
+                                    variant={billFilter === 'paid' ? 'default' : 'outline'}
+                                    onClick={() => setBillFilter('paid')}
+                                >
+                                    Paid
+                                </Button>
+                                <Button 
+                                    variant={billFilter === 'overdue' ? 'default' : 'outline'}
+                                    onClick={() => setBillFilter('overdue')}
+                                >
+                                    Overdue
+                                </Button>
+                            </div>
+                            
+                            <div className="text-sm text-gray-500">
+                                Total Bills: {bills.filter(bill => bill.loan_id === currentLoan?.id).length}
+                            </div>
+                        </div>
+
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead className="w-[60px]">Bill #</TableHead>
                                     <TableHead>Due Date</TableHead>
-                                    <TableHead>Principal</TableHead>
-                                    <TableHead>Interest</TableHead>
-                                    <TableHead>Total Amount</TableHead>
+                                    <TableHead>Amount Due</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Note</TableHead>
                                     <TableHead>Created At</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {(() => {
-                                    const filteredBills = currentLoan 
-                                        ? bills.filter(bill => bill.loan_id === currentLoan.id)
-                                        : [];
+                                {filteredBills.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="text-center py-4">
+                                            No bills found for this loan
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredBills.map((bill) => {
+                                        const statusConfig = {
+                                            paid: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+                                            overdue: { color: 'bg-red-100 text-red-800', icon: XCircle },
+                                            pending: { color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle }
+                                        };
 
-                                    if (filteredBills.length === 0) {
-                                        return (
-                                            <TableRow>
-                                                <TableCell colSpan={6} className="text-center py-4">
-                                                    No bills found for this loan
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    }
-
-                                    return filteredBills.map((bill) => {
                                         const status = bill.status || 'pending';
-                                        const statusColor = 
-                                            status === 'paid' ? 'bg-green-100 text-green-800' :
-                                            status === 'overdue' ? 'bg-red-100 text-red-800' :
-                                            'bg-yellow-100 text-yellow-800';
-
-                                        const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1);
+                                        const StatusIcon = statusConfig[status].icon;
 
                                         return (
                                             <TableRow key={bill.id}>
                                                 <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <FileText className="h-4 w-4" />
+                                                        <span className="font-mono">
+                                                            #{String(bill.bill_number).padStart(4, '0')}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
                                                     {new Date(bill.due_date).toLocaleDateString()}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {formatAmount(bill.principal, appCurrency)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {formatAmount(bill.interest, appCurrency)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {formatAmount(bill.total_amount, appCurrency)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
-                                                        {formattedStatus}
+                                                    <span className="font-medium">
+                                                        {formatAmount(bill.total_amount_due, appCurrency)}
                                                     </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm">
+                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400 max-w-[200px] truncate">
+                                                        {bill.note || '-'}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     {new Date(bill.created_at).toLocaleString()}
                                                 </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="sm">
+                                                                <MoreVertical className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => handleShowBillDetails(bill)}>
+                                                                View Details
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleBillStatusUpdate(bill.id, { status: 'paid' })}
+                                                                disabled={bill.status === 'paid'}
+                                                            >
+                                                                Mark as Paid
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleBillStatusUpdate(bill.id, { status: 'overdue' })}
+                                                                disabled={bill.status === 'overdue'}
+                                                            >
+                                                                Mark as Overdue
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
                                             </TableRow>
                                         );
-                                    });
-                                })()}
+                                    })
+                                )}
                             </TableBody>
                         </Table>
                         <DialogFooter>
                             <Button onClick={() => setIsBillHistoryDialogOpen(false)}>Close</Button>
                         </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isBillDetailsDialogOpen} onOpenChange={setIsBillDetailsDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Bill Details</DialogTitle>
+                        </DialogHeader>
+                        {selectedBill && (
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Bill Number</Label>
+                                        <div className="font-mono">#{String(selectedBill.bill_number).padStart(4, '0')}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Status</Label>
+                                        <div className="mt-1">
+                                            {selectedBill.status.charAt(0).toUpperCase() + selectedBill.status.slice(1)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label>Due Date</Label>
+                                        <div>{new Date(selectedBill.due_date).toLocaleDateString()}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Created At</Label>
+                                        <div>{new Date(selectedBill.created_at).toLocaleString()}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Principal Amount</Label>
+                                        <div className="font-medium">{formatAmount(selectedBill.principal, appCurrency)}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Interest Amount</Label>
+                                        <div className="font-medium">{formatAmount(selectedBill.interest, appCurrency)}</div>
+                                    </div>
+                                    <div>
+                                        <Label>Penalty Amount</Label>
+                                        <div className="font-medium text-red-600 dark:text-red-400">
+                                            {parseFloat(selectedBill.penalty_amount) > 0 ? 
+                                                formatAmount(selectedBill.penalty_amount, appCurrency) : 
+                                                '-'
+                                            }
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label>Total Amount</Label>
+                                        <div className="font-medium">{formatAmount(selectedBill.total_amount, appCurrency)}</div>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <Label>Total Amount Due</Label>
+                                        <div className="text-lg font-semibold">{formatAmount(selectedBill.total_amount_due, appCurrency)}</div>
+                                    </div>
+                                    {selectedBill.note && (
+                                        <div className="col-span-2">
+                                            <Label>Note</Label>
+                                            <div className="mt-1 text-gray-600 dark:text-gray-300">{selectedBill.note}</div>
+                                        </div>
+                                    )}
+                                    <div className="col-span-2">
+                                        <Label htmlFor="billNote">Add Note</Label>
+                                        <Input
+                                            id="billNote"
+                                            value={billNote}
+                                            onChange={(e) => setBillNote(e.target.value)}
+                                            placeholder="Add a note about this bill..."
+                                        />
+                                    </div>
+                                    {selectedBill.installment_amount && (
+                                        <div className="col-span-2">
+                                            <Label>Installment Amount</Label>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Calculator className="h-4 w-4 text-gray-500" />
+                                                <span className="font-medium">
+                                                    {formatAmount(selectedBill.installment_amount, appCurrency)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsBillDetailsDialogOpen(false)}>
+                                        Close
+                                    </Button>
+                                    <Button 
+                                        onClick={() => handleBillStatusUpdate(selectedBill.id, { 
+                                            status: selectedBill.status === 'pending' ? 'paid' : 'pending',
+                                            note: billNote 
+                                        })}
+                                    >
+                                        Mark as {selectedBill.status === 'pending' ? 'Paid' : 'Pending'}
+                                    </Button>
+                                </DialogFooter>
+                            </div>
+                        )}
                     </DialogContent>
                 </Dialog>
 
@@ -1323,8 +1563,64 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                             <DialogTitle>Create Bill</DialogTitle>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
+                            {currentLoan && (
+                                <div className="grid grid-cols-1 gap-4 p-4 mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Base Amount
+                                        </span>
+                                        <span className="text-lg">
+                                            {formatAmount(
+                                                currentLoan.installment_amount || 
+                                                (parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toString(),
+                                                appCurrency
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Penalty
+                                        </span>
+                                        <span className="text-lg text-red-600 dark:text-red-400">
+                                            {billPenalty && parseFloat(billPenalty) > 0 
+                                                ? `+ ${formatAmount(billPenalty, appCurrency)}`
+                                                : '+ 0.00'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                                        <span className="text-sm font-medium">
+                                            Total Amount Due
+                                        </span>
+                                        <span className="text-lg font-semibold">
+                                            {formatAmount(
+                                                (parseFloat(currentLoan.installment_amount || 
+                                                    (parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toString()) + 
+                                                    parseFloat(billPenalty || "0")
+                                                ).toString(),
+                                                appCurrency
+                                            )}
+                                        </span>
+                                    </div>
+                                    {currentLoan.installment_amount && (
+                                        <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Remaining Balance
+                                            </span>
+                                            <span className="text-sm text-gray-600 dark:text-gray-300">
+                                                {formatAmount(
+                                                    (parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount)).toString(),
+                                                    appCurrency
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="billDueDate" className="text-right">Due Date</Label>
+                                <Label htmlFor="billDueDate" className="text-right">
+                                    Due Date <span className="text-red-500">*</span>
+                                </Label>
                                 <Input
                                     id="billDueDate"
                                     type="date"
@@ -1333,36 +1629,50 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     className="col-span-3"
                                 />
                             </div>
-                            {currentLoan && (
-                                <>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label className="text-right">Remaining Balance</Label>
-                                        <div className="col-span-3">
-                                            {formatAmount(
-                                                parseFloat(currentLoan.total_balance) - parseFloat(currentLoan.paid_amount),
-                                                appCurrency
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label className="text-right">Status</Label>
-                                        <div className="col-span-3">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                currentLoan.status === 'active' 
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : currentLoan.status === 'defaulted'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : 'bg-blue-100 text-blue-800'
-                                            }`}>
-                                                {(currentLoan.status || 'active').charAt(0).toUpperCase() + (currentLoan.status || 'active').slice(1)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="billPenalty" className="text-right">Penalty</Label>
+                                <div className="col-span-3">
+                                    <Input
+                                        id="billPenalty"
+                                        type="number"
+                                        step="0.01"
+                                        value={billPenalty}
+                                        onChange={(e) => setBillPenalty(e.target.value)}
+                                        placeholder="0.00"
+                                        className="col-span-3"
+                                    />
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Optional penalty amount to add to the bill
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="billNote" className="text-right">Note</Label>
+                                <div className="col-span-3">
+                                    <Input
+                                        id="billNote"
+                                        type="text"
+                                        value={billNote}
+                                        onChange={(e) => setBillNote(e.target.value)}
+                                        placeholder="Add a note about this bill..."
+                                        className="col-span-3"
+                                    />
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Optional note or description for this bill
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsCreateBillDialogOpen(false)}>Cancel</Button>
+                            <Button variant="outline" onClick={() => {
+                                setIsCreateBillDialogOpen(false);
+                                setBillPenalty("");
+                                setBillDueDate(new Date().toISOString().split('T')[0]);
+                            }}>
+                                Cancel
+                            </Button>
                             <Button onClick={confirmCreateBill}>Create Bill</Button>
                         </DialogFooter>
                     </DialogContent>

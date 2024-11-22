@@ -203,4 +203,40 @@ class LoanController extends Controller
             return response()->json(['error' => 'Failed to create bill.'], 500);
         }
     }
+
+    public function updateBill(Request $request, string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/loan-bills/{$id}", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error updating bill: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update bill.'], 500);
+        }
+    }
+
+    public function deleteBill(string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/loan-bills/{$id}");
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error deleting bill: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete bill.'], 500);
+        }
+    }
+
+    public function updateBillStatus(Request $request, string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/loan-bills/{$id}/status", $request->all());
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error updating bill status: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update bill status.'], 500);
+        }
+    }
 }

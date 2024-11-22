@@ -169,6 +169,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/payment', [LoanController::class, 'recordPayment']);
         Route::get('/bills/{id}', [LoanController::class, 'getBills']);
         Route::post('/bill/{id}', [LoanController::class, 'createBill']);
+        Route::put('/bill/{id}', [LoanController::class, 'updateBill']);
+        Route::delete('/bill/{id}', [LoanController::class, 'deleteBill']);
+        Route::put('/bill/{id}/status', [LoanController::class, 'updateBillStatus']);
+
     });
 
     // Payroll routes
