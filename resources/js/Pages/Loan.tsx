@@ -646,12 +646,27 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                     )}
                                                 </div>
                                                 {loan.installment_frequency && loan.installment_amount && (
-                                                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-1">
                                                         <span className="font-medium">
                                                             {formatAmount(loan.installment_amount, appCurrency)}
                                                         </span>
-                                                        <span className="ml-1">
+                                                        <span>
                                                             per {loan.installment_frequency.replace('-', ' ')}
+                                                        </span>
+                                                        <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full">
+                                                            {(() => {
+                                                                const option = INSTALLMENT_OPTIONS.find(opt => 
+                                                                    opt.value === loan.installment_frequency
+                                                                );
+                                                                if (!option) return null;
+                                                                const totalDays = Math.ceil(
+                                                                    (new Date(loan.end_date).getTime() - 
+                                                                    new Date(loan.start_date).getTime()) / 
+                                                                    (1000 * 60 * 60 * 24)
+                                                                );
+                                                                const numberOfInstallments = Math.ceil(totalDays / option.daysInterval);
+                                                                return `${numberOfInstallments} installments`;
+                                                            })()}
                                                         </span>
                                                     </div>
                                                 )}
