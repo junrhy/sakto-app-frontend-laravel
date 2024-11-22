@@ -55,6 +55,28 @@ interface Bill {
     updated_at: string;
 }
 
+interface LoanDuration {
+    label: string;
+    days: number;
+}
+
+const LOAN_DURATIONS: LoanDuration[] = [
+    { label: '1 Week', days: 7 },
+    { label: '2 Weeks', days: 14 },
+    { label: '1 Month', days: 30 },
+    { label: '3 Months', days: 90 },
+    { label: '6 Months', days: 180 },
+    { label: '1 Year', days: 365 },
+    { label: '2 Years', days: 730 },
+    { label: '3 Years', days: 1095 },
+    { label: '5 Years', days: 1825 },
+    { label: '10 Years', days: 3650 },
+    { label: '15 Years', days: 5475 },
+    { label: '20 Years', days: 7300 },
+    { label: '25 Years', days: 9125 },
+    { label: '30 Years', days: 10950 },
+];
+
 const formatAmount = (amount: string | number, currency: any): string => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     const parts = numAmount.toFixed(2).split('.');
@@ -292,6 +314,18 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
         }
     };
 
+    const handleDurationChange = (days: number) => {
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(startDate.getDate() + days);
+        
+        setCurrentLoan({
+            ...currentLoan!,
+            start_date: startDate.toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0]
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -527,6 +561,23 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                             onChange={(e) => setCurrentLoan({ ...currentLoan!, interest_rate: e.target.value })}
                             className="col-span-3"
                             />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="duration" className="text-right">Duration</Label>
+                            <Select
+                                onValueChange={(value) => handleDurationChange(parseInt(value))}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Select loan duration" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {LOAN_DURATIONS.map((duration) => (
+                                        <SelectItem key={duration.days} value={duration.days.toString()}>
+                                            {duration.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="startDate" className="text-right">Start Date</Label>
