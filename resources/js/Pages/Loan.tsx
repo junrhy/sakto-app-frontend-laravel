@@ -28,6 +28,7 @@ interface Loan {
     end_date: string;
     status: 'active' | 'paid' | 'defaulted';
     compounding_frequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
+    interest_type: 'fixed' | 'compounding';
     total_interest: string;
     total_balance: string;
     paid_amount: string;
@@ -164,9 +165,33 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
     const [billDueDate, setBillDueDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [paymentError, setPaymentError] = useState<string>("");
     const [dateError, setDateError] = useState<string>("");
+    const [validationErrors, setValidationErrors] = useState({
+        start_date: '',
+        end_date: '',
+        status: '',
+        borrower_name: '',
+        amount: '',
+        interest_rate: ''
+    });
 
     const handleAddLoan = () => {
-        setCurrentLoan(null);
+        setCurrentLoan({
+            id: 0,
+            borrower_name: '',
+            amount: '',
+            interest_rate: '',
+            start_date: '',
+            end_date: '',
+            status: 'active',
+            interest_type: 'fixed',
+            compounding_frequency: 'monthly',
+            total_interest: '0',
+            total_balance: '0',
+            paid_amount: '0',
+            client_identifier: '',
+            created_at: '',
+            updated_at: ''
+        });
         setIsLoanDialogOpen(true);
     };
 
@@ -213,11 +238,72 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
 
     const handleSaveLoan = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentLoan) {
-            // Clear any previous error
-            setDateError("");
+        
+        // Clear previous errors
+        setValidationErrors({
+            start_date: '',
+            end_date: '',
+            status: '',
+            borrower_name: '',
+            amount: '',
+            interest_rate: ''
+        });
+        setDateError("");
 
-            // Validate dates
+        // Validate required fields
+        let hasErrors = false;
+        const newErrors = {
+            start_date: '',
+            end_date: '',
+            status: '',
+            borrower_name: '',
+            amount: '',
+            interest_rate: ''
+        };
+
+        if (!currentLoan?.borrower_name?.trim()) {
+            newErrors.borrower_name = 'Borrower name is required';
+            hasErrors = true;
+        }
+
+        if (!currentLoan?.amount) {
+            newErrors.amount = 'Amount is required';
+            hasErrors = true;
+        } else if (isNaN(parseFloat(currentLoan.amount)) || parseFloat(currentLoan.amount) <= 0) {
+            newErrors.amount = 'Amount must be a positive number';
+            hasErrors = true;
+        }
+
+        if (!currentLoan?.interest_rate) {
+            newErrors.interest_rate = 'Interest rate is required';
+            hasErrors = true;
+        } else if (isNaN(parseFloat(currentLoan.interest_rate)) || parseFloat(currentLoan.interest_rate) < 0) {
+            newErrors.interest_rate = 'Interest rate must be a non-negative number';
+            hasErrors = true;
+        }
+
+        if (!currentLoan?.start_date) {
+            newErrors.start_date = 'Start date is required';
+            hasErrors = true;
+        }
+
+        if (!currentLoan?.end_date) {
+            newErrors.end_date = 'End date is required';
+            hasErrors = true;
+        }
+
+        if (!currentLoan?.status) {
+            newErrors.status = 'Status is required';
+            hasErrors = true;
+        }
+
+        if (hasErrors) {
+            setValidationErrors(newErrors);
+            return;
+        }
+
+        // Validate date order
+        if (currentLoan) {
             const startDate = new Date(currentLoan.start_date);
             const endDate = new Date(currentLoan.end_date);
 
@@ -500,7 +586,19 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                         <TableCell>
                                             <div className="space-y-1">
                                                 <p className="font-medium">{formatAmount(loan.amount, appCurrency)}</p>
-                                                <p className="text-sm text-gray-500">{parseFloat(loan.interest_rate)}% ({loan.compounding_frequency})</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm text-gray-500">
+                                                        {parseFloat(loan.interest_rate)}% 
+                                                        <span className="ml-1">
+                                                            ({loan.interest_type === 'fixed' ? 'Fixed' : 'Compounding'})
+                                                        </span>
+                                                    </p>
+                                                    {loan.interest_type === 'compounding' && (
+                                                        <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded-full">
+                                                            {loan.compounding_frequency.charAt(0).toUpperCase() + loan.compounding_frequency.slice(1)}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -621,137 +719,220 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                     </DialogHeader>
                     <form onSubmit={handleSaveLoan}>
                         <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="borrowerName" className="text-right">Borrower Name</Label>
-                            <Input
-                            id="borrowerName"
-                            value={currentLoan?.borrower_name || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, borrower_name: e.target.value })}
-                            className="col-span-3"
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="amount" className="text-right">Amount</Label>
-                            <Input
-                            id="amount"
-                            type="number"
-                            value={currentLoan?.amount || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, amount: e.target.value })}
-                            className="col-span-3"
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="interestRate" className="text-right">Interest Rate</Label>
-                            <Input
-                            id="interestRate"
-                            type="number"
-                            step="0.1"
-                            value={currentLoan?.interest_rate || ''}
-                            onChange={(e) => setCurrentLoan({ ...currentLoan!, interest_rate: e.target.value })}
-                            className="col-span-3"
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="duration" className="text-right">Duration</Label>
-                            <Select
-                                value={(() => {
-                                    if (!currentLoan?.start_date || !currentLoan?.end_date) return '';
-                                    const startDate = new Date(currentLoan.start_date);
-                                    const endDate = new Date(currentLoan.end_date);
-                                    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-                                    const matchingDuration = LOAN_DURATIONS.find(d => d.days === diffDays);
-                                    return matchingDuration ? diffDays.toString() : 'null';
-                                })()}
-                                onValueChange={(value) => handleDurationChange(value === 'null' ? null : parseInt(value))}
-                            >
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select loan duration" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {LOAN_DURATIONS.map((duration) => (
-                                        <SelectItem 
-                                            key={duration.label} 
-                                            value={duration.days?.toString() ?? 'null'}
-                                        >
-                                            {duration.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="startDate" className="text-right">Start Date</Label>
-                            <Input
-                                id="startDate"
-                                type="date"
-                                value={currentLoan?.start_date || ''}
-                                onChange={(e) => {
-                                    setDateError("");
-                                    setCurrentLoan({ 
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="borrowerName" className="text-right">
+                                    Borrower Name <span className="text-red-500">*</span>
+                                </Label>
+                                <div className="col-span-3 space-y-1">
+                                    <Input
+                                        id="borrowerName"
+                                        value={currentLoan?.borrower_name || ''}
+                                        onChange={(e) => {
+                                            setValidationErrors(prev => ({...prev, borrower_name: ''}));
+                                            setCurrentLoan({ ...currentLoan!, borrower_name: e.target.value });
+                                        }}
+                                        className={validationErrors.borrower_name ? "border-red-500" : ""}
+                                    />
+                                    {validationErrors.borrower_name && (
+                                        <p className="text-sm text-red-500">{validationErrors.borrower_name}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="amount" className="text-right">
+                                    Amount <span className="text-red-500">*</span>
+                                </Label>
+                                <div className="col-span-3 space-y-1">
+                                    <Input
+                                        id="amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={currentLoan?.amount || ''}
+                                        onChange={(e) => {
+                                            setValidationErrors(prev => ({...prev, amount: ''}));
+                                            setCurrentLoan({ ...currentLoan!, amount: e.target.value });
+                                        }}
+                                        className={validationErrors.amount ? "border-red-500" : ""}
+                                    />
+                                    {validationErrors.amount && (
+                                        <p className="text-sm text-red-500">{validationErrors.amount}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="interestRate" className="text-right">
+                                    Interest Rate <span className="text-red-500">*</span>
+                                </Label>
+                                <div className="col-span-3 space-y-1">
+                                    <Input
+                                        id="interestRate"
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        value={currentLoan?.interest_rate || ''}
+                                        onChange={(e) => {
+                                            setValidationErrors(prev => ({...prev, interest_rate: ''}));
+                                            setCurrentLoan({ ...currentLoan!, interest_rate: e.target.value });
+                                        }}
+                                        className={validationErrors.interest_rate ? "border-red-500" : ""}
+                                    />
+                                    {validationErrors.interest_rate && (
+                                        <p className="text-sm text-red-500">{validationErrors.interest_rate}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="interestType" className="text-right">Interest Type</Label>
+                                <Select
+                                    value={currentLoan?.interest_type || 'fixed'}
+                                    onValueChange={(value: 'fixed' | 'compounding') => setCurrentLoan({ 
                                         ...currentLoan!, 
-                                        start_date: e.target.value,
-                                    });
-                                }}
-                                className="col-span-3"
-                            />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="endDate" className="text-right">End Date</Label>
-                            <div className="col-span-3 space-y-1">
-                                <Input
-                                    id="endDate"
-                                    type="date"
-                                    value={currentLoan?.end_date || ''}
-                                    onChange={(e) => {
-                                        setDateError("");
-                                        setCurrentLoan({ 
-                                            ...currentLoan!, 
-                                            end_date: e.target.value,
-                                        });
-                                    }}
-                                    className={dateError ? "border-red-500" : ""}
-                                />
-                                {dateError && (
-                                    <p className="text-sm text-red-500">{dateError}</p>
-                                )}
+                                        interest_type: value,
+                                        compounding_frequency: value === 'fixed' ? 'monthly' : (currentLoan?.compounding_frequency || 'monthly')
+                                    })}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select interest type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="fixed">Fixed Interest</SelectItem>
+                                        <SelectItem value="compounding">Compounding Interest</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="compoundingFrequency" className="text-right">
+                                    Compounding Frequency
+                                </Label>
+                                <Select
+                                    value={currentLoan?.compounding_frequency || ''}
+                                    onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => 
+                                        setCurrentLoan({ ...currentLoan!, compounding_frequency: value })}
+                                    disabled={currentLoan?.interest_type === 'fixed'}
+                                >
+                                    <SelectTrigger className={`col-span-3 ${
+                                        currentLoan?.interest_type === 'fixed' ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}>
+                                        <SelectValue placeholder="Select frequency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="daily">Daily</SelectItem>
+                                        <SelectItem value="monthly">Monthly</SelectItem>
+                                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                                        <SelectItem value="annually">Annually</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="duration" className="text-right">Duration</Label>
+                                <Select
+                                    value={(() => {
+                                        if (!currentLoan?.start_date || !currentLoan?.end_date) return '';
+                                        const startDate = new Date(currentLoan.start_date);
+                                        const endDate = new Date(currentLoan.end_date);
+                                        const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+                                        const matchingDuration = LOAN_DURATIONS.find(d => d.days === diffDays);
+                                        return matchingDuration ? diffDays.toString() : 'null';
+                                    })()}
+                                    onValueChange={(value) => handleDurationChange(value === 'null' ? null : parseInt(value))}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select loan duration" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {LOAN_DURATIONS.map((duration) => (
+                                            <SelectItem 
+                                                key={duration.label} 
+                                                value={duration.days?.toString() ?? 'null'}
+                                            >
+                                                {duration.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="startDate" className="text-right">
+                                    Start Date <span className="text-red-500">*</span>
+                                </Label>
+                                <div className="col-span-3 space-y-1">
+                                    <Input
+                                        id="startDate"
+                                        type="date"
+                                        value={currentLoan?.start_date || ''}
+                                        onChange={(e) => {
+                                            setDateError("");
+                                            setValidationErrors(prev => ({...prev, start_date: ''}));
+                                            setCurrentLoan({ 
+                                                ...currentLoan!, 
+                                                start_date: e.target.value,
+                                            });
+                                        }}
+                                        className={validationErrors.start_date ? "border-red-500" : ""}
+                                    />
+                                    {validationErrors.start_date && (
+                                        <p className="text-sm text-red-500">{validationErrors.start_date}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="endDate" className="text-right">
+                                    End Date <span className="text-red-500">*</span>
+                                </Label>
+                                <div className="col-span-3 space-y-1">
+                                    <Input
+                                        id="endDate"
+                                        type="date"
+                                        value={currentLoan?.end_date || ''}
+                                        onChange={(e) => {
+                                            setDateError("");
+                                            setValidationErrors(prev => ({...prev, end_date: ''}));
+                                            setCurrentLoan({ 
+                                                ...currentLoan!, 
+                                                end_date: e.target.value,
+                                            });
+                                        }}
+                                        className={validationErrors.end_date || dateError ? "border-red-500" : ""}
+                                    />
+                                    {validationErrors.end_date && (
+                                        <p className="text-sm text-red-500">{validationErrors.end_date}</p>
+                                    )}
+                                    {dateError && (
+                                        <p className="text-sm text-red-500">{dateError}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="status" className="text-right">
+                                    Status <span className="text-red-500">*</span>
+                                </Label>
+                                <div className="col-span-3 space-y-1">
+                                    <Select
+                                        value={currentLoan?.status || ''}
+                                        onValueChange={(value: 'active' | 'paid' | 'defaulted') => {
+                                            setValidationErrors(prev => ({...prev, status: ''}));
+                                            setCurrentLoan({ ...currentLoan!, status: value });
+                                        }}
+                                    >
+                                        <SelectTrigger className={`col-span-3 ${validationErrors.status ? "border-red-500" : ""}`}>
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="paid">Paid</SelectItem>
+                                            <SelectItem value="defaulted">Defaulted</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {validationErrors.status && (
+                                        <p className="text-sm text-red-500">{validationErrors.status}</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="compoundingFrequency" className="text-right">Compounding Frequency</Label>
-                            <Select
-                            value={currentLoan?.compounding_frequency || ''}
-                            onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => setCurrentLoan({ ...currentLoan!, compounding_frequency: value })}
-                            >
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select frequency" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                <SelectItem value="annually">Annually</SelectItem>
-                            </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="status" className="text-right">Status</Label>
-                            <Select
-                            value={currentLoan?.status || ''}
-                            onValueChange={(value: 'active' | 'paid' | 'defaulted') => setCurrentLoan({ ...currentLoan!, status: value })}
-                            >
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="paid">Paid</SelectItem>
-                                <SelectItem value="defaulted">Defaulted</SelectItem>
-                            </SelectContent>
-                            </Select>
-                        </div>
-                        </div>
                         <DialogFooter>
-                        <Button type="submit">Save</Button>
+                            <Button type="submit">Save</Button>
                         </DialogFooter>
                     </form>
                     </DialogContent>
