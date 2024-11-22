@@ -194,7 +194,14 @@ const calculateInstallmentAmount = (
 export default function Loan({ initialLoans, initialPayments, initialBills, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], initialBills: Bill[], appCurrency: any }) {
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
-    const [bills, setBills] = useState<Bill[]>(initialBills);
+    const [bills, setBills] = useState<Bill[]>(() => {
+        return (initialBills || []).filter((bill): bill is Bill => {
+            return bill != null && 
+                   typeof bill === 'object' && 
+                   'loan_id' in bill && 
+                   typeof bill.loan_id === 'number';
+        });
+    });
     const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
@@ -572,13 +579,18 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
             const response = await axios.patch(`/loan/bill/${billId}/status`, update);
             const updatedBill = response.data.bill;
             
-            setBills(prevBills => 
-                prevBills.map(bill => 
-                    bill.id === billId ? updatedBill : bill
-                )
-            );
+            // Validate the updated bill before setting state
+            if (!updatedBill || typeof updatedBill.loan_id !== 'number') {
+                throw new Error('Invalid bill data received from server');
+            }
             
-            // Close details dialog if open
+            setBills(prevBills => {
+                if (!Array.isArray(prevBills)) return [];
+                return prevBills.map(bill => 
+                    bill && bill.id === billId ? updatedBill : bill
+                ).filter((bill): bill is Bill => bill != null);
+            });
+            
             setIsBillDetailsDialogOpen(false);
         } catch (error) {
             console.error('Error updating bill status:', error);
@@ -592,12 +604,33 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
 
     // Update the bills filtering logic to handle undefined bills
     const filteredBills = useMemo(() => {
-        if (!currentLoan || !Array.isArray(bills)) return [];
-        
-        return bills
-            .filter(bill => bill && bill.loan_id === currentLoan.id)
-            .filter(bill => billFilter === 'all' || bill.status === billFilter);
-    }, [currentLoan, bills, billFilter]);
+        // Early return if no current loan or bills is not an array
+        if (!currentLoan?.id || !Array.isArray(bills)) {
+            return [];
+        }
+
+        try {
+            return bills
+                .filter((bill): bill is Bill => {
+                    if (!bill) return false;
+                    
+                    // Check if bill has all required properties
+                    const requiredProps = [
+                        'id', 'loan_id', 'bill_number', 'due_date', 
+                        'principal', 'interest', 'total_amount', 
+                        'total_amount_due', 'penalty_amount', 'status'
+                    ];
+                    
+                    return requiredProps.every(prop => prop in bill) &&
+                           typeof bill.loan_id === 'number' &&
+                           bill.loan_id === currentLoan.id;
+                })
+                .filter(bill => billFilter === 'all' || bill.status === billFilter);
+        } catch (error) {
+            console.error('Error filtering bills:', error);
+            return [];
+        }
+    }, [currentLoan?.id, bills, billFilter]); // Note: Only depend on currentLoan.id, not the entire object
 
     return (
         <AuthenticatedLayout

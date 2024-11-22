@@ -171,7 +171,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/bill/{id}', [LoanController::class, 'createBill']);
         Route::put('/bill/{id}', [LoanController::class, 'updateBill']);
         Route::delete('/bill/{id}', [LoanController::class, 'deleteBill']);
-        Route::put('/bill/{id}/status', [LoanController::class, 'updateBillStatus']);
+        Route::patch('/bill/{id}/status', [LoanController::class, 'updateBillStatus']);
 
     });
 
