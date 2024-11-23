@@ -93,6 +93,11 @@ interface BillStatusUpdate {
     note?: string;
 }
 
+interface DeletePaymentInfo {
+    id: number;
+    amount: string;
+}
+
 const LOAN_DURATIONS: LoanDuration[] = [
     { label: 'Custom', days: null },
     { label: '1 Week', days: 7 },
@@ -238,6 +243,8 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
     const [billPenalty, setBillPenalty] = useState<string>("");
     const [billTotalAmount, setBillTotalAmount] = useState<string>("");
     const [billStatus, setBillStatus] = useState<'pending' | 'sent'>('pending');
+    const [isDeletePaymentDialogOpen, setIsDeletePaymentDialogOpen] = useState(false);
+    const [paymentToDelete, setPaymentToDelete] = useState<DeletePaymentInfo | null>(null);
 
     const handleAddLoan = () => {
         setCurrentLoan({
@@ -642,6 +649,28 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
         } catch (error) {
             console.error('Error deleting bill:', error);
             // You might want to add error handling/notification here
+        }
+    };
+
+    const handleDeletePayment = async (payment: Payment) => {
+        setPaymentToDelete({
+            id: payment.id,
+            amount: payment.amount.toString()
+        });
+        setIsDeletePaymentDialogOpen(true);
+    };
+
+    const confirmDeletePayment = async () => {
+        if (paymentToDelete) {
+            try {
+                await axios.delete(`/loan/${currentLoan?.id}/payment/${paymentToDelete.id}`);
+                setPayments(payments.filter(payment => payment.id !== paymentToDelete.id));
+                setIsDeletePaymentDialogOpen(false);
+                setPaymentToDelete(null);
+            } catch (error) {
+                console.error('Error deleting payment:', error);
+                // Add error handling here
+            }
         }
     };
 
@@ -1275,6 +1304,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                 <TableRow>
                                     <TableHead>Date</TableHead>
                                     <TableHead>Amount</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -1292,11 +1322,20 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                 <TableCell>
                                                     {formatAmount(payment.amount, appCurrency)}
                                                 </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeletePayment(payment)}
+                                                    >
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={2} className="text-center">
+                                        <TableCell colSpan={3} className="text-center">
                                             No payment records found
                                         </TableCell>
                                     </TableRow>
@@ -1733,6 +1772,26 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                 Cancel
                             </Button>
                             <Button onClick={confirmCreateBill}>Create Bill</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={isDeletePaymentDialogOpen} onOpenChange={setIsDeletePaymentDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Delete Payment</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <p>Are you sure you want to delete this payment of {paymentToDelete ? formatAmount(paymentToDelete.amount, appCurrency) : ''}?</p>
+                            <p className="text-red-600 mt-2">This action cannot be undone.</p>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDeletePaymentDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" onClick={confirmDeletePayment}>
+                                Delete Payment
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

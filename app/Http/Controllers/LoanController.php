@@ -177,6 +177,19 @@ class LoanController extends Controller
         }
     }
 
+    public function deletePayment(string $id, string $paymentId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/loan-payments/{$id}/{$paymentId}");
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error deleting payment: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete payment.'], 500);
+        }
+    }
+
     public function getBills(string $id)
     {
         try {
