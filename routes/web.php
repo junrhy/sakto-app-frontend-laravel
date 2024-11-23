@@ -177,7 +177,14 @@ Route::middleware('auth')->group(function () {
     });
 
     // Payroll routes
-    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll');
+    Route::prefix('payroll')->group(function () {
+        Route::get('/', [PayrollController::class, 'index'])->name('payroll');
+        Route::get('/list', [PayrollController::class, 'getList']);
+        Route::post('/', [PayrollController::class, 'store']);
+        Route::put('/{id}', [PayrollController::class, 'update']);
+        Route::delete('/{id}', [PayrollController::class, 'destroy']);
+        Route::delete('/bulk', [PayrollController::class, 'bulkDestroy']);
+    });
 
     // Travel routes
     Route::prefix('travel')->group(function () {

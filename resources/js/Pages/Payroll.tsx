@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -10,8 +10,9 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Plus, Edit, Trash, Search, DollarSign } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
+import axios from 'axios';
 
-interface Employee {
+interface Payroll {
     id: number;
     name: string;
     position: string;
@@ -20,80 +21,109 @@ interface Employee {
     status: 'active' | 'inactive';
 }
   
-const INITIAL_EMPLOYEES: Employee[] = [
+const INITIAL_PAYROLLS: Payroll[] = [
     { id: 1, name: "John Doe", position: "Manager", salary: 5000, startDate: "2022-01-01", status: 'active' },
     { id: 2, name: "Jane Smith", position: "Developer", salary: 4000, startDate: "2022-02-15", status: 'active' },
     { id: 3, name: "Bob Johnson", position: "Designer", salary: 3500, startDate: "2022-03-01", status: 'inactive' },
 ];
 
 export default function Payroll() {
-    const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
-    const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false);
-    const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
-    const [selectedEmployees, setSelectedEmployees] = useState<number[]>([]);
+    const [payrolls, setPayrolls] = useState<Payroll[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isPayrollDialogOpen, setIsPayrollDialogOpen] = useState(false);
+    const [currentPayroll, setCurrentPayroll] = useState<Payroll | null>(null);
+    const [selectedPayrolls, setSelectedPayrolls] = useState<number[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    const handleAddEmployee = () => {
-        setCurrentEmployee(null);
-        setIsEmployeeDialogOpen(true);
+    useEffect(() => {
+        loadPayrolls();
+    }, []);
+
+    const loadPayrolls = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('/payroll/list');
+            setPayrolls(response.data);
+        } catch (error) {
+            console.error('Error loading payrolls:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleEditEmployee = (employee: Employee) => {
-        setCurrentEmployee(employee);
-        setIsEmployeeDialogOpen(true);
+    const handleAddPayroll = () => {
+        setCurrentPayroll(null);
+        setIsPayrollDialogOpen(true);
     };
 
-    const handleDeleteEmployee = (id: number) => {
-        setEmployees(employees.filter(employee => employee.id !== id));
-        setSelectedEmployees(selectedEmployees.filter(employeeId => employeeId !== id));
+    const handleEditPayroll = (payroll: Payroll) => {
+        setCurrentPayroll(payroll);
+        setIsPayrollDialogOpen(true);
     };
 
-    const handleDeleteSelectedEmployees = () => {
-        setEmployees(employees.filter(employee => !selectedEmployees.includes(employee.id)));
-        setSelectedEmployees([]);
+    const handleDeletePayroll = async (id: number) => {
+        try {
+            await axios.delete(`/payroll/${id}`);
+            loadPayrolls();
+        } catch (error) {
+            console.error('Error deleting payroll:', error);
+        }
     };
 
-    const handleSaveEmployee = (e: React.FormEvent) => {
+    const handleDeleteSelectedPayrolls = async () => {
+        try {
+            await axios.delete('/payroll/bulk', {
+                data: { ids: selectedPayrolls }
+            });
+            loadPayrolls();
+            setSelectedPayrolls([]);
+        } catch (error) {
+            console.error('Error deleting selected payrolls:', error);
+        }
+    };
+
+    const handleSavePayroll = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentEmployee) {
-        if (currentEmployee.id) {
-            // Edit existing employee
-            setEmployees(employees.map(employee => 
-            employee.id === currentEmployee.id ? currentEmployee : employee
-            ));
-        } else {
-            // Add new employee
-            setEmployees([...employees, { ...currentEmployee, id: Date.now() }]);
+        try {
+            if (currentPayroll) {
+                if (currentPayroll.id) {
+                    await axios.put(`/payroll/${currentPayroll.id}`, currentPayroll);
+                } else {
+                    await axios.post('/payroll', currentPayroll);
+                }
+                loadPayrolls();
+                setIsPayrollDialogOpen(false);
+                setCurrentPayroll(null);
+            }
+        } catch (error) {
+            console.error('Error saving payroll:', error);
         }
-        }
-        setIsEmployeeDialogOpen(false);
-        setCurrentEmployee(null);
     };
 
-    const toggleEmployeeSelection = (id: number) => {
-        setSelectedEmployees(prev =>
-        prev.includes(id) ? prev.filter(employeeId => employeeId !== id) : [...prev, id]
+    const togglePayrollSelection = (id: number) => {
+        setSelectedPayrolls(prev =>
+            prev.includes(id) ? prev.filter(payrollId => payrollId !== id) : [...prev, id]
         );
     };
 
-    const filteredEmployees = useMemo(() => {
-        return employees.filter(employee =>
-        employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.position.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredPayrolls = useMemo(() => {
+        return payrolls.filter(payroll =>
+            payroll.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            payroll.position.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [employees, searchTerm]);
+    }, [payrolls, searchTerm]);
 
-    const paginatedEmployees = useMemo(() => {
+    const paginatedPayrolls = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
-        return filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredEmployees, currentPage]);
+        return filteredPayrolls.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredPayrolls, currentPage]);
 
-    const pageCount = Math.ceil(filteredEmployees.length / itemsPerPage);
+    const pageCount = Math.ceil(filteredPayrolls.length / itemsPerPage);
 
     const calculateTotalPayroll = () => {
-        return employees.reduce((total, employee) => total + employee.salary, 0);
+        return payrolls.reduce((total, payroll) => total + payroll.salary, 0);
     };
     
     return (
@@ -113,24 +143,24 @@ export default function Payroll() {
                     </CardHeader>
                     <CardContent>
                     <div className="text-2xl font-bold">Total Monthly Payroll: ${calculateTotalPayroll().toFixed(2)}</div>
-                    <div>Total Employees: {employees.length}</div>
-                    <div>Active Employees: {employees.filter(e => e.status === 'active').length}</div>
+                    <div>Total Payrolls: {payrolls.length}</div>
+                    <div>Active Payrolls: {payrolls.filter(p => p.status === 'active').length}</div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader>
-                    <CardTitle>Employee Management</CardTitle>
+                    <CardTitle>Payroll Management</CardTitle>
                     </CardHeader>
                     <CardContent>
                     <div className="flex justify-between mb-4">
                         <div className="flex items-center space-x-2">
-                        <Button onClick={handleAddEmployee}>
-                            <Plus className="mr-2 h-4 w-4" /> Add Employee
+                        <Button onClick={handleAddPayroll}>
+                            <Plus className="mr-2 h-4 w-4" /> Add Payroll
                         </Button>
                         <Button 
-                            onClick={handleDeleteSelectedEmployees} 
+                            onClick={handleDeleteSelectedPayrolls} 
                             variant="destructive" 
-                            disabled={selectedEmployees.length === 0}
+                            disabled={selectedPayrolls.length === 0}
                         >
                             <Trash className="mr-2 h-4 w-4" /> Delete Selected
                         </Button>
@@ -138,7 +168,7 @@ export default function Payroll() {
                         <div className="flex items-center space-x-2">
                         <Search className="h-4 w-4 text-gray-500" />
                         <Input
-                            placeholder="Search employees..."
+                            placeholder="Search payrolls..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-64"
@@ -150,12 +180,12 @@ export default function Payroll() {
                         <TableRow>
                             <TableHead className="w-[50px]">
                             <Checkbox
-                                checked={selectedEmployees.length === paginatedEmployees.length}
+                                checked={selectedPayrolls.length === paginatedPayrolls.length}
                                 onCheckedChange={(checked) => {
                                 if (checked) {
-                                    setSelectedEmployees(paginatedEmployees.map(employee => employee.id));
+                                    setSelectedPayrolls(paginatedPayrolls.map(payroll => payroll.id));
                                 } else {
-                                    setSelectedEmployees([]);
+                                    setSelectedPayrolls([]);
                                 }
                                 }}
                             />
@@ -169,24 +199,24 @@ export default function Payroll() {
                         </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {paginatedEmployees.map((employee) => (
-                            <TableRow key={employee.id}>
+                        {paginatedPayrolls.map((payroll) => (
+                            <TableRow key={payroll.id}>
                             <TableCell>
                                 <Checkbox
-                                checked={selectedEmployees.includes(employee.id)}
-                                onCheckedChange={() => toggleEmployeeSelection(employee.id)}
+                                checked={selectedPayrolls.includes(payroll.id)}
+                                onCheckedChange={() => togglePayrollSelection(payroll.id)}
                                 />
                             </TableCell>
-                            <TableCell>{employee.name}</TableCell>
-                            <TableCell>{employee.position}</TableCell>
-                            <TableCell>${employee.salary.toFixed(2)}</TableCell>
-                            <TableCell>{employee.startDate}</TableCell>
-                            <TableCell>{employee.status}</TableCell>
+                            <TableCell>{payroll.name}</TableCell>
+                            <TableCell>{payroll.position}</TableCell>
+                            <TableCell>${payroll.salary.toFixed(2)}</TableCell>
+                            <TableCell>{payroll.startDate}</TableCell>
+                            <TableCell>{payroll.status}</TableCell>
                             <TableCell>
-                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditEmployee(employee)}>
+                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditPayroll(payroll)}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit
                                 </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDeleteEmployee(employee.id)}>
+                                <Button variant="destructive" size="sm" onClick={() => handleDeletePayroll(payroll.id)}>
                                 <Trash className="mr-2 h-4 w-4" /> Delete
                                 </Button>
                             </TableCell>
@@ -196,7 +226,7 @@ export default function Payroll() {
                     </Table>
                     <div className="flex justify-between items-center mt-4">
                         <div>
-                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredPayrolls.length)} of {filteredPayrolls.length} payrolls
                         </div>
                         <div className="flex space-x-2">
                         <Button
@@ -225,19 +255,19 @@ export default function Payroll() {
                     </CardContent>
                 </Card>
 
-                <Dialog open={isEmployeeDialogOpen} onOpenChange={setIsEmployeeDialogOpen}>
+                <Dialog open={isPayrollDialogOpen} onOpenChange={setIsPayrollDialogOpen}>
                     <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{currentEmployee?.id ? 'Edit Employee' : 'Add Employee'}</DialogTitle>
+                        <DialogTitle>{currentPayroll?.id ? 'Edit Payroll' : 'Add Payroll'}</DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSaveEmployee}>
+                    <form onSubmit={handleSavePayroll}>
                         <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Name</Label>
                             <Input
                             id="name"
-                            value={currentEmployee?.name || ''}
-                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, name: e.target.value })}
+                            value={currentPayroll?.name || ''}
+                            onChange={(e) => setCurrentPayroll({ ...currentPayroll!, name: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
@@ -245,8 +275,8 @@ export default function Payroll() {
                             <Label htmlFor="position" className="text-right">Position</Label>
                             <Input
                             id="position"
-                            value={currentEmployee?.position || ''}
-                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, position: e.target.value })}
+                            value={currentPayroll?.position || ''}
+                            onChange={(e) => setCurrentPayroll({ ...currentPayroll!, position: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
@@ -255,8 +285,8 @@ export default function Payroll() {
                             <Input
                             id="salary"
                             type="number"
-                            value={currentEmployee?.salary || ''}
-                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, salary: parseFloat(e.target.value) })}
+                            value={currentPayroll?.salary || ''}
+                            onChange={(e) => setCurrentPayroll({ ...currentPayroll!, salary: parseFloat(e.target.value) })}
                             className="col-span-3"
                             />
                         </div>
@@ -265,16 +295,16 @@ export default function Payroll() {
                             <Input
                             id="startDate"
                             type="date"
-                            value={currentEmployee?.startDate || ''}
-                            onChange={(e) => setCurrentEmployee({ ...currentEmployee!, startDate: e.target.value })}
+                            value={currentPayroll?.startDate || ''}
+                            onChange={(e) => setCurrentPayroll({ ...currentPayroll!, startDate: e.target.value })}
                             className="col-span-3"
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">Status</Label>
                             <Select
-                            value={currentEmployee?.status || ''}
-                            onValueChange={(value: 'active' | 'inactive') => setCurrentEmployee({ ...currentEmployee!, status: value })}
+                            value={currentPayroll?.status || ''}
+                            onValueChange={(value: 'active' | 'inactive') => setCurrentPayroll({ ...currentPayroll!, status: value })}
                             >
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Select status" />
