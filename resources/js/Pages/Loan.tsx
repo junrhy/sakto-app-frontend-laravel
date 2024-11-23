@@ -601,6 +601,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
     const handleShowBillDetails = (bill: Bill) => {
         setSelectedBill(bill);
         setIsBillDetailsDialogOpen(true);
+        setBillNote("");
     };
 
     // Update the bills filtering logic to handle undefined bills
@@ -632,6 +633,17 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
             return [];
         }
     }, [currentLoan?.id, bills, billFilter]); // Note: Only depend on currentLoan.id, not the entire object
+
+    const handleDeleteBill = async (billId: number) => {
+        try {
+            await axios.delete(`/loan/bill/${billId}`);
+            // Remove the deleted bill from state
+            setBills(prevBills => prevBills.filter(bill => bill.id !== billId));
+        } catch (error) {
+            console.error('Error deleting bill:', error);
+            // You might want to add error handling/notification here
+        }
+    };
 
     return (
         <AuthenticatedLayout
@@ -1339,12 +1351,12 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>Created At</TableHead>
                                     <TableHead className="w-[60px]">Bill #</TableHead>
                                     <TableHead>Due Date</TableHead>
                                     <TableHead>Amount Due</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Note</TableHead>
-                                    <TableHead>Created At</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -1366,8 +1378,18 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                         const status = bill.status || 'pending';
                                         const StatusIcon = statusConfig[status].icon;
 
+                                        // Format the created_at date
+                                        const createdDate = new Date(bill.created_at);
+                                        const formattedCreatedAt = createdDate.toLocaleString('en-US', {
+                                            month: 'long',
+                                            year: 'numeric'
+                                        });
+
                                         return (
                                             <TableRow key={bill.id}>
+                                                <TableCell>
+                                                    {formattedCreatedAt}
+                                                </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <FileText className="h-4 w-4" />
@@ -1394,9 +1416,6 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                         {bill.note || '-'}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell>
-                                                    {new Date(bill.created_at).toLocaleString()}
-                                                </TableCell>
                                                 <TableCell className="text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
@@ -1419,6 +1438,12 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                                 disabled={bill.status === 'overdue'}
                                                             >
                                                                 Mark as Overdue
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleDeleteBill(bill.id)}
+                                                                className="text-red-600 dark:text-red-400"
+                                                            >
+                                                                Delete Bill
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
