@@ -167,6 +167,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [LoanController::class, 'destroy']);
         Route::post('/bulk-delete', [LoanController::class, 'bulkDestroy']);
         Route::post('/{id}/payment', [LoanController::class, 'recordPayment']);
+        Route::delete('/{id}/payment/{paymentId}', [LoanController::class, 'deletePayment']);
         Route::get('/bills/{id}', [LoanController::class, 'getBills']);
         Route::post('/bill/{id}', [LoanController::class, 'createBill']);
         Route::put('/bill/{id}', [LoanController::class, 'updateBill']);
