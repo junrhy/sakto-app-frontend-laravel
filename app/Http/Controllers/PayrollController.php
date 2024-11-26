@@ -24,10 +24,10 @@ class PayrollController extends Controller
         return Inertia::render('Payroll', ['payrolls' => $payrolls]);
     }
 
-    public function getList(Request $request): JsonResponse
+    public function getList(): JsonResponse
     {
         try {
-            $client_identifier = $request->client_identifier;
+            $client_identifier = auth()->user()->client_identifier;
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/payroll", ['client_identifier' => $client_identifier]);
 
