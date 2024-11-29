@@ -66,7 +66,7 @@ export default function Inbox({ auth }: Props) {
 
     return (
         <div className="relative min-h-screen pb-16">
-            <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 to-purple-600 z-10">
+            <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-black via-gray-900 to-black z-10">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center">
