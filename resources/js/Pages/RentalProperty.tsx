@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Plus, Edit, Trash, Search, Home } from "lucide-react";
+import { Plus, Edit, Trash, Search, Home, History } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
+import axios from 'axios';
 
 interface RentalProperty {
     id: number;
@@ -19,25 +20,63 @@ interface RentalProperty {
     bathrooms: number;
     rent: number;
     status: 'available' | 'rented' | 'maintenance';
-    tenantName?: string;
-    leaseStart?: string;
-    leaseEnd?: string;
+    tenant_name?: string;
+    lease_start?: string;
+    lease_end?: string;
+    last_payment_received?: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+    payments?: {
+        payment_date: string;
+        amount: number;
+    }[];
 }
   
-const INITIAL_PROPERTIES: RentalProperty[] = [
-    { id: 1, address: "123 Main St", type: "apartment", bedrooms: 2, bathrooms: 1, rent: 1200, status: "available" },
-    { id: 2, address: "456 Elm St", type: "house", bedrooms: 3, bathrooms: 2, rent: 1800, status: "rented", tenantName: "John Doe", leaseStart: "2023-01-01", leaseEnd: "2023-12-31" },
-    { id: 3, address: "789 Oak St", type: "condo", bedrooms: 1, bathrooms: 1, rent: 1000, status: "maintenance" },
-];
-
-export default function RentalProperty() {
-    const [properties, setProperties] = useState<RentalProperty[]>(INITIAL_PROPERTIES);
+export default function RentalProperty(props: { initialProperties: RentalProperty[], initialPayments: any[], appCurrency: any }) {
+    const [properties, setProperties] = useState<RentalProperty[]>(props.initialProperties || []);
+    const [payments, setPayments] = useState<any[]>(props.initialPayments || []);
     const [isPropertyDialogOpen, setIsPropertyDialogOpen] = useState(false);
     const [currentProperty, setCurrentProperty] = useState<RentalProperty | null>(null);
     const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const [paymentProperty, setPaymentProperty] = useState<RentalProperty | null>(null);
+    const [paymentAmount, setPaymentAmount] = useState<string>("");
+    const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
+    const [selectedPropertyHistory, setSelectedPropertyHistory] = useState<RentalProperty | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        fetchProperties();
+    }, []);
+
+    const fetchProperties = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get('/rental-property/list', {
+                params: {
+                    search: searchTerm,
+                    page: currentPage,
+                    per_page: itemsPerPage
+                }
+            });
+            if (response.data && response.data.data && response.data.data.properties) {
+                setProperties(response.data.data.properties);
+            } else {
+                console.error('Invalid response format:', response);
+                setProperties([]);
+            }
+        } catch (error) {
+            console.error('Failed to fetch properties:', error);
+            setProperties([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleAddProperty = () => {
         setCurrentProperty(null);
@@ -49,31 +88,45 @@ export default function RentalProperty() {
         setIsPropertyDialogOpen(true);
     };
 
-    const handleDeleteProperty = (id: number) => {
-        setProperties(properties.filter(property => property.id !== id));
-        setSelectedProperties(selectedProperties.filter(propertyId => propertyId !== id));
+    const handleDeleteProperty = async (id: number) => {
+        try {
+            await axios.delete(`/rental-property/${id}`);
+            fetchProperties();
+        } catch (error) {
+            console.error('Failed to delete property:', error);
+        }
     };
 
-    const handleDeleteSelectedProperties = () => {
-        setProperties(properties.filter(property => !selectedProperties.includes(property.id)));
-        setSelectedProperties([]);
+    const handleDeleteSelectedProperties = async () => {
+        try {
+            await axios.post('/rental-property/bulk', {
+                ids: selectedProperties
+            });
+            fetchProperties();
+            setSelectedProperties([]);
+        } catch (error) {
+            console.error('Failed to delete properties:', error);
+        }
     };
 
-    const handleSaveProperty = (e: React.FormEvent) => {
+    const handleSaveProperty = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (currentProperty) {
-        if (currentProperty.id) {
-            // Edit existing property
-            setProperties(properties.map(property => 
-            property.id === currentProperty.id ? currentProperty : property
-            ));
-        } else {
-            // Add new property
-            setProperties([...properties, { ...currentProperty, id: Date.now() }]);
+        try {
+            if (currentProperty) {
+                if (currentProperty.id) {
+                    // Edit existing property
+                    await axios.put(`/rental-property/${currentProperty.id}`, currentProperty);
+                } else {
+                    // Add new property
+                    await axios.post('/rental-property', currentProperty);
+                }
+                fetchProperties();
+                setIsPropertyDialogOpen(false);
+                setCurrentProperty(null);
+            }
+        } catch (error) {
+            console.error('Failed to save property:', error);
         }
-        }
-        setIsPropertyDialogOpen(false);
-        setCurrentProperty(null);
     };
 
     const togglePropertySelection = (id: number) => {
@@ -83,20 +136,64 @@ export default function RentalProperty() {
     };
 
     const filteredProperties = useMemo(() => {
+        if (!Array.isArray(properties)) {
+            console.warn('Properties is not an array:', properties);
+            return [];
+        }
+        
         return properties.filter(property =>
-        property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.status.toLowerCase().includes(searchTerm.toLowerCase())
+            property.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            property.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            property.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (property.tenant_name && property.tenant_name.toLowerCase().includes(searchTerm.toLowerCase()))
         );
     }, [properties, searchTerm]);
 
     const paginatedProperties = useMemo(() => {
+        if (!Array.isArray(filteredProperties) || filteredProperties.length === 0) {
+            return [];
+        }
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredProperties.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredProperties, currentPage]);
 
     const pageCount = Math.ceil(filteredProperties.length / itemsPerPage);
     
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (paymentProperty) {
+            try {
+                await axios.post(`/rental-property/${paymentProperty.id}/payment`, {
+                    amount: paymentAmount,
+                    payment_date: paymentDate
+                });
+                fetchProperties();
+                setIsPaymentDialogOpen(false);
+                setPaymentProperty(null);
+                setPaymentAmount("");
+            } catch (error) {
+                console.error('Failed to record payment:', error);
+            }
+        }
+    };
+
+    const handlePayment = (property: RentalProperty) => {
+        setPaymentProperty(property);
+        setPaymentAmount(property.rent.toString());
+        setIsPaymentDialogOpen(true);
+    };
+
+    const handlePaymentHistory = async (property: RentalProperty) => {
+        try {
+            const response = await axios.get(`/rental-property/${property.id}/payment-history`);
+            setSelectedPropertyHistory(property);
+            // Add logic to handle payment history data
+            setIsPaymentHistoryDialogOpen(true);
+        } catch (error) {
+            console.error('Failed to fetch payment history:', error);
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -158,44 +255,103 @@ export default function RentalProperty() {
                                     <TableHead>Rent</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Tenant</TableHead>
+                                    <TableHead>Last Payment</TableHead>
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {paginatedProperties.map((property) => (
-                                    <TableRow key={property.id}>
-                                    <TableCell>
-                                        <Checkbox
-                                        checked={selectedProperties.includes(property.id)}
-                                        onCheckedChange={() => togglePropertySelection(property.id)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>{property.address}</TableCell>
-                                    <TableCell>{property.type}</TableCell>
-                                    <TableCell>{property.bedrooms}</TableCell>
-                                    <TableCell>{property.bathrooms}</TableCell>
-                                    <TableCell>${property.rent}</TableCell>
-                                    <TableCell>{property.status}</TableCell>
-                                    <TableCell>
-                                        {property.tenantName ? (
-                                        <div>
-                                            <p>{property.tenantName}</p>
-                                            <p className="text-sm text-gray-500">{property.leaseStart} to {property.leaseEnd}</p>
-                                        </div>
-                                        ) : (
-                                        "N/A"
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditProperty(property)}>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit
-                                        </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteProperty(property.id)}>
-                                        <Trash className="mr-2 h-4 w-4" /> Delete
-                                        </Button>
-                                    </TableCell>
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={10} className="text-center">
+                                            Loading properties...
+                                        </TableCell>
                                     </TableRow>
-                                ))}
+                                ) : paginatedProperties.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={10} className="text-center">
+                                            No properties found
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    paginatedProperties.map((property) => (
+                                        <TableRow key={property.id}>
+                                        <TableCell>
+                                            <Checkbox
+                                            checked={selectedProperties.includes(property.id)}
+                                            onCheckedChange={() => togglePropertySelection(property.id)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>{property.address}</TableCell>
+                                        <TableCell>{property.type}</TableCell>
+                                        <TableCell>{property.bedrooms}</TableCell>
+                                        <TableCell>{property.bathrooms}</TableCell>
+                                        <TableCell>{props.appCurrency.symbol}{property.rent}</TableCell>
+                                        <TableCell>{property.status}</TableCell>
+                                        <TableCell>
+                                            {property.tenant_name ? (
+                                            <div>
+                                                <p>{property.tenant_name}</p>
+                                                <p className="text-sm text-gray-500">{property.lease_start} to {property.lease_end}</p>
+                                            </div>
+                                            ) : (
+                                            "N/A"
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {payments && payments.length > 0 ? (
+                                                <div className="flex flex-col">
+                                                    <span>
+                                                        {payments[payments.length - 1].payment_date}
+                                                    </span>
+                                                    <span className="text-sm text-gray-600">
+                                                        {props.appCurrency.symbol}
+                                                        {payments[payments.length - 1].amount.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                'No payments'
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center space-x-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => handleEditProperty(property)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button 
+                                                    variant="destructive" 
+                                                    size="sm" 
+                                                    onClick={() => handleDeleteProperty(property.id)}
+                                                >
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                                {property.status === 'rented' && (
+                                                    <>
+                                                        <Button 
+                                                            variant="default" 
+                                                            size="sm"
+                                                            onClick={() => handlePayment(property)}
+                                                        >
+                                                            Pay
+                                                        </Button>
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="sm"
+                                                            onClick={() => handlePaymentHistory(property)}
+                                                        >
+                                                            <History className="h-4 w-4 mr-1" />
+                                                            Payment
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
                                 </TableBody>
                             </Table>
                             <div className="flex justify-between items-center mt-4">
@@ -311,32 +467,42 @@ export default function RentalProperty() {
                                 {currentProperty?.status === 'rented' && (
                                     <>
                                     <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="tenantName" className="text-right">Tenant Name</Label>
+                                        <Label htmlFor="tenant_name" className="text-right">Tenant Name</Label>
                                         <Input
-                                        id="tenantName"
-                                        value={currentProperty?.tenantName || ''}
-                                        onChange={(e) => setCurrentProperty({ ...currentProperty!, tenantName: e.target.value })}
+                                        id="tenant_name"
+                                        value={currentProperty?.tenant_name || ''}
+                                        onChange={(e) => setCurrentProperty({ ...currentProperty!, tenant_name: e.target.value })}
                                         className="col-span-3"
                                         />
                                     </div>
                                     <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="leaseStart" className="text-right">Lease Start</Label>
+                                        <Label htmlFor="lease_start" className="text-right">Lease Start</Label>
                                         <Input
-                                        id="leaseStart"
+                                        id="lease_start"
                                         type="date"
-                                        value={currentProperty?.leaseStart || ''}
-                                        onChange={(e) => setCurrentProperty({ ...currentProperty!, leaseStart: e.target.value })}
+                                        value={currentProperty?.lease_start || ''}
+                                        onChange={(e) => setCurrentProperty({ ...currentProperty!, lease_start: e.target.value })}
                                         className="col-span-3"
                                         />
                                     </div>
                                     <div className="grid grid-cols-4 items-center gap-4">
-                                        <Label htmlFor="leaseEnd" className="text-right">Lease End</Label>
+                                        <Label htmlFor="lease_end" className="text-right">Lease End</Label>
                                         <Input
-                                        id="leaseEnd"
+                                        id="lease_end"
                                         type="date"
-                                        value={currentProperty?.leaseEnd || ''}
-                                        onChange={(e) => setCurrentProperty({ ...currentProperty!, leaseEnd: e.target.value })}
+                                        value={currentProperty?.lease_end || ''}
+                                        onChange={(e) => setCurrentProperty({ ...currentProperty!, lease_end: e.target.value })}
                                         className="col-span-3"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label htmlFor="last_payment_received" className="text-right">Last Payment</Label>
+                                        <Input
+                                            id="last_payment_received"
+                                            type="date"
+                                            value={currentProperty?.last_payment_received || ''}
+                                            onChange={(e) => setCurrentProperty({ ...currentProperty!, last_payment_received: e.target.value })}
+                                            className="col-span-3"
                                         />
                                     </div>
                                     </>
@@ -346,6 +512,115 @@ export default function RentalProperty() {
                                 <Button type="submit">Save</Button>
                                 </DialogFooter>
                             </form>
+                            </DialogContent>
+                        </Dialog>
+
+                        <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Record Payment</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handlePaymentSubmit}>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="propertyAddress" className="text-right">Property</Label>
+                                            <div className="col-span-3">
+                                                {paymentProperty?.address}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="tenant_name" className="text-right">Tenant</Label>
+                                            <div className="col-span-3">
+                                                {paymentProperty?.tenant_name}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="paymentAmount" className="text-right">Amount</Label>
+                                            <Input
+                                                id="paymentAmount"
+                                                type="number"
+                                                value={paymentAmount}
+                                                onChange={(e) => setPaymentAmount(e.target.value)}
+                                                className="col-span-3"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="paymentDate" className="text-right">Payment Date</Label>
+                                            <Input
+                                                id="paymentDate"
+                                                type="date"
+                                                value={paymentDate}
+                                                onChange={(e) => setPaymentDate(e.target.value)}
+                                                className="col-span-3"
+                                            />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="submit">Record Payment</Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+
+                        <Dialog open={isPaymentHistoryDialogOpen} onOpenChange={setIsPaymentHistoryDialogOpen}>
+                            <DialogContent className="max-w-3xl">
+                                <DialogHeader>
+                                    <DialogTitle>Payment History</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <Label>Property Address</Label>
+                                            <p className="text-sm">{selectedPropertyHistory?.address}</p>
+                                        </div>
+                                        <div>
+                                            <Label>Tenant Name</Label>
+                                            <p className="text-sm">{selectedPropertyHistory?.tenant_name}</p>
+                                        </div>
+                                        <div>
+                                            <Label>Lease Period</Label>
+                                            <p className="text-sm">
+                                                {selectedPropertyHistory?.lease_start} to {selectedPropertyHistory?.lease_end}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <Label>Monthly Rent</Label>
+                                            <p className="text-sm">${selectedPropertyHistory?.rent}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6">
+                                        <Label>Payment Records</Label>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead>Amount</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                    <TableHead>Reference</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {/* Placeholder payment history - replace with actual data */}
+                                                <TableRow>
+                                                    <TableCell>{selectedPropertyHistory?.last_payment_received}</TableCell>
+                                                    <TableCell>{props.appCurrency.symbol}{selectedPropertyHistory?.rent}</TableCell>
+                                                    <TableCell>
+                                                        <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                                            Paid
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>#PAY-001</TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsPaymentHistoryDialogOpen(false)}>
+                                        Close
+                                    </Button>
+                                </DialogFooter>
                             </DialogContent>
                         </Dialog>
                 </div>

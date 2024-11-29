@@ -157,7 +157,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/rental-item', [RentalItemController::class, 'index'])->name('rental-item');
 
     // Rental Property routes
-    Route::get('/rental-property', [RentalPropertyController::class, 'index'])->name('rental-property');
+    Route::prefix('rental-property')->group(function () {
+        Route::get('/', [RentalPropertyController::class, 'index'])->name('rental-property');
+        Route::get('/list', [RentalPropertyController::class, 'getProperties']);
+        Route::post('/', [RentalPropertyController::class, 'store']);
+        Route::put('/{id}', [RentalPropertyController::class, 'update']);
+        Route::delete('/{id}', [RentalPropertyController::class, 'destroy']);
+        Route::post('/bulk', [RentalPropertyController::class, 'bulkDestroy']);
+        Route::post('/{id}/payment', [RentalPropertyController::class, 'recordPayment']);
+        Route::get('/{id}/payment-history', [RentalPropertyController::class, 'getPaymentHistory']);
+    });
 
     // Loan routes
     Route::prefix('loan')->group(function () {
