@@ -44,6 +44,16 @@ interface PaymentRecord {
     updated_at: string;
 }
 
+interface PropertyAnalytics {
+    totalProperties: number;
+    occupancyRate: number;
+    totalRentCollected: number;
+    propertiesRented: number;
+    propertiesAvailable: number;
+    propertiesInMaintenance: number;
+    averageRent: number;
+}
+
 export default function RentalProperty(props: { initialProperties: RentalProperty[], initialPayments: any[], appCurrency: any }) {
     const [properties, setProperties] = useState<RentalProperty[]>(props.initialProperties || []);
     const [payments, setPayments] = useState<any[]>(props.initialPayments || []);
@@ -61,6 +71,15 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
     const [selectedPropertyHistory, setSelectedPropertyHistory] = useState<RentalProperty | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
+    const [analytics, setAnalytics] = useState<PropertyAnalytics>({
+        totalProperties: 0,
+        occupancyRate: 0,
+        totalRentCollected: 0,
+        propertiesRented: 0,
+        propertiesAvailable: 0,
+        propertiesInMaintenance: 0,
+        averageRent: 0
+    });
 
     useEffect(() => {
         fetchProperties();
@@ -77,7 +96,9 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                 }
             });
             if (response.data && response.data.data && response.data.data.properties) {
-                setProperties(response.data.data.properties);
+                const properties = response.data.data.properties;
+                setProperties(properties);
+                calculateAnalytics(properties);
             } else {
                 console.error('Invalid response format:', response);
                 setProperties([]);
@@ -88,6 +109,27 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const calculateAnalytics = (properties: RentalProperty[]) => {
+        const total = properties.length;
+        const rented = properties.filter(p => p.status === 'rented').length;
+        const available = properties.filter(p => p.status === 'available').length;
+        const maintenance = properties.filter(p => p.status === 'maintenance').length;
+        
+        const totalRent = properties.reduce((sum, prop) => sum + prop.rent, 0);
+        const avgRent = total > 0 ? totalRent / total : 0;
+        const occupancy = total > 0 ? (rented / total) * 100 : 0;
+
+        setAnalytics({
+            totalProperties: total,
+            occupancyRate: occupancy,
+            totalRentCollected: totalRent,
+            propertiesRented: rented,
+            propertiesAvailable: available,
+            propertiesInMaintenance: maintenance,
+            averageRent: avgRent
+        });
     };
 
     const handleAddProperty = () => {
@@ -222,26 +264,99 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                         <CardTitle>Properties</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex justify-between mb-4">
-                                <div className="flex items-center space-x-2">
-                                <Button onClick={handleAddProperty}>
+                        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 mb-6">
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Total</CardTitle>
+                                    <Home className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{analytics.totalProperties}</div>
+                                    <p className="text-xs text-muted-foreground">Properties</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Occupancy</CardTitle>
+                                    <div className="h-4 w-4 text-muted-foreground">%</div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{analytics.occupancyRate.toFixed(1)}%</div>
+                                    <p className="text-xs text-muted-foreground">Rented</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                                    <div className="h-4 w-4 text-muted-foreground">{props.appCurrency.symbol}</div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">
+                                        {analytics.totalRentCollected.toLocaleString()}
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Monthly</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Rented</CardTitle>
+                                    <div className="h-4 w-4 rounded-full bg-green-500" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{analytics.propertiesRented}</div>
+                                    <p className="text-xs text-muted-foreground">Properties</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Available</CardTitle>
+                                    <div className="h-4 w-4 rounded-full bg-blue-500" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{analytics.propertiesAvailable}</div>
+                                    <p className="text-xs text-muted-foreground">Properties</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Maintenance</CardTitle>
+                                    <div className="h-4 w-4 rounded-full bg-yellow-500" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{analytics.propertiesInMaintenance}</div>
+                                    <p className="text-xs text-muted-foreground">Properties</p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                        <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Button 
+                                    onClick={handleAddProperty}
+                                    className="flex-1 sm:flex-none"
+                                >
                                     <Plus className="mr-2 h-4 w-4" /> Add Property
                                 </Button>
                                 <Button 
                                     onClick={handleDeleteSelectedProperties} 
                                     variant="destructive" 
                                     disabled={selectedProperties.length === 0}
+                                    className="flex-1 sm:flex-none"
                                 >
                                     <Trash className="mr-2 h-4 w-4" /> Delete Selected
                                 </Button>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                <Search className="h-4 w-4 text-gray-500" />
+                            </div>
+                            <div className="relative flex-1 sm:max-w-xs">
+                                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                                 <Input
                                     placeholder="Search properties..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-64"
+                                    className="w-full pl-8"
                                 />
                             </div>
                         </div>
