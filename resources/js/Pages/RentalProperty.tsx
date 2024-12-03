@@ -15,7 +15,7 @@ import axios from 'axios';
 interface RentalProperty {
     id: number;
     address: string;
-    type: 'apartment' | 'house' | 'condo' | 'townhouse';
+    type: 'apartment' | 'house' | 'condo' | 'townhouse' | 'commercial' | 'office' | 'retail' | 'industrial' | 'warehouse' | 'building' | 'residential-lot' | 'commercial-lot' | 'agricultural-lot';
     bedrooms: number;
     bathrooms: number;
     rent: number;
@@ -531,18 +531,27 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="type" className="text-right">Type</Label>
                                     <Select
-                                    value={currentProperty?.type || ''}
-                                    onValueChange={(value: 'apartment' | 'house' | 'condo' | 'townhouse') => setCurrentProperty({ ...currentProperty!, type: value })}
+                                        value={currentProperty?.type || ''}
+                                        onValueChange={(value) => setCurrentProperty({ ...currentProperty!, type: value as RentalProperty['type'] })}
                                     >
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="apartment">Apartment</SelectItem>
-                                        <SelectItem value="house">House</SelectItem>
-                                        <SelectItem value="condo">Condo</SelectItem>
-                                        <SelectItem value="townhouse">Townhouse</SelectItem>
-                                    </SelectContent>
+                                        <SelectTrigger className="col-span-3">
+                                            <SelectValue placeholder="Select type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="apartment">Apartment</SelectItem>
+                                            <SelectItem value="house">House</SelectItem>
+                                            <SelectItem value="condo">Condominium</SelectItem>
+                                            <SelectItem value="townhouse">Townhouse</SelectItem>
+                                            <SelectItem value="commercial">Commercial Space</SelectItem>
+                                            <SelectItem value="office">Office Space</SelectItem>
+                                            <SelectItem value="retail">Retail Space</SelectItem>
+                                            <SelectItem value="industrial">Industrial Space</SelectItem>
+                                            <SelectItem value="warehouse">Warehouse</SelectItem>
+                                            <SelectItem value="building">Building</SelectItem>
+                                            <SelectItem value="residential-lot">Residential Lot</SelectItem>
+                                            <SelectItem value="commercial-lot">Commercial Lot</SelectItem>
+                                            <SelectItem value="agricultural-lot">Agricultural Lot</SelectItem>
+                                        </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
