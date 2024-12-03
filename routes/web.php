@@ -154,7 +154,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
 
     // Rental Item routes
-    Route::get('/rental-item', [RentalItemController::class, 'index'])->name('rental-item');
+    Route::prefix('rental-item')->group(function () {
+        Route::get('/', [RentalItemController::class, 'index'])->name('rental-items');
+        Route::get('/list', [RentalItemController::class, 'getItems']);
+        Route::post('/', [RentalItemController::class, 'store']);
+        Route::put('/{id}', [RentalItemController::class, 'update']);
+        Route::delete('/{id}', [RentalItemController::class, 'destroy']);
+        Route::post('/bulk-delete', [RentalItemController::class, 'bulkDestroy']);
+        Route::post('/{id}/payment', [RentalItemController::class, 'recordPayment']);
+        Route::get('/{id}/payment-history', [RentalItemController::class, 'getPaymentHistory']);
+    });
 
     // Rental Property routes
     Route::prefix('rental-property')->group(function () {
