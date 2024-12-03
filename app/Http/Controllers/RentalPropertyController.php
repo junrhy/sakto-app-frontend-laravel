@@ -119,10 +119,11 @@ class RentalPropertyController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post($this->apiUrl . '/rental-property/' . $id . '/payments', [
+                ->post($this->apiUrl . '/rental-property/' . $id . '/payment', [
                     'amount' => $request->amount,
                     'payment_date' => $request->payment_date,
-                    'notes' => $request->notes
+                    'notes' => $request->notes,
+                    'client_identifier' => auth()->user()->identifier
                 ]);
             return $response->json();
         } catch (\Exception $e) {
@@ -134,7 +135,7 @@ class RentalPropertyController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/rental-property/' . $id . '/payments');
+                ->get($this->apiUrl . '/rental-property/' . $id . '/payment-history');
             return $response->json();
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch payment history'], 500);

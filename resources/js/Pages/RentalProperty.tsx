@@ -32,7 +32,18 @@ interface RentalProperty {
         amount: number;
     }[];
 }
-  
+
+interface PaymentRecord {
+    id: number;
+    rental_property_id: number;
+    amount: string;
+    payment_date: string;
+    reference: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+}
+
 export default function RentalProperty(props: { initialProperties: RentalProperty[], initialPayments: any[], appCurrency: any }) {
     const [properties, setProperties] = useState<RentalProperty[]>(props.initialProperties || []);
     const [payments, setPayments] = useState<any[]>(props.initialPayments || []);
@@ -49,6 +60,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
     const [isPaymentHistoryDialogOpen, setIsPaymentHistoryDialogOpen] = useState(false);
     const [selectedPropertyHistory, setSelectedPropertyHistory] = useState<RentalProperty | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
 
     useEffect(() => {
         fetchProperties();
@@ -187,7 +199,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
         try {
             const response = await axios.get(`/rental-property/${property.id}/payment-history`);
             setSelectedPropertyHistory(property);
-            // Add logic to handle payment history data
+            setPaymentHistory(response.data.data || []);
             setIsPaymentHistoryDialogOpen(true);
         } catch (error) {
             console.error('Failed to fetch payment history:', error);
@@ -585,7 +597,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                         </div>
                                         <div>
                                             <Label>Monthly Rent</Label>
-                                            <p className="text-sm">${selectedPropertyHistory?.rent}</p>
+                                            <p className="text-sm">{props.appCurrency.symbol}{selectedPropertyHistory?.rent}</p>
                                         </div>
                                     </div>
 
@@ -601,17 +613,26 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {/* Placeholder payment history - replace with actual data */}
-                                                <TableRow>
-                                                    <TableCell>{selectedPropertyHistory?.last_payment_received}</TableCell>
-                                                    <TableCell>{props.appCurrency.symbol}{selectedPropertyHistory?.rent}</TableCell>
-                                                    <TableCell>
-                                                        <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                                            Paid
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell>#PAY-001</TableCell>
-                                                </TableRow>
+                                                {paymentHistory.length === 0 ? (
+                                                    <TableRow>
+                                                        <TableCell colSpan={4} className="text-center">
+                                                            No payment records found
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ) : (
+                                                    paymentHistory.map((payment) => (
+                                                        <TableRow key={payment.id}>
+                                                            <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
+                                                            <TableCell>{props.appCurrency.symbol}{Number(payment.amount).toLocaleString()}</TableCell>
+                                                            <TableCell>
+                                                                <span className="text-xs font-medium px-2.5 py-0.5 rounded bg-green-100 text-green-800">
+                                                                    Paid
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell>{payment.reference}</TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                )}
                                             </TableBody>
                                         </Table>
                                     </div>
