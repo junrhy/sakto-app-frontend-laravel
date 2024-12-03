@@ -15,7 +15,7 @@ import axios from 'axios';
 interface RentalProperty {
     id: number;
     address: string;
-    type: 'apartment' | 'house' | 'condo' | 'townhouse' | 'commercial' | 'office' | 'retail' | 'industrial' | 'warehouse' | 'building' | 'residential-lot' | 'commercial-lot' | 'agricultural-lot';
+    type: 'apartment' | 'house' | 'condo' | 'townhouse' | 'commercial' | 'office' | 'retail' | 'industrial' | 'warehouse' | 'building' | 'parking-lot' | 'residential-lot' | 'commercial-lot' | 'agricultural-lot';
     bedrooms: number;
     bathrooms: number;
     rent: number;
@@ -548,6 +548,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                             <SelectItem value="industrial">Industrial Space</SelectItem>
                                             <SelectItem value="warehouse">Warehouse</SelectItem>
                                             <SelectItem value="building">Building</SelectItem>
+                                            <SelectItem value="parking-lot">Parking Lot</SelectItem>
                                             <SelectItem value="residential-lot">Residential Lot</SelectItem>
                                             <SelectItem value="commercial-lot">Commercial Lot</SelectItem>
                                             <SelectItem value="agricultural-lot">Agricultural Lot</SelectItem>
