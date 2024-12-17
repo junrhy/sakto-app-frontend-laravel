@@ -6,7 +6,8 @@ import {
     FaStar, 
     FaInbox, 
     FaUser,
-    FaComments
+    FaComments,
+    FaPlus
 } from 'react-icons/fa';
 
 interface NavItem {
@@ -25,9 +26,9 @@ const navItems: NavItem[] = [
         isHome: true
     },
     {
-        icon: <FaStore />,
-        label: 'Shop',
-        route: '/shop'
+        icon: <FaPlus />,
+        label: 'Apps',
+        route: '/apps'
     },
     {
         icon: <FaInbox />,
