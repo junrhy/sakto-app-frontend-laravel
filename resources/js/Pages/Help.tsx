@@ -39,47 +39,47 @@ export default function Help({ faqItems }: Props) {
         >
             <Head title="Help" />
 
-            <div className="p-4 mb-16 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <Card className="mb-6">
-                    <CardHeader>
-                    <CardTitle>Frequently Asked Questions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <div className="mb-4 flex items-center">
-                        <Search className="mr-2 h-4 w-4 text-gray-500" />
-                        <Input
-                        placeholder="Search FAQs..."
-                        value={searchTerm}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        className="w-full"
-                        />
-                    </div>
-                    <Accordion type="single" collapsible className="w-full">
-                        {filteredFAQs.map((item, index) => (
-                        <AccordionItem key={index} value={`item-${index}`}>
-                            <AccordionTrigger>{item.question}</AccordionTrigger>
-                            <AccordionContent>{item.answer}</AccordionContent>
-                        </AccordionItem>
-                        ))}
-                    </Accordion>
-                    </CardContent>
-                </Card>
-                
-                <Card>
-                    <CardHeader>
-                    <CardTitle>Need More Help?</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                    <p>If you couldn't find the answer to your question in our FAQ, please don't hesitate to contact our support team:</p>
-                    <ul className="list-disc list-inside mt-2">
-                        <li>Email: support@sakto.app</li>
-                        <li>Live Chat: Available 24/7 on our website</li>
-                    </ul>
-                    </CardContent>
-                </Card>
+            <div className="max-w-7xl mx-auto">
+                <div className="p-4 mb-16 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <Card className="mb-6">
+                        <CardHeader>
+                        <CardTitle>Frequently Asked Questions</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <div className="mb-4 flex items-center">
+                            <Search className="mr-2 h-4 w-4 text-gray-500" />
+                            <Input
+                            placeholder="Search FAQs..."
+                            value={searchTerm}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            className="w-full"
+                            />
+                        </div>
+                        <Accordion type="single" collapsible className="w-full">
+                            {filteredFAQs.map((item, index) => (
+                            <AccordionItem key={index} value={`item-${index}`}>
+                                <AccordionTrigger>{item.question}</AccordionTrigger>
+                                <AccordionContent>{item.answer}</AccordionContent>
+                            </AccordionItem>
+                            ))}
+                        </Accordion>
+                        </CardContent>
+                    </Card>
+                    
+                    <Card>
+                        <CardHeader>
+                        <CardTitle>Need More Help?</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <p>If you couldn't find the answer to your question in our FAQ, please don't hesitate to contact our support team:</p>
+                        <ul className="list-disc list-inside mt-2">
+                            <li>Email: support@sakto.app</li>
+                            <li>Live Chat: Available 24/7 on our website</li>
+                        </ul>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-            
-            <BottomNav />
         </AuthenticatedLayout>
     );
 }
