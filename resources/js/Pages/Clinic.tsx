@@ -6,12 +6,15 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/Components/ui/dialog";
-import { Pencil, Trash2, PlusCircle, History, FileText, DollarSign } from 'lucide-react';
+import { Pencil, Trash2, PlusCircle, History, FileText, DollarSign, Plus, Edit } from 'lucide-react';
 import { Textarea } from "@/Components/ui/textarea";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import DentalChart from '@/Components/DentalChart';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Search } from 'lucide-react';
 
 type BillItem = {
     id: number;
@@ -45,6 +48,8 @@ type Patient = {
     email: string;
     phone: string;
     birthdate: string;
+    next_visit_date: string;
+    next_visit_time: string;
     client_identifier: string;
     // ... other fields
 };
@@ -66,11 +71,8 @@ const formatDateTime = (dateTimeStr: string) => {
     }).format(date);
 };
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'  // You can change this to match your desired currency
-    }).format(amount);
+const formatCurrency = (amount: number, symbol: string) => {
+    return symbol + amount;
 };
 
 // Add this near the top of the file, before the component definition
@@ -109,7 +111,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const [checkupPatientId, setCheckupPatientId] = useState<string | null>(null);
     const [showingCheckupHistoryForPatient, setShowingCheckupHistoryForPatient] = useState<Patient | null>(null);
     const [showingPaymentHistoryForPatient, setShowingPaymentHistoryForPatient] = useState<Patient | null>(null);
-    const patientsPerPage = 5;
+    const patientsPerPage = 15;
 
     // Add this new state for managing the bill history dialog
     const [isBillHistoryDialogOpen, setIsBillHistoryDialogOpen] = useState(false);
@@ -133,6 +135,12 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
 
     // First, add a new state for managing the next visit date
     const [editingNextVisit, setEditingNextVisit] = useState<{patientId: string, date: string} | null>(null);
+
+    const filteredPatients = patients.filter(patient =>
+        patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const pageCount = Math.ceil(filteredPatients.length / patientsPerPage);
 
     const calculateAge = (dateOfBirth: string): number => {
         const today = new Date();
@@ -288,11 +296,6 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         ));
     };
 
-    // Replace the existing filteredPatients definition with this:
-    const filteredPatients = patients.filter(patient =>
-        patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     const indexOfLastPatient = currentPage * patientsPerPage;
     const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
     const currentPatients = filteredPatients.slice(indexOfFirstPatient, indexOfLastPatient);
@@ -401,366 +404,237 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                     </TabsList>
 
                     <TabsContent value="patients">
-                    <div className="space-y-4 overflow-x-auto">
-                        <Input
-                        placeholder="Search patients by name or ID..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <table className="w-full border-collapse border border-gray-300">
-                        <thead>
-                            <tr className="bg-gray-100">
-                            <th className="border border-gray-300 p-2">ID</th>
-                            <th className="border border-gray-300 p-2">Name</th>
-                            <th className="border border-gray-300 p-2">Age</th>
-                            <th className="border border-gray-300 p-2">Next Visit</th>
-                            <th className="border border-gray-300 p-2">Total Bills ({currency})</th>
-                            <th className="border border-gray-300 p-2">Remaining Balance ({currency})</th>
-                            <th className="border border-gray-300 p-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentPatients.map((patient) => (
-                            <tr key={patient.id}>
-                                <td 
-                                className="border border-gray-300 p-2 cursor-pointer hover:bg-gray-100" 
-                                title={patient.id}
-                                onClick={() => openPatientInfoDialog(patient)}
-                                >
-                                {patient.id}
-                                </td>
-                                <td className="border border-gray-300 p-2">{patient.name}</td>
-                                <td className="border border-gray-300 p-2">{calculateAge(patient.birthdate)}</td>
-                                <td className="border border-gray-300 p-2">
-                                    <div className="flex items-center space-x-2">
-                                        <span>{formatDateTime(patient.nextVisitDate)}</span>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => setEditingNextVisit({ patientId: patient.id, date: patient.nextVisitDate })}
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Edit Next Visit for {patient.name}</DialogTitle>
-                                                </DialogHeader>
-                                                <form onSubmit={handleNextVisitUpdate} className="space-y-4">
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center space-x-2">
-                                                            <Label htmlFor="noNextVisit">No next visit scheduled</Label>
-                                                            <Input
-                                                                id="noNextVisit"
-                                                                type="checkbox"
-                                                                className="w-4 h-4"
-                                                                checked={editingNextVisit?.date === 'NA'}
-                                                                onChange={(e) => setEditingNextVisit(prev => 
-                                                                    prev ? { ...prev, date: e.target.checked ? 'NA' : '' } : null
-                                                                )}
-                                                            />
-                                                        </div>
-                                                        {editingNextVisit?.date !== 'NA' && (
-                                                            <div>
-                                                                <Label htmlFor="nextVisitDate">Next Visit Date & Time</Label>
-                                                                <Input
-                                                                    id="nextVisitDate"
-                                                                    type="datetime-local"
-                                                                    value={editingNextVisit?.date || ''}
-                                                                    onChange={(e) => setEditingNextVisit(prev => 
-                                                                        prev ? { ...prev, date: e.target.value } : null
+                    <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                                <div className="flex flex-col sm:flex-row gap-2">
+
+                                </div>
+                                <div className="relative w-full sm:w-64">
+                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                    <Input
+                                        placeholder="Search patients..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-8 w-full"
+                                    />
+                                </div>
+                            </div>
+
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Next Visit</TableHead>
+                                        <TableHead>Total Bills ({currency})</TableHead>
+                                        <TableHead>Balance ({currency})</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {currentPatients.map((patient) => (
+                                        <TableRow key={patient.id}>
+                                            <TableCell 
+                                                className="cursor-pointer hover:bg-gray-100" 
+                                                onClick={() => openPatientInfoDialog(patient)}
+                                            >
+                                                {patient.id}
+                                            </TableCell>
+                                            <TableCell>{patient.name}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center space-x-2">
+                                                    <span>{formatDateTime(patient.next_visit_date)}</span>
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm"
+                                                                onClick={() => setEditingNextVisit({ 
+                                                                    patientId: patient.id.toString(), 
+                                                                    date: patient.next_visit_date 
+                                                                })}
+                                                            >
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Edit Next Visit for {patient.name}</DialogTitle>
+                                                            </DialogHeader>
+                                                            <form onSubmit={handleNextVisitUpdate} className="space-y-4">
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <Label htmlFor="noNextVisit">No next visit scheduled</Label>
+                                                                        <Input
+                                                                            id="noNextVisit"
+                                                                            type="checkbox"
+                                                                            className="w-4 h-4"
+                                                                            checked={editingNextVisit?.date === 'NA'}
+                                                                            onChange={(e) => setEditingNextVisit(prev => 
+                                                                                prev ? { ...prev, date: e.target.checked ? 'NA' : '' } : null
+                                                                            )}
+                                                                        />
+                                                                    </div>
+                                                                    {editingNextVisit?.date !== 'NA' && (
+                                                                        <div>
+                                                                            <Label htmlFor="nextVisitDate">Next Visit Date & Time</Label>
+                                                                            <Input
+                                                                                id="nextVisitDate"
+                                                                                type="datetime-local"
+                                                                                value={editingNextVisit?.date || ''}
+                                                                                onChange={(e) => setEditingNextVisit(prev => 
+                                                                                    prev ? { ...prev, date: e.target.value } : null
+                                                                                )}
+                                                                                required={editingNextVisit?.date !== 'NA'}
+                                                                            />
+                                                                        </div>
                                                                     )}
-                                                                    required={editingNextVisit?.date !== 'NA'}
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <Button type="submit">Update Next Visit</Button>
-                                                </form>
-                                            </DialogContent>
-                                        </Dialog>
-                                    </div>
-                                </td>
-                                <td className="border border-gray-300 p-2">
-                                    <div className="flex items-center space-x-2">
-                                        <span>{formatCurrency(patient.billAmount)}</span>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" onClick={() => setAdditionalBillPatientId(patient.id)}>
-                                                    <PlusCircle className="h-4 w-4" /> Add Bill
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Add Bill</DialogTitle>
-                                                </DialogHeader>
-                                                <form onSubmit={handleAdditionalBill} className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="additionalBillAmount">Bill Amount ({currency})</Label>
-                                                        <Input
-                                                            id="additionalBillAmount"
-                                                            type="number"
-                                                            value={additionalBillAmount}
-                                                            onChange={(e) => setAdditionalBillAmount(e.target.value)}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <Label htmlFor="additionalBillDetails">Bill Details</Label>
-                                                        <Textarea
-                                                            id="additionalBillDetails"
-                                                            value={additionalBillDetails}
-                                                            onChange={(e) => setAdditionalBillDetails(e.target.value)}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <Button type="submit">Add Bill</Button>
-                                                </form>
-                                            </DialogContent>
-                                        </Dialog>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    onClick={() => openHistoryDialog(patient, 'bill')}
-                                                >
-                                                    <History className="h-4 w-4" /> Bill History
-                                                </Button>
-                                            </DialogTrigger>
-                                        </Dialog>
-                                    </div>
-                                </td>
-                                <td className="border border-gray-300 p-2">
-                                    <div className="flex items-center space-x-2">
-                                        <span>{formatCurrency(patient.balance)}</span>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm">
-                                                    <PlusCircle className="h-4 w-4" /> Add Payment
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Make Payment for {patient.name}</DialogTitle>
-                                                </DialogHeader>
-                                                <form onSubmit={(e) => {
-                                                    e.preventDefault();
-                                                    const form = e.target as HTMLFormElement;
-                                                    const input = form.elements.namedItem('paymentAmount') as HTMLInputElement;
-                                                    const amount = parseFloat(input.value);
-                                                    if (!isNaN(amount)) {
-                                                        handlePayment(patient.id, amount);
-                                                        input.value = '';
-                                                        (e.target as HTMLFormElement).reset();
-                                                    }
-                                                }} 
-                                                className="space-y-4"
-                                                >
-                                                    <div>
-                                                        <Label htmlFor="paymentAmount">Payment Amount ({currency})</Label>
-                                                        <Input
-                                                            id="paymentAmount"
-                                                            name="paymentAmount"
-                                                            type="number"
-                                                            placeholder="Enter amount"
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <Button type="submit">Make Payment</Button>
-                                                </form>
-                                            </DialogContent>
-                                        </Dialog>
-                                        <Dialog>
-                                            <DialogTrigger asChild>
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    onClick={() => openHistoryDialog(patient, 'payment')}
-                                                >
-                                                    <History className="h-4 w-4" /> Payment History
-                                                </Button>
-                                            </DialogTrigger>
-                                        </Dialog>
-                                    </div>
-                                </td>
-                                <td className="border border-gray-300 p-2">
+                                                                </div>
+                                                                <Button type="submit">Update Next Visit</Button>
+                                                            </form>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center space-x-2">
+                                                    <span>{formatCurrency(patient.billAmount, currency)}</span>
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm" 
+                                                                onClick={() => setAdditionalBillPatientId(patient.id.toString())}
+                                                            >
+                                                                <PlusCircle className="h-4 w-4" /> Add Bill
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Add Bill</DialogTitle>
+                                                            </DialogHeader>
+                                                            <form onSubmit={handleAdditionalBill} className="space-y-4">
+                                                                <div>
+                                                                    <Label htmlFor="additionalBillAmount">Bill Amount ({currency})</Label>
+                                                                    <Input
+                                                                        id="additionalBillAmount"
+                                                                        type="number"
+                                                                        value={additionalBillAmount}
+                                                                        onChange={(e) => setAdditionalBillAmount(e.target.value)}
+                                                                        required
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <Label htmlFor="additionalBillDetails">Bill Details</Label>
+                                                                    <Textarea
+                                                                        id="additionalBillDetails"
+                                                                        value={additionalBillDetails}
+                                                                        onChange={(e) => setAdditionalBillDetails(e.target.value)}
+                                                                        required
+                                                                    />
+                                                                </div>
+                                                                <Button type="submit">Add Bill</Button>
+                                                            </form>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center space-x-2">
+                                                    <span>{formatCurrency(patient.balance, currency)}</span>
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="outline" size="sm">
+                                                                <PlusCircle className="h-4 w-4" /> Add Payment
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Make Payment for {patient.name}</DialogTitle>
+                                                            </DialogHeader>
+                                                            <form onSubmit={(e) => {
+                                                                e.preventDefault();
+                                                                const form = e.target as HTMLFormElement;
+                                                                const input = form.elements.namedItem('paymentAmount') as HTMLInputElement;
+                                                                const amount = parseFloat(input.value);
+                                                                if (!isNaN(amount)) {
+                                                                    handlePayment(patient.id, amount);
+                                                                    input.value = '';
+                                                                    (e.target as HTMLFormElement).reset();
+                                                                }
+                                                            }} 
+                                                            className="space-y-4"
+                                                            >
+                                                                <div>
+                                                                    <Label htmlFor="paymentAmount">Payment Amount ({currency})</Label>
+                                                                    <Input
+                                                                        id="paymentAmount"
+                                                                        name="paymentAmount"
+                                                                        type="number"
+                                                                        placeholder="Enter amount"
+                                                                        required
+                                                                    />
+                                                                </div>
+                                                                <Button type="submit">Make Payment</Button>
+                                                            </form>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="destructive" size="sm" onClick={() => handleDeletePatient(patient)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(patient)}>
+                                                        <History className="h-4 w-4" /> Payment
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" onClick={() => handleShowBillHistory(patient)}>
+                                                        <History className="h-4 w-4" /> Bill
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" onClick={() => handleShowCheckupHistory(patient)}>
+                                                        <History className="h-4 w-4" /> Checkup
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" onClick={() => openDentalChartDialog(patient)}>
+                                                        Dental Chart
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+
+                            <div className="flex justify-between items-center mt-4">
+                                <div>
+                                    Showing {((currentPage - 1) * patientsPerPage) + 1} to {Math.min(currentPage * patientsPerPage, filteredPatients.length)} of {filteredPatients.length} patients
+                                </div>
                                 <div className="flex space-x-2">
-                                    <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" size="sm" onClick={() => setEditingPatient(patient)}>
-                                        <Pencil className="h-4 w-4" />
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                        <DialogTitle>Edit Patient</DialogTitle>
-                                        </DialogHeader>
-                                        <form onSubmit={updatePatient} className="space-y-4">
-                                        <div>
-                                            <Label htmlFor="edit-name">Name</Label>
-                                            <Input
-                                            id="edit-name"
-                                            value={editingPatient?.name || ''}
-                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, name: e.target.value} : null)}
-                                            required
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="edit-dob">Date of Birth</Label>
-                                            <Input
-                                            id="edit-dob"
-                                            type="date"
-                                            value={editingPatient?.birthdate || ''}
-                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, birthdate: e.target.value} : null)}
-                                            required
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="edit-phone">Phone</Label>
-                                            <Input
-                                            id="edit-phone"
-                                            value={editingPatient?.phone || ''}
-                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, phone: e.target.value} : null)}
-                                            required
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="edit-email">Email</Label>
-                                            <Input
-                                            id="edit-email"
-                                            type="email"
-                                            value={editingPatient?.email || ''}
-                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, email: e.target.value} : null)}
-                                            required
-                                            />
-                                        </div>
-                                        <Button type="submit">Update Patient</Button>
-                                        </form>
-                                    </DialogContent>
-                                    </Dialog>
-                                    <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button variant="destructive" size="sm">
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Delete Patient</DialogTitle>
-                                        </DialogHeader>
-                                        <p>Are you sure you want to delete this patient? This action cannot be undone.</p>
-                                        <DialogFooter>
-                                            <Button variant="outline" onClick={() => setDeleteConfirmation(null)}>Cancel</Button>
-                                            <Button variant="destructive" onClick={() => deletePatient(patient.id)}>Delete</Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                    </Dialog>
-                                    <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        onClick={() => setCheckupPatientId(patient.id)}
-                                        >
-                                        <PlusCircle className="h-4 w-4" /> Add Checkup
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Add Checkup Result</DialogTitle>
-                                        </DialogHeader>
-                                        <form onSubmit={handleAddCheckupResult} className="space-y-4">
-                                            <div>
-                                                <Label htmlFor="checkupDate">Date</Label>
-                                                <Input
-                                                    id="checkupDate"
-                                                    type="date"
-                                                    value={newCheckupResult.date}
-                                                    onChange={(e) => setNewCheckupResult({
-                                                        ...newCheckupResult,
-                                                        date: e.target.value
-                                                    })}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="diagnosis">Diagnosis</Label>
-                                                <Textarea
-                                                    id="diagnosis"
-                                                    value={newCheckupResult.diagnosis}
-                                                    onChange={(e) => setNewCheckupResult({
-                                                        ...newCheckupResult,
-                                                        diagnosis: e.target.value
-                                                    })}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="treatment">Treatment</Label>
-                                                <Textarea
-                                                    id="treatment"
-                                                    value={newCheckupResult.treatment}
-                                                    onChange={(e) => setNewCheckupResult({
-                                                        ...newCheckupResult,
-                                                        treatment: e.target.value
-                                                    })}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="notes">Notes</Label>
-                                                <Textarea
-                                                    id="notes"
-                                                    value={newCheckupResult.notes}
-                                                    onChange={(e) => setNewCheckupResult({
-                                                        ...newCheckupResult,
-                                                        notes: e.target.value
-                                                    })}
-                                                />
-                                            </div>
-                                            <Button type="submit">Add Checkup Result</Button>
-                                        </form>
-                                    </DialogContent>
-                                    </Dialog>
-                                    <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button 
-                                        variant="outline" 
-                                        size="sm" 
-                                        onClick={() => openHistoryDialog(patient, 'checkup')}
-                                        >
-                                        <History className="h-4 w-4" /> Checkup History
-                                        </Button>
-                                    </DialogTrigger>
-                                    </Dialog>
                                     <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openDentalChartDialog(patient)}
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
                                     >
-                                    Dental Chart
+                                        Previous
+                                    </Button>
+                                    {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
+                                        <Button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            variant={currentPage === page ? "default" : "outline"}
+                                        >
+                                            {page}
+                                        </Button>
+                                    ))}
+                                    <Button
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
+                                        disabled={currentPage === pageCount}
+                                    >
+                                        Next
                                     </Button>
                                 </div>
-                                </td>
-                            </tr>
-                            ))}
-                        </tbody>
-                        </table>
-                        <div className="flex justify-center space-x-2">
-                        {Array.from({ length: Math.ceil(filteredPatients.length / patientsPerPage) }, (_, i) => (
-                            <Button
-                            key={i}
-                            onClick={() => paginate(i + 1)}
-                            variant={currentPage === i + 1 ? "default" : "outline"}
-                            >
-                            {i + 1}
-                            </Button>
-                        ))}
-                        </div>
-                    </div>
+                            </div>
                     </TabsContent>
 
                     <TabsContent value="add-patient">
