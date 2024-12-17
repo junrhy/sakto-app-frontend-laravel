@@ -107,6 +107,17 @@ Route::middleware('auth')->group(function () {
 
     // Clinic routes
     Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
+    Route::post('/clinic/patients', [ClinicController::class, 'store']);
+    Route::put('/clinic/patients/{id}', [ClinicController::class, 'update']);
+    Route::delete('/clinic/patients/{id}', [ClinicController::class, 'destroy']);
+    Route::post('/clinic/patients/{patientId}/bills', [ClinicController::class, 'addBill']);
+    Route::delete('/clinic/patients/{patientId}/bills/{billId}', [ClinicController::class, 'deleteBill']);
+    Route::post('/clinic/patients/{patientId}/payments', [ClinicController::class, 'addPayment']);
+    Route::delete('/clinic/patients/{patientId}/payments/{paymentId}', [ClinicController::class, 'deletePayment']);
+    Route::post('/clinic/patients/{patientId}/checkups', [ClinicController::class, 'addCheckup']);
+    Route::delete('/clinic/patients/{patientId}/checkups/{checkupId}', [ClinicController::class, 'deleteCheckup']);
+    Route::put('/clinic/patients/{patientId}/dental-chart', [ClinicController::class, 'updateDentalChart']);
+    Route::put('/clinic/patients/{patientId}/next-visit', [ClinicController::class, 'updateNextVisit']);
 
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');

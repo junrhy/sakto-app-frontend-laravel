@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/Components/ui/dialog";
 import { Pencil, Trash2, PlusCircle, History, FileText, DollarSign } from 'lucide-react';
 import { Textarea } from "@/Components/ui/textarea";
-import { v4 as uuidv4 } from 'uuid';
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import DentalChart from '@/Components/DentalChart';
+import { router } from '@inertiajs/react';
+import axios from 'axios';
 
 type BillItem = {
     id: number;
@@ -39,21 +40,22 @@ type ToothData = {
 };
 
 type Patient = {
-    id: string;
+    id: number;
     name: string;
-    dateOfBirth: string;
-    contactNumber: string;
     email: string;
-    nextVisitDate: string;
-    balance: number;
-    billAmount: number;
-    billHistory: BillItem[];
-    paymentHistory: PaymentItem[];
-    checkupHistory: CheckupResult[];
-    dentalChart: ToothData[];
+    phone: string;
+    birthdate: string;
+    client_identifier: string;
+    // ... other fields
 };
-  
+
+type AppCurrency = {
+    symbol: string;
+    code: string;
+};
+
 const formatDateTime = (dateTimeStr: string) => {
+    if (!dateTimeStr || dateTimeStr === 'NA') return 'N/A';
     const date = new Date(dateTimeStr);
     return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
@@ -71,52 +73,24 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
-export default function Clinic() {
-    //   const { currency } = useApp();
-    const currency = '$';
+// Add this near the top of the file, before the component definition
+interface ClinicProps {
+    initialPatients: Patient[];
+    appCurrency: AppCurrency | null;
+    error: any;
+}
 
-    const [patients, setPatients] = useState<Patient[]>([
-        { 
-        id: uuidv4(),
-        name: 'John Doe', 
-        dateOfBirth: '1988-05-15', 
-        contactNumber: '+1234567890',
-        email: 'john@example.com',
-        nextVisitDate: '2023-06-15T10:00',
-        balance: 100, 
-        billAmount: 150,
-        billHistory: [
-            { id: 1, amount: 150, details: 'Initial consultation', date: '2023-05-01' }
-        ],
-        paymentHistory: [
-            { id: 1, amount: 50, date: '2023-05-02' }
-        ],
-        checkupHistory: [
-            { id: 1, date: '2023-05-01', diagnosis: 'Common cold', treatment: 'Rest and fluids', notes: 'Patient advised to return if symptoms worsen' }
-        ],
-        dentalChart: Array.from({ length: 32 }, (_, i) => ({ id: i + 1, status: 'healthy' })),
-        },
-        { 
-        id: uuidv4(),
-        name: 'Jane Smith', 
-        dateOfBirth: '1995-09-22', 
-        contactNumber: '+1987654321',
-        email: 'jane@example.com',
-        nextVisitDate: '2023-06-22T10:00',
-        balance: 150, 
-        billAmount: 200,
-        billHistory: [
-            { id: 1, amount: 200, details: 'X-ray and consultation', date: '2023-05-02' }
-        ],
-        paymentHistory: [
-            { id: 1, amount: 50, date: '2023-05-03' }
-        ],
-        checkupHistory: [
-            { id: 1, date: '2023-05-02', diagnosis: 'Grade 1 ankle sprain', treatment: 'RICE method', notes: 'Follow-up in 1 week' }
-        ],
-        dentalChart: Array.from({ length: 32 }, (_, i) => ({ id: i + 1, status: 'healthy' })),
-        },
-    ]);
+export default function Clinic({ initialPatients = [] as Patient[], appCurrency = null, error = null }: ClinicProps) {
+    const currency = appCurrency ? appCurrency.symbol : '$';
+
+    const [patients, setPatients] = useState<Patient[]>(
+        initialPatients.filter((patient): patient is Patient => 
+            patient !== null && 
+            patient !== undefined && 
+            typeof patient.name === 'string' &&
+            typeof patient.id === 'number'
+        )
+    );
     const [newPatient, setNewPatient] = useState({ 
         name: '', 
         dateOfBirth: '', 
@@ -171,113 +145,104 @@ export default function Clinic() {
         return age;
     };
 
-    const addPatient = (e: React.FormEvent) => {
+    const addPatient = async (e: React.FormEvent) => {
         e.preventDefault();
-        setPatients([...patients, { 
-        id: uuidv4(),
-        name: newPatient.name, 
-        dateOfBirth: newPatient.dateOfBirth, 
-        contactNumber: newPatient.contactNumber,
-        email: newPatient.email,
-        nextVisitDate: '',
-        balance: 0, 
-        billAmount: 0,
-        billHistory: [],
-        paymentHistory: [],
-        checkupHistory: [],
-        dentalChart: Array.from({ length: 32 }, (_, i) => ({ id: i + 1, status: 'healthy' })),
-        }]);
-        setNewPatient({ name: '', dateOfBirth: '', contactNumber: '', email: '' });
+        try {
+            const response = await axios.post('/clinic/patients', newPatient);
+            setPatients([...patients, response.data]);
+            setNewPatient({ name: '', dateOfBirth: '', contactNumber: '', email: '' });
+        } catch (error) {
+            console.error('Failed to add patient:', error);
+            // Handle error (show toast notification, etc.)
+        }
     };
 
-    const updatePatient = (e: React.FormEvent) => {
+    const updatePatient = async (e: React.FormEvent) => {
         e.preventDefault();
         if (editingPatient) {
-        setPatients(patients.map(p => p.id === editingPatient.id ? editingPatient : p));
-        setEditingPatient(null);
-        }
-    };
-
-    const deletePatient = (id: string) => {
-        setPatients(patients.filter(p => p.id !== id));
-        setDeleteConfirmation(null);
-    };
-
-    const handlePayment = (patientId: string, amount: number) => {
-        if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid payment amount.');
-        return;
-        }
-        setPatients(patients.map(patient => 
-        patient.id === patientId 
-            ? { 
-                ...patient, 
-                balance: Math.max(0, patient.balance - amount),
-                paymentHistory: [
-                ...patient.paymentHistory,
-                { id: patient.paymentHistory.length + 1, amount, date: new Date().toISOString().split('T')[0] }
-                ]
+            try {
+                await axios.put(`/clinic/patients/${editingPatient.id}`, editingPatient);
+                setPatients(patients.map(p => p.id === editingPatient.id ? editingPatient : p));
+                setEditingPatient(null);
+            } catch (error) {
+                console.error('Failed to update patient:', error);
+                // Handle error
             }
-            : patient
-        ));
+        }
     };
 
-    const handleAdditionalBill = (e: React.FormEvent) => {
+    const deletePatient = async (id: string) => {
+        try {
+            await axios.delete(`/clinic/patients/${id}`);
+            setPatients(patients.filter(p => p.id !== id));
+            setDeleteConfirmation(null);
+        } catch (error) {
+            console.error('Failed to delete patient:', error);
+            // Handle error
+        }
+    };
+
+    const handlePayment = async (patientId: string, amount: number) => {
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid payment amount.');
+            return;
+        }
+        try {
+            const response = await axios.post(`/clinic/patients/${patientId}/payments`, { amount });
+            setPatients(patients.map(patient => 
+                patient.id === patientId ? response.data : patient
+            ));
+        } catch (error) {
+            console.error('Failed to process payment:', error);
+            // Handle error
+        }
+    };
+
+    const handleAdditionalBill = async (e: React.FormEvent) => {
         e.preventDefault();
         if (additionalBillPatientId === null) {
-        alert('Please select a patient to add a bill.');
-        return;
+            alert('Please select a patient to add a bill.');
+            return;
         }
         const amount = parseFloat(additionalBillAmount);
         if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid bill amount.');
-        return;
+            alert('Please enter a valid bill amount.');
+            return;
         }
-        setPatients(patients.map(patient => 
-        patient.id === additionalBillPatientId 
-            ? { 
-                ...patient, 
-                billAmount: patient.billAmount + amount, 
-                balance: patient.balance + amount,
-                billHistory: [
-                ...patient.billHistory,
-                { 
-                    id: patient.billHistory.length + 1, 
-                    amount: amount, 
-                    details: additionalBillDetails,
-                    date: new Date().toISOString().split('T')[0]
-                }
-                ]
-            }
-            : patient
-        ));
-        setAdditionalBillAmount('');
-        setAdditionalBillDetails('');
-        setAdditionalBillPatientId(null);
+        try {
+            const response = await axios.post(`/clinic/patients/${additionalBillPatientId}/bills`, {
+                amount,
+                details: additionalBillDetails
+            });
+            setPatients(patients.map(patient => 
+                patient.id === additionalBillPatientId ? response.data : patient
+            ));
+            setAdditionalBillAmount('');
+            setAdditionalBillDetails('');
+            setAdditionalBillPatientId(null);
+        } catch (error) {
+            console.error('Failed to add bill:', error);
+            // Handle error
+        }
     };
 
-    const handleAddCheckupResult = (e: React.FormEvent) => {
+    const handleAddCheckupResult = async (e: React.FormEvent) => {
         e.preventDefault();
         if (checkupPatientId === null) {
-        alert('Please select a patient to add a checkup result.');
-        return;
+            alert('Please select a patient to add a checkup result.');
+            return;
         }
-        setPatients(patients.map(patient => 
-        patient.id === checkupPatientId 
-            ? { 
-                ...patient, 
-                checkupHistory: [
-                ...patient.checkupHistory,
-                { 
-                    id: patient.checkupHistory.length + 1, 
-                    ...newCheckupResult
-                }
-                ]
-            }
-            : patient
-        ));
-        setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
-        setCheckupPatientId(null);
+        try {
+            const response = await axios.post(`/clinic/patients/${checkupPatientId}/checkups`, newCheckupResult);
+            setPatients(patients.map(patient => 
+                patient.id === checkupPatientId ? response.data : patient
+            ));
+            setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
+            setCheckupPatientId(null);
+        } catch (error) {
+            console.error('Failed to add checkup result:', error);
+            // Handle error
+        }
     };
 
     const handleDeleteBill = (patientId: string, billId: number) => {
@@ -325,8 +290,7 @@ export default function Clinic() {
 
     // Replace the existing filteredPatients definition with this:
     const filteredPatients = patients.filter(patient =>
-        patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.id.toLowerCase().includes(searchTerm.toLowerCase())
+        patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const indexOfLastPatient = currentPage * patientsPerPage;
@@ -373,18 +337,23 @@ export default function Clinic() {
     };
 
     // Update the saveDentalChartChanges function
-    const saveDentalChartChanges = () => {
+    const saveDentalChartChanges = async () => {
         if (selectedPatient) {
-        setPatients((prevPatients) =>
-            prevPatients.map((p) =>
-            p.id === selectedPatient.id
-                ? { ...p, dentalChart: editingDentalChart }
-                : p
-            )
-        );
-        setSelectedPatient((prev) =>
-            prev ? { ...prev, dentalChart: editingDentalChart } : null
-        );
+            try {
+                const response = await axios.put(`/clinic/patients/${selectedPatient.id}/dental-chart`, {
+                    dentalChart: editingDentalChart
+                });
+                setPatients(prevPatients =>
+                    prevPatients.map(p =>
+                        p.id === selectedPatient.id ? response.data : p
+                    )
+                );
+                setSelectedPatient(response.data);
+                setIsDentalChartDialogOpen(false);
+            } catch (error) {
+                console.error('Failed to update dental chart:', error);
+                // Handle error
+            }
         }
     };
 
@@ -396,15 +365,21 @@ export default function Clinic() {
     };
 
     // Add a function to handle the next visit update
-    const handleNextVisitUpdate = (e: React.FormEvent) => {
+    const handleNextVisitUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
         if (editingNextVisit) {
-            setPatients(patients.map(patient => 
-                patient.id === editingNextVisit.patientId 
-                    ? { ...patient, nextVisitDate: editingNextVisit.date }
-                    : patient
-            ));
-            setEditingNextVisit(null);
+            try {
+                const response = await axios.put(`/clinic/patients/${editingNextVisit.patientId}/next-visit`, {
+                    nextVisitDate: editingNextVisit.date
+                });
+                setPatients(patients.map(patient => 
+                    patient.id === editingNextVisit.patientId ? response.data : patient
+                ));
+                setEditingNextVisit(null);
+            } catch (error) {
+                console.error('Failed to update next visit:', error);
+                // Handle error
+            }
         }
     };
 
@@ -452,10 +427,10 @@ export default function Clinic() {
                                 title={patient.id}
                                 onClick={() => openPatientInfoDialog(patient)}
                                 >
-                                {patient.id.substring(0, 8)}
+                                {patient.id}
                                 </td>
                                 <td className="border border-gray-300 p-2">{patient.name}</td>
-                                <td className="border border-gray-300 p-2">{calculateAge(patient.dateOfBirth)}</td>
+                                <td className="border border-gray-300 p-2">{calculateAge(patient.birthdate)}</td>
                                 <td className="border border-gray-300 p-2">
                                     <div className="flex items-center space-x-2">
                                         <span>{formatDateTime(patient.nextVisitDate)}</span>
@@ -474,17 +449,33 @@ export default function Clinic() {
                                                     <DialogTitle>Edit Next Visit for {patient.name}</DialogTitle>
                                                 </DialogHeader>
                                                 <form onSubmit={handleNextVisitUpdate} className="space-y-4">
-                                                    <div>
-                                                        <Label htmlFor="nextVisitDate">Next Visit Date & Time</Label>
-                                                        <Input
-                                                            id="nextVisitDate"
-                                                            type="datetime-local"
-                                                            value={editingNextVisit?.date || ''}
-                                                            onChange={(e) => setEditingNextVisit(prev => 
-                                                                prev ? { ...prev, date: e.target.value } : null
-                                                            )}
-                                                            required
-                                                        />
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Label htmlFor="noNextVisit">No next visit scheduled</Label>
+                                                            <Input
+                                                                id="noNextVisit"
+                                                                type="checkbox"
+                                                                className="w-4 h-4"
+                                                                checked={editingNextVisit?.date === 'NA'}
+                                                                onChange={(e) => setEditingNextVisit(prev => 
+                                                                    prev ? { ...prev, date: e.target.checked ? 'NA' : '' } : null
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        {editingNextVisit?.date !== 'NA' && (
+                                                            <div>
+                                                                <Label htmlFor="nextVisitDate">Next Visit Date & Time</Label>
+                                                                <Input
+                                                                    id="nextVisitDate"
+                                                                    type="datetime-local"
+                                                                    value={editingNextVisit?.date || ''}
+                                                                    onChange={(e) => setEditingNextVisit(prev => 
+                                                                        prev ? { ...prev, date: e.target.value } : null
+                                                                    )}
+                                                                    required={editingNextVisit?.date !== 'NA'}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <Button type="submit">Update Next Visit</Button>
                                                 </form>
@@ -622,17 +613,17 @@ export default function Clinic() {
                                             <Input
                                             id="edit-dob"
                                             type="date"
-                                            value={editingPatient?.dateOfBirth || ''}
-                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, dateOfBirth: e.target.value} : null)}
+                                            value={editingPatient?.birthdate || ''}
+                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, birthdate: e.target.value} : null)}
                                             required
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="edit-contactNumber">Contact Number</Label>
+                                            <Label htmlFor="edit-phone">Phone</Label>
                                             <Input
-                                            id="edit-contactNumber"
-                                            value={editingPatient?.contactNumber || ''}
-                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, contactNumber: e.target.value} : null)}
+                                            id="edit-phone"
+                                            value={editingPatient?.phone || ''}
+                                            onChange={(e) => setEditingPatient(prev => prev ? {...prev, phone: e.target.value} : null)}
                                             required
                                             />
                                         </div>
@@ -741,7 +732,7 @@ export default function Clinic() {
                                         size="sm" 
                                         onClick={() => openHistoryDialog(patient, 'checkup')}
                                         >
-                                        <History className="h-4 w-4" /> Checkups
+                                        <History className="h-4 w-4" /> Checkup History
                                         </Button>
                                     </DialogTrigger>
                                     </Dialog>
@@ -830,7 +821,6 @@ export default function Clinic() {
                     <div className="max-h-96 overflow-y-auto">
                         {activeHistoryType === 'bill' && (
                         <table className="w-full border-collapse border border-gray-300">
-                            {/* Bill history table content */}
                             <thead>
                             <tr className="bg-gray-100">
                                 <th className="border border-gray-300 p-2">Date</th>
@@ -843,7 +833,7 @@ export default function Clinic() {
                             {showingHistoryForPatient?.billHistory.map((bill) => (
                                 <tr key={bill.id}>
                                 <td className="border border-gray-300 p-2">{bill.date}</td>
-                                <td className="border border-gray-300 p-2">{bill.amount}</td>
+                                <td className="border border-gray-300 p-2">{formatCurrency(bill.amount)}</td>
                                 <td className="border border-gray-300 p-2">{bill.details}</td>
                                 <td className="border border-gray-300 p-2">
                                     <Button
@@ -861,7 +851,6 @@ export default function Clinic() {
                         )}
                         {activeHistoryType === 'checkup' && (
                         <table className="w-full border-collapse border border-gray-300">
-                            {/* Checkup history table content */}
                             <thead>
                             <tr className="bg-gray-100">
                                 <th className="border border-gray-300 p-2">Date</th>
@@ -894,7 +883,6 @@ export default function Clinic() {
                         )}
                         {activeHistoryType === 'payment' && (
                         <table className="w-full border-collapse border border-gray-300">
-                            {/* Payment history table content */}
                             <thead>
                             <tr className="bg-gray-100">
                                 <th className="border border-gray-300 p-2">Date</th>
@@ -906,7 +894,7 @@ export default function Clinic() {
                             {showingHistoryForPatient?.paymentHistory.map((payment) => (
                                 <tr key={payment.id}>
                                 <td className="border border-gray-300 p-2">{payment.date}</td>
-                                <td className="border border-gray-300 p-2">{payment.amount}</td>
+                                <td className="border border-gray-300 p-2">{formatCurrency(payment.amount)}</td>
                                 <td className="border border-gray-300 p-2">
                                     <Button
                                     variant="destructive"
