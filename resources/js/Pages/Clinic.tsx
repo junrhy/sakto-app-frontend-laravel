@@ -53,7 +53,10 @@ type Patient = {
     total_bills: number;
     total_payments: number;
     balance: number;
-    // ... other fields
+    bills: BillItem[];
+    payments: PaymentItem[];
+    checkups: CheckupResult[];
+    dental_chart: ToothData[];
 };
 
 type AppCurrency = {
@@ -258,24 +261,22 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         }
     };
 
-    const handleDeleteBill = (patientId: string, billId: number) => {
-        setPatients(patients.map(patient => 
-        patient.id === patientId
-            ? {
-                ...patient,
-                billHistory: patient.billHistory.filter(bill => bill.id !== billId),
-                billAmount: patient.billAmount - patient.billHistory.find(bill => bill.id === billId)!.amount,
-                balance: patient.balance - patient.billHistory.find(bill => bill.id === billId)!.amount
-            }
-            : patient
-        ));
-        // Update the showingBillHistoryForPatient state to reflect the changes
-        setShowingBillHistoryForPatient(prev => 
-        prev ? {
-            ...prev,
-            billHistory: prev.billHistory.filter(bill => bill.id !== billId)
-        } : null
-        );
+    const handleDeleteBill = async (patientId: string, billId: number) => {
+        try {
+            await axios.delete(`/clinic/patients/${patientId}/bills/${billId}`);
+            setPatients(patients.map(patient => {
+                if (patient.id === patientId) {
+                    return {
+                        ...patient,
+                        bills: patient.bills.filter(bill => bill.id !== billId),
+                        total_bills: patient.total_bills - patient.bills.find(b => b.id === billId)?.amount || 0
+                    };
+                }
+                return patient;
+            }));
+        } catch (error) {
+            console.error('Failed to delete bill:', error);
+        }
     };
 
     const handleDeleteCheckup = (patientId: string, checkupId: number) => {
@@ -320,7 +321,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     // Add this new function to open the patient info dialog
     const openPatientInfoDialog = (patient: Patient) => {
         setSelectedPatient(patient);
-        setEditingDentalChart(patient.dentalChart);
+        setEditingDentalChart(patient.dental_chart);
     };
 
     // Add this function to handle tooth status changes
@@ -349,14 +350,13 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         if (selectedPatient) {
             try {
                 const response = await axios.put(`/clinic/patients/${selectedPatient.id}/dental-chart`, {
-                    dentalChart: editingDentalChart
+                    dental_chart: editingDentalChart
                 });
                 setPatients(prevPatients =>
                     prevPatients.map(p =>
-                        p.id === selectedPatient.id ? response.data : p
+                        p.id === selectedPatient.id ? { ...p, dental_chart: response.data.dental_chart } : p
                     )
                 );
-                setSelectedPatient(response.data);
                 setIsDentalChartDialogOpen(false);
             } catch (error) {
                 console.error('Failed to update dental chart:', error);
@@ -368,7 +368,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     // Add this new function to open the dental chart dialog
     const openDentalChartDialog = (patient: Patient) => {
         setSelectedPatient(patient);
-        setEditingDentalChart(patient.dentalChart);
+        setEditingDentalChart(patient.dental_chart || []);
         setIsDentalChartDialogOpen(true);
     };
 
@@ -386,7 +386,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                     : response.data.next_visit_date || editingNextVisit.date;
                 
                 setPatients(patients.map(patient => {
-                    if (patient.id === parseInt(editingNextVisit.patientId)) {
+                    if (patient.id === editingNextVisit.patientId) {
                         return {
                             ...patient,
                             next_visit_date: nextVisitDate,
@@ -423,6 +423,24 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
             patientId: patient.id.toString(), 
             date: dateValue 
         });
+    };
+
+    // Add this function with your other handlers
+    const handleShowBillHistory = (patient: Patient) => {
+        setShowingHistoryForPatient(patient);
+        setActiveHistoryType('bill');
+    };
+
+    // Add this function with your other handlers
+    const handleShowPaymentHistory = (patient: Patient) => {
+        setShowingHistoryForPatient(patient);
+        setActiveHistoryType('payment');
+    };
+
+    // Add this function with your other handlers
+    const handleShowCheckupHistory = (patient: Patient) => {
+        setShowingHistoryForPatient(patient);
+        setActiveHistoryType('checkup');
     };
 
     return (
@@ -542,7 +560,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                             <Button 
                                                                 variant="outline" 
                                                                 size="sm" 
-                                                                onClick={() => setAdditionalBillPatientId(patient.id.toString())}
+                                                                onClick={() => setAdditionalBillPatientId(patient.id)}
                                                             >
                                                                 <PlusCircle className="h-4 w-4" /> Add Bill
                                                             </Button>
@@ -575,6 +593,9 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                             </form>
                                                         </DialogContent>
                                                     </Dialog>
+                                                    <Button variant="outline" size="sm" onClick={() => handleShowBillHistory(patient)}>
+                                                        <History className="h-4 w-4" /> Bill
+                                                    </Button>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -617,6 +638,9 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                             </form>
                                                         </DialogContent>
                                                     </Dialog>
+                                                    <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(patient)}>
+                                                        <History className="h-4 w-4" /> Payment
+                                                    </Button>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -631,14 +655,8 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(patient)}>
-                                                        <History className="h-4 w-4" /> Payment
-                                                    </Button>
-                                                    <Button variant="outline" size="sm" onClick={() => handleShowBillHistory(patient)}>
-                                                        <History className="h-4 w-4" /> Bill
-                                                    </Button>
                                                     <Button variant="outline" size="sm" onClick={() => handleShowCheckupHistory(patient)}>
-                                                        <History className="h-4 w-4" /> Checkup
+                                                        <History className="h-4 w-4" /> Checkup History
                                                     </Button>
                                                     <Button variant="outline" size="sm" onClick={() => openDentalChartDialog(patient)}>
                                                         Dental Chart
@@ -725,108 +743,108 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                     </TabsContent>
                 </Tabs>
 
-                {/* Replace the existing dialogs with this single dialog */}
-                <Dialog open={!!showingHistoryForPatient} onOpenChange={closeHistoryDialog}>
-                    <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>
-                        {activeHistoryType === 'bill' && `Bill History for ${showingHistoryForPatient?.name}`}
-                        {activeHistoryType === 'checkup' && `Checkup History for ${showingHistoryForPatient?.name}`}
-                        {activeHistoryType === 'payment' && `Payment History for ${showingHistoryForPatient?.name}`}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="max-h-96 overflow-y-auto">
-                        {activeHistoryType === 'bill' && (
-                        <table className="w-full border-collapse border border-gray-300">
-                            <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border border-gray-300 p-2">Date</th>
-                                <th className="border border-gray-300 p-2">Amount ({currency})</th>
-                                <th className="border border-gray-300 p-2">Details</th>
-                                <th className="border border-gray-300 p-2">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {showingHistoryForPatient?.billHistory.map((bill) => (
-                                <tr key={bill.id}>
-                                <td className="border border-gray-300 p-2">{bill.date}</td>
-                                <td className="border border-gray-300 p-2">{formatCurrency(bill.amount)}</td>
-                                <td className="border border-gray-300 p-2">{bill.details}</td>
-                                <td className="border border-gray-300 p-2">
-                                    <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteBill(showingHistoryForPatient.id, bill.id)}
-                                    >
-                                    <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                        )}
-                        {activeHistoryType === 'checkup' && (
-                        <table className="w-full border-collapse border border-gray-300">
-                            <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border border-gray-300 p-2">Date</th>
-                                <th className="border border-gray-300 p-2">Diagnosis</th>
-                                <th className="border border-gray-300 p-2">Treatment</th>
-                                <th className="border border-gray-300 p-2">Notes</th>
-                                <th className="border border-gray-300 p-2">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {showingHistoryForPatient?.checkupHistory.map((checkup) => (
-                                <tr key={checkup.id}>
-                                <td className="border border-gray-300 p-2">{checkup.date}</td>
-                                <td className="border border-gray-300 p-2">{checkup.diagnosis}</td>
-                                <td className="border border-gray-300 p-2">{checkup.treatment}</td>
-                                <td className="border border-gray-300 p-2">{checkup.notes}</td>
-                                <td className="border border-gray-300 p-2">
-                                    <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeleteCheckup(showingHistoryForPatient.id, checkup.id)}
-                                    >
-                                    <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                        )}
-                        {activeHistoryType === 'payment' && (
-                        <table className="w-full border-collapse border border-gray-300">
-                            <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border border-gray-300 p-2">Date</th>
-                                <th className="border border-gray-300 p-2">Amount ({currency})</th>
-                                <th className="border border-gray-300 p-2">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {showingHistoryForPatient?.paymentHistory.map((payment) => (
-                                <tr key={payment.id}>
-                                <td className="border border-gray-300 p-2">{payment.date}</td>
-                                <td className="border border-gray-300 p-2">{formatCurrency(payment.amount)}</td>
-                                <td className="border border-gray-300 p-2">
-                                    <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleDeletePayment(showingHistoryForPatient.id, payment.id)}
-                                    >
-                                    <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                        )}
-                    </div>
+                {/* Add this dialog component before the delete confirmation dialog */}
+                <Dialog open={!!showingHistoryForPatient} onOpenChange={(open) => !open && setShowingHistoryForPatient(null)}>
+                    <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                            <DialogTitle>
+                                {activeHistoryType === 'bill' && `Bill History - ${showingHistoryForPatient?.name}`}
+                                {activeHistoryType === 'payment' && `Payment History - ${showingHistoryForPatient?.name}`}
+                                {activeHistoryType === 'checkup' && `Checkup History - ${showingHistoryForPatient?.name}`}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="max-h-[60vh] overflow-y-auto">
+                            {activeHistoryType === 'bill' && (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Amount ({currency})</TableHead>
+                                            <TableHead>Details</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {showingHistoryForPatient?.bills?.map((bill) => (
+                                            <TableRow key={bill.id}>
+                                                <TableCell>{formatDateTime(bill.date)}</TableCell>
+                                                <TableCell>{formatCurrency(bill.amount, currency)}</TableCell>
+                                                <TableCell>{bill.details}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteBill(showingHistoryForPatient.id, bill.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                            {activeHistoryType === 'payment' && (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Amount ({currency})</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {showingHistoryForPatient?.payments?.map((payment) => (
+                                            <TableRow key={payment.id}>
+                                                <TableCell>{formatDateTime(payment.date)}</TableCell>
+                                                <TableCell>{formatCurrency(payment.amount, currency)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeletePayment(showingHistoryForPatient.id, payment.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                            {activeHistoryType === 'checkup' && (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Diagnosis</TableHead>
+                                            <TableHead>Treatment</TableHead>
+                                            <TableHead>Notes</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {showingHistoryForPatient?.checkups?.map((checkup) => (
+                                            <TableRow key={checkup.id}>
+                                                <TableCell>{formatDateTime(checkup.date)}</TableCell>
+                                                <TableCell>{checkup.diagnosis}</TableCell>
+                                                <TableCell>{checkup.treatment}</TableCell>
+                                                <TableCell>{checkup.notes}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteCheckup(showingHistoryForPatient.id, checkup.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </div>
                     </DialogContent>
                 </Dialog>
 
