@@ -7,8 +7,9 @@ import UpdateCurrencyForm from './Partials/UpdateCurrencyForm';
 import UpdateThemeForm from './Partials/UpdateThemeForm';
 import UpdateColorThemeForm from './Partials/UpdateColorThemeForm';
 import UpdateAddressesForm from './Partials/UpdateAddressesForm';
-import BottomNav from '@/Components/BottomNav';
-
+import ApplicationLogo from '@/Components/ApplicationLogo';
+import { Link as InertiaLink } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 export default function Edit({
     mustVerifyEmail,
     status,
@@ -21,16 +22,29 @@ export default function Edit({
     currency: any;
 }) {
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Profile
-                </h2>
-            }
-        >
-            <Head title="Profile" />
+        <div className="relative min-h-screen pb-16">
+            <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-black via-gray-900 to-black z-10">
+                <div className="container mx-auto px-4 pt-4">
+                    <div className="flex flex-col items-center mb-4">
+                        <div className="w-full flex justify-between items-center mb-2">
+                            <div className="flex items-center">
+                                <ApplicationLogo className="h-10 w-auto fill-current text-white" />
+                                <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                                <InertiaLink 
+                                    href="/home" 
+                                    className="ml-4 text-white hover:text-blue-100 transition-colors duration-200"
+                                >
+                                    <ArrowLeft className="h-4 w-4 inline mr-1" />
+                                    Back to Home
+                                </InertiaLink>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div className="min-h-screen flex flex-col">
+            <div className="min-h-screen flex flex-col pt-32">
                 <div className="flex-grow">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="bg-gray-50 dark:bg-gray-800/80 rounded-lg shadow-sm p-4 mb-6 border border-gray-200 dark:border-gray-700">
@@ -94,6 +108,6 @@ export default function Edit({
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </div>
     );
 }
