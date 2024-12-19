@@ -1,11 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link as InertiaLink } from '@inertiajs/react';
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/Components/ui/accordion";
 import { Input } from "@/Components/ui/input";
-import { Search } from "lucide-react";
-import BottomNav from '@/Components/BottomNav';
+import { ArrowLeft, Search } from "lucide-react";
+import ApplicationLogo from '@/Components/ApplicationLogo';
 
 interface FAQItem {
     question: string;
@@ -30,16 +30,29 @@ export default function Help({ faqItems }: Props) {
     };
     
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Help
-                </h2>
-            }
-        >
-            <Head title="Help" />
+        <div className="relative min-h-screen pb-16">
+            <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-black via-gray-900 to-black z-10">
+                <div className="container mx-auto px-4 pt-4">
+                    <div className="flex flex-col items-center mb-4">
+                        <div className="w-full flex justify-between items-center mb-2">
+                            <div className="flex items-center">
+                                <ApplicationLogo className="h-10 w-auto fill-current text-white" />
+                                <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                                <InertiaLink 
+                                    href="/home" 
+                                    className="ml-4 text-white hover:text-blue-100 transition-colors duration-200"
+                                >
+                                    <ArrowLeft className="h-4 w-4 inline mr-1" />
+                                    Back to Home
+                                </InertiaLink>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto pt-32">
                 <div className="p-4 mb-16 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                     <Card className="mb-6">
                         <CardHeader>
@@ -80,6 +93,6 @@ export default function Help({ faqItems }: Props) {
                     </Card>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </div>
     );
 }
