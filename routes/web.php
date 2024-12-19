@@ -118,6 +118,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/clinic/patients/{patientId}/checkups/{checkupId}', [ClinicController::class, 'deleteCheckup']);
     Route::put('/clinic/patients/{patientId}/dental-chart', [ClinicController::class, 'updateDentalChart']);
     Route::put('/clinic/patients/{patientId}/next-visit', [ClinicController::class, 'updateNextVisit']);
+    Route::get('/clinic/patients/{patientId}/bills', [ClinicController::class, 'getBills']);
 
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');

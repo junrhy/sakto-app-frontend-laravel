@@ -18,9 +18,14 @@ import { Search } from 'lucide-react';
 
 type BillItem = {
     id: number;
-    amount: number;
-    details: string;
-    date: string;
+    patient_id: number;
+    bill_number: string;
+    bill_date: string;
+    bill_amount: string;
+    bill_status: string | null;
+    bill_details: string;
+    created_at: string;
+    updated_at: string;
 };
 
 type PaymentItem = {
@@ -140,6 +145,9 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     // First, add a new state for managing the next visit date
     const [editingNextVisit, setEditingNextVisit] = useState<{patientId: string, date: string} | null>(null);
 
+    // Add this new state for loading status
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
     const filteredPatients = patients.filter(patient =>
         patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -227,15 +235,21 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         }
         try {
             const response = await axios.post(`/clinic/patients/${additionalBillPatientId}/bills`, {
-                amount,
-                details: additionalBillDetails
+                patient_id: additionalBillPatientId,
+                bill_number: Math.floor(Math.random() * 1000000),
+                bill_date: new Date().toISOString(),
+                bill_amount: amount,
+                bill_details: additionalBillDetails
             });
-            setPatients(patients.map(patient => 
-                patient.id === additionalBillPatientId ? response.data : patient
-            ));
             setAdditionalBillAmount('');
             setAdditionalBillDetails('');
             setAdditionalBillPatientId(null);
+
+            // Close the dialog
+            const dialogTrigger = document.querySelector('[data-state="open"]') as HTMLElement;
+            if (dialogTrigger) {
+                dialogTrigger.click();
+            }
         } catch (error) {
             console.error('Failed to add bill:', error);
             // Handle error
@@ -264,12 +278,25 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const handleDeleteBill = async (patientId: string, billId: number) => {
         try {
             await axios.delete(`/clinic/patients/${patientId}/bills/${billId}`);
+            
+            // Update patients state
             setPatients(patients.map(patient => {
                 if (patient.id === patientId) {
+                    const billAmount = parseFloat(patient.bills.find(b => b.id === billId)?.bill_amount || '0');
+                    const updatedBills = patient.bills.filter(bill => bill.id !== billId);
+                    
+                    // Also update the showing history patient if it's the same patient
+                    if (showingHistoryForPatient?.id === patientId) {
+                        setShowingHistoryForPatient({
+                            ...showingHistoryForPatient,
+                            bills: updatedBills
+                        });
+                    }
+                    
                     return {
                         ...patient,
-                        bills: patient.bills.filter(bill => bill.id !== billId),
-                        total_bills: patient.total_bills - patient.bills.find(b => b.id === billId)?.amount || 0
+                        bills: updatedBills,
+                        total_bills: patient.total_bills - billAmount
                     };
                 }
                 return patient;
@@ -305,18 +332,6 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const indexOfLastPatient = currentPage * patientsPerPage;
     const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
     const currentPatients = filteredPatients.slice(indexOfFirstPatient, indexOfLastPatient);
-
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-    const openHistoryDialog = (patient: Patient, historyType: 'bill' | 'checkup' | 'payment') => {
-        setShowingHistoryForPatient(patient);
-        setActiveHistoryType(historyType);
-    };
-
-    const closeHistoryDialog = () => {
-        setShowingHistoryForPatient(null);
-        setActiveHistoryType(null);
-    };
 
     // Add this new function to open the patient info dialog
     const openPatientInfoDialog = (patient: Patient) => {
@@ -414,21 +429,33 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         setEditingPatient(patient);
     };
 
-    // Update the handleEditPatient function to format the date properly
-    const handleNextVisitClick = (patient: Patient) => {
-        // Convert 'NA' to empty string for the input, otherwise use the existing date
-        const dateValue = patient.next_visit_date === 'NA' ? '' : patient.next_visit_date;
-        
-        setEditingNextVisit({ 
-            patientId: patient.id.toString(), 
-            date: dateValue 
-        });
-    };
-
-    // Add this function with your other handlers
-    const handleShowBillHistory = (patient: Patient) => {
-        setShowingHistoryForPatient(patient);
-        setActiveHistoryType('bill');
+    // Update the handleShowBillHistory function
+    const handleShowBillHistory = async (patient: Patient) => {
+        try {
+            setIsLoadingHistory(true);
+            const response = await axios.get(`/clinic/patients/${patient.id}/bills`);
+            
+            // Update the patient's bills with the fetched data
+            const updatedPatient = {
+                ...patient,
+                bills: response.data.bills // Direct assignment since the response format matches our type
+            };
+            
+            // Update the patients state to include the new bill data
+            setPatients(prevPatients => 
+                prevPatients.map(p => 
+                    p.id === patient.id ? updatedPatient : p
+                )
+            );
+            
+            setShowingHistoryForPatient(updatedPatient);
+            setActiveHistoryType('bill');
+        } catch (error) {
+            console.error('Failed to fetch bill history:', error);
+            // You might want to show an error message to the user here
+        } finally {
+            setIsLoadingHistory(false);
+        }
     };
 
     // Add this function with your other handlers
@@ -594,7 +621,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                         </DialogContent>
                                                     </Dialog>
                                                     <Button variant="outline" size="sm" onClick={() => handleShowBillHistory(patient)}>
-                                                        <History className="h-4 w-4" /> Bill
+                                                        <History className="h-4 w-4" /> Bill History
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -639,7 +666,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                         </DialogContent>
                                                     </Dialog>
                                                     <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(patient)}>
-                                                        <History className="h-4 w-4" /> Payment
+                                                        <History className="h-4 w-4" /> Payment History
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -754,35 +781,58 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                             </DialogTitle>
                         </DialogHeader>
                         <div className="max-h-[60vh] overflow-y-auto">
-                            {activeHistoryType === 'bill' && (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Amount ({currency})</TableHead>
-                                            <TableHead>Details</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {showingHistoryForPatient?.bills?.map((bill) => (
-                                            <TableRow key={bill.id}>
-                                                <TableCell>{formatDateTime(bill.date)}</TableCell>
-                                                <TableCell>{formatCurrency(bill.amount, currency)}</TableCell>
-                                                <TableCell>{bill.details}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteBill(showingHistoryForPatient.id, bill.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </TableCell>
+                            {isLoadingHistory ? (
+                                <div className="flex items-center justify-center p-4">
+                                    Loading history...
+                                </div>
+                            ) : (
+                                activeHistoryType === 'bill' && (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Bill #</TableHead>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Details</TableHead>
+                                                <TableHead>Amount ({currency})</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {showingHistoryForPatient?.bills?.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="text-center">
+                                                        No bills found
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                showingHistoryForPatient?.bills?.map((bill) => (
+                                                    <TableRow key={bill.id}>
+                                                        <TableCell>{bill.bill_number}</TableCell>
+                                                        <TableCell>{formatDateTime(bill.bill_date)}</TableCell>
+                                                        <TableCell>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm text-gray-500">{bill.bill_details}</span>
+                                                                {bill.bill_status && (
+                                                                    <span className="text-xs text-gray-400">Status: {bill.bill_status}</span>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>{formatCurrency(parseFloat(bill.bill_amount), currency)}</TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteBill(showingHistoryForPatient.id, bill.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                )
                             )}
                             {activeHistoryType === 'payment' && (
                                 <Table>

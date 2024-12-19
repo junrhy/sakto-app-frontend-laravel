@@ -102,44 +102,51 @@ class ClinicController extends Controller
         }
     }
 
-    public function addBill(Request $request, $patientId)
+    public function getBills($patientId)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/patient-bills/{$patientId}");
+        return response()->json($response->json());
+    }
+
+    public function addBill(Request $request)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patients/{$patientId}/bills", $request->all());
+                ->post("{$this->apiUrl}/patient-bills/{$request->patient_id}", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add bill'], 500);
         }
     }
 
-    public function deleteBill($patientId, $billId)
+    public function deleteBill($patientId, $id)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/patients/{$patientId}/bills/{$billId}");
+                ->delete("{$this->apiUrl}/patient-bills/{$patientId}/{$id}");
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete bill'], 500);
         }
     }
 
-    public function addPayment(Request $request, $patientId)
+    public function addPayment(Request $request)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patients/{$patientId}/payments", $request->all());
+                ->post("{$this->apiUrl}/patient-payments", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add payment'], 500);
         }
     }
 
-    public function deletePayment($patientId, $paymentId)
+    public function deletePayment($id)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/patients/{$patientId}/payments/{$paymentId}");
+                ->delete("{$this->apiUrl}/patient-payments/{$id}");
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete payment'], 500);
@@ -157,33 +164,33 @@ class ClinicController extends Controller
         }
     }
 
-    public function deleteCheckup($patientId, $checkupId)
+    public function deleteCheckup($id)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/patients/{$patientId}/checkups/{$checkupId}");
+                ->delete("{$this->apiUrl}/patient-checkups/{$id}");
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete checkup'], 500);
         }
     }
 
-    public function updateDentalChart(Request $request, $patientId)
+    public function updateDentalChart(Request $request)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->put("{$this->apiUrl}/patients/{$patientId}/dental-chart", $request->all());
+                ->put("{$this->apiUrl}/patient-dental-charts", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to update dental chart'], 500);
         }
     }
 
-    public function updateNextVisit(Request $request, $patientId)
+    public function updateNextVisit(Request $request, $id)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->put("{$this->apiUrl}/patients/{$patientId}/next-visit", $request->all());
+                ->put("{$this->apiUrl}/patients/{$id}/next-visit", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to update next visit'], 500);
