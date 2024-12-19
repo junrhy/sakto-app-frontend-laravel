@@ -25,16 +25,27 @@ class ClinicController extends Controller
                 ->get("{$this->apiUrl}/patients", [
                     'client_identifier' => $clientIdentifier
                 ]);
-
-            if(!$response->json()) {
+               
+            $responseData = $response->json();
+            
+            if(!$responseData) {
                 return response()->json(['error' => 'Failed to connect to Clinic API.'], 500);
             }
-    
+
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            $patients = $response->json()['patients'] ?? [];
+            $patients = $responseData['patients'] ?? [];
+            
+            // Calculate totals for each patient
+            $patients = collect($patients)->map(function ($patient) {
+                $patient['total_bills'] = collect($patient['bills'] ?? [])->sum('bill_amount');
+                $patient['total_payments'] = collect($patient['payments'] ?? [])->sum('payment_amount');
+                $patient['balance'] = $patient['total_bills'] - $patient['total_payments'];
+                return $patient;
+            })->all();
+
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Clinic', [

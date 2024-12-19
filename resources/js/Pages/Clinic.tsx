@@ -43,14 +43,16 @@ type ToothData = {
 };
 
 type Patient = {
-    id: number;
+    id: string;
     name: string;
     email: string;
     phone: string;
     birthdate: string;
     next_visit_date: string;
     next_visit_time: string;
-    client_identifier: string;
+    total_bills: number;
+    total_payments: number;
+    balance: number;
     // ... other fields
 };
 
@@ -72,7 +74,8 @@ const formatDateTime = (dateTimeStr: string) => {
 };
 
 const formatCurrency = (amount: number, symbol: string) => {
-    return symbol + amount;
+    const formattedAmount = amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return symbol + formattedAmount;
 };
 
 // Add this near the top of the file, before the component definition
@@ -86,12 +89,10 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const currency = appCurrency ? appCurrency.symbol : '$';
 
     const [patients, setPatients] = useState<Patient[]>(
-        initialPatients.filter((patient): patient is Patient => 
-            patient !== null && 
-            patient !== undefined && 
-            typeof patient.name === 'string' &&
-            typeof patient.id === 'number'
-        )
+        initialPatients.map(patient => ({
+            ...patient,
+            id: patient.id.toString()
+        }))
     );
     const [newPatient, setNewPatient] = useState({ 
         name: '', 
@@ -102,7 +103,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
+    const [deleteConfirmation, setDeleteConfirmation] = useState<Patient | null>(null);
     const [additionalBillAmount, setAdditionalBillAmount] = useState('');
     const [additionalBillDetails, setAdditionalBillDetails] = useState('');
     const [additionalBillPatientId, setAdditionalBillPatientId] = useState<string | null>(null);
@@ -179,6 +180,10 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         }
     };
 
+    const handleDeletePatient = (patient: Patient) => {
+        setDeleteConfirmation(patient);
+    };
+
     const deletePatient = async (id: string) => {
         try {
             await axios.delete(`/clinic/patients/${id}`);
@@ -186,7 +191,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
             setDeleteConfirmation(null);
         } catch (error) {
             console.error('Failed to delete patient:', error);
-            // Handle error
+            // Handle error (show toast notification, etc.)
         }
     };
 
@@ -531,7 +536,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center space-x-2">
-                                                    <span>{formatCurrency(patient.billAmount, currency)}</span>
+                                                    <span>{formatCurrency(patient.total_bills, currency)}</span>
                                                     <Dialog>
                                                         <DialogTrigger asChild>
                                                             <Button 
@@ -619,7 +624,11 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                     <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="destructive" size="sm" onClick={() => handleDeletePatient(patient)}>
+                                                    <Button 
+                                                        variant="destructive" 
+                                                        size="sm" 
+                                                        onClick={() => handleDeletePatient(patient)}
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                     <Button variant="outline" size="sm" onClick={() => handleShowPaymentHistory(patient)}>
@@ -901,6 +910,27 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                 <Button type="submit">Save Changes</Button>
                             </DialogFooter>
                         </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Add this Dialog component near your other dialogs */}
+                <Dialog open={!!deleteConfirmation} onOpenChange={(open) => !open && setDeleteConfirmation(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirm Deletion</DialogTitle>
+                        </DialogHeader>
+                        <p>Are you sure you want to delete {deleteConfirmation?.name}? This action cannot be undone.</p>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setDeleteConfirmation(null)}>
+                                Cancel
+                            </Button>
+                            <Button 
+                                variant="destructive" 
+                                onClick={() => deleteConfirmation && deletePatient(deleteConfirmation.id)}
+                            >
+                                Delete
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
