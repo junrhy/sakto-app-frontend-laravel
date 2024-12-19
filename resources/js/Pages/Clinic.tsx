@@ -373,17 +373,51 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         if (editingNextVisit) {
             try {
                 const response = await axios.put(`/clinic/patients/${editingNextVisit.patientId}/next-visit`, {
-                    nextVisitDate: editingNextVisit.date
+                    next_visit_date: editingNextVisit.date
                 });
-                setPatients(patients.map(patient => 
-                    patient.id === editingNextVisit.patientId ? response.data : patient
-                ));
+                
+                const nextVisitDate = editingNextVisit.date === 'NA' 
+                    ? 'NA' 
+                    : response.data.next_visit_date || editingNextVisit.date;
+                
+                setPatients(patients.map(patient => {
+                    if (patient.id === parseInt(editingNextVisit.patientId)) {
+                        return {
+                            ...patient,
+                            next_visit_date: nextVisitDate,
+                            next_visit_time: response.data.next_visit_time || patient.next_visit_time
+                        };
+                    }
+                    return patient;
+                }));
+                
+                // Close the dialog
+                const dialogTrigger = document.querySelector('[data-state="open"]') as HTMLElement;
+                if (dialogTrigger) {
+                    dialogTrigger.click();
+                }
+                
                 setEditingNextVisit(null);
             } catch (error) {
                 console.error('Failed to update next visit:', error);
-                // Handle error
             }
         }
+    };
+
+    // Add this function near your other handler functions
+    const handleEditPatient = (patient: Patient) => {
+        setEditingPatient(patient);
+    };
+
+    // Update the handleEditPatient function to format the date properly
+    const handleNextVisitClick = (patient: Patient) => {
+        // Convert 'NA' to empty string for the input, otherwise use the existing date
+        const dateValue = patient.next_visit_date === 'NA' ? '' : patient.next_visit_date;
+        
+        setEditingNextVisit({ 
+            patientId: patient.id.toString(), 
+            date: dateValue 
+        });
     };
 
     return (
@@ -482,7 +516,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                                                 type="datetime-local"
                                                                                 value={editingNextVisit?.date || ''}
                                                                                 onChange={(e) => setEditingNextVisit(prev => 
-                                                                                    prev ? { ...prev, date: e.target.value } : null
+                                                                                    prev ? { ...prev, date: e.target.value || 'NA' } : null
                                                                                 )}
                                                                                 required={editingNextVisit?.date !== 'NA'}
                                                                             />
@@ -804,6 +838,69 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                         </div>
                         )}
                     </ScrollArea>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Add this dialog component near your other dialogs */}
+                <Dialog open={!!editingPatient} onOpenChange={(open) => !open && setEditingPatient(null)}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Edit Patient Details</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={updatePatient} className="space-y-4">
+                            <div>
+                                <Label htmlFor="edit-name">Name</Label>
+                                <Input
+                                    id="edit-name"
+                                    value={editingPatient?.name || ''}
+                                    onChange={(e) => setEditingPatient(prev => 
+                                        prev ? { ...prev, name: e.target.value } : null
+                                    )}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-email">Email</Label>
+                                <Input
+                                    id="edit-email"
+                                    type="email"
+                                    value={editingPatient?.email || ''}
+                                    onChange={(e) => setEditingPatient(prev => 
+                                        prev ? { ...prev, email: e.target.value } : null
+                                    )}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-phone">Phone</Label>
+                                <Input
+                                    id="edit-phone"
+                                    value={editingPatient?.phone || ''}
+                                    onChange={(e) => setEditingPatient(prev => 
+                                        prev ? { ...prev, phone: e.target.value } : null
+                                    )}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="edit-birthdate">Birthdate</Label>
+                                <Input
+                                    id="edit-birthdate"
+                                    type="date"
+                                    value={editingPatient?.birthdate || ''}
+                                    onChange={(e) => setEditingPatient(prev => 
+                                        prev ? { ...prev, birthdate: e.target.value } : null
+                                    )}
+                                    required
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setEditingPatient(null)}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit">Save Changes</Button>
+                            </DialogFooter>
+                        </form>
                     </DialogContent>
                 </Dialog>
             </div>
