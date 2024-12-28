@@ -131,22 +131,29 @@ class ClinicController extends Controller
         }
     }
 
+    public function getPayments($patientId)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/patient-payments/{$patientId}");
+        return response()->json($response->json());
+    }
+
     public function addPayment(Request $request)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patient-payments", $request->all());
+                ->post("{$this->apiUrl}/patient-payments/{$request->patient_id}", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add payment'], 500);
         }
     }
 
-    public function deletePayment($id)
+    public function deletePayment($patientId, $id)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/patient-payments/{$id}");
+                ->delete("{$this->apiUrl}/patient-payments/{$patientId}/{$id}");
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete payment'], 500);
