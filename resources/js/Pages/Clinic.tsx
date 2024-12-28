@@ -123,7 +123,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const [additionalBillPatientId, setAdditionalBillPatientId] = useState<string | null>(null);
     const [showingBillHistoryForPatient, setShowingBillHistoryForPatient] = useState<Patient | null>(null);
     const [newCheckupResult, setNewCheckupResult] = useState<Omit<CheckupResult, 'id'>>({ date: '', diagnosis: '', treatment: '', notes: '' });
-    const [checkupPatientId, setCheckupPatientId] = useState<string | null>(null);
+    const [checkupPatient, setCheckupPatient] = useState<Patient | null>(null);
     const [showingCheckupHistoryForPatient, setShowingCheckupHistoryForPatient] = useState<Patient | null>(null);
     const [showingPaymentHistoryForPatient, setShowingPaymentHistoryForPatient] = useState<Patient | null>(null);
     const patientsPerPage = 15;
@@ -156,6 +156,9 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
 
     // Add this state near your other states
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+
+    // Add this state near your other state declarations
+    const [isCheckupDialogOpen, setIsCheckupDialogOpen] = useState(false);
 
     const filteredPatients = patients.filter(patient =>
         patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -291,25 +294,6 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
             }
         } catch (error) {
             console.error('Failed to add bill:', error);
-            // Handle error
-        }
-    };
-
-    const handleAddCheckupResult = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (checkupPatientId === null) {
-            alert('Please select a patient to add a checkup result.');
-            return;
-        }
-        try {
-            const response = await axios.post(`/clinic/patients/${checkupPatientId}/checkups`, newCheckupResult);
-            setPatients(patients.map(patient => 
-                patient.id === checkupPatientId ? response.data : patient
-            ));
-            setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
-            setCheckupPatientId(null);
-        } catch (error) {
-            console.error('Failed to add checkup result:', error);
             // Handle error
         }
     };
@@ -552,6 +536,36 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         setActiveHistoryType('checkup');
     };
 
+    // Add this function near your other handler functions
+    const handleAddCheckup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!checkupPatient) return;
+
+        try {
+            const response = await axios.post(`/clinic/patients/${checkupPatient.id}/checkups`, newCheckupResult);
+            
+            // Update the patients state with the new checkup data
+            setPatients(prevPatients => 
+                prevPatients.map(patient => 
+                    patient.id === checkupPatient.id 
+                    ? {
+                        ...patient,
+                        checkups: [...(patient.checkups || []), response.data]
+                    }
+                    : patient
+                )
+            );
+
+            // Reset form and close dialog
+            setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
+            setCheckupPatient(null);
+            setIsCheckupDialogOpen(false);
+        } catch (error) {
+            console.error('Failed to add checkup:', error);
+            // Handle error (show toast notification, etc.)
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -766,6 +780,16 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                     </Button>
                                                     <Button variant="outline" size="sm" onClick={() => handleShowCheckupHistory(patient)}>
                                                         <History className="h-4 w-4" /> Checkup History
+                                                    </Button>
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            setCheckupPatient(patient);
+                                                            setIsCheckupDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <Plus className="h-4 w-4" /> Add Checkup
                                                     </Button>
                                                     <Button variant="outline" size="sm" onClick={() => openDentalChartDialog(patient)}>
                                                         Dental Chart
@@ -1093,6 +1117,62 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                 Delete
                             </Button>
                         </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Add Checkup Dialog */}
+                <Dialog open={isCheckupDialogOpen} onOpenChange={setIsCheckupDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add Checkup Record for {checkupPatient?.name}</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleAddCheckup} className="space-y-4">
+                            <div>
+                                <Label htmlFor="checkup-date">Date</Label>
+                                <Input
+                                    id="checkup-date"
+                                    type="datetime-local"
+                                    value={newCheckupResult.date}
+                                    onChange={(e) => setNewCheckupResult(prev => ({ ...prev, date: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="diagnosis">Diagnosis</Label>
+                                <Textarea
+                                    id="diagnosis"
+                                    value={newCheckupResult.diagnosis}
+                                    onChange={(e) => setNewCheckupResult(prev => ({ ...prev, diagnosis: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="treatment">Treatment</Label>
+                                <Textarea
+                                    id="treatment"
+                                    value={newCheckupResult.treatment}
+                                    onChange={(e) => setNewCheckupResult(prev => ({ ...prev, treatment: e.target.value }))}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="notes">Notes</Label>
+                                <Textarea
+                                    id="notes"
+                                    value={newCheckupResult.notes}
+                                    onChange={(e) => setNewCheckupResult(prev => ({ ...prev, notes: e.target.value }))}
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => {
+                                    setIsCheckupDialogOpen(false);
+                                    setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
+                                }}>
+                                    Cancel
+                                </Button>
+                                <Button type="submit">Save Checkup</Button>
+                            </DialogFooter>
+                        </form>
                     </DialogContent>
                 </Dialog>
             </div>
