@@ -30,8 +30,13 @@ type BillItem = {
 
 type PaymentItem = {
     id: number;
-    amount: number;
-    date: string;
+    patient_id: number;
+    payment_date: string;
+    payment_amount: string;
+    payment_method: string;
+    payment_notes: string;
+    created_at: string;
+    updated_at: string;
 };
 
 type CheckupResult = {
@@ -81,8 +86,9 @@ const formatDateTime = (dateTimeStr: string) => {
     }).format(date);
 };
 
-const formatCurrency = (amount: number, symbol: string) => {
-    const formattedAmount = amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatCurrency = (amount: number | string, symbol: string) => {
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const formattedAmount = numericAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return symbol + formattedAmount;
 };
 
@@ -148,6 +154,9 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     // Add this new state for loading status
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
+    // Add this state near your other states
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+
     const filteredPatients = patients.filter(patient =>
         patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -212,13 +221,43 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
             return;
         }
         try {
-            const response = await axios.post(`/clinic/patients/${patientId}/payments`, { amount });
-            setPatients(patients.map(patient => 
-                patient.id === patientId ? response.data : patient
-            ));
-        } catch (error) {
+            const response = await axios.post(`/clinic/patients/${patientId}/payments`, { 
+                patient_id: patientId,
+                payment_amount: amount,
+                payment_date: new Date().toISOString(),
+                payment_method: 'cash',
+                payment_notes: 'Payment for bill'
+            });
+
+            // Update the patients state directly
+            setPatients(prevPatients => 
+                prevPatients.map(patient => {
+                    if (patient.id === patientId) {
+                        const newPayment = response.data;
+                        const updatedPayments = [...patient.payments, newPayment];
+                        const newTotalPayments = parseFloat(patient.total_payments.toString()) + amount;
+                        
+                        return {
+                            ...patient,
+                            payments: updatedPayments,
+                            total_payments: newTotalPayments,
+                            balance: patient.total_bills - newTotalPayments
+                        };
+                    }
+                    return patient;
+                })
+            );
+
+            // Reset states to close dialogs
+            setShowingHistoryForPatient(null);
+            setActiveHistoryType(null);
+            setShowingPaymentHistoryForPatient(null);
+            setShowingBillHistoryForPatient(null);
+            setShowingCheckupHistoryForPatient(null);
+
+        } catch (error: any) {
             console.error('Failed to process payment:', error);
-            // Handle error
+            alert(error.response?.data?.message || 'Failed to process payment. Please try again.');
         }
     };
 
@@ -317,16 +356,36 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         ));
     };
 
-    const handleDeletePayment = (patientId: string, paymentId: number) => {
-        setPatients(patients.map(patient => 
-        patient.id === patientId
-            ? {
-                ...patient,
-                paymentHistory: patient.paymentHistory.filter(payment => payment.id !== paymentId),
-                balance: patient.balance + patient.paymentHistory.find(payment => payment.id === paymentId)!.amount
-            }
-            : patient
-        ));
+    const handleDeletePayment = async (patientId: string, paymentId: number) => {
+        try {
+            await axios.delete(`/clinic/patients/${patientId}/payments/${paymentId}`);
+            
+            // Update patients state
+            setPatients(patients.map(patient => {
+                if (patient.id === patientId) {
+                    const paymentAmount = parseFloat(patient.payments.find(p => p.id === paymentId)?.payment_amount || '0');
+                    const updatedPayments = patient.payments.filter(payment => payment.id !== paymentId);
+                    
+                    // Also update the showing history patient if it's the same patient
+                    if (showingHistoryForPatient?.id === patientId) {
+                        setShowingHistoryForPatient({
+                            ...showingHistoryForPatient,
+                            payments: updatedPayments
+                        });
+                    }
+                    
+                    return {
+                        ...patient,
+                        payments: updatedPayments,
+                        total_payments: patient.total_payments - paymentAmount,
+                        balance: patient.balance + paymentAmount // Add the payment amount back to balance
+                    };
+                }
+                return patient;
+            }));
+        } catch (error) {
+            console.error('Failed to delete payment:', error);
+        }
     };
 
     const indexOfLastPatient = currentPage * patientsPerPage;
@@ -458,10 +517,33 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         }
     };
 
-    // Add this function with your other handlers
-    const handleShowPaymentHistory = (patient: Patient) => {
-        setShowingHistoryForPatient(patient);
-        setActiveHistoryType('payment');
+    // Update the handleShowPaymentHistory function
+    const handleShowPaymentHistory = async (patient: Patient) => {
+        try {
+            setIsLoadingHistory(true);
+            const response = await axios.get(`/clinic/patients/${patient.id}/payments`);
+            
+            // Update the patient's payments with the fetched data
+            const updatedPatient = {
+                ...patient,
+                payments: response.data.payments // Assuming the response contains a payments array
+            };
+            
+            // Update the patients state to include the new payment data
+            setPatients(prevPatients => 
+                prevPatients.map(p => 
+                    p.id === patient.id ? updatedPatient : p
+                )
+            );
+            
+            setShowingHistoryForPatient(updatedPatient);
+            setActiveHistoryType('payment');
+        } catch (error) {
+            console.error('Failed to fetch payment history:', error);
+            // You might want to show an error message to the user here
+        } finally {
+            setIsLoadingHistory(false);
+        }
     };
 
     // Add this function with your other handlers
@@ -628,7 +710,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                             <TableCell>
                                                 <div className="flex items-center space-x-2">
                                                     <span>{formatCurrency(patient.balance, currency)}</span>
-                                                    <Dialog>
+                                                    <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
                                                         <DialogTrigger asChild>
                                                             <Button variant="outline" size="sm">
                                                                 <PlusCircle className="h-4 w-4" /> Add Payment
@@ -638,15 +720,15 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                             <DialogHeader>
                                                                 <DialogTitle>Make Payment for {patient.name}</DialogTitle>
                                                             </DialogHeader>
-                                                            <form onSubmit={(e) => {
+                                                            <form onSubmit={async (e) => {
                                                                 e.preventDefault();
                                                                 const form = e.target as HTMLFormElement;
                                                                 const input = form.elements.namedItem('paymentAmount') as HTMLInputElement;
                                                                 const amount = parseFloat(input.value);
                                                                 if (!isNaN(amount)) {
-                                                                    handlePayment(patient.id, amount);
-                                                                    input.value = '';
-                                                                    (e.target as HTMLFormElement).reset();
+                                                                    await handlePayment(patient.id, amount);
+                                                                    form.reset();
+                                                                    setIsPaymentDialogOpen(false); // Close the dialog
                                                                 }
                                                             }} 
                                                             className="space-y-4"
@@ -840,25 +922,37 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                         <TableRow>
                                             <TableHead>Date</TableHead>
                                             <TableHead>Amount ({currency})</TableHead>
+                                            <TableHead>Method</TableHead>
+                                            <TableHead>Notes</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {showingHistoryForPatient?.payments?.map((payment) => (
-                                            <TableRow key={payment.id}>
-                                                <TableCell>{formatDateTime(payment.date)}</TableCell>
-                                                <TableCell>{formatCurrency(payment.amount, currency)}</TableCell>
-                                                <TableCell className="text-right">
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleDeletePayment(showingHistoryForPatient.id, payment.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                        {showingHistoryForPatient?.payments?.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center">
+                                                    No payments found
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                        ) : (
+                                            showingHistoryForPatient?.payments?.map((payment) => (
+                                                <TableRow key={payment.id}>
+                                                    <TableCell>{formatDateTime(payment.payment_date)}</TableCell>
+                                                    <TableCell>{formatCurrency(parseFloat(payment.payment_amount), currency)}</TableCell>
+                                                    <TableCell className="capitalize">{payment.payment_method}</TableCell>
+                                                    <TableCell>{payment.payment_notes}</TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeletePayment(showingHistoryForPatient.id, payment.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
                                     </TableBody>
                                 </Table>
                             )}
