@@ -15,6 +15,13 @@ import axios from 'axios';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Search } from 'lucide-react';
+import { format } from "date-fns";
+import { Calendar } from "@/Components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Clock } from "lucide-react";
 
 type BillItem = {
     id: number;
@@ -74,6 +81,15 @@ type AppCurrency = {
     code: string;
 };
 
+type CheckupDate = {
+    date: Date | undefined;
+};
+
+type TimePickerProps = {
+    value: string;
+    onChange: (value: string) => void;
+};
+
 const formatDateTime = (dateTimeStr: string) => {
     if (!dateTimeStr || dateTimeStr === 'NA') return 'N/A';
     const date = new Date(dateTimeStr);
@@ -122,7 +138,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const [additionalBillDetails, setAdditionalBillDetails] = useState('');
     const [additionalBillPatientId, setAdditionalBillPatientId] = useState<string | null>(null);
     const [showingBillHistoryForPatient, setShowingBillHistoryForPatient] = useState<Patient | null>(null);
-    const [newCheckupResult, setNewCheckupResult] = useState<Omit<CheckupResult, 'id'>>({ date: '', diagnosis: '', treatment: '', notes: '' });
+    const [newCheckupResult, setNewCheckupResult] = useState<Omit<CheckupResult, 'id'> & { date: string }>({ date: '', diagnosis: '', treatment: '', notes: '' });
     const [checkupPatient, setCheckupPatient] = useState<Patient | null>(null);
     const [showingCheckupHistoryForPatient, setShowingCheckupHistoryForPatient] = useState<Patient | null>(null);
     const [showingPaymentHistoryForPatient, setShowingPaymentHistoryForPatient] = useState<Patient | null>(null);
@@ -159,6 +175,8 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
 
     // Add this state near your other state declarations
     const [isCheckupDialogOpen, setIsCheckupDialogOpen] = useState(false);
+
+    const [checkupDateTime, setCheckupDateTime] = useState<CheckupDate>({ date: undefined });
 
     const filteredPatients = patients.filter(patient =>
         patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -330,14 +348,14 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     };
 
     const handleDeleteCheckup = (patientId: string, checkupId: number) => {
-        setPatients(patients.map(patient => 
-        patient.id === patientId
-            ? {
-                ...patient,
-                checkupHistory: patient.checkupHistory.filter(checkup => checkup.id !== checkupId)
-            }
-            : patient
-        ));
+        // setPatients(patients.map(patient => 
+        // patient.id === patientId
+        //     ? {
+        //         ...patient,
+        //         checkupHistory: patient.checkupHistory.filter(checkup => checkup.id !== checkupId)
+        //     }
+        //     : patient
+        // ));
     };
 
     const handleDeletePayment = async (patientId: string, paymentId: number) => {
@@ -539,10 +557,17 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     // Add this function near your other handler functions
     const handleAddCheckup = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!checkupPatient) return;
+        if (!checkupPatient || !checkupDateTime.date) return;
+
+        // Use only the date
+        const dateStr = format(checkupDateTime.date, 'yyyy-MM-dd');
+        const combinedResult = {
+            ...newCheckupResult,
+            checkup_date: dateStr
+        };
 
         try {
-            const response = await axios.post(`/clinic/patients/${checkupPatient.id}/checkups`, newCheckupResult);
+            const response = await axios.post(`/clinic/patients/${checkupPatient.id}/checkups`, combinedResult);
             
             // Update the patients state with the new checkup data
             setPatients(prevPatients => 
@@ -558,11 +583,11 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
 
             // Reset form and close dialog
             setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
+            setCheckupDateTime({ date: undefined });
             setCheckupPatient(null);
             setIsCheckupDialogOpen(false);
         } catch (error) {
             console.error('Failed to add checkup:', error);
-            // Handle error (show toast notification, etc.)
         }
     };
 
@@ -778,9 +803,6 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="sm" onClick={() => handleShowCheckupHistory(patient)}>
-                                                        <History className="h-4 w-4" /> Checkup History
-                                                    </Button>
                                                     <Button 
                                                         variant="outline" 
                                                         size="sm" 
@@ -790,6 +812,9 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                         }}
                                                     >
                                                         <Plus className="h-4 w-4" /> Add Checkup
+                                                    </Button>
+                                                    <Button variant="outline" size="sm" onClick={() => handleShowCheckupHistory(patient)}>
+                                                        <History className="h-4 w-4" /> Checkup History
                                                     </Button>
                                                     <Button variant="outline" size="sm" onClick={() => openDentalChartDialog(patient)}>
                                                         Dental Chart
@@ -1127,15 +1152,34 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                             <DialogTitle>Add Checkup Record for {checkupPatient?.name}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleAddCheckup} className="space-y-4">
-                            <div>
-                                <Label htmlFor="checkup-date">Date</Label>
-                                <Input
-                                    id="checkup-date"
-                                    type="datetime-local"
-                                    value={newCheckupResult.date}
-                                    onChange={(e) => setNewCheckupResult(prev => ({ ...prev, date: e.target.value }))}
-                                    required
-                                />
+                            <div className="space-y-2">
+                                <Label>Date</Label>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className={cn(
+                                                "w-full justify-start text-left font-normal",
+                                                !checkupDateTime.date && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {checkupDateTime.date ? (
+                                                format(checkupDateTime.date, "PPP")
+                                            ) : (
+                                                <span>Pick a date</span>
+                                            )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={checkupDateTime.date}
+                                            onSelect={(date) => setCheckupDateTime({ date: date || undefined })}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                             <div>
                                 <Label htmlFor="diagnosis">Diagnosis</Label>
@@ -1167,6 +1211,7 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                 <Button type="button" variant="outline" onClick={() => {
                                     setIsCheckupDialogOpen(false);
                                     setNewCheckupResult({ date: '', diagnosis: '', treatment: '', notes: '' });
+                                    setCheckupDateTime({ date: undefined });
                                 }}>
                                     Cancel
                                 </Button>
