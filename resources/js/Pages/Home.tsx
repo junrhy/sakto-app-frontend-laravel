@@ -4,27 +4,7 @@ import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
-import { 
-    FaStore, 
-    FaUtensils, 
-    FaHospital, 
-    FaHandHoldingUsd,
-    FaBuilding,
-    FaBus,
-    FaWarehouse,
-    FaQuestionCircle,
-    FaPlane,
-    FaBoxOpen,
-    FaUsers
-} from 'react-icons/fa';
-
-interface AppCard {
-    icon: React.ReactNode;
-    title: string;
-    route: string;
-    bgColor: string;
-    visible: boolean;
-}
+import { apps } from '@/data/apps';
 
 interface Props {
     auth: {
@@ -33,79 +13,6 @@ interface Props {
         };
     };
 }
-
-const apps: AppCard[] = [
-    {
-        icon: <FaStore />,
-        title: 'Retail',
-        route: '/dashboard?app=retail',
-        bgColor: 'text-blue-500',
-        visible: true
-    },
-    {
-        icon: <FaUtensils />,
-        title: 'F&B',
-        route: '/dashboard?app=fnb',
-        bgColor: 'text-orange-500',
-        visible: true
-    },
-    {
-        icon: <FaHospital />,
-        title: 'Clinic',
-        route: '/dashboard?app=clinic',
-        bgColor: 'text-green-500',
-        visible: true
-    },
-    {
-        icon: <FaHandHoldingUsd />,
-        title: 'Lending',
-        route: '/dashboard?app=lending',
-        bgColor: 'text-purple-500',
-        visible: true
-    },
-    {
-        icon: <FaBoxOpen />,
-        title: 'Rental',
-        route: '/dashboard?app=rental-item',
-        bgColor: 'text-indigo-500',
-        visible: true
-    },
-    {
-        icon: <FaBuilding />,
-        title: 'Real Estate',
-        route: '/dashboard?app=real-estate',
-        bgColor: 'text-red-500',
-        visible: true
-    },
-    {
-        icon: <FaBus />,
-        title: 'Transportation',
-        route: '/dashboard?app=transportation',
-        bgColor: 'text-yellow-500',
-        visible: false
-    },
-    {
-        icon: <FaWarehouse />,
-        title: 'Warehousing',
-        route: '/dashboard?app=warehousing',
-        bgColor: 'text-teal-500',
-        visible: false
-    },
-    {
-        icon: <FaUsers />,
-        title: 'Payroll',
-        route: '/dashboard?app=payroll',
-        bgColor: 'text-cyan-500',
-        visible: true
-    },
-    {
-        icon: <FaPlane />,
-        title: 'Travel',
-        route: '/dashboard?app=travel',
-        bgColor: 'text-pink-500',
-        visible: false
-    }
-];
 
 export default function Home({ auth }: Props) {
     const getBorderColor = (colorClass: string) => {
@@ -163,9 +70,9 @@ export default function Home({ auth }: Props) {
 
                 <div className="container mx-auto px-4 pt-[180px] landscape:pt-[120px] md:pt-[200px] overflow-y-auto mb-4">
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
-                        {apps.filter(app => app.visible).sort((a, b) => a.title.localeCompare(b.title)).map((app, index) => (
+                        {apps.filter(app => app.visible).sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
                             <Link
-                                key={index}
+                                key={app.title}
                                 href={app.route}
                                 className="flex flex-col items-center"
                             >
