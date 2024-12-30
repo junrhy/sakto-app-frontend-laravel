@@ -9,7 +9,12 @@ import { Search } from 'lucide-react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
 import { apps } from '@/data/apps';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+
+interface ExchangeRates {
+    PHP?: number;
+    [key: string]: number | undefined;
+}
 
 interface PageProps {
     auth: {
@@ -27,6 +32,22 @@ export default function Apps({ auth }: PageProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
+    const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({ PHP: 56.50 }); // Default fallback rate
+
+    useEffect(() => {
+        const fetchExchangeRates = async () => {
+            try {
+                const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const data = await response.json();
+                setExchangeRates(data.rates);
+            } catch (error) {
+                console.error('Failed to fetch exchange rates:', error);
+                // Keep using the fallback rate
+            }
+        };
+
+        fetchExchangeRates();
+    }, []);
 
     const toggleDescription = (appTitle: string) => {
         setExpandedDescriptions(prev => ({
@@ -44,14 +65,21 @@ export default function Apps({ auth }: PageProps) {
     const formatPrice = (price: number) => {
         if (price === 0) return 'Free';
         try {
+            const convertedPrice = auth.user.app_currency.symbol === '₱' 
+                ? price * (exchangeRates.PHP || 56.50) // Use API rate or fallback
+                : price;
+            
             const formattedNumber = new Intl.NumberFormat('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-            }).format(price);
+            }).format(convertedPrice);
             return `${auth.user.app_currency.symbol}${formattedNumber}`;
         } catch (error) {
             console.error('Price formatting error:', error);
-            return `${auth.user.app_currency.symbol}${price.toFixed(2)}`;
+            const convertedPrice = auth.user.app_currency.symbol === '₱' 
+                ? price * (exchangeRates.PHP || 56.50)
+                : price;
+            return `${auth.user.app_currency.symbol}${convertedPrice.toFixed(2)}`;
         }
     };
 
