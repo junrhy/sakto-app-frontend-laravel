@@ -163,14 +163,14 @@ export default function Home({ auth }: Props) {
                             className="flex flex-col items-center"
                         >
                             <div 
-                                className={`w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200`}
+                                className={`w-20 h-20 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200`}
                                 style={{ borderWidth: '2px', borderColor: getBorderColor(app.bgColor) }}
                             >
                                 <div className={`text-4xl ${app.bgColor}`}>
                                     {app.icon}
                                 </div>
                             </div>
-                            <h2 className="text-sm font-medium text-gray-700 text-center">
+                            <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
                                 {app.title}
                             </h2>
                         </Link>

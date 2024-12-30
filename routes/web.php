@@ -50,13 +50,13 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('home');
 
-    Route::get('/shop', function () {
-        return Inertia::render('Shop', [
+    Route::get('/apps', function () {
+        return Inertia::render('Apps', [
             'auth' => [
                 'user' => Auth::user()
             ]
         ]);
-    })->name('shop');
+    })->name('apps');
 
     Route::get('/inbox', function () {
         return Inertia::render('Inbox', [

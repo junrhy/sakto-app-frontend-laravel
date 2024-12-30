@@ -47,15 +47,17 @@ export default function BottomNav() {
     const { url } = usePage();
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-lg">
             <div className="flex justify-around items-center h-16">
                 {navItems.map((item, index) => (
                     <Link
                         key={index}
                         href={item.route}
                         className={`relative flex flex-col items-center justify-center w-full h-full ${
-                            url === item.route ? 'text-black' : 'text-gray-600'
-                        } hover:text-black`}
+                            url === item.route 
+                                ? 'text-black dark:text-white' 
+                                : 'text-gray-600 dark:text-gray-400'
+                        } hover:text-black dark:hover:text-white transition-colors`}
                     >
                         <div className="relative text-xl mb-1">
                             {item.icon}
