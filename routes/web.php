@@ -51,9 +51,15 @@ Route::middleware('auth')->group(function () {
     })->name('home');
 
     Route::get('/apps', function () {
+        $appCurrency = json_decode(auth()->user()->app_currency);
+
         return Inertia::render('Apps', [
             'auth' => [
-                'user' => Auth::user()
+                'user' => [
+                    'name' => auth()->user()->name,
+                    'email' => auth()->user()->email,
+                    'app_currency' => $appCurrency,
+                ]
             ]
         ]);
     })->name('apps');
