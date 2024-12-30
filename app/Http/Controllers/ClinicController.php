@@ -164,18 +164,18 @@ class ClinicController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/patients/{$patientId}/checkups", $request->all());
+                ->post("{$this->apiUrl}/patient-checkups/{$patientId}", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to add checkup'], 500);
         }
     }
 
-    public function deleteCheckup($id)
+    public function deleteCheckup($patientId, $id)
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/patient-checkups/{$id}");
+                ->delete("{$this->apiUrl}/patient-checkups/{$patientId}/{$id}");
             return response()->json($response->json());
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to delete checkup'], 500);
