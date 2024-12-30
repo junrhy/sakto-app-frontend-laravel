@@ -120,6 +120,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/clinic/patients/{patientId}/next-visit', [ClinicController::class, 'updateNextVisit']);
     Route::get('/clinic/patients/{patientId}/bills', [ClinicController::class, 'getBills']);
     Route::get('/clinic/patients/{patientId}/payments', [ClinicController::class, 'getPayments']);
+    Route::get('/clinic/patients/{patientId}/checkups', [ClinicController::class, 'getCheckups']);
 
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');

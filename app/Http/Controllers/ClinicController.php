@@ -160,6 +160,13 @@ class ClinicController extends Controller
         }
     }
 
+    public function getCheckups($patientId)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/patient-checkups/{$patientId}");
+        return response()->json($response->json());
+    }
+
     public function addCheckup(Request $request, $patientId)
     {
         try {
