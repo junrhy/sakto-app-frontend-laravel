@@ -347,15 +347,33 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         }
     };
 
-    const handleDeleteCheckup = (patientId: string, checkupId: number) => {
-        // setPatients(patients.map(patient => 
-        // patient.id === patientId
-        //     ? {
-        //         ...patient,
-        //         checkupHistory: patient.checkupHistory.filter(checkup => checkup.id !== checkupId)
-        //     }
-        //     : patient
-        // ));
+    const handleDeleteCheckup = async (patientId: string, checkupId: number) => {
+        try {
+            await axios.delete(`/clinic/patients/${patientId}/checkups/${checkupId}`);
+            
+            // Update patients state
+            setPatients(patients.map(patient => {
+                if (patient.id === patientId) {
+                    const updatedCheckups = patient.checkups.filter(checkup => checkup.id !== checkupId);
+                    
+                    // Also update the showing history patient if it's the same patient
+                    if (showingHistoryForPatient?.id === patientId) {
+                        setShowingHistoryForPatient({
+                            ...showingHistoryForPatient,
+                            checkups: updatedCheckups
+                        });
+                    }
+                    
+                    return {
+                        ...patient,
+                        checkups: updatedCheckups
+                    };
+                }
+                return patient;
+            }));
+        } catch (error) {
+            console.error('Failed to delete checkup:', error);
+        }
     };
 
     const handleDeletePayment = async (patientId: string, paymentId: number) => {
@@ -548,10 +566,33 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
         }
     };
 
-    // Add this function with your other handlers
-    const handleShowCheckupHistory = (patient: Patient) => {
-        setShowingHistoryForPatient(patient);
-        setActiveHistoryType('checkup');
+    // Update the handleShowCheckupHistory function
+    const handleShowCheckupHistory = async (patient: Patient) => {
+        try {
+            setIsLoadingHistory(true);
+            const response = await axios.get(`/clinic/patients/${patient.id}/checkups`);
+            
+            // Update the patient's checkups with the fetched data
+            const updatedPatient = {
+                ...patient,
+                checkups: response.data.checkups // Assuming the response contains a checkups array
+            };
+            
+            // Update the patients state to include the new checkup data
+            setPatients(prevPatients => 
+                prevPatients.map(p => 
+                    p.id === patient.id ? updatedPatient : p
+                )
+            );
+            
+            setShowingHistoryForPatient(updatedPatient);
+            setActiveHistoryType('checkup');
+        } catch (error) {
+            console.error('Failed to fetch checkup history:', error);
+            // You might want to show an error message to the user here
+        } finally {
+            setIsLoadingHistory(false);
+        }
     };
 
     // Add this function near your other handler functions
