@@ -35,8 +35,8 @@ export default function Home({ auth }: Props) {
 
     return (
         <ThemeProvider>
-            <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900">
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
+            <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
+                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg">
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center mb-4">
                             <div className="w-full flex justify-between items-center mb-2">
@@ -77,14 +77,14 @@ export default function Home({ auth }: Props) {
                                 className="flex flex-col items-center"
                             >
                                 <div 
-                                    className={`w-20 h-20 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-sm dark:shadow-gray-800`}
+                                    className={`w-20 h-20 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-gray-800`}
                                     style={{ borderWidth: '2px', borderColor: getBorderColor(app.bgColor) }}
                                 >
                                     <div className={`text-4xl ${app.bgColor}`}>
                                         {app.icon}
                                     </div>
                                 </div>
-                                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                                <h2 className="text-sm font-medium text-gray-800 dark:text-gray-300 text-center">
                                     {app.title}
                                 </h2>
                             </Link>

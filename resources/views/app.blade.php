@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,8 +9,6 @@
 
         <!-- Add these lines for favicon support -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris.svg') }}">
-        <!-- Optional: Add PNG fallback for browsers that don't support SVG favicons -->
-        <link rel="alternate icon" type="image/png" href="{{ asset('images/tetris.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -21,6 +19,32 @@
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/Pages/{$page['component']}.tsx"])
         @inertiaHead
+
+        <script>
+            // Add this script to handle favicon color scheme
+            function updateFavicon() {
+                const isDark = document.documentElement.classList.contains('dark');
+                const favicon = document.querySelector('link[rel="icon"]');
+                favicon.href = isDark ? '{{ asset('images/tetris-white.svg') }}' : '{{ asset('images/tetris.svg') }}';
+            }
+
+            // Initial update
+            updateFavicon();
+
+            // Watch for theme changes
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        updateFavicon();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        </script>
     </head>
     <body class="font-sans antialiased">
         @inertia

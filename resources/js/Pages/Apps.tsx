@@ -112,7 +112,7 @@ export default function Apps({ auth }: PageProps) {
             <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900">
                 <Head title="Apps" />
 
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
+                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
                     <div className="container mx-auto px-4 py-4">
                         <div className="flex justify-between items-center">
                             <div className="flex items-center">
@@ -135,7 +135,7 @@ export default function Apps({ auth }: PageProps) {
                 <div className="container mx-auto px-4 pt-[100px] landscape:pt-[80px] md:pt-[100px]">
                     <div className="py-12">
                         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            <div className="bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-6">
                                 {/* Search and Filter Section */}
                                 <div className="mb-8">
                                     <div className="flex gap-4 mb-4">
@@ -143,14 +143,14 @@ export default function Apps({ auth }: PageProps) {
                                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
                                             <Input
                                                 placeholder="Search apps..."
-                                                className="pl-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-700"
+                                                className="pl-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm border-gray-300 dark:border-gray-700"
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                             />
                                         </div>
                                         <Button 
                                             variant="outline" 
-                                            className="dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white dark:border-gray-700"
+                                            className="bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
                                             onClick={() => setSelectedCategory(null)}
                                         >
                                             All Categories
@@ -161,7 +161,7 @@ export default function Apps({ auth }: PageProps) {
                                             <Badge 
                                                 key={category}
                                                 variant="secondary" 
-                                                className={`cursor-pointer bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 ${
+                                                className={`cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 ${
                                                     selectedCategory === category ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
                                                 }`}
                                                 onClick={() => setSelectedCategory(category)}
@@ -178,13 +178,13 @@ export default function Apps({ auth }: PageProps) {
                                         filteredApps.map((app) => (
                                             <Card 
                                                 key={app.title} 
-                                                className={`hover:shadow-lg transition-shadow border-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm ${
+                                                className={`hover:shadow-lg transition-shadow border border-gray-100 dark:border-0 bg-white/90 dark:bg-gray-800/50 backdrop-blur-sm ${
                                                     app.comingSoon ? 'opacity-75' : ''
                                                 }`}
                                             >
                                                 <CardHeader>
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`min-w-[4rem] w-16 h-16 bg-white dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm ${
+                                                        <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm ${
                                                             app.comingSoon ? 'opacity-50' : ''
                                                         }`}>
                                                             <div className="text-2xl">
@@ -220,7 +220,7 @@ export default function Apps({ auth }: PageProps) {
                                                             <Badge 
                                                                 key={category} 
                                                                 variant="secondary" 
-                                                                className={`bg-gray-100/50 dark:bg-gray-900/50 text-xs ${
+                                                                className={`bg-gray-50 dark:bg-gray-900/50 text-xs ${
                                                                     app.comingSoon ? 'opacity-75' : ''
                                                                 }`}
                                                             >
