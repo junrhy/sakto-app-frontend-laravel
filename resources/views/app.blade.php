@@ -8,7 +8,8 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Add these lines for favicon support -->
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris.svg') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris.svg') }}" media="(prefers-color-scheme: light)">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris-white.svg') }}" media="(prefers-color-scheme: dark)">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
