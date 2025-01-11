@@ -1,0 +1,50 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sakto_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - sakto_network
+
+  db:
+    image: arm64v8/mysql:8.0
+    platform: linux/arm64/v8
+    container_name: sakto_backend_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker/mysql:/docker-entrypoint-initdb.d
+      - backend_dbdata:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - sakto_backend_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: sakto_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - sakto_network
+
+networks:
+  sakto_network:
+    driver: bridge
+
+volumes:
+  dbdata: 
