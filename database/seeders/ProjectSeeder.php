@@ -14,9 +14,7 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('projects')->delete();
-        
-        Project::create([
+        $project = [
             'id' => 1,
             'name' => 'Project 1',
             'identifier' => 'project-1',
@@ -25,12 +23,16 @@ class ProjectSeeder extends Seeder
                 'fnb', 
                 'warehousing', 
                 'transportation', 
-                'rental-it8ems',
+                'rental-items',
                 'rental-properties',
                 'clinical', 
                 'lending', 
                 'payroll', 
             ]),
-        ]);
+        ];
+
+        if (!Project::where('identifier', $project['identifier'])->exists()) {
+            Project::create($project);
+        }
     }
 }

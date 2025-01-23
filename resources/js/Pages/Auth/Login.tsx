@@ -40,9 +40,14 @@ export default function Login({
                     <div className="p-8">
                         <Link href="/">
                             <img 
-                                src="/images/tetris.png" 
-                                alt="Logo" 
-                                className="h-12 w-auto"
+                                src="/images/tetris.png"
+                                className="h-12 w-auto block dark:hidden"
+                                alt="Logo"
+                            />
+                            <img 
+                                src="/images/tetris-white.png"
+                                className="h-12 w-auto hidden dark:block"
+                                alt="Logo"
                             />
                         </Link>
                     </div>

@@ -15,15 +15,17 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('users')->delete();
-        
-        User::create([
+        $user = [
             'id' => 1,
             'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0002',
             'name' => 'Test User 1',
             'email' => 'client1@sakto.app',
             'password' => Hash::make('password'),
             'project_identifier' => 'project-1',
-        ]);
+        ];
+
+        if (!User::where('email', $user['email'])->exists()) {
+            User::create($user);
+        }
     }
 }

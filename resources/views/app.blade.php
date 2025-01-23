@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,8 +8,8 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Add these lines for favicon support -->
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris.svg') }}" media="(prefers-color-scheme: light)">
-        <link rel="icon" type="image/svg+xml" href="{{ asset('images/tetris-white.svg') }}" media="(prefers-color-scheme: dark)">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/sakto.svg') }}" media="(prefers-color-scheme: light)">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('images/sakto-white.svg') }}" media="(prefers-color-scheme: dark)">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -22,11 +22,28 @@
         @inertiaHead
 
         <script>
+            // Check system dark mode preference and set class accordingly
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark')
+            } else {
+                document.documentElement.classList.remove('dark')
+            }
+
+            // Watch for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark')
+                } else {
+                    document.documentElement.classList.remove('dark')
+                }
+                updateFavicon();
+            });
+
             // Add this script to handle favicon color scheme
             function updateFavicon() {
                 const isDark = document.documentElement.classList.contains('dark');
                 const favicon = document.querySelector('link[rel="icon"]');
-                favicon.href = isDark ? '{{ asset('images/tetris-white.svg') }}' : '{{ asset('images/tetris.svg') }}';
+                favicon.href = isDark ? '{{ asset('images/sakto-white.svg') }}' : '{{ asset('images/sakto.svg') }}';
             }
 
             // Initial update

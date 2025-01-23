@@ -14,82 +14,26 @@ class DashboardSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('dashboards')->delete();
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'retail',
-        ]);
+        $dashboards = [
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'retail'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'fnb'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'lending'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'warehousing'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'transportation'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'rental-item'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'real-estate'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'clinic'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'loan'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'payroll'],
+            ['name' => 'Your Dashboard', 'user_id' => 1, 'is_default' => true, 'app' => 'travel'],
+        ];
 
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'fnb',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'lending',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'warehousing',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'transportation',
-        ]); 
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'rental-item',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'real-estate',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'clinic',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'loan',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'payroll',
-        ]);
-
-        Dashboard::create([
-            'name' => 'Your Dashboard',
-            'user_id' => 1,
-            'is_default' => true,
-            'app' => 'travel',
-        ]);
+        foreach ($dashboards as $dashboard) {
+            if (!Dashboard::where('user_id', $dashboard['user_id'])
+                ->where('app', $dashboard['app'])
+                ->exists()) {
+                Dashboard::create($dashboard);
+            }
+        }
     }
 }

@@ -14,60 +14,22 @@ class ModuleSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('modules')->delete();
-        
-        Module::create([
-            'id' => 1,
-            'name' => 'Retail',
-            'identifier' => 'retail',
-        ]);
+        $modules = [
+            ['id' => 1, 'name' => 'Retail', 'identifier' => 'retail'],
+            ['id' => 2, 'name' => 'FnB', 'identifier' => 'fnb'],
+            ['id' => 3, 'name' => 'Warehousing', 'identifier' => 'warehousing'],
+            ['id' => 4, 'name' => 'Transportation', 'identifier' => 'transportation'],
+            ['id' => 5, 'name' => 'Rental Items', 'identifier' => 'rental-items'],
+            ['id' => 6, 'name' => 'Rental Properties', 'identifier' => 'rental-properties'],
+            ['id' => 7, 'name' => 'Clinical', 'identifier' => 'clinical'],
+            ['id' => 8, 'name' => 'Lending', 'identifier' => 'lending'],
+            ['id' => 9, 'name' => 'Payroll', 'identifier' => 'payroll'],
+        ];
 
-        Module::create([
-            'id' => 2,
-            'name' => 'FnB',
-            'identifier' => 'fnb',
-        ]);
-
-        Module::create([
-            'id' => 3,
-            'name' => 'Warehousing',
-            'identifier' => 'warehousing',
-        ]); 
-
-        Module::create([
-            'id' => 4,
-            'name' => 'Transportation',
-            'identifier' => 'transportation',
-        ]);
-
-        Module::create([
-            'id' => 5,
-            'name' => 'Rental Items',
-            'identifier' => 'rental-items',
-        ]);
-
-        Module::create([
-            'id' => 6,
-            'name' => 'Rental Properties',
-            'identifier' => 'rental-properties',
-        ]);
-
-        Module::create([
-            'id' => 7,
-            'name' => 'Clinical',
-            'identifier' => 'clinical',
-        ]);
-
-        Module::create([
-            'id' => 8,
-            'name' => 'Lending',
-            'identifier' => 'lending',
-        ]);
-
-        Module::create([
-            'id' => 9,
-            'name' => 'Payroll',
-            'identifier' => 'payroll',
-        ]);
+        foreach ($modules as $module) {
+            if (!Module::where('identifier', $module['identifier'])->exists()) {
+                Module::create($module);
+            }
+        }
     }
 }
