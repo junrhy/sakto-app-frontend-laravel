@@ -34,20 +34,15 @@ export default function Welcome({
                                         Dashboard
                                     </Link>
                                 ) : (
-                                    <>
-                                        <Link
-                                            href={route('login')}
-                                            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                                        >
-                                            Log in
-                                        </Link>
-                                        <Link
-                                            href={route('register')}
-                                            className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                                        >
-                                            Register
-                                        </Link>
-                                    </>
+                                    <Link
+                                        href={route('login')}
+                                        className="group inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 hover:shadow-md"
+                                    >
+                                        <span>Log in</span>
+                                        <svg className="ml-2 -mr-1 w-4 h-4 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </Link>
                                 )}
                             </div>
                         </div>
@@ -59,19 +54,22 @@ export default function Welcome({
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                                <span className="block">Innovate Your Business with</span>
-                                <span className="text-indigo-600">sakto</span> online platform.
+                                <span className="block">All Your Business Apps</span>
+                                <span className="block text-indigo-600">In One Powerful Platform</span>
                             </h1>
                             <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                Streamline your workflow, boost productivity, and achieve better results with our powerful platform.
+                                Start with our free essential apps and upgrade to premium features as your business grows. Access multiple business applications in a single, unified platform.
                             </p>
                             {!auth.user && (
-                                <div className="mt-8 flex justify-center">
+                                <div className="mt-8 flex justify-center space-x-4">
                                     <Link
                                         href={route('register')}
-                                        className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transform transition hover:scale-105"
+                                        className="group relative inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transform transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
                                     >
-                                        Start Free Trial
+                                        <span>Get Started Free</span>
+                                        <svg className="ml-2 -mr-1 w-5 h-5 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
                                     </Link>
                                 </div>
                             )}
