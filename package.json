@@ -61,6 +61,7 @@
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.1",
         "date-fns": "^3.6.0",
+        "html2pdf.js": "^0.10.2",
         "lucide-react": "^0.453.0",
         "npm": "^10.9.0",
         "qrcode.react": "^4.1.0",

@@ -40,6 +40,26 @@ Route::get('/', function () {
     ]);
 });
 
+// Privacy Policy route
+Route::get('/privacy-policy', function () {
+    return Inertia::render('PrivacyPolicy');
+})->name('privacy-policy');
+
+// Terms and Conditions route
+Route::get('/terms-and-conditions', function () {
+    return Inertia::render('TermsAndConditions');
+})->name('terms-and-conditions');
+
+// Cookie Policy route
+Route::get('/cookie-policy', function () {
+    return Inertia::render('CookiePolicy');
+})->name('cookie-policy');
+
+// FAQ route
+Route::get('/faq', function () {
+    return Inertia::render('FAQ');
+})->name('faq');
+
 Route::middleware('auth')->group(function () {
     // Home routes
     Route::get('/home', function () {
