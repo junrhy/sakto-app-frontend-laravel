@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 interface PageProps extends Record<string, any> {
     auth: {
@@ -13,6 +14,19 @@ interface PageProps extends Record<string, any> {
 export default function Welcome({
     auth,
 }: PageProps) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     return (
         <>
             <Head title="Welcome" />
@@ -35,7 +49,7 @@ export default function Welcome({
                                     </Link>
                                 ) : (
                                     <Link
-                                        href={route('login')}
+                                        href={route(isMobile ? 'login.mobile' : 'login')}
                                         className="group inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                     >
                                         <span>Log in</span>
