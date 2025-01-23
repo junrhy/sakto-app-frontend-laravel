@@ -17,7 +17,7 @@ services:
   db:
     image: arm64v8/mysql:8.0
     platform: linux/arm64/v8
-    container_name: sakto_backend_db
+    container_name: sakto_frontend_db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
@@ -28,7 +28,7 @@ services:
       - ./docker/mysql:/docker-entrypoint-initdb.d
       - dbdata:/var/lib/mysql
     ports:
-      - "3307:3306"
+      - "3308:3306"
     networks:
       - sakto_network
 
