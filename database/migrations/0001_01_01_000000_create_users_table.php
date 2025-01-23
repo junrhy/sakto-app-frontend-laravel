@@ -35,7 +35,11 @@ return new class extends Migration
         });
 
         // Add default value after table creation
-        DB::statement("ALTER TABLE users ALTER app_currency SET DEFAULT (JSON_OBJECT('symbol', '$', 'decimal_separator', '.', 'thousands_separator', ','))");
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE users ALTER COLUMN app_currency SET DEFAULT '{\"symbol\": \"$\", \"decimal_separator\": \".\", \"thousands_separator\": \",\"}'::jsonb");
+        } else {
+            DB::statement("ALTER TABLE users ALTER app_currency SET DEFAULT (JSON_OBJECT('symbol', '$', 'decimal_separator', '.', 'thousands_separator', ','))");
+        }
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
