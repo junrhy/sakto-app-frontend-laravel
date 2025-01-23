@@ -11,6 +11,12 @@
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/sakto.svg') }}" media="(prefers-color-scheme: light)">
         <link rel="icon" type="image/svg+xml" href="{{ asset('images/sakto-white.svg') }}" media="(prefers-color-scheme: dark)">
 
+        <!-- iOS home screen icons -->
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/tetris.png') }}">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Laravel') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
