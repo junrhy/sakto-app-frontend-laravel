@@ -44,6 +44,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 # Create startup script
 RUN echo '#!/bin/sh\n\
+php artisan migrate --force && \
 php-fpm -D && \
 nginx -g "daemon off;"\n' > /usr/local/bin/startup.sh \
 && chmod +x /usr/local/bin/startup.sh
