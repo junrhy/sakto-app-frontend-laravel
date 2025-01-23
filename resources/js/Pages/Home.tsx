@@ -5,6 +5,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
 import { apps } from '@/data/apps';
+import { QuestionMarkCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 
 interface Props {
     auth: {
@@ -48,9 +49,19 @@ export default function Home({ auth }: Props) {
                                     <ModeToggle />
                                     <Link 
                                         href="/help"
-                                        className="text-white hover:text-blue-100 transition-colors duration-200"
+                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
                                     >
+                                        <QuestionMarkCircleIcon className="w-5 h-5" />
                                         <span className="text-md font-semibold">Help</span>
+                                    </Link>
+                                    <Link 
+                                        href={route('logout')} 
+                                        method="post" 
+                                        as="button"
+                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                    >
+                                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Logout</span>
                                     </Link>
                                 </div>
                             </div>

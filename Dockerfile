@@ -29,13 +29,29 @@ COPY . .
 
 # Install dependencies
 RUN composer install
-RUN npm install
-RUN npm run build
+
+# Create startup script
+RUN echo '#!/bin/sh\n\
+APP_ENV=$(grep "^APP_ENV=" .env | cut -d "=" -f2)\n\
+\n\
+npm install\n\
+\n\
+if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "development" ]; then\n\
+    echo "Starting application in hot-reload mode (APP_ENV=$APP_ENV)..."\n\
+    npm run dev -- --host & \n\
+elif [ "$APP_ENV" = "staging" ] || [ "$APP_ENV" = "production" ]; then\n\
+    echo "Building optimized assets (APP_ENV=$APP_ENV)..."\n\
+    npm run build\n\
+fi\n\
+\n\
+php-fpm\n\
+' > /usr/local/bin/startup.sh \
+&& chmod +x /usr/local/bin/startup.sh
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Expose port 9000
-EXPOSE 9000
+# Expose ports
+EXPOSE 9000 5173
 
-CMD ["php-fpm"] 
+CMD ["/usr/local/bin/startup.sh"] 

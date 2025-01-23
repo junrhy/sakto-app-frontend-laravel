@@ -9,9 +9,11 @@ import UpdateColorThemeForm from './Partials/UpdateColorThemeForm';
 import UpdateAddressesForm from './Partials/UpdateAddressesForm';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link as InertiaLink } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Link } from 'lucide-react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, HomeIcon } from '@heroicons/react/24/outline';
+import BottomNav from '@/Components/BottomNav';
 
 export default function Edit({
     mustVerifyEmail,
@@ -36,14 +38,30 @@ export default function Edit({
                                     <span className="ml-2 text-xl font-bold text-white">Sakto</span>
                                     <InertiaLink 
                                         href="/home" 
-                                        className="ml-4 text-white hover:text-blue-100 transition-colors duration-200"
+                                        className="ml-4 text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
                                     >
-                                        <ArrowLeft className="h-4 w-4 inline mr-1" />
-                                        Back to Home
+                                        <HomeIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Home</span>
                                     </InertiaLink>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <ModeToggle />
+                                    <InertiaLink 
+                                        href="/help"
+                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                    >
+                                        <QuestionMarkCircleIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Help</span>
+                                    </InertiaLink>
+                                    <InertiaLink 
+                                        href={route('logout')} 
+                                        method="post" 
+                                        as="button"
+                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                    >
+                                        <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Logout</span>
+                                    </InertiaLink>
                                 </div>
                             </div>
                         </div>
@@ -93,6 +111,7 @@ export default function Edit({
                         </div>
                     </div>
                 </div>
+                <BottomNav />
             </div>
         </ThemeProvider>
     );

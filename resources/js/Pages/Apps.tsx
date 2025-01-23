@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link as InertiaLink } from '@inertiajs/react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Input } from '@/Components/ui/input';
@@ -8,6 +8,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Search } from 'lucide-react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ModeToggle } from "@/Components/ModeToggle";
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { apps } from '@/data/apps';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -112,21 +113,40 @@ export default function Apps({ auth }: PageProps) {
             <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900">
                 <Head title="Apps" />
 
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
-                    <div className="container mx-auto px-4 py-4">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center">
-                                <ApplicationLogo className="h-10 w-auto fill-current text-white" />
-                                <span className="ml-2 text-xl font-bold text-white">Sakto</span>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <ModeToggle />
-                                <Link 
-                                    href="/help"
-                                    className="text-white hover:text-blue-100 transition-colors duration-200"
-                                >
-                                    <span className="text-md font-semibold">Help</span>
-                                </Link>
+                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
+                    <div className="container mx-auto px-4 pt-4">
+                        <div className="flex flex-col items-center mb-4">
+                            <div className="w-full flex justify-between items-center mb-2">
+                                <div className="flex items-center">
+                                    <ApplicationLogo className="h-10 w-auto fill-current text-white" />
+                                    <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                                    <InertiaLink 
+                                        href="/home" 
+                                        className="ml-4 text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                    >
+                                        <HomeIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Home</span>
+                                    </InertiaLink>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <ModeToggle />
+                                    <InertiaLink 
+                                        href="/help"
+                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                    >
+                                        <QuestionMarkCircleIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Help</span>
+                                    </InertiaLink>
+                                    <InertiaLink 
+                                        href={route('logout')} 
+                                        method="post" 
+                                        as="button"
+                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                    >
+                                        <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
+                                        <span className="text-md font-semibold">Logout</span>
+                                    </InertiaLink>
+                                </div>
                             </div>
                         </div>
                     </div>
