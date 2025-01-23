@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\Project;
 
 class ProjectSeeder extends Seeder
@@ -13,6 +14,8 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::table('projects')->delete();
+        
         Project::create([
             'id' => 1,
             'name' => 'Project 1',

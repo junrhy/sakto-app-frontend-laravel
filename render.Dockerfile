@@ -47,6 +47,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 RUN echo '#!/bin/sh\n\
 PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USERNAME -d $DB_DATABASE -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";" && \
 php artisan migrate --force && \
+php artisan db:seed --force && \
 php-fpm -D && \
 nginx -g "daemon off;"\n' > /usr/local/bin/startup.sh \
 && chmod +x /usr/local/bin/startup.sh

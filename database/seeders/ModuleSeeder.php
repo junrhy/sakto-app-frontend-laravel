@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\Module;
 
 class ModuleSeeder extends Seeder
@@ -13,6 +14,8 @@ class ModuleSeeder extends Seeder
      */
     public function run(): void
     {
+        DB::table('modules')->delete();
+        
         Module::create([
             'id' => 1,
             'name' => 'Retail',
@@ -23,7 +26,7 @@ class ModuleSeeder extends Seeder
             'id' => 2,
             'name' => 'FnB',
             'identifier' => 'fnb',
-]);
+        ]);
 
         Module::create([
             'id' => 3,
