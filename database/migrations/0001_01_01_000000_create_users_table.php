@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+
 return new class extends Migration
 {
     /**
@@ -13,7 +14,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('identifier')->unique()->default(DB::raw('(UUID())'));
+            $table->string('identifier')->unique()->default(
+                DB::connection()->getDriverName() === 'pgsql' 
+                    ? DB::raw('uuid_generate_v4()')
+                    : DB::raw('(UUID())')
+            );
             $table->string('name');
             $table->string('email')->unique();
             $table->string('google_id')->nullable();
