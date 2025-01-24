@@ -6,8 +6,13 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         hmr: {
-            host: 'localhost'
+            host: 'localhost',
+            protocol: 'ws'
         },
+        watch: {
+            usePolling: true
+        },
+        allowedHosts: ['localhost', '*.local', 'vite']
     },
     plugins: [
         laravel({
