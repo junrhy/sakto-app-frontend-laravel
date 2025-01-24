@@ -259,6 +259,43 @@ export default function Welcome({
                         </div>
                     </div>
                 </section>
+
+                {/* Footer */}
+                <footer className="bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 border-t border-gray-100 dark:border-gray-800">
+                    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-500 dark:text-gray-500">
+                                © {new Date().getFullYear()} Sakto. All rights reserved.
+                            </p>
+                            <div className="flex items-center space-x-6">
+                                <Link
+                                    href={route('privacy-policy')}
+                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                >
+                                    Privacy Policy
+                                </Link>
+                                <Link
+                                    href={route('terms-and-conditions')}
+                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                >
+                                    Terms
+                                </Link>
+                                <Link
+                                    href={route('cookie-policy')}
+                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                >
+                                    Cookies
+                                </Link>
+                                <Link
+                                    href={route('faq')}
+                                    className="text-sm text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors duration-200"
+                                >
+                                    FAQ
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
             </div>
         </>
     );
