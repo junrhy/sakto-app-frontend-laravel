@@ -1,11 +1,14 @@
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Link as InertiaLink } from '@inertiajs/react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { ThemeProvider } from "@/Components/ThemeProvider";
-import { ModeToggle } from "@/Components/ModeToggle";
+import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
+import { Button } from '@/Components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
 import { apps } from '@/data/apps';
-import { QuestionMarkCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
+// @ts-ignore
+import { Sun, Moon, Monitor } from 'lucide-react';
 
 interface Props {
     auth: {
@@ -16,6 +19,8 @@ interface Props {
 }
 
 export default function Home({ auth }: Props) {
+    const { theme, setTheme } = useTheme();
+
     const getBorderColor = (colorClass: string) => {
         const colorMap: { [key: string]: string } = {
             'text-blue-500': '#3B82F6',
@@ -46,23 +51,85 @@ export default function Home({ auth }: Props) {
                                     <span className="ml-2 text-xl font-bold text-white">Sakto</span>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <ModeToggle />
-                                    <Link 
-                                        href="/help"
-                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
-                                    >
-                                        <QuestionMarkCircleIcon className="w-5 h-5" />
-                                        <span className="text-md font-semibold">Help</span>
-                                    </Link>
-                                    <Link 
-                                        href={route('logout')} 
-                                        method="post" 
-                                        as="button"
-                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
-                                    >
-                                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                                        <span className="text-md font-semibold">Logout</span>
-                                    </Link>
+                                    <div className="relative inline-block">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    className="text-white hover:text-blue-100 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+                                                >
+                                                    <UserIcon className="w-5 h-5" />
+                                                    <span>{auth.user.name}</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent 
+                                                align="end" 
+                                                alignOffset={0}
+                                                sideOffset={8}
+                                                className="w-56 z-50"
+                                                onCloseAutoFocus={(e) => e.preventDefault()}
+                                                collisionPadding={16}
+                                            >
+                                                <DropdownMenuSub>
+                                                    <DropdownMenuSubTrigger className="flex items-center">
+                                                        {theme === 'dark' ? (
+                                                            <Moon className="h-4 w-4 mr-2" />
+                                                        ) : (
+                                                            <Sun className="h-4 w-4 mr-2" />
+                                                        )}
+                                                        <span>Theme</span>
+                                                    </DropdownMenuSubTrigger>
+                                                    <DropdownMenuSubContent>
+                                                        <DropdownMenuItem 
+                                                            onClick={() => setTheme("light")}
+                                                            className="flex items-center cursor-pointer"
+                                                        >
+                                                            <Sun className="mr-2 h-4 w-4" />
+                                                            <span>Light</span>
+                                                            {theme === "light" && <span className="ml-auto">✓</span>}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem 
+                                                            onClick={() => setTheme("dark")}
+                                                            className="flex items-center cursor-pointer"
+                                                        >
+                                                            <Moon className="mr-2 h-4 w-4" />
+                                                            <span>Dark</span>
+                                                            {theme === "dark" && <span className="ml-auto">✓</span>}
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem 
+                                                            onClick={() => setTheme("system")}
+                                                            className="flex items-center cursor-pointer"
+                                                        >
+                                                            <Monitor className="mr-2 h-4 w-4" />
+                                                            <span>System</span>
+                                                            {theme === "system" && <span className="ml-auto">✓</span>}
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuSub>
+                                                <DropdownMenuItem asChild>
+                                                    <InertiaLink 
+                                                        href={route('help')}
+                                                        className="flex items-center"
+                                                    >
+                                                        <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
+                                                        <span>Help</span>
+                                                    </InertiaLink>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem>
+                                                    <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
+                                                    <InertiaLink 
+                                                        href={route('logout')} 
+                                                        method="post" 
+                                                        as="button"
+                                                        className="w-full text-left"
+                                                    >
+                                                        Logout
+                                                    </InertiaLink>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
                                 </div>
                             </div>
 
@@ -82,7 +149,7 @@ export default function Home({ auth }: Props) {
                 <div className="container mx-auto px-4 pt-[180px] landscape:pt-[120px] md:pt-[200px] overflow-y-auto mb-4">
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                         {apps.filter(app => app.visible).sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
-                            <Link
+                            <InertiaLink
                                 key={app.title}
                                 href={app.route}
                                 className="flex flex-col items-center"
@@ -98,7 +165,7 @@ export default function Home({ auth }: Props) {
                                 <h2 className="text-sm font-medium text-gray-800 dark:text-gray-300 text-center">
                                     {app.title}
                                 </h2>
-                            </Link>
+                            </InertiaLink>
                         ))}
                     </div>
                 </div>

@@ -8,7 +8,7 @@ import { Badge } from '@/Components/ui/badge';
 // @ts-ignore
 import { Search, Sun, Moon, Monitor } from 'lucide-react';
 import { useTheme } from "@/Components/ThemeProvider";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
 import { apps } from '@/data/apps';
 import { useState, useMemo, useEffect } from 'react';
@@ -123,13 +123,6 @@ export default function Apps({ auth }: PageProps) {
                                 <span className="ml-2 text-xl font-bold text-white">Sakto</span>
                             </div>
                             <div className="flex items-center gap-4">
-                                <InertiaLink 
-                                    href="/home" 
-                                    className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
-                                >
-                                    <HomeIcon className="w-5 h-5" />
-                                    <span className="text-md font-semibold">Home</span>
-                                </InertiaLink>
                                 <div className="relative inline-block">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>

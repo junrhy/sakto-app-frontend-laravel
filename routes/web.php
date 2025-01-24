@@ -62,6 +62,15 @@ Route::get('/faq', function () {
 })->name('faq');
 
 Route::middleware('auth')->group(function () {
+    // Help route
+    Route::get('/help', function () {
+        return Inertia::render('Help', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('help');
+
     // Home routes
     Route::get('/home', function () {
         return Inertia::render('Home', [
@@ -257,9 +266,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/bookings/{id}', [TravelController::class, 'updateBooking']);
         Route::delete('/bookings/{id}', [TravelController::class, 'deleteBooking']);
     });
-
-    // Help routes
-    Route::get('/help', [HelpController::class, 'index'])->middleware(['auth', 'verified'])->name('help');
 
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
