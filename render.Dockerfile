@@ -1,8 +1,12 @@
 # Build stage
 FROM composer:latest as composer
-COPY . /app/
 WORKDIR /app
+# Copy only the files needed for composer install first
+COPY composer.json composer.lock ./
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Copy the rest of the application files
+COPY . .
 
 FROM node:20-alpine as node
 COPY --from=composer /app /app
