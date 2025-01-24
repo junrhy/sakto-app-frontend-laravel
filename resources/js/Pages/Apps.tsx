@@ -5,10 +5,11 @@ import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Search } from 'lucide-react';
-import { ThemeProvider } from "@/Components/ThemeProvider";
-import { ModeToggle } from "@/Components/ModeToggle";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, HomeIcon } from '@heroicons/react/24/outline';
+// @ts-ignore
+import { Search, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from "@/Components/ThemeProvider";
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
 import { apps } from '@/data/apps';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -34,6 +35,7 @@ export default function Apps({ auth }: PageProps) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
     const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({ PHP: 56.50 }); // Default fallback rate
+    const { theme, setTheme } = useTheme();
 
     useEffect(() => {
         const fetchExchangeRates = async () => {
@@ -109,199 +111,259 @@ export default function Apps({ auth }: PageProps) {
     console.log('Filtered Apps:', filteredApps);
 
     return (
-        <ThemeProvider>
-            <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900">
-                <Head title="Apps" />
+        <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900 overflow-x-hidden">
+            <Head title="Apps" />
 
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
-                    <div className="container mx-auto px-4 pt-4">
-                        <div className="flex flex-col items-center mb-4">
-                            <div className="w-full flex justify-between items-center mb-2">
-                                <div className="flex items-center">
-                                    <ApplicationLogo className="h-10 w-auto fill-current text-white" />
-                                    <span className="ml-2 text-xl font-bold text-white">Sakto</span>
-                                    <InertiaLink 
-                                        href="/home" 
-                                        className="ml-4 text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
-                                    >
-                                        <HomeIcon className="w-5 h-5" />
-                                        <span className="text-md font-semibold">Home</span>
-                                    </InertiaLink>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <ModeToggle />
-                                    <InertiaLink 
-                                        href="/help"
-                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
-                                    >
-                                        <QuestionMarkCircleIcon className="w-5 h-5" />
-                                        <span className="text-md font-semibold">Help</span>
-                                    </InertiaLink>
-                                    <InertiaLink 
-                                        href={route('logout')} 
-                                        method="post" 
-                                        as="button"
-                                        className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
-                                    >
-                                        <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
-                                        <span className="text-md font-semibold">Logout</span>
-                                    </InertiaLink>
+            <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
+                <div className="container mx-auto px-4 pt-4">
+                    <div className="flex flex-col items-center mb-4">
+                        <div className="w-full flex justify-between items-center mb-2">
+                            <div className="flex items-center">
+                                <ApplicationLogo className="h-10 w-auto fill-current text-white" />
+                                <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <InertiaLink 
+                                    href="/home" 
+                                    className="text-white hover:text-blue-100 transition-colors duration-200 flex items-center gap-1"
+                                >
+                                    <HomeIcon className="w-5 h-5" />
+                                    <span className="text-md font-semibold">Home</span>
+                                </InertiaLink>
+                                <div className="relative inline-block">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button 
+                                                variant="ghost" 
+                                                className="text-white hover:text-blue-100 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+                                            >
+                                                <UserIcon className="w-5 h-5" />
+                                                <span>{auth.user.name}</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent 
+                                            align="end" 
+                                            alignOffset={0}
+                                            sideOffset={8}
+                                            className="w-56 z-50"
+                                            onCloseAutoFocus={(e) => e.preventDefault()}
+                                            collisionPadding={16}
+                                        >
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger className="flex items-center">
+                                                    {theme === 'dark' ? (
+                                                        <Moon className="h-4 w-4 mr-2" />
+                                                    ) : (
+                                                        <Sun className="h-4 w-4 mr-2" />
+                                                    )}
+                                                    <span>Theme</span>
+                                                </DropdownMenuSubTrigger>
+                                                <DropdownMenuSubContent>
+                                                    <DropdownMenuItem 
+                                                        onClick={() => setTheme("light")}
+                                                        className="flex items-center cursor-pointer"
+                                                    >
+                                                        <Sun className="mr-2 h-4 w-4" />
+                                                        <span>Light</span>
+                                                        {theme === "light" && <span className="ml-auto">✓</span>}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem 
+                                                        onClick={() => setTheme("dark")}
+                                                        className="flex items-center cursor-pointer"
+                                                    >
+                                                        <Moon className="mr-2 h-4 w-4" />
+                                                        <span>Dark</span>
+                                                        {theme === "dark" && <span className="ml-auto">✓</span>}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem 
+                                                        onClick={() => setTheme("system")}
+                                                        className="flex items-center cursor-pointer"
+                                                    >
+                                                        <Monitor className="mr-2 h-4 w-4" />
+                                                        <span>System</span>
+                                                        {theme === "system" && <span className="ml-auto">✓</span>}
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuSubContent>
+                                            </DropdownMenuSub>
+                                            <DropdownMenuItem>
+                                                <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
+                                                <InertiaLink href="/help">Help</InertiaLink>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem>
+                                                <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
+                                                <InertiaLink 
+                                                    href={route('logout')} 
+                                                    method="post" 
+                                                    as="button"
+                                                    className="w-full text-left"
+                                                >
+                                                    Logout
+                                                </InertiaLink>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div className="container mx-auto px-4 pt-[100px] landscape:pt-[80px] md:pt-[100px]">
-                    <div className="py-12">
-                        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                            <div className="bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-6">
-                                {/* Search and Filter Section */}
-                                <div className="mb-8">
-                                    <div className="flex gap-4 mb-4">
-                                        <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                            <Input
-                                                placeholder="Search apps..."
-                                                className="pl-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm border-gray-300 dark:border-gray-700"
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                        </div>
-                                        <Button 
-                                            variant="outline" 
-                                            className="bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
-                                            onClick={() => setSelectedCategory(null)}
-                                        >
-                                            All Categories
-                                        </Button>
+            <div className="w-full px-4 pt-[100px] landscape:pt-[80px] md:pt-[100px]">
+                <div className="py-12">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            {/* Search and Filter Section */}
+                            <div className="mb-8">
+                                <div className="flex gap-4 mb-4">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                        <Input
+                                            placeholder="Search apps..."
+                                            className="pl-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm border-gray-300 dark:border-gray-700"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
                                     </div>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {allCategories.map((category) => (
-                                            <Badge 
-                                                key={category}
-                                                variant="secondary" 
-                                                className={`cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 ${
-                                                    selectedCategory === category ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
-                                                }`}
-                                                onClick={() => setSelectedCategory(category)}
-                                            >
-                                                {category}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                                    <Button 
+                                        variant="outline" 
+                                        className="bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                                        onClick={() => setSelectedCategory(null)}
+                                    >
+                                        All Categories
+                                    </Button>
                                 </div>
+                                <div className="flex gap-2 flex-wrap">
+                                    {allCategories.map((category) => (
+                                        <Badge 
+                                            key={category}
+                                            variant="secondary" 
+                                            className={`cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 ${
+                                                selectedCategory === category ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
+                                            }`}
+                                            onClick={() => setSelectedCategory(category)}
+                                        >
+                                            {category}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
 
-                                {/* Apps Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {filteredApps && filteredApps.length > 0 ? (
-                                        filteredApps.map((app) => (
-                                            <Card 
-                                                key={app.title} 
-                                                className={`hover:shadow-lg transition-shadow border border-gray-100 dark:border-0 bg-white/90 dark:bg-gray-800/50 backdrop-blur-sm ${
-                                                    app.comingSoon ? 'opacity-75' : ''
-                                                }`}
-                                            >
-                                                <CardHeader>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm ${
-                                                            app.comingSoon ? 'opacity-50' : ''
-                                                        }`}>
-                                                            <div className="text-2xl">
-                                                                {app.icon}
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <div className="flex items-center gap-2">
-                                                                <CardTitle className="text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                {app.comingSoon && (
-                                                                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 text-xs">
-                                                                        Coming Soon
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                <CardDescription className="text-gray-600 dark:text-gray-300">
-                                                                    {expandedDescriptions[app.title] ? app.description : truncateDescription(app.description)}
-                                                                </CardDescription>
-                                                                {app.description.length > 80 && (
-                                                                    <button
-                                                                        onClick={() => toggleDescription(app.title)}
-                                                                        className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 mt-1 focus:outline-none"
-                                                                    >
-                                                                        {expandedDescriptions[app.title] ? 'Read less' : 'Read more'}
-                                                                    </button>
-                                                                )}
-                                                            </div>
+                            {/* Apps Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredApps && filteredApps.length > 0 ? (
+                                    filteredApps.map((app) => (
+                                        <Card 
+                                            key={app.title} 
+                                            className={`hover:shadow-lg transition-shadow border border-gray-100 dark:border-0 bg-white/90 dark:bg-gray-800/50 backdrop-blur-sm ${
+                                                app.comingSoon ? 'opacity-75' : ''
+                                            }`}
+                                        >
+                                            <CardHeader>
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm ${
+                                                        app.comingSoon ? 'opacity-50' : ''
+                                                    }`}>
+                                                        <div className="text-2xl">
+                                                            {app.icon}
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-wrap gap-2 mt-3">
-                                                        {app.categories.map((category) => (
-                                                            <Badge 
-                                                                key={category} 
-                                                                variant="secondary" 
-                                                                className={`bg-gray-50 dark:bg-gray-900/50 text-xs ${
-                                                                    app.comingSoon ? 'opacity-75' : ''
-                                                                }`}
-                                                            >
-                                                                {category}
-                                                            </Badge>
-                                                        ))}
-                                                    </div>
-                                                </CardHeader>
-                                                <CardFooter className="flex justify-between items-center">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-yellow-500">⭐</span>
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{app.rating}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="flex flex-col items-end">
-                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                                                                {app.pricingType === 'subscription' 
-                                                                    ? `${formatPrice(app.price)}/mo`
-                                                                    : formatPrice(app.price)
-                                                                }
-                                                            </span>
-                                                            {app.pricingType !== 'free' && (
-                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {app.pricingType === 'subscription' ? 'Monthly subscription' : 'One-time payment'}
-                                                                </span>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <CardTitle className="text-gray-900 dark:text-white">{app.title}</CardTitle>
+                                                            {app.comingSoon && (
+                                                                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 text-xs">
+                                                                    Coming Soon
+                                                                </Badge>
                                                             )}
                                                         </div>
-                                                        <Button 
-                                                            variant={app.visible ? "ghost" : "outline"}
-                                                            disabled={app.comingSoon}
-                                                            className={`${
-                                                                app.comingSoon
-                                                                    ? "bg-gray-100 text-gray-400 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-800 cursor-not-allowed"
-                                                                    : app.visible 
-                                                                        ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50" 
-                                                                        : "dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white"
+                                                        <div>
+                                                            <CardDescription className="text-gray-600 dark:text-gray-300">
+                                                                {expandedDescriptions[app.title] ? app.description : truncateDescription(app.description)}
+                                                            </CardDescription>
+                                                            {app.description.length > 80 && (
+                                                                <button
+                                                                    onClick={() => toggleDescription(app.title)}
+                                                                    className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 mt-1 focus:outline-none"
+                                                                >
+                                                                    {expandedDescriptions[app.title] ? 'Read less' : 'Read more'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {app.categories.map((category) => (
+                                                        <Badge 
+                                                            key={category} 
+                                                            variant="secondary" 
+                                                            className={`bg-gray-50 dark:bg-gray-900/50 text-xs ${
+                                                                app.comingSoon ? 'opacity-75' : ''
                                                             }`}
                                                         >
-                                                            {app.comingSoon ? "Coming Soon" : app.visible ? "Installed" : "Install"}
-                                                        </Button>
+                                                                {category}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </CardHeader>
+                                            <CardFooter className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-yellow-500">⭐</span>
+                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{app.rating}</span>
+                                                </div>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                            {app.pricingType === 'subscription' 
+                                                                ? `${formatPrice(app.price)}/mo`
+                                                                : formatPrice(app.price)
+                                                            }
+                                                        </span>
+                                                        {app.pricingType !== 'free' && (
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                {app.pricingType === 'subscription' ? 'Monthly subscription' : 'One-time payment'}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                </CardFooter>
-                                            </Card>
-                                        ))
-                                    ) : (
-                                        <div className="col-span-full text-center py-8">
-                                            <p className="text-gray-500 dark:text-gray-400">
-                                                {searchQuery || selectedCategory 
-                                                    ? "No apps found matching your criteria" 
-                                                    : "Loading apps..."}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
+                                                    <Button 
+                                                        variant={app.visible ? "ghost" : "outline"}
+                                                        disabled={app.comingSoon}
+                                                        className={`${
+                                                            app.comingSoon
+                                                                ? "bg-gray-100 text-gray-400 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-800 cursor-not-allowed"
+                                                                : app.visible 
+                                                                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50" 
+                                                                    : "dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white"
+                                                        }`}
+                                                        onClick={() => {
+                                                            if (app.visible) {
+                                                                window.location.href = `/apps/${app.route}`;
+                                                            }
+                                                        }}
+                                                    >
+                                                        {app.comingSoon ? "Coming Soon" : app.visible ? "Open" : "Install"}
+                                                    </Button>
+                                                </div>
+                                            </CardFooter>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full text-center py-8">
+                                        <p className="text-gray-500 dark:text-gray-400">
+                                            {searchQuery || selectedCategory 
+                                                ? "No apps found matching your criteria" 
+                                                : "Loading apps..."}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <BottomNav />
             </div>
-        </ThemeProvider>
+
+            <BottomNav />
+        </div>
     );
 }
