@@ -48,7 +48,13 @@ services:
       - "8000:80"
     volumes:
       - ./:/var/www
-      - ./docker/nginx:/etc/nginx/conf.d
+      - ./docker/nginx/app.local.conf:/etc/nginx/conf.d/app.local.conf
+      - ./docker/nginx/app.prod.conf:/etc/nginx/conf.d/app.prod.conf
+      - ./docker/nginx/docker-entrypoint.sh:/usr/local/bin/custom-entrypoint.sh
+    environment:
+      - DOCKER_ENV=local
+    entrypoint: ["/usr/local/bin/custom-entrypoint.sh"]
+    command: ["nginx", "-g", "daemon off;"]
     networks:
       - sakto_network
 
