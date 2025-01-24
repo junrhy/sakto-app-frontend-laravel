@@ -7,12 +7,22 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import SocialButton from '@/Components/SocialButton';
 
-export default function Register() {
+interface Project {
+    identifier: string;
+    name: string;
+}
+
+interface Props {
+    projects: Project[];
+}
+
+export default function Register({ projects }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
+        project_identifier: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -116,6 +126,26 @@ export default function Register() {
                                         required
                                     />
                                     <InputError message={errors.password_confirmation} className="mt-2" />
+                                </div>
+
+                                <div>
+                                    <InputLabel htmlFor="project_identifier" value="Project" className="text-gray-700 dark:text-gray-300 text-base" />
+                                    <select
+                                        id="project_identifier"
+                                        name="project_identifier"
+                                        value={data.project_identifier}
+                                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base"
+                                        onChange={(e) => setData('project_identifier', e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select a project</option>
+                                        {projects.map((project) => (
+                                            <option key={project.identifier} value={project.identifier}>
+                                                {project.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <InputError message={errors.project_identifier} className="mt-2" />
                                 </div>
 
                                 <div className="relative my-6">

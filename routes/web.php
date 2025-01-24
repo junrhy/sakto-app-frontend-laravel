@@ -30,6 +30,7 @@ Route::get('auth/google', [GoogleController::class, 'redirect'])
     ->name('google.redirect');
 Route::get('auth/google/callback', [GoogleController::class, 'callback'])
     ->name('google.callback');
+Route::post('auth/google/register', [GoogleController::class, 'register'])->name('google.register');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

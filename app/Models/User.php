@@ -27,6 +27,7 @@ class User extends Authenticatable
         'theme',
         'theme_color',
         'google_id',
+        'project_identifier',
     ];
 
     /**
