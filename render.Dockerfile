@@ -1,13 +1,27 @@
-# Build stage
-FROM composer:latest as composer
+# Build stage for PHP dependencies
+FROM composer:2.6.5 AS composer
+
 WORKDIR /app
-# Copy only the files needed for composer install first
-COPY composer.json composer.lock ./
+
+# Copy composer files
+COPY composer.* ./
+
 # Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-# Copy the rest of the application files
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-plugins \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
+# Copy the rest of the application
 COPY . .
 
+# Run composer scripts now that we have the full application
+RUN composer dump-autoload --optimize
+
+# Build stage for Node.js
 FROM node:20-alpine as node
 COPY --from=composer /app /app
 WORKDIR /app
