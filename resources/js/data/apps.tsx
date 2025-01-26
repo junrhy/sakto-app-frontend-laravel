@@ -150,12 +150,12 @@ export const apps: App[] = [
         title: 'Travel',
         route: '/dashboard?app=travel',
         bgColor: 'text-pink-500',
-        visible: false,
+        visible: true,
         description: 'Travel agency management with package booking, itinerary planning, and customer relationship tools',
-        price: 20,
+        price: 0,
         rating: 4.2,
         categories: ['Travel', 'Bookings', 'Business'],
         comingSoon: true,
-        pricingType: 'one-time'
+        pricingType: 'free'
     }
 ]; 

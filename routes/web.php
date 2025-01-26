@@ -17,6 +17,7 @@ use App\Http\Controllers\TravelController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\WidgetController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\FlightController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -267,6 +268,12 @@ Route::middleware('auth')->group(function () {
         Route::delete('/bookings/{id}', [TravelController::class, 'deleteBooking']);
     });
 
+    // Flight search route
+    Route::get('/flight-search', [FlightController::class, 'index'])->name('flight-search');
+    Route::get('/flights', [FlightController::class, 'index'])->name('flights');
+    Route::get('/api/flights/search-airports', [FlightController::class, 'searchAirports']);
+     Route::get('/api/flights/search', [FlightController::class, 'search']);
+
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -287,6 +294,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/addresses', [ProfileController::class, 'updateAddresses'])
         ->middleware(['auth'])
         ->name('profile.addresses.update');
+
+    // Flight search route
+    Route::post('/api/flights/search', [FlightController::class, 'search'])
+        ->middleware(['auth', 'verified']);
+    
+    // Airport search route
+    Route::get('/api/airports/search', [FlightController::class, 'searchAirports'])
+        ->middleware(['auth', 'verified']);
 });
 
 require __DIR__.'/auth.php';
