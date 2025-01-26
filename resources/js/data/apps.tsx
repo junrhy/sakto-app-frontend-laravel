@@ -10,7 +10,8 @@ import {
     FaQuestionCircle,
     FaPlane,
     FaBoxOpen,
-    FaUsers
+    FaUsers,
+    FaComments
 } from 'react-icons/fa';
 
 export interface App {
@@ -155,7 +156,20 @@ export const apps: App[] = [
         price: 0,
         rating: 4.2,
         categories: ['Travel', 'Bookings', 'Business'],
-        comingSoon: true,
+        comingSoon: false,
+        pricingType: 'free'
+    },
+    {
+        icon: <FaComments />,
+        title: 'SMS',
+        route: '/dashboard?app=sms',
+        bgColor: 'text-violet-500',
+        visible: true,
+        description: 'Send SMS to your customers and clients. Supports Twilio and Semaphore. Easily integrate with your existing apps.',
+        price: 0,
+        rating: 4.4,
+        categories: ['Communication', 'Marketing', 'Business'],
+        comingSoon: false,
         pricingType: 'free'
     }
 ]; 

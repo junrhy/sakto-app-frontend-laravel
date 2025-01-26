@@ -14,25 +14,41 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
+        $enabledModules = [
+            'retail', 
+            'fnb', 
+            'warehousing', 
+            'transportation', 
+            'rental-items',
+            'rental-properties',
+            'clinical', 
+            'lending', 
+            'payroll',
+            'sms'
+        ];
+
         $project = [
             'id' => 1,
             'name' => 'Project 1',
             'identifier' => 'project-1',
-            'enabledModules' => json_encode([
-                'retail', 
-                'fnb', 
-                'warehousing', 
-                'transportation', 
-                'rental-items',
-                'rental-properties',
-                'clinical', 
-                'lending', 
-                'payroll', 
-            ]),
+            'enabledModules' => json_encode(array_values($enabledModules)),
         ];
 
-        if (!Project::where('identifier', $project['identifier'])->exists()) {
+        $existingProject = Project::where('identifier', $project['identifier'])->first();
+
+        if (!$existingProject) {
             Project::create($project);
+        } else {
+            // Get current enabled modules
+            $currentModules = json_decode($existingProject->enabledModules, true) ?? [];
+            
+            // Merge with new modules, removing duplicates and reindexing
+            $updatedModules = array_values(array_unique(array_merge($currentModules, $enabledModules)));
+            
+            // Update the project with new modules
+            $existingProject->update([
+                'enabledModules' => json_encode($updatedModules)
+            ]);
         }
     }
 }

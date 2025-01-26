@@ -18,6 +18,8 @@ use App\Http\Controllers\HelpController;
 use App\Http\Controllers\WidgetController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\FlightController;
+use App\Http\Controllers\SmsTwilioController;
+use App\Http\Controllers\SmsSemaphoreController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -295,13 +297,18 @@ Route::middleware('auth')->group(function () {
         ->middleware(['auth'])
         ->name('profile.addresses.update');
 
-    // Flight search route
-    Route::post('/api/flights/search', [FlightController::class, 'search'])
-        ->middleware(['auth', 'verified']);
-    
-    // Airport search route
-    Route::get('/api/airports/search', [FlightController::class, 'searchAirports'])
-        ->middleware(['auth', 'verified']);
+    // Twilio Routes
+    Route::get('/sms-twilio', [SmsTwilioController::class, 'index'])->name('twilio-sms');
+    Route::post('/sms-twilio/send', [SmsTwilioController::class, 'send'])->name('twilio-sms.send');
+    Route::get('/sms-twilio/balance', [SmsTwilioController::class, 'getBalance'])->name('twilio-sms.balance');
+    Route::get('/sms-twilio/status/{messageId}', [SmsTwilioController::class, 'getMessageStatus'])->name('twilio-sms.status');
+
+    // Semaphore Routes
+    Route::get('/sms-semaphore', [SmsSemaphoreController::class, 'index'])->name('semaphore-sms');
+    Route::post('/sms-semaphore/send', [SmsSemaphoreController::class, 'send'])->name('semaphore-sms.send');
+    Route::get('/sms-semaphore/balance', [SmsSemaphoreController::class, 'getBalance'])->name('semaphore-sms.balance');
+    Route::get('/sms-semaphore/status/{messageId}', [SmsSemaphoreController::class, 'getMessageStatus'])->name('semaphore-sms.status');
+    Route::get('/sms-semaphore/pricing', [SmsSemaphoreController::class, 'getPricing'])->name('semaphore-sms.pricing');
 });
 
 require __DIR__.'/auth.php';

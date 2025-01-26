@@ -49,6 +49,8 @@ const getHeaderColorClass = (url: string): string => {
             return 'from-cyan-600 via-cyan-500 to-cyan-400';
         case 'travel':
             return 'from-pink-600 via-pink-500 to-pink-400';
+        case 'sms':
+            return 'from-violet-600 via-violet-500 to-violet-400';
         default:
             return 'from-black via-gray-900 to-black'; // Default gradient
     }
@@ -77,6 +79,7 @@ export default function Authenticated({
     const hasLendingAccess = url.includes('lending');
     const hasPayrollAccess = url.includes('payroll');
     const hasTravelAccess = url.includes('travel');
+    const hasSmsAccess = url.includes('sms');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -370,6 +373,43 @@ export default function Authenticated({
                                                 </Dropdown.Link>
                                                 <Dropdown.Link href={`/flight-search?app=${appParam}`}>
                                                     Flights
+                                                </Dropdown.Link>
+                                            </Dropdown.Content>
+                                        </Dropdown>
+                                    </div>
+                                )}
+                                {hasSmsAccess && (
+                                    <div className="inline-flex items-center">
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <span className="inline-flex rounded-md">
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                    >
+                                                        <span className="mt-[1px]">SMS</span>
+                                                        <svg
+                                                            className="ml-2 -mr-0.5 h-4 w-4"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </span>
+                                            </Dropdown.Trigger>
+
+                                            <Dropdown.Content>
+                                                <Dropdown.Link href={`/sms-twilio?app=${appParam}`}>
+                                                    Twilio SMS
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href={`/sms-semaphore?app=${appParam}`}>
+                                                    Semaphore SMS
                                                 </Dropdown.Link>
                                             </Dropdown.Content>
                                         </Dropdown>
