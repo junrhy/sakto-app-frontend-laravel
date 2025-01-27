@@ -13,22 +13,17 @@ export interface Project {
 }
 
 export interface User {
+    id: number;
     name: string;
     email: string;
-    project?: {
-        modules?: Array<{
-            identifier: string;
-        }>;
-    };
+    email_verified_at?: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface PageProps {
     auth: {
-        user: {
-            name: string;
-            email: string;
-            // Add other user properties as needed
-        };
+        user: User;
     };
 }
 

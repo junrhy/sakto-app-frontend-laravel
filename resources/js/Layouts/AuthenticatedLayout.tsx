@@ -51,6 +51,10 @@ const getHeaderColorClass = (url: string): string => {
             return 'from-pink-600 via-pink-500 to-pink-400';
         case 'sms':
             return 'from-violet-600 via-violet-500 to-violet-400';
+        case 'email':
+            return 'from-emerald-600 via-emerald-500 to-emerald-400';
+        case 'contacts':
+            return 'from-slate-600 via-slate-500 to-slate-400';
         default:
             return 'from-black via-gray-900 to-black'; // Default gradient
     }
@@ -81,6 +85,7 @@ export default function Authenticated({
     const hasTravelAccess = url.includes('travel');
     const hasSmsAccess = url.includes('sms');
     const hasEmailAccess = url.includes('email');
+    const hasContactsAccess = url.includes('contacts');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -423,6 +428,15 @@ export default function Authenticated({
                                         className="transition-all duration-200 text-white/90 hover:text-white"
                                     >
                                         Email
+                                    </NavLink>
+                                )}
+                                {hasContactsAccess && (
+                                    <NavLink
+                                        href={`/contacts?app=${appParam}`}
+                                        active={route().current('contacts')}
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
+                                    >
+                                        Contacts
                                     </NavLink>
                                 )}
                             </div>

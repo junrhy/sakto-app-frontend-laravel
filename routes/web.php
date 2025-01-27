@@ -21,6 +21,7 @@ use App\Http\Controllers\FlightController;
 use App\Http\Controllers\SmsTwilioController;
 use App\Http\Controllers\SmsSemaphoreController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ContactsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,12 @@ Route::get('/cookie-policy', function () {
 Route::get('/faq', function () {
     return Inertia::render('FAQ');
 })->name('faq');
+
+// Public routes
+Route::get('/contacts/self-registration', [ContactsController::class, 'selfRegistration'])
+    ->name('contacts.self-registration');
+Route::post('/contacts/store-self', [ContactsController::class, 'storeSelf'])
+    ->name('contacts.store-self');
 
 Route::middleware('auth')->group(function () {
     // Help route
@@ -315,6 +322,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/email', [EmailController::class, 'index'])->name('email.index');
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
+
+    // Contacts routes (authenticated)
+    Route::resource('contacts', ContactsController::class);
 });
 
 require __DIR__.'/auth.php';

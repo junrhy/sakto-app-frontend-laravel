@@ -12,7 +12,8 @@ import {
     FaBoxOpen,
     FaUsers,
     FaComments,
-    FaEnvelope
+    FaEnvelope,
+    FaAddressBook
 } from 'react-icons/fa';
 
 export interface App {
@@ -183,6 +184,19 @@ export const apps: App[] = [
         price: 0,
         rating: 4.3,
         categories: ['Communication', 'Marketing', 'Business'],
+        comingSoon: false,
+        pricingType: 'free'
+    },
+    {
+        icon: <FaAddressBook />,
+        title: 'Contacts',
+        route: '/dashboard?app=contacts',
+        bgColor: 'text-slate-500',
+        visible: true,
+        description: 'Manage your contacts and address book. Keep track of customer information, leads, and business relationships all in one place.',
+        price: 0,
+        rating: 4.4,
+        categories: ['Business', 'Communication', 'CRM'],
         comingSoon: false,
         pricingType: 'free'
     }
