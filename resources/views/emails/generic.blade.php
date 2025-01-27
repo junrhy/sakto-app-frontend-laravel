@@ -26,7 +26,7 @@
 </head>
 <body>
     <div class="content">
-        {!! nl2br(e($content)) !!}
+        {!! $content !!}
     </div>
     <div class="footer">
         Sent via {{ config('app.name') }}

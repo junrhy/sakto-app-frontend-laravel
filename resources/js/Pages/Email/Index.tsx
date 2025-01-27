@@ -2,7 +2,7 @@ import React, { useState, ReactNode, useRef } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 
 interface User {
@@ -53,7 +53,7 @@ export default function Index({ auth }: Props) {
         if (Object.keys(validationErrors).length > 0) {
             toast.error('Please fill in all required fields', {
                 duration: 5000,
-                icon: '⚠️',
+                position: 'top-right',
             });
             setData(prevData => ({
                 ...prevData,
@@ -130,7 +130,6 @@ export default function Index({ auth }: Props) {
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Email Sender</h2>}
         >
             <Head title="Email Sender" />
-            <Toaster position="top-right" />
 
             <div className="py-12 bg-gray-50">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
@@ -297,6 +296,7 @@ export default function Index({ auth }: Props) {
                                             }`}
                                             placeholder="Type your message here..."
                                         />
+                                        <p className="mt-2 text-sm text-gray-500">HTML formatting is supported (e.g. &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;a&gt;links&lt;/a&gt;)</p>
                                         {data._errors?.message && (
                                             <p className="mt-2 text-sm text-red-600">{data._errors.message}</p>
                                         )}
