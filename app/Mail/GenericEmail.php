@@ -30,9 +30,7 @@ class GenericEmail extends Mailable
                     ]);
 
         foreach ($this->attachments as $attachment) {
-            $mail->attach($attachment['path'], [
-                'as' => $attachment['name']
-            ]);
+            $mail->attach($attachment['file'], $attachment['options']);
         }
 
         return $mail;

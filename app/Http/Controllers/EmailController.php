@@ -27,7 +27,7 @@ class EmailController extends Controller
             'bcc' => 'nullable|array',
             'bcc.*' => 'email',
             'attachments' => 'nullable|array',
-            'attachments.*' => 'file|max:10240', // 10MB max per file
+            'attachments.*' => 'file|max:20480', // 20MB max per file
         ]);
 
         if ($validator->fails()) {
@@ -41,12 +41,21 @@ class EmailController extends Controller
             $attachments = [];
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
+                    if (!$file->isValid()) {
+                        throw new \Exception('File upload failed: ' . $file->getErrorMessage());
+                    }
+                    
                     $attachments[] = [
-                        'path' => $file->getRealPath(),
-                        'name' => $file->getClientOriginalName(),
+                        'file' => $file,
+                        'options' => [
+                            'as' => $file->getClientOriginalName(),
+                            'mime' => $file->getMimeType()
+                        ]
                     ];
                 }
             }
+
+            \Log::debug('Attachment data:', ['attachments' => $attachments]);
 
             Mail::to($request->to)
                 ->cc($request->cc ?? [])
@@ -62,10 +71,20 @@ class EmailController extends Controller
                 'message' => 'Email sent successfully'
             ]);
         } catch (\Exception $e) {
+            \Log::error('Email sending failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->except(['attachments'])
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send email',
-                'error' => $e->getMessage()
+                'message' => 'Failed to send email: ' . $e->getMessage(),
+                'error_details' => [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ]
             ], 500);
         }
     }

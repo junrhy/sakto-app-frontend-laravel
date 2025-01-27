@@ -115,6 +115,21 @@ export default function Index({ auth }: Props) {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
+        const maxSize = 20 * 1024 * 1024; // 20MB in bytes
+        
+        // Check file sizes
+        const oversizedFiles = files.filter(file => file.size > maxSize);
+        if (oversizedFiles.length > 0) {
+            toast.error(`Some files exceed the 20MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`, {
+                duration: 5000,
+                position: 'top-right',
+            });
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            return;
+        }
+        
         setData('attachments', files);
     };
 
