@@ -13,16 +13,16 @@ export interface Address {
 }
 
 export interface User {
-    // existing properties...
-    contact_number: string | null;
+    id?: number;
+    name: string;
+    email: string;
+    email_verified_at?: string | null;
+    contact_number?: string | null;
 }
 
 export interface PageProps {
     auth: {
-        user: {
-            name: string;
-            email: string;
-        };
+        user: User;
     };
     [key: string]: any;
 }
