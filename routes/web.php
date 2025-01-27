@@ -22,6 +22,7 @@ use App\Http\Controllers\SmsTwilioController;
 use App\Http\Controllers\SmsSemaphoreController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ContactsController;
+use App\Http\Controllers\CreditsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -323,8 +324,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
 
-    // Contacts routes (authenticated)
+    // Contacts routes
     Route::resource('contacts', ContactsController::class);
+
+    // Credits routes
+    Route::get('/credits/buy', [CreditsController::class, 'buy'])->name('credits.buy');
+    Route::post('/credits/purchase', [CreditsController::class, 'purchase'])->name('credits.purchase');
 });
 
 require __DIR__.'/auth.php';

@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
 import { apps } from '@/data/apps';
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 
@@ -14,6 +14,7 @@ interface Props {
     auth: {
         user: {
             name: string;
+            credits?: number;
         };
     };
 }
@@ -51,6 +52,20 @@ export default function Home({ auth }: Props) {
                                     <span className="ml-2 text-xl font-bold text-white">Sakto</span>
                                 </div>
                                 <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
+                                            <span className="text-sm font-medium">{auth.user.credits ?? 0} Credits</span>
+                                        </div>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            onClick={() => window.location.href = route('credits.buy')}
+                                        >
+                                            <CreditCardIcon className="w-4 h-4" />
+                                            Buy Credits
+                                        </Button>
+                                    </div>
                                     <div className="relative inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
