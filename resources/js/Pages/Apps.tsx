@@ -331,7 +331,7 @@ export default function Apps({ auth }: PageProps) {
                                                         }`}
                                                         onClick={() => {
                                                             if (app.visible) {
-                                                                window.location.href = `/apps/${app.route}`;
+                                                                window.location.href = `${app.route}`;
                                                             }
                                                         }}
                                                     >
