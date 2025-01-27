@@ -20,6 +20,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\FlightController;
 use App\Http\Controllers\SmsTwilioController;
 use App\Http\Controllers\SmsSemaphoreController;
+use App\Http\Controllers\EmailController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -309,6 +310,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/sms-semaphore/balance', [SmsSemaphoreController::class, 'getBalance'])->name('semaphore-sms.balance');
     Route::get('/sms-semaphore/status/{messageId}', [SmsSemaphoreController::class, 'getMessageStatus'])->name('semaphore-sms.status');
     Route::get('/sms-semaphore/pricing', [SmsSemaphoreController::class, 'getPricing'])->name('semaphore-sms.pricing');
+
+    // Email routes
+    Route::get('/email', [EmailController::class, 'index'])->name('email.index');
+    Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
+    Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
 });
 
 require __DIR__.'/auth.php';

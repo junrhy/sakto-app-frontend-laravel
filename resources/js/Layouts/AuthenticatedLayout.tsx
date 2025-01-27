@@ -80,6 +80,7 @@ export default function Authenticated({
     const hasPayrollAccess = url.includes('payroll');
     const hasTravelAccess = url.includes('travel');
     const hasSmsAccess = url.includes('sms');
+    const hasEmailAccess = url.includes('email');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -414,6 +415,15 @@ export default function Authenticated({
                                             </Dropdown.Content>
                                         </Dropdown>
                                     </div>
+                                )}
+                                {hasEmailAccess && (
+                                    <NavLink
+                                        href={`/email?app=${appParam}`}
+                                        active={route().current('email')}
+                                        className="transition-all duration-200 text-white/90 hover:text-white"
+                                    >
+                                        Email
+                                    </NavLink>
                                 )}
                             </div>
                         </div>

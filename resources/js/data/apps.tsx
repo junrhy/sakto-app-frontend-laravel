@@ -11,7 +11,8 @@ import {
     FaPlane,
     FaBoxOpen,
     FaUsers,
-    FaComments
+    FaComments,
+    FaEnvelope
 } from 'react-icons/fa';
 
 export interface App {
@@ -168,6 +169,19 @@ export const apps: App[] = [
         description: 'Send SMS to your customers and clients. Supports Twilio and Semaphore. Easily integrate with your existing apps.',
         price: 0,
         rating: 4.4,
+        categories: ['Communication', 'Marketing', 'Business'],
+        comingSoon: false,
+        pricingType: 'free'
+    },
+    {
+        icon: <FaEnvelope />,
+        title: 'Email',
+        route: '/dashboard?app=email',
+        bgColor: 'text-emerald-500',
+        visible: true,
+        description: 'Send emails to your customers and clients. Supports multiple email providers and templates. Easy to integrate with your existing apps.',
+        price: 0,
+        rating: 4.3,
         categories: ['Communication', 'Marketing', 'Business'],
         comingSoon: false,
         pricingType: 'free'

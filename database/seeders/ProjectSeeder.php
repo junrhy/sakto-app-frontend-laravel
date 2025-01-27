@@ -24,7 +24,8 @@ class ProjectSeeder extends Seeder
             'clinical', 
             'lending', 
             'payroll',
-            'sms'
+            'sms',
+            'email'
         ];
 
         $project = [
