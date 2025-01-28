@@ -25,7 +25,7 @@ interface Airport {
 // Add airline information mapping
 const airlines: { [key: string]: { logo: string; name: string } } = {
     'PR': {
-        logo: 'https://www.philippineairlines.com/images/default-source/default-album/pal-logo.png',
+        logo: 'https://download.logo.wine/logo/Philippine_Airlines/Philippine_Airlines-Logo.wine.png',
         name: 'Philippine Airlines'
     },
     'CX': {

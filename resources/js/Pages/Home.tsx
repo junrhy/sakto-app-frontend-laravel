@@ -51,8 +51,8 @@ export default function Home({ auth }: Props) {
                                     <ApplicationLogo className="h-10 w-auto fill-current text-white" />
                                     <span className="ml-2 text-xl font-bold text-white">Sakto</span>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 sm:gap-4">
+                                    <div className="hidden sm:flex items-center gap-2">
                                         <div className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
                                             <span className="text-sm font-medium">{auth.user.credits ?? 0} Credits</span>
                                         </div>
@@ -66,6 +66,15 @@ export default function Home({ auth }: Props) {
                                             Buy Credits
                                         </Button>
                                     </div>
+                                    {/* Mobile Credits Button */}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="sm:hidden text-white hover:text-blue-100 hover:bg-white/10"
+                                        onClick={() => window.location.href = route('credits.buy')}
+                                    >
+                                        <CreditCardIcon className="w-5 h-5" />
+                                    </Button>
                                     <div className="relative inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>

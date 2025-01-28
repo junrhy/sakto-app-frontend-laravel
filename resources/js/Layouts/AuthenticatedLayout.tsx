@@ -117,7 +117,197 @@ export default function Authenticated({
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
                 <Toaster position="top-right" />
-                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url)} sticky top-0 z-50 transition-transform duration-300 ${hideNav ? '-translate-y-full' : 'translate-y-0'}`}>
+                
+                {/* Mobile Navigation */}
+                <div
+                    className={
+                        (showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full') +
+                        ' fixed inset-y-0 left-0 w-64 transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg z-[60] overflow-y-auto'
+                    }
+                >
+                    <div className="space-y-1 pb-3 pt-2">
+                        <ResponsiveNavLink href={route('home')} active={route().current('home')} className="text-white/90 hover:text-white hover:bg-white/10">
+                            Home
+                        </ResponsiveNavLink>
+
+                        {hasDashboardAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Dashboard</div>
+                                    <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        View Dashboards
+                                    </ResponsiveNavLink>
+                                    <button 
+                                        className="w-full text-left block px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-150"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setIsCreateDialogOpen(true);
+                                            setShowingNavigationDropdown(false);
+                                        }}
+                                    >
+                                        Create Dashboard
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasRetailAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Retail</div>
+                                    <ResponsiveNavLink href={`/pos-retail?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        POS
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/inventory?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Inventory
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/retail-sale?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Sales
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasFnbAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">F & B</div>
+                                    <ResponsiveNavLink href={`/pos-restaurant?app=${appParam}&tab=tables`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Restaurant
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {(hasWarehousingAccess || hasTransportationAccess) && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Distribution</div>
+                                    {hasWarehousingAccess && (
+                                        <ResponsiveNavLink href={`/warehousing?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                            Warehousing
+                                        </ResponsiveNavLink>
+                                    )}
+                                    {hasTransportationAccess && (
+                                        <ResponsiveNavLink href={`/transportation?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                            Transportation
+                                        </ResponsiveNavLink>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {(hasRentalItemAccess || hasRentalPropertyAccess) && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Rental</div>
+                                    {hasRentalItemAccess && (
+                                        <ResponsiveNavLink href={`/rental-item?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                            Rental Items
+                                        </ResponsiveNavLink>
+                                    )}
+                                    {hasRentalPropertyAccess && (
+                                        <ResponsiveNavLink href={`/rental-property?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                            Rental Properties
+                                        </ResponsiveNavLink>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {hasClinicalAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Medical</div>
+                                    <ResponsiveNavLink href={`/clinic?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Clinic
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasLendingAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Finance</div>
+                                    <ResponsiveNavLink href={`/loan?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Loans
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasPayrollAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">HR</div>
+                                    <ResponsiveNavLink href={`/payroll?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Payroll
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasTravelAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Travel</div>
+                                    <ResponsiveNavLink href={`/travel?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Bookings
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/flight-search?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Flights
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasSmsAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">SMS</div>
+                                    <ResponsiveNavLink href={`/sms-twilio?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Twilio SMS
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/sms-semaphore?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Semaphore SMS
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasEmailAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Communication</div>
+                                    <ResponsiveNavLink href={`/email?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Email
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasContactsAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Directory</div>
+                                    <ResponsiveNavLink href={`/contacts?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Contacts
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {showingNavigationDropdown && (
+                    <div 
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] sm:hidden"
+                        onClick={() => setShowingNavigationDropdown(false)}
+                    />
+                )}
+
+                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url)} sticky top-0 z-50 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
@@ -446,11 +636,7 @@ export default function Authenticated({
 
                             <div className="-me-2 flex items-center sm:hidden">
                                 <button
-                                    onClick={() =>
-                                        setShowingNavigationDropdown(
-                                            (previousState: any) => !previousState,
-                                        )
-                                    }
+                                    onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
                                     className="inline-flex items-center justify-center rounded-md p-2 text-white/80 transition duration-150 ease-in-out hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none"
                                 >
                                     <svg
@@ -486,119 +672,9 @@ export default function Authenticated({
                             </div>
                         </div>
                     </div>
-
-                    <div
-                        className={
-                            (showingNavigationDropdown ? 'block' : 'hidden') +
-                            ' sm:hidden'
-                        }
-                    >
-                        <div className="space-y-1 pb-3 pt-2">
-                            {hasDashboardAccess && (
-                                <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white">Dashboard</div>
-                                    <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="ml-2 text-white">
-                                        View Dashboards
-                                    </ResponsiveNavLink>
-                                    <button 
-                                        className="w-full text-left ml-3 block pl-3 pr-4 py-2 text-base font-medium text-white transition duration-150 ease-in-out hover:bg-gray-50 hover:text-gray-800 focus:outline-none focus:text-gray-800 focus:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setIsCreateDialogOpen(true);
-                                        }}
-                                    >
-                                        Create Dashboard
-                                    </button>
-                                </div>
-                            )}
-
-                            {hasRetailAccess && (
-                                <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white">Retail</div>
-                                    <ResponsiveNavLink href={`/pos-retail?app=${appParam}`} className="ml-3">
-                                        Retail
-                                    </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/inventory?app=${appParam}`} className="ml-3">
-                                        Inventory
-                                    </ResponsiveNavLink>
-                                </div>
-                            )}
-
-                            {hasFnbAccess && (
-                                <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white">Restaurant</div>
-                                    <ResponsiveNavLink href={`/pos-restaurant?app=${appParam}&tab=tables`} className="ml-3">
-                                        Restaurant
-                                    </ResponsiveNavLink>
-                                </div>
-                            )}
-
-                            {(hasWarehousingAccess || hasTransportationAccess) && (
-                                <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white">Distribution</div>
-                                    {hasWarehousingAccess && (
-                                        <ResponsiveNavLink href={`/warehousing?app=${appParam}`} className="ml-3">
-                                            Warehousing
-                                        </ResponsiveNavLink>
-                                    )}
-                                    {hasTransportationAccess && (
-                                        <ResponsiveNavLink href={`/transportation?app=${appParam}`} className="ml-3">
-                                            Transportation
-                                        </ResponsiveNavLink>
-                                    )}
-                                </div>
-                            )}
-
-                            {(hasRentalItemAccess || hasRentalPropertyAccess) && (
-                                <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white">Rental</div>
-                                    {hasRentalItemAccess && (
-                                        <ResponsiveNavLink href={`/rental-item?app=${appParam}`} className="ml-3">
-                                            Rental Items
-                                        </ResponsiveNavLink>
-                                    )}
-                                    {hasRentalPropertyAccess && (
-                                        <ResponsiveNavLink href={`/rental-property?app=${appParam}`} className="ml-3">
-                                            Rental Properties
-                                        </ResponsiveNavLink>
-                                    )}
-                                </div>
-                            )}
-
-                            {hasClinicalAccess && (
-                                <ResponsiveNavLink
-                                    href={`/clinic?app=${appParam}`}
-                                    active={route().current('clinic')}
-                                    className="text-white"
-                                >
-                                    Clinic
-                                </ResponsiveNavLink>
-                            )}
-
-                            {hasLendingAccess && (
-                                <ResponsiveNavLink
-                                    href={`/loan?app=${appParam}`}
-                                    active={route().current('loan')}
-                                    className="text-white"
-                                >
-                                    Loans
-                                </ResponsiveNavLink>
-                            )}
-
-                            {hasPayrollAccess && (
-                                <ResponsiveNavLink
-                                    href={`/payroll?app=${appParam}`}
-                                    active={route().current('payroll')}
-                                    className="text-white"
-                                >
-                                    Payroll
-                                </ResponsiveNavLink>
-                            )}
-                        </div>
-                    </div>
                 </nav>
 
-                <div className={`transition-all duration-300 ${hideNav ? '-translate-y-16' : 'translate-y-0'}`}>
+                <div className="relative bg-white dark:bg-gray-800 min-h-screen">
                     {header && (
                         <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
                             <div className="px-4 py-6 sm:px-6 lg:px-8">
@@ -616,7 +692,7 @@ export default function Authenticated({
 
                 <button
                     onClick={() => setHideNav(!hideNav)}
-                    className="fixed top-2 right-2 z-50 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors duration-200"
+                    className="hidden sm:block fixed top-2 right-2 z-50 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors duration-200"
                     aria-label="Toggle navigation"
                 >
                     {hideNav ? (
