@@ -29,7 +29,7 @@ export default function Welcome({
 
     return (
         <>
-            <Head title="Welcome" />
+            <Head title="Your all-in-one solution" />
             <div className="min-h-screen bg-gradient-to-b from-white via-indigo-50/30 to-white dark:bg-gray-950">
                 {/* Navigation */}
                 <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 shadow-sm">
@@ -45,7 +45,7 @@ export default function Welcome({
                                         href={route('home')}
                                         className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                                     >
-                                        Dashboard
+                                        Home
                                     </Link>
                                 ) : (
                                     <Link

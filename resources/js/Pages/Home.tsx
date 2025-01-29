@@ -45,7 +45,7 @@ export default function Home({ auth }: Props) {
             <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
                 <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg">
                     <div className="container mx-auto px-4 pt-4">
-                        <div className="flex flex-col items-center mb-4">
+                        <div className="flex flex-col items-cente">
                             <div className="w-full flex justify-between items-center mb-2">
                                 <div className="flex items-center">
                                     <ApplicationLogo className="h-10 w-auto fill-current text-white" />
@@ -156,15 +156,11 @@ export default function Home({ auth }: Props) {
                                     </div>
                                 </div>
                             </div>
-
-                            <h2 className="text-xl font-semibold text-white landscape:hidden">
-                                Hello, {firstName}
-                            </h2>
                         </div>
 
                         <div className="flex flex-col items-center mb-6 landscape:hidden">
                             <span className="text-lg text-white text-opacity-90 mt-1 text-center max-w-2xl">
-                                Choose the app you need to get started.
+                                {auth.user.credits ?? 0} Credits
                             </span>
                         </div>
                     </div>
