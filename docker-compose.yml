@@ -57,6 +57,21 @@ services:
     networks:
       - sakto_network
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: sakto_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    networks:
+      - sakto_network
+    depends_on:
+      - db
+
 networks:
   sakto_network:
     driver: bridge
