@@ -57,7 +57,7 @@ class PayrollController extends Controller
             $validated['client_identifier'] = $request->client_identifier;
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/payroll", $validated);
-dd($response->json());
+
             if (!$response->successful()) {
                 throw new Exception('Failed to store payroll record in API');
             }

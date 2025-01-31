@@ -19,36 +19,16 @@ class ContactsController extends Controller
 
     public function index()
     {
-        // $response = Http::withToken($this->apiToken)
-        //     ->get("{$this->apiUrl}/contacts");
+        $clientIdentifier = auth()->user()->identifier;
+        $response = Http::withToken($this->apiToken)    
+            ->get("{$this->apiUrl}/contacts", [
+                'client_identifier' => $clientIdentifier
+            ]);
         
-        // $contacts = $response->json();
-
-        $sampleContact = [
-            'id' => 1,
-            'first_name' => 'John',
-            'middle_name' => 'Robert',
-            'last_name' => 'Doe',
-            'gender' => 'male',
-            'fathers_name' => 'James William Doe',
-            'mothers_maiden_name' => 'Mary Elizabeth Smith',
-            'email' => 'john.doe@example.com',
-            'call_number' => '+1234567890',
-            'sms_number' => '+1234567891',
-            'whatsapp' => '+1234567892',
-            'facebook' => 'https://facebook.com/johndoe',
-            'instagram' => 'https://instagram.com/johndoe',
-            'twitter' => 'https://twitter.com/johndoe',
-            'linkedin' => 'https://linkedin.com/in/johndoe',
-            'address' => '123 Main St, City, Country',
-            'notes' => 'Sample contact for testing',
-            'id_picture' => 'https://ui-avatars.com/api/?name=John+Doe&size=200',
-            'created_at' => now()->toISOString(),
-            'updated_at' => now()->toISOString(),
-        ];
+        $contacts = $response->json();
 
         return Inertia::render('Contacts/Index', [
-            'contacts' => [$sampleContact]
+            'contacts' => $contacts
         ]);
     }
 
@@ -84,6 +64,8 @@ class ContactsController extends Controller
             $validated['id_picture'] = asset('storage/' . $path);
         }
 
+        $clientIdentifier = auth()->user()->identifier;
+        $validated['client_identifier'] = $clientIdentifier;
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/contacts", $validated);
 
