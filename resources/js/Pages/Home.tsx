@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link as InertiaLink } from '@inertiajs/react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
@@ -15,12 +15,32 @@ interface Props {
         user: {
             name: string;
             credits?: number;
+            identifier?: string;
         };
     };
 }
 
 export default function Home({ auth }: Props) {
     const { theme, setTheme } = useTheme();
+    const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+
+    useEffect(() => {
+        const fetchCredits = async () => {
+            try {
+                if (auth.user.identifier) {
+                    const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCredits(data.balance);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch credits:', error);
+            }
+        };
+
+        fetchCredits();
+    }, [auth.user.identifier]);
 
     const getBorderColor = (colorClass: string) => {
         const colorMap: { [key: string]: string } = {
@@ -54,7 +74,7 @@ export default function Home({ auth }: Props) {
                                 <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="hidden sm:flex items-center gap-2">
                                         <div className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
-                                            <span className="text-sm font-medium">{auth.user.credits ?? 0} Credits</span>
+                                            <span className="text-sm font-medium">{credits} Credits</span>
                                         </div>
                                         <Button
                                             variant="secondary"
@@ -160,7 +180,7 @@ export default function Home({ auth }: Props) {
 
                         <div className="flex flex-col items-center mb-6 landscape:hidden">
                             <span className="text-lg text-white text-opacity-90 mt-1 text-center max-w-2xl">
-                                {auth.user.credits ?? 0} Credits
+                                {credits} Credits
                             </span>
                         </div>
                     </div>

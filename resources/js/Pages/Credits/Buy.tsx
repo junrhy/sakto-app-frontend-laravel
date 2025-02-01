@@ -14,6 +14,7 @@ import { format } from "date-fns";
 
 interface Package {
     id: number;
+    name: string;
     credits: number;
     price: number;
     popular: boolean;
@@ -78,13 +79,18 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory }: 
         setIsSubmitting(true);
 
         const formData = new FormData();
-        formData.append('package_id', selectedPackage.id.toString());
+        formData.append('package_name', selectedPackage.name.toString());
+        formData.append('package_credit', selectedPackage.credits.toString());
+        formData.append('package_amount', selectedPackage.price.toString());
         formData.append('payment_method', paymentMethod);
+        formData.append('amount_sent', selectedPackage.price.toString());
         formData.append('transaction_id', transactionId);
-        formData.append('proof_of_payment', proofFile);
+        if (proofFile) {
+            formData.append('proof_of_payment', proofFile);
+        }
 
         try {
-            const response = await fetch('/credits/purchase', {
+            const response = await fetch('request', {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',

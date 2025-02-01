@@ -330,8 +330,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('contacts', ContactsController::class);
 
     // Credits routes
-    Route::get('/credits/buy', [CreditsController::class, 'buy'])->name('credits.buy');
-    Route::post('/credits/purchase', [CreditsController::class, 'purchase'])->name('credits.purchase');
+    Route::prefix('credits')->group(function () {
+        Route::get('/buy', [CreditsController::class, 'buy'])->name('credits.buy');
+        Route::get('/{clientIdentifier}/balance', [CreditsController::class, 'getBalance'])->name('credits.balance');
+        Route::post('/request', [CreditsController::class, 'requestCredit'])->name('credits.request');
+        Route::get('/{clientIdentifier}/history', [CreditsController::class, 'getCreditHistory'])->name('credits.history');
+    });
 });
 
 require __DIR__.'/auth.php';

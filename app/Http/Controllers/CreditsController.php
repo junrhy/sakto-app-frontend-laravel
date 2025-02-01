@@ -6,44 +6,42 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class CreditsController extends Controller
 {
+    protected $apiUrl, $apiToken;
+
+    public function __construct()
+    {
+        $this->apiUrl = env('API_URL');
+        $this->apiToken = env('API_TOKEN');
+    }
+
     public function buy()
     {
-        // Simulated payment history data - replace with actual data from your API
-        $paymentHistory = [
-            [
-                'id' => 1,
-                'date' => '2024-03-15 14:30:00',
-                'credits' => 500,
-                'amount' => 450.00,
-                'payment_method' => 'GCash',
-                'transaction_id' => 'GC123456789',
-                'status' => 'completed',
-            ],
-            [
-                'id' => 2,
-                'date' => '2024-03-10 09:15:00',
-                'credits' => 100,
-                'amount' => 100.00,
-                'payment_method' => 'Maya',
-                'transaction_id' => 'MP987654321',
-                'status' => 'pending',
-            ],
-            // Add more history items as needed
-        ];
+        $clientIdentifier = auth()->user()->identifier;
+        $paymentHistory = [];
+
+        $historyResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/credits/{$clientIdentifier}/history");
+
+        if ($historyResponse->successful()) {
+            $paymentHistory = $historyResponse->json()['data'] ?? [];
+        }
 
         return Inertia::render('Credits/Buy', [
             'packages' => [
                 [
                     'id' => 1,
+                    'name' => '100 Credits',
                     'credits' => 100,
                     'price' => 100.00,
                     'popular' => false,
                 ],
                 [
                     'id' => 2,
+                    'name' => '500 Credits',
                     'credits' => 500,
                     'price' => 450.00,
                     'popular' => true,
@@ -51,6 +49,7 @@ class CreditsController extends Controller
                 ],
                 [
                     'id' => 3,
+                    'name' => '1000 Credits',
                     'credits' => 1000,
                     'price' => 800.00,
                     'popular' => false,
@@ -82,55 +81,58 @@ class CreditsController extends Controller
         ]);
     }
 
-    public function purchase(Request $request)
+    public function getBalance($clientIdentifier)
     {
-        $request->validate([
-            'package_id' => 'required|integer|min:1|max:3',
-            'payment_method' => 'required|in:gcash,maya,bank',
-            'transaction_id' => 'required|string|max:255',
-            'proof_of_payment' => 'required|image|max:5120', // 5MB max
-        ]);
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/credits/{$clientIdentifier}/balance");
 
-        try {
-            // Get package details
-            $packages = [
-                1 => ['credits' => 100, 'price' => 10.00],
-                2 => ['credits' => 500, 'price' => 45.00],
-                3 => ['credits' => 1000, 'price' => 80.00],
-            ];
-
-            $package = $packages[$request->package_id];
-
-            // Store the proof of payment
-            $proofPath = $request->file('proof_of_payment')->store('payment-proofs', 'public');
-
-            // Make API call to external payment/credits service
-            $response = Http::post(env('CREDITS_API_URL') . '/purchase', [
-                'user_id' => $request->user()->id,
-                'package_id' => $request->package_id,
-                'amount' => $package['price'],
-                'credits' => $package['credits'],
-                'payment_method' => $request->payment_method,
-                'transaction_id' => $request->transaction_id,
-                'proof_of_payment_url' => Storage::url($proofPath),
-            ]);
-
-            if (!$response->successful()) {
-                // Delete the uploaded file if API call fails
-                Storage::disk('public')->delete($proofPath);
-                throw new \Exception($response->json()['message'] ?? 'Failed to process purchase');
-            }
-
+        if (!$response->successful()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Purchase submitted successfully. We will verify your payment and credit your account.',
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+                'error' => 'Failed to fetch credit balance'
+            ], $response->status());
         }
+
+        return response()->json($response->json());
+    }
+
+    public function requestCredit(Request $request)
+    {
+        $validated = $request->validate([
+            'package_name' => 'required|string',
+            'package_credit' => 'required|numeric|min:0',
+            'package_amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|string',
+            'amount_sent' => 'required|numeric|min:0',
+            'transaction_id' => 'required|string',
+            'proof_of_payment' => 'nullable|image|max:2048',
+        ]);
+        
+        $clientIdentifier = auth()->user()->identifier;
+        $validated['client_identifier'] = $clientIdentifier;
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/credits/request", $validated);
+
+        if (!$response->successful()) {
+            return response()->json([
+                'error' => 'Failed to submit credit request'
+            ], $response->status());
+        }
+
+        return response()->json($response->json());
+    }
+
+    public function getCreditHistory($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/credits/{$clientIdentifier}/history");
+
+        if (!$response->successful()) {
+            return response()->json([
+                'error' => 'Failed to fetch credit history'
+            ], $response->status());
+        }
+
+        return response()->json($response->json());
     }
 }
