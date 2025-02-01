@@ -4,7 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon, ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -40,7 +40,7 @@ interface PaymentHistory {
     payment_method_details: string | null;
     transaction_id: string;
     proof_of_payment: string | null;
-    status: 'approved' | 'pending' | 'rejected';
+    status: 'approved' | 'pending' | 'rejected' | 'declined';
     approved_date: string | null;
     approved_by: string | null;
     created_at: string;
@@ -65,6 +65,18 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
     const [proofFile, setProofFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>(initialPaymentHistory);
+    const [currentPage, setCurrentPage] = useState(1);
+    const recordsPerPage = 10;
+
+    // Calculate pagination values
+    const totalPages = Math.ceil(paymentHistory.length / recordsPerPage);
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    const currentRecords = paymentHistory.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const handlePackageSelect = (pkg: Package) => {
         setSelectedPackage(pkg);
@@ -87,11 +99,26 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
 
         setIsSubmitting(true);
 
+        const selectedPaymentMethod = paymentMethods.find(m => m.id === paymentMethod);
+        if (!selectedPaymentMethod) {
+            toast.error('Selected payment method not found');
+            setIsSubmitting(false);
+            return;
+        }
+
+        // Construct payment method details
+        const paymentMethodDetails = {
+            accountName: selectedPaymentMethod.accountName,
+            accountNumber: selectedPaymentMethod.accountNumber,
+            ...(selectedPaymentMethod.bankName && { bankName: selectedPaymentMethod.bankName })
+        };
+
         const formData = new FormData();
         formData.append('package_name', selectedPackage.name.toString());
         formData.append('package_credit', selectedPackage.credits.toString());
         formData.append('package_amount', selectedPackage.price.toString());
-        formData.append('payment_method', paymentMethod);
+        formData.append('payment_method', selectedPaymentMethod.name);
+        formData.append('payment_method_details', JSON.stringify(paymentMethodDetails));
         formData.append('amount_sent', selectedPackage.price.toString());
         formData.append('transaction_id', transactionId);
         if (proofFile) {
@@ -199,7 +226,12 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                         {paymentMethods.map((method) => (
                                             <div 
                                                 key={method.id}
-                                                className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900"
+                                                className={`p-4 rounded-lg border cursor-pointer transition-all
+                                                    ${paymentMethod === method.id
+                                                        ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' 
+                                                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
+                                                    }`}
+                                                onClick={() => setPaymentMethod(method.id)}
                                             >
                                                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                                                     {method.name}
@@ -232,18 +264,29 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
 
                                         <div className="space-y-2">
                                             <Label>Payment Method Used</Label>
-                                            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select payment method used" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {paymentMethods.map((method) => (
-                                                        <SelectItem key={method.id} value={method.id}>
-                                                            {method.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <div className="p-3 rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                                                {paymentMethod ? (
+                                                    <div className="space-y-1">
+                                                        <p className="text-gray-900 dark:text-gray-100 font-medium">
+                                                            {paymentMethods.find(m => m.id === paymentMethod)?.name}
+                                                        </p>
+                                                        {(() => {
+                                                            const selectedMethod = paymentMethods.find(m => m.id === paymentMethod);
+                                                            return selectedMethod ? (
+                                                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                    <p>Account Name: <span className="font-medium">{selectedMethod.accountName}</span></p>
+                                                                    <p>Account Number: <span className="font-medium">{selectedMethod.accountNumber}</span></p>
+                                                                    {selectedMethod.bankName && (
+                                                                        <p>Bank: <span className="font-medium">{selectedMethod.bankName}</span></p>
+                                                                    )}
+                                                                </div>
+                                                            ) : null;
+                                                        })()}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-500">Select a payment method</span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="space-y-2">
@@ -307,13 +350,14 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                             <TableHead>Credits</TableHead>
                                             <TableHead>Amount</TableHead>
                                             <TableHead>Payment Method</TableHead>
+                                            <TableHead>Account Details</TableHead>
                                             <TableHead>Transaction ID</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {paymentHistory.length > 0 ? (
-                                            paymentHistory.map((payment) => (
+                                            currentRecords.map((payment) => (
                                                 <TableRow key={payment.id}>
                                                     <TableCell>
                                                         {format(new Date(payment.created_at), 'MMM d, yyyy h:mm a')}
@@ -321,13 +365,40 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                                     <TableCell>{payment.package_credit.toLocaleString()} Credits</TableCell>
                                                     <TableCell>₱{payment.package_amount.toFixed(2)}</TableCell>
                                                     <TableCell>{payment.payment_method}</TableCell>
+                                                    <TableCell>
+                                                        {payment.payment_method_details && (
+                                                            <div className="text-sm space-y-0.5">
+                                                                {(() => {
+                                                                    try {
+                                                                        const details = JSON.parse(payment.payment_method_details);
+                                                                        return (
+                                                                            <>
+                                                                                <p>Name: {details.accountName}</p>
+                                                                                <p>Number: {details.accountNumber}</p>
+                                                                                {details.bankName && (
+                                                                                    <p>Bank: {details.bankName}</p>
+                                                                                )}
+                                                                            </>
+                                                                        );
+                                                                    } catch {
+                                                                        return <p className="text-gray-500">No details available</p>;
+                                                                    }
+                                                                })()}
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell className="font-mono">{payment.transaction_id}</TableCell>
                                                     <TableCell>
                                                         <Badge
                                                             variant={payment.status === 'approved' ? 'default' : 'secondary'}
-                                                            className={payment.status === 'approved' 
-                                                                ? 'bg-green-500 hover:bg-green-600' 
-                                                                : 'bg-yellow-500 hover:bg-yellow-600'
+                                                            className={
+                                                                payment.status === 'approved' 
+                                                                    ? 'bg-green-500 hover:bg-green-600'
+                                                                    : payment.status === 'pending'
+                                                                    ? 'bg-yellow-500 hover:bg-yellow-600'
+                                                                    : payment.status === 'declined'
+                                                                    ? 'bg-red-500 hover:bg-red-600'
+                                                                    : 'bg-gray-500 hover:bg-gray-600'
                                                             }
                                                         >
                                                             {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
@@ -337,7 +408,7 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="text-center text-gray-500 dark:text-gray-400">
+                                                <TableCell colSpan={7} className="text-center text-gray-500 dark:text-gray-400">
                                                     No payment history found
                                                 </TableCell>
                                             </TableRow>
@@ -345,6 +416,43 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                     </TableBody>
                                 </Table>
                             </div>
+
+                            {/* Pagination Controls */}
+                            {paymentHistory.length > 0 && (
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Showing {startIndex + 1} to {Math.min(endIndex, paymentHistory.length)} of {paymentHistory.length} records
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeftIcon className="h-4 w-4" />
+                                        </Button>
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                            <Button
+                                                key={page}
+                                                variant={currentPage === page ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => handlePageChange(page)}
+                                            >
+                                                {page}
+                                            </Button>
+                                        ))}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            <ChevronRightIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

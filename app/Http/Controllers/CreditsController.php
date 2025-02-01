@@ -58,26 +58,26 @@ class CreditsController extends Controller
             ],
             'paymentMethods' => [
                 [
-                    'id' => 'gcash_john_doe_09123456789',
-                    'name' => 'GCash (John Doe)',
+                    'id' => 1,
+                    'name' => 'GCash',
                     'accountName' => 'John Doe',
                     'accountNumber' => '09123456789',
                 ],
                 [
-                    'id' => 'gcash_jane_doe_09123456789',
-                    'name' => 'GCash (Jane Doe)',
+                    'id' => 2,
+                    'name' => 'GCash',
                     'accountName' => 'Jane Doe',
                     'accountNumber' => '09123456789',
                 ],
                 [
-                    'id' => 'maya_john_doe_09123456789',
-                    'name' => 'Maya (John Doe)',
+                    'id' => 3,
+                    'name' => 'Maya',
                     'accountName' => 'John Doe',
                     'accountNumber' => '09123456789',
                 ],
                 [
-                    'id' => 'bank_john_doe_1234567890',
-                    'name' => 'Bank Transfer (John Doe)',
+                    'id' => 4,
+                    'name' => 'Bank Transfer',
                     'accountName' => 'John Doe',
                     'accountNumber' => '1234567890',
                     'bankName' => 'BDO'
