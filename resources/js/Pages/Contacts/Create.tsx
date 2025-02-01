@@ -10,6 +10,7 @@ import { PlusIcon, XIcon, ArrowUpRightSquare } from 'lucide-react';
 
 interface Props {
     auth: { user: any };
+    client_identifier: string;
 }
 
 interface IdNumber {
@@ -18,7 +19,7 @@ interface IdNumber {
     notes?: string;
 }
 
-export default function Create({ auth }: Props) {
+export default function Create({ auth, client_identifier }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
         middle_name: '',
@@ -87,7 +88,7 @@ export default function Create({ auth }: Props) {
                         Add Contact
                     </h2>
                     <Link 
-                        href={route('contacts.self-registration')} 
+                        href={route('contacts.self-registration') + `?client_identifier=${client_identifier}`} 
                         className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center"
                     >
                         <ArrowUpRightSquare className="w-4 h-4 mr-2" />
@@ -179,7 +180,6 @@ export default function Create({ auth }: Props) {
                                     <SelectContent>
                                         <SelectItem value="male">Male</SelectItem>
                                         <SelectItem value="female">Female</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.gender && (

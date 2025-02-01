@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
@@ -19,10 +19,16 @@ interface Props {
         message?: string;
         error?: string;
     };
+    client_identifier?: string;
 }
 
-export default function SelfRegistration({ flash = {} }: Props) {
+export default function SelfRegistration({ flash = {}, client_identifier }: Props) {
+    const { url } = usePage();
+    const urlParams = new URLSearchParams(url.split('?')[1]);
+    const urlClientIdentifier = urlParams.get('client_identifier') || client_identifier || '';
+    
     const { data, setData, post, processing, errors } = useForm({
+        client_identifier: urlClientIdentifier,
         first_name: '',
         middle_name: '',
         last_name: '',
@@ -119,6 +125,21 @@ export default function SelfRegistration({ flash = {} }: Props) {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
+                                <Label htmlFor="client_identifier">Client Identifier</Label>
+                                <Input
+                                    id="client_identifier"
+                                    value={data.client_identifier}
+                                    onChange={e => setData('client_identifier', e.target.value)}
+                                    placeholder="Enter client identifier"
+                                    readOnly={!!urlClientIdentifier}
+                                    className={urlClientIdentifier ? "bg-gray-100 dark:bg-gray-700" : ""}
+                                />
+                                {errors.client_identifier && (
+                                    <p className="text-sm text-red-600">{errors.client_identifier}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="id_picture">ID Picture</Label>
                                 <div className="flex items-center gap-4">
                                     {previewUrl ? (
@@ -203,7 +224,165 @@ export default function SelfRegistration({ flash = {} }: Props) {
                                 )}
                             </div>
 
-                            {/* ... rest of the form fields (same as Create.tsx) ... */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="fathers_name">Father's Name</Label>
+                                    <Input
+                                        id="fathers_name"
+                                        value={data.fathers_name}
+                                        onChange={e => setData('fathers_name', e.target.value)}
+                                        placeholder="Full name of father"
+                                    />
+                                    {errors.fathers_name && (
+                                        <p className="text-sm text-red-600">{errors.fathers_name}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="mothers_maiden_name">Mother's Maiden Name</Label>
+                                    <Input
+                                        id="mothers_maiden_name"
+                                        value={data.mothers_maiden_name}
+                                        onChange={e => setData('mothers_maiden_name', e.target.value)}
+                                        placeholder="Mother's full name before marriage"
+                                    />
+                                    {errors.mothers_maiden_name && (
+                                        <p className="text-sm text-red-600">{errors.mothers_maiden_name}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={data.email}
+                                    onChange={e => setData('email', e.target.value)}
+                                />
+                                {errors.email && (
+                                    <p className="text-sm text-red-600">{errors.email}</p>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="call_number">Call Number</Label>
+                                    <Input
+                                        id="call_number"
+                                        value={data.call_number}
+                                        onChange={e => setData('call_number', e.target.value)}
+                                        placeholder="e.g. +1234567890"
+                                    />
+                                    {errors.call_number && (
+                                        <p className="text-sm text-red-600">{errors.call_number}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="sms_number">SMS Number</Label>
+                                    <Input
+                                        id="sms_number"
+                                        value={data.sms_number}
+                                        onChange={e => setData('sms_number', e.target.value)}
+                                        placeholder="e.g. +1234567890"
+                                    />
+                                    {errors.sms_number && (
+                                        <p className="text-sm text-red-600">{errors.sms_number}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                                    <Input
+                                        id="whatsapp"
+                                        value={data.whatsapp}
+                                        onChange={e => setData('whatsapp', e.target.value)}
+                                        placeholder="e.g. +1234567890"
+                                    />
+                                    {errors.whatsapp && (
+                                        <p className="text-sm text-red-600">{errors.whatsapp}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="facebook">Facebook URL</Label>
+                                    <Input
+                                        id="facebook"
+                                        value={data.facebook}
+                                        onChange={e => setData('facebook', e.target.value)}
+                                        placeholder="e.g. https://facebook.com/username"
+                                    />
+                                    {errors.facebook && (
+                                        <p className="text-sm text-red-600">{errors.facebook}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="instagram">Instagram URL</Label>
+                                    <Input
+                                        id="instagram"
+                                        value={data.instagram}
+                                        onChange={e => setData('instagram', e.target.value)}
+                                        placeholder="e.g. https://instagram.com/username"
+                                    />
+                                    {errors.instagram && (
+                                        <p className="text-sm text-red-600">{errors.instagram}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="twitter">Twitter/X URL</Label>
+                                    <Input
+                                        id="twitter"
+                                        value={data.twitter}
+                                        onChange={e => setData('twitter', e.target.value)}
+                                        placeholder="e.g. https://twitter.com/username"
+                                    />
+                                    {errors.twitter && (
+                                        <p className="text-sm text-red-600">{errors.twitter}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="linkedin">LinkedIn URL</Label>
+                                    <Input
+                                        id="linkedin"
+                                        value={data.linkedin}
+                                        onChange={e => setData('linkedin', e.target.value)}
+                                        placeholder="e.g. https://linkedin.com/in/username"
+                                    />
+                                    {errors.linkedin && (
+                                        <p className="text-sm text-red-600">{errors.linkedin}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="address">Address</Label>
+                                <Textarea
+                                    id="address"
+                                    value={data.address}
+                                    onChange={e => setData('address', e.target.value)}
+                                />
+                                {errors.address && (
+                                    <p className="text-sm text-red-600">{errors.address}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="notes">Notes</Label>
+                                <Textarea
+                                    id="notes"
+                                    value={data.notes}
+                                    onChange={e => setData('notes', e.target.value)}
+                                />
+                                {errors.notes && (
+                                    <p className="text-sm text-red-600">{errors.notes}</p>
+                                )}
+                            </div>
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">

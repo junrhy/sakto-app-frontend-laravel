@@ -45,6 +45,18 @@ interface Props {
 }
 
 export default function Edit({ auth, contact }: Props) {
+    // Parse id_numbers if it's a string
+    const parseIdNumbers = (idNumbers: any) => {
+        if (!idNumbers) return [];
+        if (Array.isArray(idNumbers)) return idNumbers;
+        try {
+            return typeof idNumbers === 'string' ? JSON.parse(idNumbers) : [];
+        } catch (e) {
+            console.error('Error parsing id_numbers:', e);
+            return [];
+        }
+    };
+
     const { data, setData, put, processing, errors } = useForm({
         first_name: contact.first_name,
         middle_name: contact.middle_name || '',
@@ -63,14 +75,25 @@ export default function Edit({ auth, contact }: Props) {
         address: contact.address || '',
         notes: contact.notes || '',
         id_picture: null as File | null,
-        id_numbers: contact.id_numbers || [] as IdNumber[],
+        id_numbers: parseIdNumbers(contact.id_numbers),
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(contact.id_picture || null);
+    const [fileError, setFileError] = useState<string | null>(null);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        setFileError(null); // Reset error on new file selection
+        
         if (file) {
+            // Check file size (e.g., limit to 2MB)
+            const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+            if (file.size > maxSize) {
+                setFileError('Image size must be less than 2MB');
+                e.target.value = ''; // Reset input
+                return;
+            }
+
             setData('id_picture', file);
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -88,7 +111,7 @@ export default function Edit({ auth, contact }: Props) {
     };
 
     const removeIdNumber = (index: number) => {
-        setData('id_numbers', data.id_numbers.filter((_, i) => i !== index));
+        setData('id_numbers', data.id_numbers.filter((_: IdNumber, i: number) => i !== index));
     };
 
     const updateIdNumber = (index: number, field: keyof IdNumber, value: string) => {
@@ -102,7 +125,14 @@ export default function Edit({ auth, contact }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        put(route('contacts.update', contact.id));
+        put(route('contacts.update', contact.id), {
+            onError: (errors) => {
+                // Check for 413 error in the response
+                if (errors.id_picture?.includes('413')) {
+                    setFileError('The image file is too large. Please choose a smaller file (max 2MB).');
+                }
+            }
+        });
     }
 
     return (
@@ -141,8 +171,8 @@ export default function Edit({ auth, contact }: Props) {
                                         className="flex-1"
                                     />
                                 </div>
-                                {errors.id_picture && (
-                                    <p className="text-sm text-red-600">{errors.id_picture}</p>
+                                {(errors.id_picture || fileError) && (
+                                    <p className="text-sm text-red-600">{fileError || errors.id_picture}</p>
                                 )}
                             </div>
 
@@ -196,7 +226,6 @@ export default function Edit({ auth, contact }: Props) {
                                     <SelectContent>
                                         <SelectItem value="male">Male</SelectItem>
                                         <SelectItem value="female">Female</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.gender && (
@@ -378,7 +407,7 @@ export default function Edit({ auth, contact }: Props) {
                                     </Button>
                                 </div>
                                 
-                                {data.id_numbers.map((idNumber, index) => (
+                                {data.id_numbers.map((idNumber: IdNumber, index: number) => (
                                     <div key={index} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg space-y-4">
                                         <div className="flex justify-between items-start">
                                             <div className="grid grid-cols-2 gap-4 flex-1">

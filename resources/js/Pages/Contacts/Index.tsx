@@ -69,6 +69,18 @@ export default function Index({ auth, contacts }: Props) {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // Parse id_numbers if it's a string
+    const parseIdNumbers = (idNumbers: any) => {
+        if (!idNumbers) return [];
+        if (Array.isArray(idNumbers)) return idNumbers;
+        try {
+            return typeof idNumbers === 'string' ? JSON.parse(idNumbers) : [];
+        } catch (e) {
+            console.error('Error parsing id_numbers:', e);
+            return [];
+        }
+    };
+
     const filteredContacts = useMemo(() => {
         if (!search.trim()) return contacts;
 
@@ -167,7 +179,10 @@ export default function Index({ auth, contacts }: Props) {
     };
 
     const openContactModal = (contact: Contact) => {
-        setSelectedContact(contact);
+        setSelectedContact({
+            ...contact,
+            id_numbers: parseIdNumbers(contact.id_numbers)
+        });
         setIsModalOpen(true);
     };
 
@@ -402,20 +417,18 @@ export default function Index({ auth, contacts }: Props) {
                             <div className="space-y-4">
                                 <div>
                                     <h4 className="font-medium text-gray-500 dark:text-gray-400">ID Numbers</h4>
-                                    <div className="mt-2 space-y-2">
-                                        {selectedContact.id_numbers && selectedContact.id_numbers.length > 0 ? (
-                                            selectedContact.id_numbers.map((idNum) => (
-                                                <div key={idNum.id} className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <p className="font-medium text-sm">{idNum.type}</p>
-                                                            <p className="text-lg">{idNum.number}</p>
-                                                        </div>
+                                    <div className="mt-2 divide-y divide-gray-100 dark:divide-gray-700">
+                                        {Array.isArray(selectedContact.id_numbers) && selectedContact.id_numbers.length > 0 ? (
+                                            selectedContact.id_numbers.map((idNum, index) => (
+                                                <div key={`${idNum.type}-${idNum.number}-${index}`} className="flex items-center justify-between py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{idNum.type}:</span>
+                                                        <span className="text-sm">{idNum.number}</span>
                                                     </div>
                                                     {idNum.notes && (
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 italic">
                                                             {idNum.notes}
-                                                        </p>
+                                                        </span>
                                                     )}
                                                 </div>
                                             ))

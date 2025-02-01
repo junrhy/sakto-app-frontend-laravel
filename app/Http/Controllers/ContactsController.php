@@ -34,7 +34,10 @@ class ContactsController extends Controller
 
     public function create()
     {
-        return Inertia::render('Contacts/Create');
+        $clientIdentifier = auth()->user()->identifier;
+        return Inertia::render('Contacts/Create', [
+            'client_identifier' => $clientIdentifier
+        ]);
     }
 
     public function store(Request $request)
@@ -57,6 +60,10 @@ class ContactsController extends Controller
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string',
             'id_picture' => 'nullable|image|max:2048', // max 2MB
+            'id_numbers' => 'nullable|array',
+            'id_numbers.*.type' => 'required|string|max:255',
+            'id_numbers.*.number' => 'required|string|max:255',
+            'id_numbers.*.notes' => 'nullable|string|max:500',
         ]);
 
         if ($request->hasFile('id_picture')) {
@@ -127,6 +134,10 @@ class ContactsController extends Controller
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string',
             'id_picture' => 'nullable|image|max:2048', // max 2MB
+            'id_numbers' => 'nullable|array',
+            'id_numbers.*.type' => 'required|string|max:255',
+            'id_numbers.*.number' => 'required|string|max:255',
+            'id_numbers.*.notes' => 'nullable|string|max:500',
         ]);
 
         if ($request->hasFile('id_picture')) {
@@ -187,6 +198,7 @@ class ContactsController extends Controller
             'id_numbers.*.type' => 'required|string|max:255',
             'id_numbers.*.number' => 'required|string|max:255',
             'id_numbers.*.notes' => 'nullable|string|max:500',
+            'client_identifier' => 'required|string|max:255',
         ]);
 
         if ($request->hasFile('id_picture')) {
