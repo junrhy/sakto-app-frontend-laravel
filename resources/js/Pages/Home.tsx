@@ -31,7 +31,7 @@ export default function Home({ auth }: Props) {
                     const response = await fetch(`/credits/${auth.user.identifier}/balance`);
                     if (response.ok) {
                         const data = await response.json();
-                        setCredits(data.balance);
+                        setCredits(data.available_credit);
                     }
                 }
             } catch (error) {
@@ -60,6 +60,10 @@ export default function Home({ auth }: Props) {
 
     const firstName = auth.user.name.split(' ')[0];
 
+    const formatNumber = (num: number) => {
+        return num.toLocaleString();
+    };
+
     return (
         <ThemeProvider>
             <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
@@ -74,7 +78,7 @@ export default function Home({ auth }: Props) {
                                 <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="hidden sm:flex items-center gap-2">
                                         <div className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
-                                            <span className="text-sm font-medium">{credits} Credits</span>
+                                            <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
                                         </div>
                                         <Button
                                             variant="secondary"
@@ -180,7 +184,7 @@ export default function Home({ auth }: Props) {
 
                         <div className="flex flex-col items-center mb-6 landscape:hidden">
                             <span className="text-lg text-white text-opacity-90 mt-1 text-center max-w-2xl">
-                                {credits} Credits
+                                {formatNumber(credits)} Credits
                             </span>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter } from '@/Components/ui/card';
@@ -31,12 +31,20 @@ interface PaymentMethod {
 
 interface PaymentHistory {
     id: number;
-    date: string;
-    credits: number;
-    amount: number;
+    credit_id: number;
+    client_identifier: string;
+    package_name: string;
+    package_credit: number;
+    package_amount: number;
     payment_method: string;
+    payment_method_details: string | null;
     transaction_id: string;
-    status: 'completed' | 'pending';
+    proof_of_payment: string | null;
+    status: 'approved' | 'pending' | 'rejected';
+    approved_date: string | null;
+    approved_by: string | null;
+    created_at: string;
+    updated_at: string;
 }
 
 interface Props {
@@ -50,12 +58,13 @@ interface Props {
     paymentHistory: PaymentHistory[];
 }
 
-export default function Buy({ auth, packages, paymentMethods, paymentHistory }: Props) {
+export default function Buy({ auth, packages, paymentMethods, paymentHistory: initialPaymentHistory }: Props) {
     const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<string>('');
     const [transactionId, setTransactionId] = useState('');
     const [proofFile, setProofFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>(initialPaymentHistory);
 
     const handlePackageSelect = (pkg: Package) => {
         setSelectedPackage(pkg);
@@ -100,15 +109,25 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory }: 
 
             const data = await response.json();
 
-            if (data.success) {
+            if (data.message) {
                 toast.success(data.message);
                 // Reset form
                 setPaymentMethod('');
                 setTransactionId('');
                 setProofFile(null);
                 setSelectedPackage(null);
+
+                // Update payment history with the new entry
+                if (data.credit_history) {
+                    const formattedHistory = {
+                        ...data.credit_history,
+                        package_amount: Number(data.credit_history.package_amount),
+                        package_credit: Number(data.credit_history.package_credit)
+                    };
+                    setPaymentHistory(prev => [formattedHistory, ...prev]);
+                }
             } else {
-                toast.error(data.message || 'Failed to process purchase');
+                toast.error('Failed to process purchase');
             }
         } catch (error) {
             toast.error('An error occurred while processing your purchase');
@@ -297,21 +316,21 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory }: 
                                             paymentHistory.map((payment) => (
                                                 <TableRow key={payment.id}>
                                                     <TableCell>
-                                                        {format(new Date(payment.date), 'MMM d, yyyy h:mm a')}
+                                                        {format(new Date(payment.created_at), 'MMM d, yyyy h:mm a')}
                                                     </TableCell>
-                                                    <TableCell>{payment.credits.toLocaleString()} Credits</TableCell>
-                                                    <TableCell>₱{payment.amount.toFixed(2)}</TableCell>
+                                                    <TableCell>{payment.package_credit.toLocaleString()} Credits</TableCell>
+                                                    <TableCell>₱{payment.package_amount.toFixed(2)}</TableCell>
                                                     <TableCell>{payment.payment_method}</TableCell>
                                                     <TableCell className="font-mono">{payment.transaction_id}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant={payment.status === 'completed' ? 'default' : 'secondary'}
-                                                            className={payment.status === 'completed' 
+                                                            variant={payment.status === 'approved' ? 'default' : 'secondary'}
+                                                            className={payment.status === 'approved' 
                                                                 ? 'bg-green-500 hover:bg-green-600' 
                                                                 : 'bg-yellow-500 hover:bg-yellow-600'
                                                             }
                                                         >
-                                                            {payment.status === 'completed' ? 'Completed' : 'Pending'}
+                                                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                                                         </Badge>
                                                     </TableCell>
                                                 </TableRow>

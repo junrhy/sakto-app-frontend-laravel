@@ -27,7 +27,7 @@ class CreditsController extends Controller
             ->get("{$this->apiUrl}/credits/{$clientIdentifier}/history");
 
         if ($historyResponse->successful()) {
-            $paymentHistory = $historyResponse->json()['data'] ?? [];
+            $paymentHistory = $historyResponse->json() ?? [];
         }
 
         return Inertia::render('Credits/Buy', [
@@ -58,20 +58,26 @@ class CreditsController extends Controller
             ],
             'paymentMethods' => [
                 [
-                    'id' => 'gcash',
-                    'name' => 'GCash',
+                    'id' => 'gcash_john_doe_09123456789',
+                    'name' => 'GCash (John Doe)',
                     'accountName' => 'John Doe',
                     'accountNumber' => '09123456789',
                 ],
                 [
-                    'id' => 'maya',
-                    'name' => 'Maya',
+                    'id' => 'gcash_jane_doe_09123456789',
+                    'name' => 'GCash (Jane Doe)',
+                    'accountName' => 'Jane Doe',
+                    'accountNumber' => '09123456789',
+                ],
+                [
+                    'id' => 'maya_john_doe_09123456789',
+                    'name' => 'Maya (John Doe)',
                     'accountName' => 'John Doe',
                     'accountNumber' => '09123456789',
                 ],
                 [
-                    'id' => 'bank',
-                    'name' => 'Bank Transfer',
+                    'id' => 'bank_john_doe_1234567890',
+                    'name' => 'Bank Transfer (John Doe)',
                     'accountName' => 'John Doe',
                     'accountNumber' => '1234567890',
                     'bankName' => 'BDO'
@@ -88,7 +94,7 @@ class CreditsController extends Controller
 
         if (!$response->successful()) {
             return response()->json([
-                'error' => 'Failed to fetch credit balance'
+                'error' => $response->json()['message']
             ], $response->status());
         }
 
@@ -102,6 +108,7 @@ class CreditsController extends Controller
             'package_credit' => 'required|numeric|min:0',
             'package_amount' => 'required|numeric|min:0',
             'payment_method' => 'required|string',
+            'payment_method_details' => 'nullable|string',
             'amount_sent' => 'required|numeric|min:0',
             'transaction_id' => 'required|string',
             'proof_of_payment' => 'nullable|image|max:2048',
