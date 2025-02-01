@@ -174,6 +174,21 @@ class ContactsController extends Controller
         return Inertia::render('Contacts/SelfRegistration');
     }
 
+    public function publicProfile($id)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/contacts/{$id}");
+        
+        if (!$response->successful()) {
+            return redirect()->route('contacts.self-registration')
+                ->with('error', 'Contact not found');
+        }
+
+        return Inertia::render('Contacts/PublicProfile', [
+            'contact' => $response->json()
+        ]);
+    }
+
     public function storeSelf(Request $request)
     {
         $validated = $request->validate([

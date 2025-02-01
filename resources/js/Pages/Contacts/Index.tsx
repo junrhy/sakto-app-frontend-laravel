@@ -85,29 +85,32 @@ export default function Index({ auth, contacts }: Props) {
         if (!search.trim()) return contacts;
 
         const searchLower = search.toLowerCase();
-        return contacts.filter(contact => 
-            contact.first_name.toLowerCase().includes(searchLower) ||
-            (contact.middle_name || '').toLowerCase().includes(searchLower) ||
-            contact.last_name.toLowerCase().includes(searchLower) ||
-            contact.gender.toLowerCase().includes(searchLower) ||
-            (contact.fathers_name || '').toLowerCase().includes(searchLower) ||
-            (contact.mothers_maiden_name || '').toLowerCase().includes(searchLower) ||
-            contact.email.toLowerCase().includes(searchLower) ||
-            (contact.call_number || '').toLowerCase().includes(searchLower) ||
-            (contact.sms_number || '').toLowerCase().includes(searchLower) ||
-            (contact.whatsapp || '').toLowerCase().includes(searchLower) ||
-            (contact.facebook || '').toLowerCase().includes(searchLower) ||
-            (contact.instagram || '').toLowerCase().includes(searchLower) ||
-            (contact.twitter || '').toLowerCase().includes(searchLower) ||
-            (contact.linkedin || '').toLowerCase().includes(searchLower) ||
-            (contact.address || '').toLowerCase().includes(searchLower) ||
-            (contact.notes || '').toLowerCase().includes(searchLower) ||
-            (contact.id_numbers || []).some(idNum => 
-                idNum.type.toLowerCase().includes(searchLower) ||
-                idNum.number.toLowerCase().includes(searchLower) ||
-                (idNum.notes || '').toLowerCase().includes(searchLower)
-            )
-        );
+        return contacts.filter(contact => {
+            // Parse id_numbers for each contact
+            const parsedIdNumbers = parseIdNumbers(contact.id_numbers);
+            
+            return contact.first_name.toLowerCase().includes(searchLower) ||
+                (contact.middle_name || '').toLowerCase().includes(searchLower) ||
+                contact.last_name.toLowerCase().includes(searchLower) ||
+                contact.gender.toLowerCase().includes(searchLower) ||
+                (contact.fathers_name || '').toLowerCase().includes(searchLower) ||
+                (contact.mothers_maiden_name || '').toLowerCase().includes(searchLower) ||
+                contact.email.toLowerCase().includes(searchLower) ||
+                (contact.call_number || '').toLowerCase().includes(searchLower) ||
+                (contact.sms_number || '').toLowerCase().includes(searchLower) ||
+                (contact.whatsapp || '').toLowerCase().includes(searchLower) ||
+                (contact.facebook || '').toLowerCase().includes(searchLower) ||
+                (contact.instagram || '').toLowerCase().includes(searchLower) ||
+                (contact.twitter || '').toLowerCase().includes(searchLower) ||
+                (contact.linkedin || '').toLowerCase().includes(searchLower) ||
+                (contact.address || '').toLowerCase().includes(searchLower) ||
+                (contact.notes || '').toLowerCase().includes(searchLower) ||
+                parsedIdNumbers.some((idNum: IdNumber) => 
+                    idNum.type.toLowerCase().includes(searchLower) ||
+                    idNum.number.toLowerCase().includes(searchLower) ||
+                    (idNum.notes || '').toLowerCase().includes(searchLower)
+                );
+        });
     }, [contacts, search]);
 
     const toggleSelectAll = () => {
@@ -397,6 +400,13 @@ export default function Index({ auth, contacts }: Props) {
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => window.open(route('contacts.public-profile', selectedContact.id), '_blank')}
+                                    >
+                                        Public Profile
+                                    </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"

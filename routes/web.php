@@ -72,6 +72,8 @@ Route::get('/contacts/self-registration', [ContactsController::class, 'selfRegis
     ->name('contacts.self-registration');
 Route::post('/contacts/store-self', [ContactsController::class, 'storeSelf'])
     ->name('contacts.store-self');
+Route::get('/contacts/{id}/public', [ContactsController::class, 'publicProfile'])
+    ->name('contacts.public-profile');
 
 Route::middleware('auth')->group(function () {
     // Help route
