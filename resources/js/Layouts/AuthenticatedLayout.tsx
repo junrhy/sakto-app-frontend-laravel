@@ -69,7 +69,7 @@ export default function Authenticated({
     const url = usePage().url;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
-    const hasDashboardAccess = !url.includes('help') && !url.includes('profile');
+    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits');
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
