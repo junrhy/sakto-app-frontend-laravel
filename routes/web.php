@@ -335,6 +335,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{clientIdentifier}/balance', [CreditsController::class, 'getBalance'])->name('credits.balance');
         Route::post('/request', [CreditsController::class, 'requestCredit'])->name('credits.request');
         Route::get('/{clientIdentifier}/history', [CreditsController::class, 'getCreditHistory'])->name('credits.history');
+        Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
     });
 });
 

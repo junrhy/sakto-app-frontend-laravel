@@ -142,4 +142,27 @@ class CreditsController extends Controller
 
         return response()->json($response->json());
     }
+
+    public function spendCredit(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'purpose' => 'required|string',
+            'reference_id' => 'required|string'
+        ]);
+        
+        $clientIdentifier = auth()->user()->identifier;
+        $validated['client_identifier'] = $clientIdentifier;
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/credits/spend", $validated);
+
+        if (!$response->successful()) {
+            return response()->json([
+                'error' => $response->json()['message'] ?? 'Failed to spend credits'
+            ], $response->status());
+        }
+
+        return response()->json($response->json());
+    }
 }

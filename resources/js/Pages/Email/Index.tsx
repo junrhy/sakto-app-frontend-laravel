@@ -65,6 +65,21 @@ export default function Index({ auth }: Props) {
         setIsSubmitting(true);
 
         try {
+            // First, try to spend 1 credit
+            const creditResponse = await axios.post('/credits/spend', {
+                amount: 1,
+                purpose: 'Email Sending',
+                reference_id: `email_${Date.now()}`
+            });
+
+            if (!creditResponse.data.success) {
+                toast.error('Insufficient credits to send email. Please purchase more credits.', {
+                    duration: 5000,
+                    position: 'top-right',
+                });
+                return;
+            }
+
             const formData = new FormData();
             data.to.forEach(email => formData.append('to[]', email));
             formData.append('subject', data.subject);
@@ -351,6 +366,9 @@ export default function Index({ auth }: Props) {
                                 </div>
 
                                 <div className="pt-6">
+                                    <p className="text-sm text-gray-600 mb-4 text-center">
+                                        Sending this email will cost 1 credit from your balance
+                                    </p>
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
