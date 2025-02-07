@@ -9,6 +9,7 @@ import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Badge } from '@/Components/ui/badge';
 import { Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 interface Message {
     id: string;
@@ -61,17 +62,34 @@ export default function Index({ auth, messages, stats }: Props) {
         }
     };
 
-    const submit = (e: React.FormEvent) => {
+    const submit = async (e: React.FormEvent) => {
         e.preventDefault();
-        post('/sms-twilio/send', {
-            onSuccess: () => {
-                toast.success('Message sent successfully!');
-                reset();
-            },
-            onError: (errors) => {
-                toast.error('Failed to send message');
+
+        try {
+            // First, try to spend 2 credits
+            const creditResponse = await axios.post('/credits/spend', {
+                amount: 2,
+                purpose: 'Twilio SMS Sending',
+                reference_id: `sms_twilio_${Date.now()}`
+            });
+
+            if (!creditResponse.data.success) {
+                toast.error('Insufficient credits to send SMS. Please purchase more credits.');
+                return;
             }
-        });
+
+            post('/sms-twilio/send', {
+                onSuccess: () => {
+                    toast.success('Message sent successfully!');
+                    reset();
+                },
+                onError: (errors) => {
+                    toast.error('Failed to send message');
+                }
+            });
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Failed to send message');
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -190,6 +208,9 @@ export default function Index({ auth, messages, stats }: Props) {
                                     {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Send Message
                                 </Button>
+                                <p className="text-sm text-gray-500 mt-4 text-center">
+                                    Sending this SMS will cost 2 credits from your balance
+                                </p>
                             </form>
                         </CardContent>
                     </Card>
