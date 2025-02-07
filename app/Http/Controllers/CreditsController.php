@@ -165,4 +165,20 @@ class CreditsController extends Controller
 
         return response()->json($response->json());
     }
+
+    public function getSpentCreditHistory($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/credits/{$clientIdentifier}/spent-history");
+
+        if (!$response->successful()) {
+            return response()->json([
+                'error' => 'Failed to fetch spent credit history'
+            ], $response->status());
+        }
+
+        return Inertia::render('Credits/History', [
+            'history' => $response->json()
+        ]);
+    }
 }

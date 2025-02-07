@@ -77,9 +77,14 @@ export default function Home({ auth }: Props) {
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="hidden sm:flex items-center gap-2">
-                                        <div className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
+                                            className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-white/20"
+                                        >
                                             <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
-                                        </div>
+                                        </Button>
                                         <Button
                                             variant="secondary"
                                             size="sm"
@@ -183,9 +188,16 @@ export default function Home({ auth }: Props) {
                         </div>
 
                         <div className="flex flex-col items-center mb-6 landscape:hidden">
-                            <span className="text-lg text-white text-opacity-90 mt-1 text-center max-w-2xl">
-                                {formatNumber(credits)} Credits
-                            </span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.location.href = route('credits.history', { clientIdentifier: auth.user.identifier })}
+                                className="text-white hover:bg-white/10"
+                            >
+                                <span className="text-lg text-white text-opacity-90 mt-1 text-center max-w-2xl">
+                                    {formatNumber(credits)} Credits
+                                </span>
+                            </Button>
                         </div>
                     </div>
                 </div>
