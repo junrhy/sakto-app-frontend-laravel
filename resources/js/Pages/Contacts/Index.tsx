@@ -216,26 +216,26 @@ export default function Index({ auth, contacts }: Props) {
                     </h2>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
                         <div className="relative">
-                            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+                            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
                             <Input
                                 type="search"
                                 placeholder="Search contacts..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 w-full sm:w-[300px]"
+                                className="pl-9 w-full sm:w-[300px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
                             />
                         </div>
                         {selectedContacts.length > 0 && (
                             <div className="flex items-center gap-2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm" className="whitespace-nowrap">
+                                        <Button variant="outline" size="sm" className="whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
                                             <FileDown className="h-4 w-4 mr-2" />
                                             Export ({selectedContacts.length})
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={exportToCSV}>
+                                    <DropdownMenuContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                                        <DropdownMenuItem onClick={exportToCSV} className="hover:bg-gray-100 dark:hover:bg-gray-800">
                                             Export to CSV
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -247,7 +247,7 @@ export default function Index({ auth, contacts }: Props) {
                             </div>
                         )}
                         <Link href={route('contacts.create')}>
-                            <Button className="w-full sm:w-auto whitespace-nowrap">
+                            <Button className="w-full sm:w-auto whitespace-nowrap bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Contact
                             </Button>
@@ -260,76 +260,78 @@ export default function Index({ auth, contacts }: Props) {
 
             <div className="py-12">
                 <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white dark:bg-gray-800/40 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
                         <div className="p-4 sm:p-6 overflow-x-auto">
                             <div className="min-w-full">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[50px]">
+                                        <TableRow className="border-gray-200 dark:border-gray-700">
+                                            <TableHead className="w-[50px] bg-gray-50 dark:bg-gray-800/50">
                                                 <Checkbox
                                                     checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
                                                     onCheckedChange={toggleSelectAll}
+                                                    className="border-gray-300 dark:border-gray-600"
                                                 />
                                             </TableHead>
-                                            <TableHead className="w-[80px]">ID Picture</TableHead>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead className="hidden md:table-cell">Email</TableHead>
-                                            <TableHead className="hidden lg:table-cell">Contact Number</TableHead>
-                                            <TableHead className="w-[180px]">Actions</TableHead>
+                                            <TableHead className="w-[80px] bg-gray-50 dark:bg-gray-800/50">ID Picture</TableHead>
+                                            <TableHead className="bg-gray-50 dark:bg-gray-800/50">Name</TableHead>
+                                            <TableHead className="hidden md:table-cell bg-gray-50 dark:bg-gray-800/50">Email</TableHead>
+                                            <TableHead className="hidden lg:table-cell bg-gray-50 dark:bg-gray-800/50">Contact Number</TableHead>
+                                            <TableHead className="w-[180px] bg-gray-50 dark:bg-gray-800/50">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredContacts.map((contact: Contact) => (
-                                            <TableRow key={contact.id}>
-                                                <TableCell>
+                                            <TableRow key={contact.id} className="border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                <TableCell className="bg-white dark:bg-gray-800/40">
                                                     <Checkbox
                                                         checked={selectedContacts.includes(contact.id)}
                                                         onCheckedChange={() => toggleSelect(contact.id)}
+                                                        className="border-gray-300 dark:border-gray-600"
                                                     />
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="bg-white dark:bg-gray-800/40">
                                                     {contact.id_picture ? (
                                                         <img 
                                                             src={contact.id_picture} 
                                                             alt={`${contact.first_name}'s ID`}
-                                                            className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-full"
+                                                            className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
                                                         />
                                                     ) : (
-                                                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700">
                                                             <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                                                                 No ID
                                                             </span>
                                                         </div>
                                                     )}
                                                 </TableCell>
-                                                <TableCell>
-                                                    <div className="font-medium">
+                                                <TableCell className="bg-white dark:bg-gray-800/40">
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
                                                         {contact.first_name} {contact.middle_name} {contact.last_name}
                                                     </div>
                                                     <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
                                                         {contact.gender}
                                                     </div>
-                                                    <div className="md:hidden text-sm text-gray-500">
+                                                    <div className="md:hidden text-sm text-gray-500 dark:text-gray-400">
                                                         {contact.email}
                                                     </div>
-                                                    <div className="lg:hidden text-sm text-gray-500">
+                                                    <div className="lg:hidden text-sm text-gray-500 dark:text-gray-400">
                                                         {contact.call_number || contact.sms_number || contact.whatsapp || '-'}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="hidden md:table-cell">
+                                                <TableCell className="hidden md:table-cell bg-white dark:bg-gray-800/40 text-gray-700 dark:text-gray-300">
                                                     {contact.email}
                                                 </TableCell>
-                                                <TableCell className="hidden lg:table-cell">
+                                                <TableCell className="hidden lg:table-cell bg-white dark:bg-gray-800/40 text-gray-700 dark:text-gray-300">
                                                     {contact.call_number || contact.sms_number || contact.whatsapp || '-'}
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="bg-white dark:bg-gray-800/40">
                                                     <div className="flex flex-col sm:flex-row gap-2">
                                                         <Button 
                                                             variant="outline" 
                                                             size="sm"
                                                             onClick={() => openContactModal(contact)}
-                                                            className="w-full sm:w-auto"
+                                                            className="w-full sm:w-auto bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
                                                         >
                                                             <Eye className="h-4 w-4 sm:mr-2" />
                                                             <span className="hidden sm:inline">View</span>
@@ -338,7 +340,7 @@ export default function Index({ auth, contacts }: Props) {
                                                             variant="outline" 
                                                             size="sm"
                                                             onClick={(e) => handleEdit(contact.id, e)}
-                                                            className="w-full sm:w-auto"
+                                                            className="w-full sm:w-auto bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
                                                         >
                                                             Edit
                                                         </Button>
@@ -371,9 +373,9 @@ export default function Index({ auth, contacts }: Props) {
                     setIsModalOpen(open);
                 }}
             >
-                <DialogContent className="max-w-3xl">
+                <DialogContent className="max-w-3xl bg-white dark:bg-gray-800/40 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
                     <DialogHeader>
-                        <DialogTitle>Contact Details</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">Contact Details</DialogTitle>
                     </DialogHeader>
                     {selectedContact && (
                         <div className="grid grid-cols-2 gap-6">
@@ -383,17 +385,17 @@ export default function Index({ auth, contacts }: Props) {
                                         <img 
                                             src={selectedContact.id_picture} 
                                             alt={`${selectedContact.first_name}'s ID`}
-                                            className="w-24 h-24 object-cover rounded-full"
+                                            className="w-24 h-24 object-cover rounded-full ring-2 ring-gray-200 dark:ring-gray-700"
                                         />
                                     ) : (
-                                        <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                        <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-700">
                                             <span className="text-gray-500 dark:text-gray-400">
                                                 No ID
                                             </span>
                                         </div>
                                     )}
                                     <div>
-                                        <h3 className="text-2xl font-semibold">
+                                        <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                                             {selectedContact.first_name} {selectedContact.middle_name} {selectedContact.last_name}
                                         </h3>
                                         <p className="text-gray-500 dark:text-gray-400 capitalize">{selectedContact.gender}</p>
@@ -404,6 +406,7 @@ export default function Index({ auth, contacts }: Props) {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => window.open(route('contacts.public-profile', selectedContact.id), '_blank')}
+                                        className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
                                     >
                                         Public Profile
                                     </Button>
@@ -411,6 +414,7 @@ export default function Index({ auth, contacts }: Props) {
                                         variant="outline"
                                         size="sm"
                                         onClick={(e) => selectedContact && handleEdit(selectedContact.id, e)}
+                                        className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
                                     >
                                         Edit
                                     </Button>
@@ -424,16 +428,16 @@ export default function Index({ auth, contacts }: Props) {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400">ID Numbers</h4>
-                                    <div className="mt-2 divide-y divide-gray-100 dark:divide-gray-700">
+                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">ID Numbers</h4>
+                                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                         {Array.isArray(selectedContact.id_numbers) && selectedContact.id_numbers.length > 0 ? (
                                             selectedContact.id_numbers.map((idNum, index) => (
-                                                <div key={`${idNum.type}-${idNum.number}-${index}`} className="flex items-center justify-between py-2">
+                                                <div key={`${idNum.type}-${idNum.number}-${index}`} className="flex items-center justify-between py-3">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{idNum.type}:</span>
-                                                        <span className="text-sm">{idNum.number}</span>
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{idNum.type}:</span>
+                                                        <span className="text-sm text-gray-600 dark:text-gray-400">{idNum.number}</span>
                                                     </div>
                                                     {idNum.notes && (
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 italic">
@@ -443,40 +447,40 @@ export default function Index({ auth, contacts }: Props) {
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="text-gray-500 dark:text-gray-400">No ID numbers added</p>
+                                            <p className="text-gray-500 dark:text-gray-400 py-3">No ID numbers added</p>
                                         )}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400">Personal Information</h4>
-                                    <div className="mt-2 space-y-2">
-                                        <p><span className="font-medium">Father's Name:</span> {selectedContact.fathers_name || '-'}</p>
-                                        <p><span className="font-medium">Mother's Maiden Name:</span> {selectedContact.mothers_maiden_name || '-'}</p>
-                                        <p><span className="font-medium">Address:</span> {selectedContact.address || '-'}</p>
-                                        <p><span className="font-medium">Notes:</span> {selectedContact.notes || '-'}</p>
+                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Personal Information</h4>
+                                    <div className="space-y-3">
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Father's Name:</span> {selectedContact.fathers_name || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Mother's Maiden Name:</span> {selectedContact.mothers_maiden_name || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Address:</span> {selectedContact.address || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Notes:</span> {selectedContact.notes || '-'}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400">Contact Information</h4>
-                                    <div className="mt-2 space-y-2">
-                                        <p><span className="font-medium">Email:</span> {selectedContact.email}</p>
-                                        <p><span className="font-medium">Call Number:</span> {selectedContact.call_number || '-'}</p>
-                                        <p><span className="font-medium">SMS Number:</span> {selectedContact.sms_number || '-'}</p>
-                                        <p><span className="font-medium">WhatsApp:</span> {selectedContact.whatsapp || '-'}</p>
+                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Contact Information</h4>
+                                    <div className="space-y-3">
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Email:</span> {selectedContact.email}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Call Number:</span> {selectedContact.call_number || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">SMS Number:</span> {selectedContact.sms_number || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">WhatsApp:</span> {selectedContact.whatsapp || '-'}</p>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400">Social Media</h4>
-                                    <div className="mt-2 space-y-2">
-                                        <p><span className="font-medium">Facebook:</span> {selectedContact.facebook || '-'}</p>
-                                        <p><span className="font-medium">Instagram:</span> {selectedContact.instagram || '-'}</p>
-                                        <p><span className="font-medium">Twitter:</span> {selectedContact.twitter || '-'}</p>
-                                        <p><span className="font-medium">LinkedIn:</span> {selectedContact.linkedin || '-'}</p>
+                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Social Media</h4>
+                                    <div className="space-y-3">
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Facebook:</span> {selectedContact.facebook || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Instagram:</span> {selectedContact.instagram || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Twitter:</span> {selectedContact.twitter || '-'}</p>
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">LinkedIn:</span> {selectedContact.linkedin || '-'}</p>
                                     </div>
                                 </div>
                             </div>
