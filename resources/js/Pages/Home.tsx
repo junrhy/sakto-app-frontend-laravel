@@ -60,8 +60,8 @@ export default function Home({ auth }: Props) {
 
     const firstName = auth.user.name.split(' ')[0];
 
-    const formatNumber = (num: number) => {
-        return num.toLocaleString();
+    const formatNumber = (num: number | undefined | null) => {
+        return num?.toLocaleString() ?? '0';
     };
 
     return (

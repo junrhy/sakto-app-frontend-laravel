@@ -60,26 +60,20 @@ class CreditsController extends Controller
                 [
                     'id' => 1,
                     'name' => 'GCash',
-                    'accountName' => 'John Doe',
-                    'accountNumber' => '09123456789',
+                    'accountName' => 'Jun Rhy Crodua',
+                    'accountNumber' => '09260049848',
                 ],
                 [
                     'id' => 2,
-                    'name' => 'GCash',
-                    'accountName' => 'Jane Doe',
-                    'accountNumber' => '09123456789',
-                ],
-                [
-                    'id' => 3,
                     'name' => 'Maya',
-                    'accountName' => 'John Doe',
-                    'accountNumber' => '09123456789',
+                    'accountName' => 'Jun Rhy Crodua',
+                    'accountNumber' => '09260049848',
                 ],
                 [
                     'id' => 4,
                     'name' => 'Bank Transfer',
-                    'accountName' => 'John Doe',
-                    'accountNumber' => '1234567890',
+                    'accountName' => 'Jun Rhy Crodua',
+                    'accountNumber' => '006996000660',
                     'bankName' => 'BDO'
                 ],
             ],
