@@ -63,6 +63,7 @@ RUN { \
 RUN { \
     echo '[global]'; \
     echo 'daemonize = no'; \
+    echo 'error_log = /proc/self/fd/2'; \
     echo '[www]'; \
     echo 'listen = 9000'; \
     echo 'pm = dynamic'; \
@@ -73,7 +74,6 @@ RUN { \
     echo 'access.log = /proc/self/fd/2'; \
     echo 'catch_workers_output = yes'; \
     echo 'decorate_workers_output = no'; \
-    echo 'error_log = /proc/self/fd/2'; \
     } > /usr/local/etc/php-fpm.d/www.conf
 
 # Add PHP error logging configuration
