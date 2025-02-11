@@ -40,6 +40,7 @@ RUN apk add --no-cache \
     zip \
     unzip \
     postgresql-dev \
+    dos2unix \
     && docker-php-ext-install \
     pdo_mysql \
     pdo_pgsql \
@@ -93,26 +94,9 @@ RUN mkdir -p /var/log/supervisor \
     && chmod -R 775 /var/www/bootstrap/cache
 
 # Create startup script
-RUN echo '#!/bin/sh\n\
-\n\
-# Wait for container to fully initialize\n\
-sleep 5\n\
-\n\
-# Generate app key if not set\n\
-php artisan key:generate --force\n\
-\n\
-# Cache configurations\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
-php artisan view:cache\n\
-\n\
-# Run migrations\n\
-php artisan migrate --force\n\
-\n\
-# Start supervisor (which manages nginx and php-fpm)\n\
-/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf\n\
-' > /usr/local/bin/startup.sh \
-&& chmod +x /usr/local/bin/startup.sh
+COPY docker/nginx/docker-entrypoint.sh /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh \
+    && dos2unix /usr/local/bin/startup.sh 2>/dev/null || true
 
 # Expose port 80
 EXPOSE 80
