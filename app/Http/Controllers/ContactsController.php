@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ContactsController extends Controller
 {
@@ -64,7 +65,7 @@ class ContactsController extends Controller
 
         if ($request->hasFile('id_picture')) {
             $path = $request->file('id_picture')->store('id_pictures', 'public');
-            $validated['id_picture'] = asset('storage/' . $path);
+            $validated['id_picture'] = Storage::disk('public')->url($path);
         }
 
         $clientIdentifier = auth()->user()->identifier;
@@ -138,7 +139,7 @@ class ContactsController extends Controller
 
         if ($request->hasFile('id_picture')) {
             $path = $request->file('id_picture')->store('id_pictures', 'public');
-            $validated['id_picture'] = asset('storage/' . $path);
+            $validated['id_picture'] = Storage::disk('public')->url($path);
         }
 
         $response = Http::withToken($this->apiToken)
@@ -154,6 +155,22 @@ class ContactsController extends Controller
 
     public function destroy($id)
     {
+        // Get contact data first to get the id_picture path
+        $getResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/contacts/{$id}");
+        
+        if ($getResponse->successful()) {
+            $contact = $getResponse->json();
+            
+            // Delete the id_picture file if it exists
+            if (!empty($contact['id_picture'])) {
+                $path = str_replace(Storage::disk('public')->url(''), '', $contact['id_picture']);
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+        }
+
         $response = Http::withToken($this->apiToken)
             ->delete("{$this->apiUrl}/contacts/{$id}");
 
@@ -214,7 +231,7 @@ class ContactsController extends Controller
 
         if ($request->hasFile('id_picture')) {
             $path = $request->file('id_picture')->store('id_pictures', 'public');
-            $validated['id_picture'] = asset('storage/' . $path);
+            $validated['id_picture'] = Storage::disk('public')->url($path);
         }
 
         $response = Http::withToken($this->apiToken)

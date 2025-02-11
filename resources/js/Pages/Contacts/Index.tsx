@@ -247,7 +247,7 @@ export default function Index({ auth, contacts }: Props) {
                             </div>
                         )}
                         <Link href={route('contacts.create')}>
-                            <Button className="w-full sm:w-auto whitespace-nowrap bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                            <Button className="w-full sm:w-auto whitespace-nowrap bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600">
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Contact
                             </Button>
