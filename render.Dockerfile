@@ -70,7 +70,23 @@ RUN { \
     echo 'pm.start_servers = 2'; \
     echo 'pm.min_spare_servers = 1'; \
     echo 'pm.max_spare_servers = 3'; \
+    echo 'access.log = /proc/self/fd/2'; \
+    echo 'catch_workers_output = yes'; \
+    echo 'decorate_workers_output = no'; \
+    echo 'error_log = /proc/self/fd/2'; \
     } > /usr/local/etc/php-fpm.d/www.conf
+
+# Add PHP error logging configuration
+RUN { \
+    echo 'error_reporting = E_ALL'; \
+    echo 'display_errors = Off'; \
+    echo 'display_startup_errors = Off'; \
+    echo 'log_errors = On'; \
+    echo 'error_log = /proc/self/fd/2'; \
+    echo 'log_errors_max_len = 1024'; \
+    echo 'ignore_repeated_errors = On'; \
+    echo 'ignore_repeated_source = Off'; \
+    } > /usr/local/etc/php/conf.d/error-logging.ini
 
 # Copy application files
 COPY --from=node /app /var/www
