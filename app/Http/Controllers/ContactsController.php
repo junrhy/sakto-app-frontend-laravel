@@ -113,7 +113,7 @@ class ContactsController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+        $rules = [
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -130,19 +130,54 @@ class ContactsController extends Controller
             'linkedin' => 'nullable|string|max:255|url',
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string',
-            'id_picture' => 'nullable|image|max:2048', // max 2MB
-        ]);
+            'id_numbers' => 'nullable|array',
+            'id_numbers.*.type' => 'required_with:id_numbers|string|max:255',
+            'id_numbers.*.number' => 'required_with:id_numbers|string|max:255',
+            'id_numbers.*.notes' => 'nullable|string|max:500',
+        ];
+
+        // Only validate id_picture as an image if a new file is being uploaded
+        if ($request->hasFile('id_picture')) {
+            $rules['id_picture'] = 'required|image|max:2048'; // max 2MB
+        } else {
+            $rules['id_picture'] = 'nullable|string'; // Allow existing URL to pass through
+        }
+
+        $validated = $request->validate($rules);
 
         if ($request->hasFile('id_picture')) {
+            // Get the old contact data to delete previous image if it exists
+            $getResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contacts/{$id}");
+            
+            if ($getResponse->successful()) {
+                $contact = $getResponse->json();
+                if (!empty($contact['id_picture'])) {
+                    $path = str_replace(Storage::disk('public')->url(''), '', $contact['id_picture']);
+                    if (Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+
             $path = $request->file('id_picture')->store('id_pictures', 'public');
             $validated['id_picture'] = Storage::disk('public')->url($path);
+        }
+
+        // Convert id_numbers to JSON string if it's an array
+        if (isset($validated['id_numbers']) && is_array($validated['id_numbers'])) {
+            $validated['id_numbers'] = json_encode($validated['id_numbers']);
         }
 
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/contacts/{$id}", $validated);
 
         if (!$response->successful()) {
-            return back()->withErrors(['error' => 'Failed to update contact']);
+            Log::error('Failed to update contact', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return back()->withErrors(['error' => 'Failed to update contact: ' . ($response->json()['message'] ?? 'Unknown error')]);
         }
 
         return redirect()->route('contacts.index')

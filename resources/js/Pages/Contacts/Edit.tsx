@@ -47,6 +47,28 @@ interface Props {
     contact: Contact;
 }
 
+interface FormData {
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    gender: 'male' | 'female' | 'other';
+    fathers_name: string;
+    mothers_maiden_name: string;
+    email: string;
+    call_number: string;
+    sms_number: string;
+    whatsapp: string;
+    facebook: string;
+    instagram: string;
+    twitter: string;
+    linkedin: string;
+    address: string;
+    notes: string;
+    id_picture: File | string | null;
+    id_numbers: IdNumber[];
+    _method: string;
+}
+
 export default function Edit({ auth, contact }: Props) {
     // Parse id_numbers if it's a string
     const parseIdNumbers = (idNumbers: any) => {
@@ -60,14 +82,14 @@ export default function Edit({ auth, contact }: Props) {
         }
     };
 
-    const { data, setData, put, processing, errors } = useForm({
-        first_name: contact.first_name,
+    const { data, setData, post, processing, errors } = useForm<FormData>({
+        first_name: contact.first_name || '',
         middle_name: contact.middle_name || '',
-        last_name: contact.last_name,
-        gender: contact.gender,
+        last_name: contact.last_name || '',
+        gender: contact.gender || 'male',
         fathers_name: contact.fathers_name || '',
         mothers_maiden_name: contact.mothers_maiden_name || '',
-        email: contact.email,
+        email: contact.email || '',
         call_number: contact.call_number || '',
         sms_number: contact.sms_number || '',
         whatsapp: contact.whatsapp || '',
@@ -77,8 +99,9 @@ export default function Edit({ auth, contact }: Props) {
         linkedin: contact.linkedin || '',
         address: contact.address || '',
         notes: contact.notes || '',
-        id_picture: null as File | null,
+        id_picture: contact.id_picture || null,
         id_numbers: parseIdNumbers(contact.id_numbers),
+        _method: 'PUT'
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(contact.id_picture || null);
@@ -128,9 +151,10 @@ export default function Edit({ auth, contact }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        put(route('contacts.update', contact.id), {
-            onError: (errors) => {
-                // Check for 413 error in the response
+        post(route('contacts.update', contact.id), {
+            ...data,
+            forceFormData: true,
+            onError: (errors: Record<string, string>) => {
                 if (errors.id_picture?.includes('413')) {
                     setFileError('The image file is too large. Please choose a smaller file (max 2MB).');
                 }
