@@ -13,7 +13,8 @@ import {
     FaUsers,
     FaComments,
     FaEnvelope,
-    FaAddressBook
+    FaAddressBook,
+    FaSitemap
 } from 'react-icons/fa';
 
 export interface App {
@@ -197,6 +198,19 @@ export const apps: App[] = [
         price: 0,
         rating: 4.4,
         categories: ['Business', 'Communication', 'CRM'],
+        comingSoon: false,
+        pricingType: 'free'
+    },
+    {
+        icon: <FaSitemap />,
+        title: 'Family Tree',
+        route: '/dashboard?app=family-tree',
+        bgColor: 'text-rose-500',
+        visible: true,
+        description: 'Create and manage family trees with an interactive viewer, relationship mapping, and genealogy tracking features.',
+        price: 0,
+        rating: 4.0,
+        categories: ['Family', 'Genealogy', 'Personal'],
         comingSoon: false,
         pricingType: 'free'
     }

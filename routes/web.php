@@ -23,6 +23,7 @@ use App\Http\Controllers\SmsSemaphoreController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\CreditsController;
+use App\Http\Controllers\FamilyTreeController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -338,6 +339,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{clientIdentifier}/spent-history', [CreditsController::class, 'getSpentCreditHistory'])->name('credits.spent-history');
         Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
     });
+
+    // Family Tree routes
+    Route::get('/family-tree', [FamilyTreeController::class, 'index'])->name('family-tree');
 });
 
 require __DIR__.'/auth.php';

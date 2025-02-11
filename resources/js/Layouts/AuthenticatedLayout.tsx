@@ -5,7 +5,6 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
-import { ModeToggle } from "@/Components/ModeToggle";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
@@ -72,6 +71,9 @@ const getHeaderColorClass = (url: string): string => {
     if (url.includes('/credits') || appParam === 'credits') {
         return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
+    if (url.includes('/family-tree') || appParam === 'family-tree') {
+        return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
+    }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
 };
@@ -102,7 +104,7 @@ export default function Authenticated({
     const hasSmsAccess = url.includes('sms');
     const hasEmailAccess = url.includes('email');
     const hasContactsAccess = url.includes('contacts');
-    const hasCreditsAccess = url.includes('credits');
+    const hasFamilyTreeAccess = url.includes('family-tree');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -309,6 +311,17 @@ export default function Authenticated({
                                     <div className="font-medium text-base text-white/90">Directory</div>
                                     <ResponsiveNavLink href={`/contacts?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Contacts
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasFamilyTreeAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Family Tree</div>
+                                    <ResponsiveNavLink href={`/family-tree?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Family Tree
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -645,6 +658,15 @@ export default function Authenticated({
                                             className="transition-all duration-200 text-white/90 hover:text-white"
                                         >
                                             Contacts
+                                        </NavLink>
+                                    )}
+                                    {hasFamilyTreeAccess && (
+                                        <NavLink
+                                            href={`/family-tree?app=${appParam}`}
+                                            active={route().current('family-tree')}
+                                            className="transition-all duration-200 text-white/90 hover:text-white"
+                                        >   
+                                            Family Tree
                                         </NavLink>
                                     )}
                                 </div>
