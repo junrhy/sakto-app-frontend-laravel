@@ -65,6 +65,8 @@ RUN { \
     echo 'daemonize = no'; \
     echo 'error_log = /proc/self/fd/2'; \
     echo '[www]'; \
+    echo 'user = www-data'; \
+    echo 'group = www-data'; \
     echo 'listen = 9000'; \
     echo 'pm = dynamic'; \
     echo 'pm.max_children = 10'; \
