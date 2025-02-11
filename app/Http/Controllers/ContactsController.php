@@ -131,10 +131,6 @@ class ContactsController extends Controller
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string',
             'id_picture' => 'nullable|image|max:2048', // max 2MB
-            'id_numbers' => 'nullable|array',
-            'id_numbers.*.type' => 'required|string|max:255',
-            'id_numbers.*.number' => 'required|string|max:255',
-            'id_numbers.*.notes' => 'nullable|string|max:500',
         ]);
 
         if ($request->hasFile('id_picture')) {
