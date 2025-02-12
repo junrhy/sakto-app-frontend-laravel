@@ -122,6 +122,29 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     Import
                                 </button>
                             </div>
+
+                            {/* Statistics */}
+                            <div className="flex flex-wrap items-center gap-3 px-3 py-2 rounded-lg bg-opacity-50 w-full sm:w-auto order-first sm:order-none">
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    <span className="font-semibold">{familyMembers.length}</span> Members
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    <span className="font-semibold">
+                                        {Math.max(...familyMembers.map(member => member.last_name.match(/Generation(\d+)/)?.[1] || '1').map(Number))}
+                                    </span> Generations
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
+                                    <span className="font-semibold">
+                                        {familyMembers.filter(member => member.gender === 'male').length}
+                                    </span> Male
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-pink-300' : 'text-pink-600'}`}>
+                                    <span className="font-semibold">
+                                        {familyMembers.filter(member => member.gender === 'female').length}
+                                    </span> Female
+                                </div>
+                            </div>
+
                             <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
                                 <div className="relative flex-1 sm:flex-none">
                                     <FaSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
