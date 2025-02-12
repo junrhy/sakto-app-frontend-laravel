@@ -25,7 +25,7 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
             setDimensions({ width, height });
-            setTranslate({ x: width / 2, y: height / 8 });
+            setTranslate({ x: width / 2, y: 50 });
         }
     }, [containerRef]);
 
@@ -94,7 +94,7 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     }: any) => (
         <g>
             <circle 
-                r={15} 
+                r={12} 
                 fill={nodeDatum.attributes?.gender === 'male' 
                     ? (isDarkMode ? '#1d4ed8' : '#93c5fd')
                     : (isDarkMode ? '#db2777' : '#f9a8d4')
@@ -104,26 +104,32 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             <foreignObject {...foreignObjectProps}>
                 <div style={{ 
                     backgroundColor: isDarkMode ? '#1f2937' : 'white',
-                    padding: '5px',
-                    borderRadius: '8px',
+                    padding: '4px',
+                    borderRadius: '6px',
                     border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
-                    fontSize: '12px',
-                    width: '120px',
+                    fontSize: '11px',
+                    width: '140px',
                     textAlign: 'center',
                     boxShadow: isDarkMode 
-                        ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
-                        : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        ? '0 2px 4px -1px rgba(0, 0, 0, 0.3)' 
+                        : '0 2px 4px -1px rgba(0, 0, 0, 0.1)',
                     transition: 'all 0.2s ease'
                 }}>
                     <div style={{ 
                         fontWeight: 'bold',
-                        color: isDarkMode ? '#e5e7eb' : '#111827'
+                        color: isDarkMode ? '#e5e7eb' : '#111827',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                     }}>
                         {nodeDatum.name}
                     </div>
                     <div style={{ 
                         color: isDarkMode ? '#9ca3af' : '#6b7280',
-                        fontSize: '10px'
+                        fontSize: '9px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                     }}>
                         {nodeDatum.attributes?.relationship || `Born: ${nodeDatum.attributes?.birth}`}
                     </div>
@@ -143,8 +149,8 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     const handleReset = () => {
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
-            setZoom(1);
-            setTranslate({ x: width / 2, y: height / 8 });
+            setZoom(0.8);
+            setTranslate({ x: width / 2, y: 50 });
         }
     };
 
@@ -154,7 +160,7 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
                 setDimensions({ width, height });
-                setTranslate({ x: width / 2, y: height / 8 });
+                setTranslate({ x: width / 2, y: 50 });
             }
         };
 
@@ -163,9 +169,9 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     }, []);
 
     return (
-        <div className="relative w-full h-full" ref={containerRef}>
+        <div className="relative w-full h-full flex flex-col" ref={containerRef}>
             {/* Controls */}
-            <div className={`absolute top-4 right-4 z-10 flex gap-2 p-2 rounded-lg ${
+            <div className={`sticky top-4 right-4 z-10 flex gap-2 p-2 rounded-lg ml-auto mr-4 ${
                 isDarkMode ? 'bg-gray-800' : 'bg-white'
             } shadow-lg`}>
                 <button
@@ -203,37 +209,39 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                 </button>
             </div>
 
-            <div className="w-full h-full">
-                {familyMembers.length > 0 ? (
-                    <Tree
-                        data={buildTreeData()[0]}
-                        orientation="vertical"
-                        pathFunc="step"
-                        translate={translate}
-                        nodeSize={{ x: 200, y: 100 }}
-                        zoom={zoom}
-                        onNodeClick={handleNodeClick}
-                        separation={{ siblings: 1.5, nonSiblings: 2 }}
-                        renderCustomNodeElement={(rd3tProps) =>
-                            renderForeignObjectNode({
-                                ...rd3tProps,
-                                foreignObjectProps: {
-                                    width: 160,
-                                    height: 60,
-                                    x: -80,
-                                    y: -30,
-                                },
-                            })
-                        }
-                        pathClassFunc={() => isDarkMode ? 'stroke-gray-600' : 'stroke-gray-300'}
-                    />
-                ) : (
-                    <div className={`h-full flex items-center justify-center ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                        No family members to display
-                    </div>
-                )}
+            <div className="flex-1 overflow-y-auto min-h-0">
+                <div className="h-[2000px] relative">
+                    {familyMembers.length > 0 ? (
+                        <Tree
+                            data={buildTreeData()[0]}
+                            orientation="vertical"
+                            pathFunc="step"
+                            translate={translate}
+                            nodeSize={{ x: 160, y: 120 }}
+                            zoom={zoom}
+                            onNodeClick={handleNodeClick}
+                            separation={{ siblings: 1, nonSiblings: 1.2 }}
+                            renderCustomNodeElement={(rd3tProps) =>
+                                renderForeignObjectNode({
+                                    ...rd3tProps,
+                                    foreignObjectProps: {
+                                        width: 140,
+                                        height: 50,
+                                        x: -70,
+                                        y: -25,
+                                    },
+                                })
+                            }
+                            pathClassFunc={() => isDarkMode ? 'stroke-gray-600' : 'stroke-gray-300'}
+                        />
+                    ) : (
+                        <div className={`h-full flex items-center justify-center ${
+                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                            No family members to display
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
