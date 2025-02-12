@@ -123,28 +123,6 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 </button>
                             </div>
 
-                            {/* Statistics */}
-                            <div className="flex flex-wrap items-center gap-3 px-3 py-2 rounded-lg bg-opacity-50 w-full sm:w-auto order-first sm:order-none">
-                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    <span className="font-semibold">{familyMembers.length}</span> Members
-                                </div>
-                                <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    <span className="font-semibold">
-                                        {Math.max(...familyMembers.map(member => member.last_name.match(/Generation(\d+)/)?.[1] || '1').map(Number))}
-                                    </span> Generations
-                                </div>
-                                <div className={`text-sm ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
-                                    <span className="font-semibold">
-                                        {familyMembers.filter(member => member.gender === 'male').length}
-                                    </span> Male
-                                </div>
-                                <div className={`text-sm ${isDarkMode ? 'text-pink-300' : 'text-pink-600'}`}>
-                                    <span className="font-semibold">
-                                        {familyMembers.filter(member => member.gender === 'female').length}
-                                    </span> Female
-                                </div>
-                            </div>
-
                             <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
                                 <div className="relative flex-1 sm:flex-none">
                                     <FaSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
@@ -164,7 +142,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 </div>
                                 <div className="flex gap-2">
                                     <button
-                                        className={`inline-flex items-center px-3 py-2 rounded-md transition-colors duration-200 ${
+                                        className={`inline-flex items-center px-3 py-2 rounded-md transition-colors ${
                                             isDarkMode 
                                                 ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
                                                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
@@ -174,7 +152,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         {isDarkMode ? <FaSun /> : <FaMoon />}
                                     </button>
                                     <button
-                                        className={`inline-flex items-center px-3 py-2 rounded-md transition-colors duration-200 ${
+                                        className={`inline-flex items-center px-3 py-2 rounded-md transition-colors ${
                                             isDarkMode 
                                                 ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
                                                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
@@ -183,6 +161,98 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     >
                                         {isFullscreen ? <FaCompressAlt /> : <FaExpandAlt />}
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Statistics Section */}
+                    <div className={`overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6 transition-colors duration-200 ${
+                        isDarkMode ? 'bg-gray-800' : 'bg-white'
+                    }`}>
+                        <div className="p-4">
+                            <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                Family Statistics
+                            </h3>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Members</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                        {familyMembers.length}
+                                    </div>
+                                </div>
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Generations</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                        {Math.max(...familyMembers.map(member => member.last_name.match(/Generation(\d+)/)?.[1] || '1').map(Number))}
+                                    </div>
+                                </div>
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-blue-600'}`}>Male Members</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                                        {familyMembers.filter(member => member.gender === 'male').length}
+                                    </div>
+                                </div>
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-pink-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-pink-600'}`}>Female Members</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-pink-300' : 'text-pink-700'}`}>
+                                        {familyMembers.filter(member => member.gender === 'female').length}
+                                    </div>
+                                </div>
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-yellow-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-yellow-600'}`}>Children (&lt;18)</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
+                                        {familyMembers.filter(member => {
+                                            const age = new Date().getFullYear() - new Date(member.birth_date).getFullYear();
+                                            return age < 18;
+                                        }).length}
+                                    </div>
+                                </div>
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-green-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-green-600'}`}>Adults (18+)</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
+                                        {familyMembers.filter(member => {
+                                            const age = new Date().getFullYear() - new Date(member.birth_date).getFullYear();
+                                            return age >= 18;
+                                        }).length}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Age Distribution */}
+                            <div className={`mt-6 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-purple-50'}`}>
+                                <div className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-purple-600'}`}>
+                                    Age Distribution (5-year groups)
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                                    {(() => {
+                                        const ages = familyMembers.map(member => 
+                                            new Date().getFullYear() - new Date(member.birth_date).getFullYear()
+                                        );
+                                        const minAge = Math.floor(Math.min(...ages) / 5) * 5;
+                                        const maxAge = Math.ceil(Math.max(...ages) / 5) * 5;
+                                        const groups: Record<string, number> = {};
+                                        
+                                        for (let i = minAge; i < maxAge; i += 5) {
+                                            const rangeLabel = `${i}-${i + 4}`;
+                                            groups[rangeLabel] = ages.filter(age => age >= i && age <= i + 4).length;
+                                        }
+
+                                        return Object.entries(groups)
+                                            .filter(([_, count]) => count > 0)
+                                            .map(([range, count]) => (
+                                                <div key={range} className={`p-3 rounded-md ${
+                                                    isDarkMode ? 'bg-gray-600' : 'bg-white'
+                                                }`}>
+                                                    <div className={`text-sm font-medium ${
+                                                        isDarkMode ? 'text-purple-300' : 'text-purple-600'
+                                                    }`}>{range} years</div>
+                                                    <div className={`text-xl font-bold ${
+                                                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                                    }`}>{count}</div>
+                                                </div>
+                                            ));
+                                    })()}
                                 </div>
                             </div>
                         </div>
