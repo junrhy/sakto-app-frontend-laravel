@@ -25,7 +25,7 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
             setDimensions({ width, height });
-            setTranslate({ x: width / 2, y: height / 5 });
+            setTranslate({ x: width / 2, y: height / 8 });
         }
     }, [containerRef]);
 
@@ -144,7 +144,7 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
             setZoom(1);
-            setTranslate({ x: width / 2, y: height / 5 });
+            setTranslate({ x: width / 2, y: height / 8 });
         }
     };
 
@@ -154,7 +154,7 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
                 setDimensions({ width, height });
-                setTranslate({ x: width / 2, y: height / 5 });
+                setTranslate({ x: width / 2, y: height / 8 });
             }
         };
 
@@ -210,18 +210,18 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                         orientation="vertical"
                         pathFunc="step"
                         translate={translate}
-                        nodeSize={{ x: 140, y: 80 }}
+                        nodeSize={{ x: 200, y: 100 }}
                         zoom={zoom}
                         onNodeClick={handleNodeClick}
-                        separation={{ siblings: 2, nonSiblings: 2 }}
+                        separation={{ siblings: 1.5, nonSiblings: 2 }}
                         renderCustomNodeElement={(rd3tProps) =>
                             renderForeignObjectNode({
                                 ...rd3tProps,
                                 foreignObjectProps: {
-                                    width: 120,
-                                    height: 50,
-                                    x: -60,
-                                    y: -25,
+                                    width: 160,
+                                    height: 60,
+                                    x: -80,
+                                    y: -30,
                                 },
                             })
                         }
