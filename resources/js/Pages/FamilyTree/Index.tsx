@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/family-tree';
-import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera } from 'react-icons/fa';
+import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaExpand } from 'react-icons/fa';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 
 export default function Index({ auth, familyMembers }: FamilyTreeProps) {
@@ -568,6 +568,13 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <FaFileImport className="mr-2" />
                                     Import
                                 </button>
+                                <a
+                                    href="/family-tree/full-view"
+                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200 justify-center"
+                                >
+                                    <FaExpand className="mr-2" />
+                                    Full View
+                                </a>
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">

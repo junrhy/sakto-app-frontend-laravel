@@ -24,6 +24,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\FamilyTreeController;
+use App\Models\FamilyMember;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -351,6 +352,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/export', [FamilyTreeController::class, 'export']);
         Route::post('/import', [FamilyTreeController::class, 'import']);
         Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
+        Route::get('/full-view', function () {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken(config('api.token'))
+                ->get(config('api.url') . "/family-tree/members", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                return back()->withErrors(['error' => 'Failed to fetch family members']);
+            }
+
+            return Inertia::render('FamilyTree/FullView', [
+                'familyMembers' => $response->json('data', [])
+            ]);
+        })->name('family-tree.full-view');
     });
 });
 

@@ -7,6 +7,7 @@ interface Props {
     familyMembers: FamilyMember[];
     onNodeClick: (member: FamilyMember) => void;
     isDarkMode?: boolean;
+    isFullPage?: boolean;
 }
 
 interface TreeNode {
@@ -22,7 +23,7 @@ interface TreeNode {
     children?: TreeNode[];
 }
 
-export default function FamilyTreeVisualization({ familyMembers, onNodeClick, isDarkMode = false }: Props) {
+export default function FamilyTreeVisualization({ familyMembers, onNodeClick, isDarkMode = false, isFullPage = false }: Props) {
     const [zoom, setZoom] = useState(1);
     const [translate, setTranslate] = useState({ x: 0, y: 0 });
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -32,9 +33,20 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
             setDimensions({ width, height });
-            setTranslate({ x: width / 2, y: 50 });
+            setTranslate({ x: width / 2, y: isFullPage ? height / 2 : 50 });
         }
-    }, [containerRef]);
+
+        const handleResize = () => {
+            if (containerRef.current) {
+                const { width, height } = containerRef.current.getBoundingClientRect();
+                setDimensions({ width, height });
+                setTranslate({ x: width / 2, y: isFullPage ? height / 2 : 50 });
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isFullPage]);
 
     const buildTreeData = useCallback((): TreeNode[] => {
         if (!familyMembers.length) return [];
@@ -276,98 +288,75 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
             setZoom(0.8);
-            setTranslate({ x: width / 2, y: 50 });
+            setTranslate({ x: width / 2, y: isFullPage ? height / 2 : 50 });
         }
     };
 
-    // Add resize listener to handle window resizing
-    React.useEffect(() => {
-        const handleResize = () => {
-            if (containerRef.current) {
-                const { width, height } = containerRef.current.getBoundingClientRect();
-                setDimensions({ width, height });
-                setTranslate({ x: width / 2, y: 50 });
-            }
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
     return (
-        <div className="relative w-full h-full flex flex-col" ref={containerRef}>
+        <div 
+            ref={containerRef} 
+            className={`relative ${isFullPage ? 'w-screen h-screen' : 'w-full h-full'} ${
+                isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+            }`}
+        >
             {/* Controls */}
-            <div className={`sticky top-4 right-4 z-10 flex gap-1 p-1 rounded-lg ml-auto mr-2 ${
+            <div className={`absolute top-4 right-4 flex flex-col gap-2 z-10 p-2 rounded-lg ${
                 isDarkMode ? 'bg-gray-800' : 'bg-white'
             } shadow-lg`}>
                 <button
                     onClick={handleZoomIn}
-                    className={`p-1 rounded-md hover:bg-opacity-80 transition-colors ${
+                    className={`p-2 rounded-lg transition-colors ${
                         isDarkMode 
-                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'hover:bg-gray-700 text-gray-300' 
+                            : 'hover:bg-gray-100 text-gray-600'
                     }`}
-                    title="Zoom In"
                 >
-                    <FaSearchPlus size={12} />
+                    <FaSearchPlus />
                 </button>
                 <button
                     onClick={handleZoomOut}
-                    className={`p-1 rounded-md hover:bg-opacity-80 transition-colors ${
+                    className={`p-2 rounded-lg transition-colors ${
                         isDarkMode 
-                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'hover:bg-gray-700 text-gray-300' 
+                            : 'hover:bg-gray-100 text-gray-600'
                     }`}
-                    title="Zoom Out"
                 >
-                    <FaSearchMinus size={12} />
+                    <FaSearchMinus />
                 </button>
                 <button
                     onClick={handleReset}
-                    className={`p-1 rounded-md hover:bg-opacity-80 transition-colors ${
+                    className={`p-2 rounded-lg transition-colors ${
                         isDarkMode 
-                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'hover:bg-gray-700 text-gray-300' 
+                            : 'hover:bg-gray-100 text-gray-600'
                     }`}
-                    title="Reset View"
                 >
-                    <FaRedo size={12} />
+                    <FaRedo />
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto overflow-x-auto min-h-0">
-                <div className="h-[2000px] relative w-full min-w-[800px]">
-                    {familyMembers.length > 0 ? (
-                        <Tree
-                            data={buildTreeData()[0]}
-                            orientation="vertical"
-                            pathFunc="step"
-                            translate={translate}
-                            nodeSize={{ x: 100, y: 90 }}
-                            zoom={zoom}
-                            onNodeClick={handleNodeClick}
-                            separation={{ siblings: 0.8, nonSiblings: 1.2 }}
-                            renderCustomNodeElement={(rd3tProps) =>
-                                renderForeignObjectNode({
-                                    ...rd3tProps,
-                                    foreignObjectProps: {
-                                        width: 90,
-                                        height: 50,
-                                        x: -45,
-                                        y: -25,
-                                    },
-                                })
-                            }
-                            pathClassFunc={() => isDarkMode ? 'stroke-gray-600' : 'stroke-gray-300'}
-                        />
-                    ) : (
-                        <div className={`h-full flex items-center justify-center ${
-                            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                            No family members to display
-                        </div>
-                    )}
-                </div>
+            {/* Tree container */}
+            <div className="w-full h-full">
+                <Tree
+                    data={buildTreeData()[0] || { name: 'No family members', children: [] }}
+                    orientation="vertical"
+                    translate={translate}
+                    nodeSize={{ x: 120, y: 80 }}
+                    zoom={zoom}
+                    onNodeClick={handleNodeClick}
+                    renderCustomNodeElement={(rd3tProps) =>
+                        renderForeignObjectNode({
+                            ...rd3tProps,
+                            foreignObjectProps: {
+                                width: 100,
+                                height: 50,
+                                x: -50,
+                                y: -25,
+                            },
+                        })
+                    }
+                    pathClassFunc={() => isDarkMode ? 'stroke-gray-500' : 'stroke-gray-400'}
+                />
             </div>
         </div>
     );
