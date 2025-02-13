@@ -110,13 +110,9 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('apps');
 
-    Route::get('/inbox', function () {
-        return Inertia::render('Inbox', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
-    })->name('inbox');
+    Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
+    Route::patch('/inbox/{id}/read', [InboxController::class, 'markAsRead'])->name('inbox.mark-as-read');
+    Route::delete('/inbox/{id}', [InboxController::class, 'delete'])->name('inbox.delete');
 
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -326,11 +322,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/email', [EmailController::class, 'index'])->name('email.index');
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
-
-    // Inbox routes
-    Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
-    Route::patch('/inbox/{id}/read', [InboxController::class, 'markAsRead'])->name('inbox.mark-as-read');
-    Route::delete('/inbox/{id}', [InboxController::class, 'delete'])->name('inbox.delete');
 
     // Contacts routes
     Route::resource('contacts', ContactsController::class);

@@ -20,15 +20,22 @@ class InboxController extends Controller
     public function index()
     {
         try {
+            
+            if (!auth()->check()) {
+                Log::info('User not authenticated, redirecting to login');
+                return redirect()->route('login');
+            }
+
             $clientIdentifier = auth()->user()->identifier;
             
-            Log::info('Fetching messages from API', [
-                'url' => "{$this->apiUrl}/messages",
-                'client_identifier' => $clientIdentifier
+            Log::info('User authenticated, fetching messages', [
+                'user_id' => auth()->id(),
+                'client_identifier' => $clientIdentifier,
+                'url' => "{$this->apiUrl}/messages"
             ]);
 
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/messages", [
+                ->get("{$this->apiUrl}/inbox", [
                     'client_identifier' => $clientIdentifier
                 ]);
 
@@ -53,18 +60,24 @@ class InboxController extends Controller
             ]);
 
             // Transform the API response to match the frontend Message interface
-            $transformedMessages = array_map(function ($message) {
-                return [
-                    'id' => $message['id'],
-                    'title' => $message['title'],
-                    'content' => $message['content'],
-                    'timestamp' => $message['created_at'],
-                    'type' => $message['type'] ?? 'notification',
-                    'isRead' => $message['is_read'] ?? false,
-                ];
-            }, $messages);
+            $transformedMessages = [];
+            if (!empty($messages)) {
+                $transformedMessages = array_map(function ($message) {
+                    return [
+                        'id' => $message['id'],
+                        'title' => $message['title'],
+                        'content' => $message['content'],
+                        'timestamp' => $message['created_at'],
+                        'type' => $message['type'] ?? 'notification',
+                        'isRead' => $message['is_read'] ?? false,
+                    ];
+                }, $messages);
+            }
 
             return Inertia::render('Inbox', [
+                'auth' => [
+                    'user' => auth()->user()
+                ],
                 'messages' => $transformedMessages,
                 'unreadCount' => $unreadCount
             ]);
@@ -84,7 +97,7 @@ class InboxController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             
             $response = Http::withToken($this->apiToken)
-                ->patch("{$this->apiUrl}/messages/{$id}/read", [
+                ->patch("{$this->apiUrl}/inbox/{$id}/read", [
                     'client_identifier' => $clientIdentifier
                 ]);
 
@@ -116,7 +129,7 @@ class InboxController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             
             $response = Http::withToken($this->apiToken)
-                ->delete("{$this->apiUrl}/messages/{$id}", [
+                ->delete("{$this->apiUrl}/inbox/{$id}", [
                     'client_identifier' => $clientIdentifier
                 ]);
 
