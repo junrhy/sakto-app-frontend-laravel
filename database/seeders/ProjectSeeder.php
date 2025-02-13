@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Project;
+use App\Models\Module;
 
 class ProjectSeeder extends Seeder
 {
@@ -14,25 +15,12 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
-        $enabledModules = [
-            'retail', 
-            'fnb', 
-            'warehousing', 
-            'transportation', 
-            'rental-items',
-            'rental-properties',
-            'clinical', 
-            'lending', 
-            'payroll',
-            'sms',
-            'email',
-            'contacts'
-        ];
+        $enabledModules = Module::all()->pluck('name')->toArray();
 
         $project = [
             'id' => 1,
-            'name' => 'Project 1',
-            'identifier' => 'project-1',
+            'name' => 'Trial',
+            'identifier' => 'trial',
             'enabledModules' => json_encode(array_values($enabledModules)),
         ];
 
