@@ -193,7 +193,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     // Add new relationship management functions
     const handleAddRelationship = async (fromMemberId: number, toMemberId: number, relationshipType: RelationshipType) => {
         try {
-            const response = await fetch('/familc-tree/relationships', {
+            const response = await fetch('/family-tree/relationships', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -682,6 +682,73 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             return adjustedAge >= 18;
                                         }).length}
                                     </div>
+                                </div>
+                                {/* Add new card for members without relationships */}
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-red-600'}`}>Unconnected Members</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>
+                                        {familyMembers.filter(member => member.relationships.length === 0).length}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Add new section for listing unconnected members */}
+                            <div className={`mt-6 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'}`}>
+                                <div className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-red-600'}`}>
+                                    Members Without Relationships
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {familyMembers
+                                        .filter(member => member.relationships.length === 0)
+                                        .map(member => (
+                                            <div 
+                                                key={member.id} 
+                                                className={`p-3 rounded-md cursor-pointer ${
+                                                    isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-white hover:bg-red-100'
+                                                }`}
+                                                onClick={() => startManagingRelationships(member)}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                        isDarkMode ? 'bg-gray-500' : 'bg-red-200'
+                                                    }`}>
+                                                        {member.photo ? (
+                                                            <img
+                                                                src={member.photo}
+                                                                alt={`${member.first_name} ${member.last_name}`}
+                                                                className="w-full h-full rounded-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <span className={`text-sm ${
+                                                                isDarkMode ? 'text-gray-300' : 'text-red-600'
+                                                            }`}>
+                                                                {member.first_name[0]}
+                                                                {member.last_name[0]}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className={`font-medium ${
+                                                            isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                                        }`}>
+                                                            {member.first_name} {member.last_name}
+                                                        </div>
+                                                        <div className={`text-sm ${
+                                                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                                        }`}>
+                                                            Click to add relationships
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    {familyMembers.filter(member => member.relationships.length === 0).length === 0 && (
+                                        <div className={`col-span-full text-center p-4 ${
+                                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                        }`}>
+                                            All family members have relationships defined.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

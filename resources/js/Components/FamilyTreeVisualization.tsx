@@ -33,14 +33,14 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
             setDimensions({ width, height });
-            setTranslate({ x: width / 2, y: isFullPage ? height / 2 : 50 });
+            setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
         }
 
         const handleResize = () => {
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
                 setDimensions({ width, height });
-                setTranslate({ x: width / 2, y: isFullPage ? height / 2 : 50 });
+                setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
             }
         };
 
@@ -223,34 +223,36 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         return (
             <g>
                 <circle 
-                    r={8} 
+                    r={isFullPage ? 12 : 8} 
                     fill={nodeDatum.attributes?.gender === 'male' 
                         ? (isDarkMode ? '#1d4ed8' : '#93c5fd')
                         : (isDarkMode ? '#db2777' : '#f9a8d4')
                     }
                     className="transition-colors duration-200"
+                    cy={isFullPage ? -30 : -15}
                 />
                 <foreignObject {...foreignObjectProps}>
                     <div style={{ 
                         backgroundColor: isDarkMode ? '#1f2937' : 'white',
-                        padding: '3px',
+                        padding: isFullPage ? '6px' : '3px',
                         borderRadius: '4px',
                         border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
-                        fontSize: '10px',
-                        width: '90px',
+                        fontSize: isFullPage ? '14px' : '10px',
+                        width: isFullPage ? '160px' : '90px',
                         textAlign: 'center',
                         boxShadow: isDarkMode 
                             ? '0 1px 2px rgba(0, 0, 0, 0.3)' 
                             : '0 1px 2px rgba(0, 0, 0, 0.1)',
                         transition: 'all 0.2s ease',
-                        opacity: nodeDatum.attributes?.isReference ? 0.7 : 1
+                        opacity: nodeDatum.attributes?.isReference ? 0.7 : 1,
+                        marginTop: isFullPage ? '45px' : '20px'
                     }}>
                         <div style={{ 
                             fontWeight: 'bold',
                             color: isDarkMode ? '#e5e7eb' : '#111827',
-                            fontSize: '9px',
-                            lineHeight: '11px',
-                            maxHeight: '33px',
+                            fontSize: isFullPage ? '13px' : '9px',
+                            lineHeight: isFullPage ? '16px' : '11px',
+                            maxHeight: isFullPage ? '48px' : '33px',
                             overflow: 'hidden',
                             display: '-webkit-box',
                             WebkitLineClamp: 3,
@@ -261,12 +263,12 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                         </div>
                         <div style={{ 
                             color: isDarkMode ? '#9ca3af' : '#6b7280',
-                            fontSize: '8px',
+                            fontSize: isFullPage ? '11px' : '8px',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            lineHeight: '10px',
-                            marginTop: '1px'
+                            lineHeight: isFullPage ? '14px' : '10px',
+                            marginTop: isFullPage ? '2px' : '1px'
                         }}>
                             {nodeDatum.attributes?.relationship || `Born: ${nodeDatum.attributes?.birth}`}
                         </div>
@@ -287,8 +289,8 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     const handleReset = () => {
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
-            setZoom(0.8);
-            setTranslate({ x: width / 2, y: isFullPage ? height / 2 : 50 });
+            setZoom(isFullPage ? 0.6 : 0.8);
+            setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
         }
     };
 
@@ -341,17 +343,17 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                     data={buildTreeData()[0] || { name: 'No family members', children: [] }}
                     orientation="vertical"
                     translate={translate}
-                    nodeSize={{ x: 120, y: 80 }}
+                    nodeSize={{ x: isFullPage ? 180 : 120, y: isFullPage ? 120 : 80 }}
                     zoom={zoom}
                     onNodeClick={handleNodeClick}
                     renderCustomNodeElement={(rd3tProps) =>
                         renderForeignObjectNode({
                             ...rd3tProps,
                             foreignObjectProps: {
-                                width: 100,
-                                height: 50,
-                                x: -50,
-                                y: -25,
+                                width: isFullPage ? 160 : 100,
+                                height: isFullPage ? 100 : 50,
+                                x: isFullPage ? -80 : -50,
+                                y: isFullPage ? -50 : -25,
                             },
                         })
                     }
