@@ -24,7 +24,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\FamilyTreeController;
-use App\Models\FamilyMember;
+use App\Http\Controllers\InboxController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -326,6 +326,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/email', [EmailController::class, 'index'])->name('email.index');
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
+
+    // Inbox routes
+    Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
+    Route::patch('/inbox/{id}/read', [InboxController::class, 'markAsRead'])->name('inbox.mark-as-read');
+    Route::delete('/inbox/{id}', [InboxController::class, 'delete'])->name('inbox.delete');
 
     // Contacts routes
     Route::resource('contacts', ContactsController::class);
