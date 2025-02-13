@@ -16,18 +16,35 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
     const [managingMember, setManagingMember] = useState<FamilyMember | null>(null);
-    const [newMember, setNewMember] = useState({
+    const [newMember, setNewMember] = useState<{
+        first_name: string;
+        last_name: string;
+        birth_date: string;
+        death_date: string;
+        gender: 'male' | 'female' | 'other';
+        notes: string;
+        photo: File | null;
+    }>({
         first_name: '',
         last_name: '',
         birth_date: '',
+        death_date: '',
         gender: 'male',
         notes: '',
-        photo: null as File | null,
+        photo: null,
     });
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const [importFile, setImportFile] = useState<File | null>(null);
     const [isImporting, setIsImporting] = useState(false);
     const [importMode, setImportMode] = useState<'skip' | 'update' | 'duplicate'>('skip');
+    const [formErrors, setFormErrors] = useState<{
+        first_name?: string;
+        last_name?: string;
+        birth_date?: string;
+        death_date?: string;
+        gender?: string;
+        photo?: string;
+    }>({});
 
     const filteredMembers = familyMembers.filter((member: FamilyMember) => 
         `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
@@ -73,11 +90,70 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         }
     };
 
+    const validateForm = (data: { 
+        first_name: string;
+        last_name: string;
+        birth_date: string;
+        death_date?: string | null | undefined;
+        gender: 'male' | 'female' | 'other';
+        notes: string;
+        photo: File | string | null;
+    }) => {
+        const errors: typeof formErrors = {};
+
+        // First Name validation
+        if (!data.first_name.trim()) {
+            errors.first_name = 'First name is required';
+        } else if (data.first_name.length > 255) {
+            errors.first_name = 'First name must be less than 255 characters';
+        }
+
+        // Last Name validation
+        if (!data.last_name.trim()) {
+            errors.last_name = 'Last name is required';
+        } else if (data.last_name.length > 255) {
+            errors.last_name = 'Last name must be less than 255 characters';
+        }
+
+        // Birth Date validation
+        if (!data.birth_date) {
+            errors.birth_date = 'Birth date is required';
+        } else if (new Date(data.birth_date) > new Date()) {
+            errors.birth_date = 'Birth date cannot be in the future';
+        }
+
+        // Death Date validation
+        if (data.death_date) {
+            if (new Date(data.death_date) > new Date()) {
+                errors.death_date = 'Death date cannot be in the future';
+            }
+            if (new Date(data.death_date) < new Date(data.birth_date)) {
+                errors.death_date = 'Death date must be after birth date';
+            }
+        }
+
+        // Photo validation
+        if (data.photo && typeof data.photo !== 'string' && !(data.photo instanceof File)) {
+            errors.photo = 'Invalid photo format';
+        }
+
+        return errors;
+    };
+
     const handleAddMember = async () => {
+        // Validate form before submission
+        const errors = validateForm(newMember);
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            return; // Stop if there are validation errors
+        }
+
         const formData = new FormData();
         formData.append('first_name', newMember.first_name);
         formData.append('last_name', newMember.last_name);
         formData.append('birth_date', newMember.birth_date);
+        formData.append('death_date', newMember.death_date);
         formData.append('gender', newMember.gender);
         formData.append('notes', newMember.notes);
         if (newMember.photo) {
@@ -94,7 +170,8 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to add family member');
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to add family member');
             }
 
             const result = await response.json();
@@ -102,20 +179,21 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             // Close modal and reset form
             setIsAddModalOpen(false);
             resetNewMember();
+            setFormErrors({});
 
             // Show success message and refresh page
             alert('Family member added successfully!');
             window.location.reload();
         } catch (error) {
             console.error('Error adding family member:', error);
-            alert('Failed to add family member. Please try again.');
+            alert(error instanceof Error ? error.message : 'Failed to add family member. Please try again.');
         }
     };
 
     // Add new relationship management functions
     const handleAddRelationship = async (fromMemberId: number, toMemberId: number, relationshipType: RelationshipType) => {
         try {
-            const response = await fetch('/family-tree/relationships', {
+            const response = await fetch('/familc-tree/relationships', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,6 +279,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             first_name: '',
             last_name: '',
             birth_date: '',
+            death_date: '',
             gender: 'male',
             notes: '',
             photo: null,
@@ -211,10 +290,19 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     const handleEditMember = async () => {
         if (!editingMember) return;
 
+        // Validate form before submission
+        const errors = validateForm(editingMember);
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            return; // Stop if there are validation errors
+        }
+
         const formData = new FormData();
         formData.append('first_name', editingMember.first_name);
         formData.append('last_name', editingMember.last_name);
         formData.append('birth_date', editingMember.birth_date);
+        formData.append('death_date', editingMember.death_date || '');
         formData.append('gender', editingMember.gender);
         formData.append('notes', editingMember.notes || '');
         if (editingMember.photo && typeof editingMember.photo !== 'string') {
@@ -223,16 +311,17 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
         try {
             const response = await fetch(`/family-tree/members/${editingMember.id}`, {
-                method: 'POST', // Using POST because we're sending FormData
+                method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                    'X-HTTP-Method-Override': 'PUT', // Override POST with PUT
+                    'X-HTTP-Method-Override': 'PUT',
                 }
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update family member');
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to update family member');
             }
 
             const result = await response.json();
@@ -245,12 +334,13 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
             setIsEditModalOpen(false);
             setEditingMember(null);
+            setFormErrors({});
             
             // Show success message
             alert('Family member updated successfully!');
         } catch (error) {
             console.error('Error updating family member:', error);
-            alert('Failed to update family member. Please try again.');
+            alert(error instanceof Error ? error.message : 'Failed to update family member. Please try again.');
         }
     };
 
@@ -560,8 +650,14 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-yellow-600'}`}>Children (&lt;18)</div>
                                     <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
                                         {familyMembers.filter(member => {
-                                            const age = new Date().getFullYear() - new Date(member.birth_date).getFullYear();
-                                            return age < 18;
+                                            const birthDate = new Date(member.birth_date);
+                                            const endDate = member.death_date ? new Date(member.death_date) : new Date();
+                                            const age = endDate.getFullYear() - birthDate.getFullYear();
+                                            const monthDiff = endDate.getMonth() - birthDate.getMonth();
+                                            const adjustedAge = monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
+                                                ? age - 1 
+                                                : age;
+                                            return adjustedAge < 18;
                                         }).length}
                                     </div>
                                 </div>
@@ -569,8 +665,14 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-green-600'}`}>Adults (18+)</div>
                                     <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
                                         {familyMembers.filter(member => {
-                                            const age = new Date().getFullYear() - new Date(member.birth_date).getFullYear();
-                                            return age >= 18;
+                                            const birthDate = new Date(member.birth_date);
+                                            const endDate = member.death_date ? new Date(member.death_date) : new Date();
+                                            const age = endDate.getFullYear() - birthDate.getFullYear();
+                                            const monthDiff = endDate.getMonth() - birthDate.getMonth();
+                                            const adjustedAge = monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
+                                                ? age - 1 
+                                                : age;
+                                            return adjustedAge >= 18;
                                         }).length}
                                     </div>
                                 </div>
@@ -583,9 +685,15 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                                     {(() => {
-                                        const ages = familyMembers.map(member => 
-                                            new Date().getFullYear() - new Date(member.birth_date).getFullYear()
-                                        );
+                                        const ages = familyMembers.map(member => {
+                                            const birthDate = new Date(member.birth_date);
+                                            const endDate = member.death_date ? new Date(member.death_date) : new Date();
+                                            const age = endDate.getFullYear() - birthDate.getFullYear();
+                                            const monthDiff = endDate.getMonth() - birthDate.getMonth();
+                                            return monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
+                                                ? age - 1 
+                                                : age;
+                                        });
                                         const minAge = Math.floor(Math.min(...ages) / 5) * 5;
                                         const maxAge = Math.ceil(Math.max(...ages) / 5) * 5;
                                         const groups: Record<string, number> = {};
@@ -830,13 +938,29 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="text"
                                             value={newMember.first_name}
-                                            onChange={(e) => setNewMember(prev => ({ ...prev, first_name: e.target.value }))}
+                                            onChange={(e) => {
+                                                setNewMember(prev => ({ ...prev, first_name: e.target.value }));
+                                                setFormErrors(prev => ({ ...prev, first_name: undefined }));
+                                            }}
                                             className={`w-full px-3 py-2 rounded-md border ${
+                                                formErrors.first_name 
+                                                    ? 'border-red-500'
+                                                    : isDarkMode 
+                                                        ? 'border-gray-600'
+                                                        : 'border-gray-300'
+                                            } ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 text-gray-200' 
+                                                    : 'bg-white text-gray-900'
+                                            } focus:outline-none focus:ring-2 ${
+                                                formErrors.first_name
+                                                    ? 'focus:ring-red-500'
+                                                    : 'focus:ring-blue-500'
+                                            }`}
                                         />
+                                        {formErrors.first_name && (
+                                            <p className="mt-1 text-sm text-red-500">{formErrors.first_name}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className={`block text-sm font-medium mb-1 ${
@@ -847,13 +971,29 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="text"
                                             value={newMember.last_name}
-                                            onChange={(e) => setNewMember(prev => ({ ...prev, last_name: e.target.value }))}
+                                            onChange={(e) => {
+                                                setNewMember(prev => ({ ...prev, last_name: e.target.value }));
+                                                setFormErrors(prev => ({ ...prev, last_name: undefined }));
+                                            }}
                                             className={`w-full px-3 py-2 rounded-md border ${
+                                                formErrors.last_name 
+                                                    ? 'border-red-500'
+                                                    : isDarkMode 
+                                                        ? 'border-gray-600'
+                                                        : 'border-gray-300'
+                                            } ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 text-gray-200' 
+                                                    : 'bg-white text-gray-900'
+                                            } focus:outline-none focus:ring-2 ${
+                                                formErrors.last_name
+                                                    ? 'focus:ring-red-500'
+                                                    : 'focus:ring-blue-500'
+                                            }`}
                                         />
+                                        {formErrors.last_name && (
+                                            <p className="mt-1 text-sm text-red-500">{formErrors.last_name}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -867,7 +1007,41 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="date"
                                             value={newMember.birth_date}
-                                            onChange={(e) => setNewMember(prev => ({ ...prev, birth_date: e.target.value }))}
+                                            onChange={(e) => {
+                                                setNewMember(prev => ({ ...prev, birth_date: e.target.value }));
+                                                setFormErrors(prev => ({ ...prev, birth_date: undefined }));
+                                            }}
+                                            className={`w-full px-3 py-2 rounded-md border ${
+                                                formErrors.birth_date 
+                                                    ? 'border-red-500'
+                                                    : isDarkMode 
+                                                        ? 'border-gray-600'
+                                                        : 'border-gray-300'
+                                            } ${
+                                                isDarkMode 
+                                                    ? 'bg-gray-700 text-gray-200' 
+                                                    : 'bg-white text-gray-900'
+                                            } focus:outline-none focus:ring-2 ${
+                                                formErrors.birth_date
+                                                    ? 'focus:ring-red-500'
+                                                    : 'focus:ring-blue-500'
+                                            }`}
+                                        />
+                                        {formErrors.birth_date && (
+                                            <p className="mt-1 text-sm text-red-500">{formErrors.birth_date}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className={`block text-sm font-medium mb-1 ${
+                                            isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                        }`}>
+                                            Death Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={newMember.death_date}
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, death_date: e.target.value }))}
+                                            min={newMember.birth_date}
                                             className={`w-full px-3 py-2 rounded-md border ${
                                                 isDarkMode 
                                                     ? 'bg-gray-700 border-gray-600 text-gray-200' 
@@ -875,6 +1049,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                         />
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className={`block text-sm font-medium mb-1 ${
                                             isDarkMode ? 'text-gray-300' : 'text-gray-700'
@@ -1069,6 +1246,30 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                                         />
                                     </div>
+                                    <div>
+                                        <label className={`block text-sm font-medium mb-1 ${
+                                            isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                        }`}>
+                                            Death Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={editingMember.death_date || ''}
+                                            onChange={(e) => setEditingMember(prev => prev ? ({
+                                                ...prev,
+                                                death_date: e.target.value
+                                            }) : null)}
+                                            min={editingMember.birth_date}
+                                            className={`w-full px-3 py-2 rounded-md border ${
+                                                isDarkMode 
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                                    : 'bg-white border-gray-300 text-gray-900'
+                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className={`block text-sm font-medium mb-1 ${
                                             isDarkMode ? 'text-gray-300' : 'text-gray-700'

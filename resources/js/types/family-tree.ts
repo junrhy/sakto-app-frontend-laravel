@@ -5,6 +5,7 @@ export interface FamilyMember {
     first_name: string;
     last_name: string;
     birth_date: string;
+    death_date?: string | null;
     gender: 'male' | 'female' | 'other';
     photo: string | null;
     notes: string;
