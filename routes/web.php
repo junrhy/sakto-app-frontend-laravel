@@ -256,7 +256,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/bill/{id}', [LoanController::class, 'updateBill']);
         Route::delete('/bill/{id}', [LoanController::class, 'deleteBill']);
         Route::patch('/bill/{id}/status', [LoanController::class, 'updateBillStatus']);
-
     });
 
     // Payroll routes
@@ -341,7 +340,18 @@ Route::middleware('auth')->group(function () {
     });
 
     // Family Tree routes
-    Route::get('/family-tree', [FamilyTreeController::class, 'index'])->name('family-tree');
+    Route::prefix('family-tree')->group(function () {
+        Route::get('/', [FamilyTreeController::class, 'index'])->name('family-tree');
+        Route::get('/members', [FamilyTreeController::class, 'getFamilyMembers']);
+        Route::post('/members', [FamilyTreeController::class, 'store']);
+        Route::put('/members/{id}', [FamilyTreeController::class, 'update']);
+        Route::delete('/members/{id}', [FamilyTreeController::class, 'destroy']);
+        Route::post('/relationships', [FamilyTreeController::class, 'addRelationship']);
+        Route::delete('/relationships/{id}', [FamilyTreeController::class, 'removeRelationship']);
+        Route::get('/export', [FamilyTreeController::class, 'export']);
+        Route::post('/import', [FamilyTreeController::class, 'import']);
+        Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
+    });
 });
 
 require __DIR__.'/auth.php';

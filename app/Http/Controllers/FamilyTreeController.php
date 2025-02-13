@@ -137,6 +137,9 @@ class FamilyTreeController extends Controller
             $validated['photo'] = Storage::disk('public')->url($path);
         }
 
+        $clientIdentifier = auth()->user()->identifier;
+        $validated['client_identifier'] = $clientIdentifier;
+
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/family-tree/members/{$id}", $validated);
 
@@ -156,9 +159,13 @@ class FamilyTreeController extends Controller
      */
     public function destroy($id)
     {
+        $clientIdentifier = auth()->user()->identifier;
+
         // Get member data first to delete photo if exists
         $getResponse = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/family-tree/members/{$id}");
+            ->get("{$this->apiUrl}/family-tree/members/{$id}", [
+                'client_identifier' => $clientIdentifier
+            ]);
         
         if ($getResponse->successful()) {
             $member = $getResponse->json();
@@ -171,7 +178,9 @@ class FamilyTreeController extends Controller
         }
 
         $response = Http::withToken($this->apiToken)
-            ->delete("{$this->apiUrl}/family-tree/members/{$id}");
+            ->delete("{$this->apiUrl}/family-tree/members/{$id}", [
+                'client_identifier' => $clientIdentifier
+            ]);
 
         if (!$response->successful()) {
             Log::error('Failed to delete family member', [
@@ -197,6 +206,9 @@ class FamilyTreeController extends Controller
             ])],
         ]);
 
+        $clientIdentifier = auth()->user()->identifier;
+        $validated['client_identifier'] = $clientIdentifier;
+
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/family-tree/relationships", $validated);
 
@@ -214,16 +226,20 @@ class FamilyTreeController extends Controller
     /**
      * Remove a relationship between family members
      */
-    public function removeRelationship(Request $request)
+    public function removeRelationship(Request $request, $id)
     {
         $validated = $request->validate([
             'from_member_id' => 'required|integer',
             'to_member_id' => 'required|integer',
         ]);
 
+        $clientIdentifier = auth()->user()->identifier;
+
         $response = Http::withToken($this->apiToken)
-            ->delete("{$this->apiUrl}/family-tree/relationships", [
-                'json' => $validated
+            ->delete("{$this->apiUrl}/family-tree/relationships/{$id}", [
+                'client_identifier' => $clientIdentifier,
+                'from_member_id' => $validated['from_member_id'],
+                'to_member_id' => $validated['to_member_id'],
             ]);
 
         if (!$response->successful()) {
