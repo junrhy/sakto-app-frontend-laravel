@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm AS base
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -24,29 +24,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy existing application directory
+FROM base AS development
+
+# Copy existing application directory for development
 COPY . .
 
-# Install dependencies
+# Install all dependencies for development
 RUN composer install
+RUN npm install
 
-# Create startup script
-RUN echo '#!/bin/sh\n\
-APP_ENV=$(grep "^APP_ENV=" .env | cut -d "=" -f2)\n\
-\n\
-npm install\n\
-\n\
-if [ "$APP_ENV" = "local" ] || [ "$APP_ENV" = "development" ]; then\n\
-    echo "Starting application in hot-reload mode (APP_ENV=$APP_ENV)..."\n\
-    npm run dev -- --host & \n\
-elif [ "$APP_ENV" = "staging" ] || [ "$APP_ENV" = "production" ]; then\n\
-    echo "Building optimized assets (APP_ENV=$APP_ENV)..."\n\
-    npm run build\n\
-fi\n\
-\n\
-php-fpm\n\
-' > /usr/local/bin/startup.sh \
-&& chmod +x /usr/local/bin/startup.sh
+# Make entrypoint script executable
+COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
@@ -54,4 +43,8 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 # Expose ports
 EXPOSE 9000 5173
 
-CMD ["/usr/local/bin/startup.sh"] 
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
+
+FROM base AS production
+# Production-specific configuration would go here if needed
+# This stage won't be used by docker-compose, only by render.Dockerfile 
