@@ -272,7 +272,12 @@ class FamilyTreeController extends Controller
             return response()->json(['error' => 'Failed to export family tree'], $response->status());
         }
 
-        return response()->json($response->json(), $response->status());
+        $exportData = $response->json('data');
+        $fileName = 'family-tree-export-' . now()->format('Y-m-d') . '.json';
+
+        return response()->json($exportData)
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+            ->header('Content-Type', 'application/json');
     }
 
     /**

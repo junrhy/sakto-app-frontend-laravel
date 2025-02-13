@@ -291,6 +291,45 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         setIsEditModalOpen(true);
     };
 
+    const handleExport = async () => {
+        try {
+            const response = await fetch('/family-tree/export', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to export family tree');
+            }
+
+            // Get the filename from the Content-Disposition header if available
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'family-tree-export.json';
+            if (contentDisposition) {
+                const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
+                if (matches != null && matches[1]) {
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+
+            // Create a blob from the response and trigger download
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting family tree:', error);
+            alert('Failed to export family tree. Please try again.');
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Family Tree</h2>}
@@ -314,7 +353,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 </button>
                                 <button
                                     className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 justify-center"
-                                    onClick={() => {/* TODO: Export functionality */}}
+                                    onClick={handleExport}
                                 >
                                     <FaFileExport className="mr-2" />
                                     Export
