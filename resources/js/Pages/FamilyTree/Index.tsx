@@ -13,6 +13,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isManageRelationshipsModalOpen, setIsManageRelationshipsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
     const [managingMember, setManagingMember] = useState<FamilyMember | null>(null);
     const [newMember, setNewMember] = useState({
@@ -24,6 +25,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         photo: null as File | null,
     });
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [importFile, setImportFile] = useState<File | null>(null);
+    const [isImporting, setIsImporting] = useState(false);
+    const [importMode, setImportMode] = useState<'skip' | 'update' | 'duplicate'>('skip');
 
     const filteredMembers = familyMembers.filter((member: FamilyMember) => 
         `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
@@ -330,6 +334,115 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         }
     };
 
+    const handleImport = async () => {
+        if (!importFile) {
+            alert('Please select a file to import');
+            return;
+        }
+
+        setIsImporting(true);
+
+        try {
+            // Read the file content
+            const fileContent = await importFile.text();
+            const jsonData = JSON.parse(fileContent);
+            console.log('Parsed import file:', jsonData); // Debug log
+
+            // Validate the file structure
+            if (!jsonData.familyMembers && !jsonData.data?.familyMembers) {
+                throw new Error('Invalid file format: Missing family members data');
+            }
+
+            // Extract family members from the correct location in the JSON structure
+            const rawFamilyMembers = jsonData.familyMembers || jsonData.data?.familyMembers;
+
+            if (!Array.isArray(rawFamilyMembers)) {
+                throw new Error('Invalid file format: Family members must be an array');
+            }
+
+            // Clean and map the family members data
+            const familyMembers = rawFamilyMembers.map((member: any, index) => ({
+                import_id: member.id || index + 1, // Use original ID or generate a temporary one
+                first_name: member.first_name,
+                last_name: member.last_name,
+                birth_date: member.birth_date,
+                death_date: member.death_date || null,
+                gender: member.gender,
+                notes: member.notes || null,
+                photo: member.photo || null,
+                relationships: member.relationships?.map((rel: { id: number; to_member_id: number; relationship_type: string }) => ({
+                    import_id: rel.id,
+                    to_member_import_id: rel.to_member_id,
+                    relationship_type: rel.relationship_type
+                })) || []
+            }));
+
+            console.log('Sending import request with data:', { // Debug log
+                family_members: familyMembers,
+                import_mode: importMode
+            });
+
+            const response = await fetch('/family-tree/import', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    family_members: familyMembers.map(member => ({
+                        import_id: member.import_id,
+                        first_name: member.first_name,
+                        last_name: member.last_name,
+                        birth_date: member.birth_date,
+                        death_date: member.death_date,
+                        gender: member.gender,
+                        notes: member.notes,
+                        photo: member.photo,
+                        relationships: member.relationships?.map((rel: { import_id: number; to_member_import_id: number; relationship_type: RelationshipType }) => ({
+                            import_id: rel.import_id,
+                            to_member_import_id: rel.to_member_import_id,
+                            relationship_type: rel.relationship_type
+                        }))
+                    })),
+                    import_mode: importMode
+                })
+            });
+
+            const result = await response.json();
+            console.log('Import response:', result); // Debug log
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to import family tree');
+            }
+
+            // Close modal and reset state
+            setIsImportModalOpen(false);
+            setImportFile(null);
+            
+            // Show success message with stats
+            const stats = result.stats || {
+                total: 0,
+                created: 0,
+                updated: 0,
+                skipped: 0,
+                relationships_created: 0
+            };
+            alert(`Family tree imported successfully!\n\nStats:\n` +
+                  `Total processed: ${stats.total}\n` +
+                  `Created: ${stats.created}\n` +
+                  `Updated: ${stats.updated}\n` +
+                  `Skipped: ${stats.skipped}\n` +
+                  `Relationships created: ${stats.relationships_created}`);
+            
+            window.location.reload();
+        } catch (error) {
+            console.error('Error importing family tree:', error);
+            alert(error instanceof Error ? error.message : 'Failed to import family tree. Please make sure the file is valid and try again.');
+        } finally {
+            setIsImporting(false);
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Family Tree</h2>}
@@ -360,7 +473,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 </button>
                                 <button
                                     className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200 justify-center"
-                                    onClick={() => {/* TODO: Import modal */}}
+                                    onClick={() => setIsImportModalOpen(true)}
                                 >
                                     <FaFileImport className="mr-2" />
                                     Import
@@ -1173,6 +1286,111 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         } transition-colors`}
                                     >
                                         Done
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Modal */}
+            {isImportModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className={`w-full max-w-md ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl`}>
+                        <div className={`p-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                    Import Family Tree
+                                </h3>
+                                <button
+                                    onClick={() => {
+                                        setIsImportModalOpen(false);
+                                        setImportFile(null);
+                                    }}
+                                    className={`text-gray-400 hover:text-gray-500 transition-colors`}
+                                >
+                                    <span className="text-2xl">×</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className={`block text-sm font-medium mb-2 ${
+                                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                    }`}>
+                                        Select JSON File
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".json"
+                                        onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                                        className={`w-full px-3 py-2 rounded-md border ${
+                                            isDarkMode 
+                                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                                : 'bg-white border-gray-300 text-gray-900'
+                                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                    />
+                                    <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        Please select a JSON file exported from a family tree.
+                                    </p>
+                                </div>
+
+                                {/* Import Options */}
+                                <div>
+                                    <label className={`block text-sm font-medium mb-2 ${
+                                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                    }`}>
+                                        How to handle existing members?
+                                    </label>
+                                    <select
+                                        value={importMode}
+                                        onChange={(e) => setImportMode(e.target.value as 'skip' | 'update' | 'duplicate')}
+                                        className={`w-full px-3 py-2 rounded-md border ${
+                                            isDarkMode 
+                                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                                : 'bg-white border-gray-300 text-gray-900'
+                                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                    >
+                                        <option value="skip">Skip existing members</option>
+                                        <option value="update">Update existing members</option>
+                                        <option value="duplicate">Create as new members</option>
+                                    </select>
+                                    <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {importMode === 'skip' && 'Existing members will be skipped during import.'}
+                                        {importMode === 'update' && 'Existing members will be updated with new data.'}
+                                        {importMode === 'duplicate' && 'All members will be created as new entries.'}
+                                    </p>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end gap-4 mt-6">
+                                    <button
+                                        onClick={() => {
+                                            setIsImportModalOpen(false);
+                                            setImportFile(null);
+                                        }}
+                                        className={`px-4 py-2 rounded-md ${
+                                            isDarkMode
+                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                        } transition-colors`}
+                                        disabled={isImporting}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleImport}
+                                        disabled={!importFile || isImporting}
+                                        className={`px-4 py-2 rounded-md ${
+                                            isDarkMode
+                                                ? 'bg-blue-600 hover:bg-blue-700'
+                                                : 'bg-blue-500 hover:bg-blue-600'
+                                        } text-white transition-colors ${
+                                            (!importFile || isImporting) ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
+                                    >
+                                        {isImporting ? 'Importing...' : 'Import'}
                                     </button>
                                 </div>
                             </div>

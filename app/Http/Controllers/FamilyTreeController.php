@@ -287,29 +287,57 @@ class FamilyTreeController extends Controller
     {
         $validated = $request->validate([
             'family_members' => 'required|array',
+            'family_members.*.import_id' => 'required',
             'family_members.*.first_name' => 'required|string|max:255',
             'family_members.*.last_name' => 'required|string|max:255',
             'family_members.*.birth_date' => 'nullable|date',
             'family_members.*.death_date' => 'nullable|date',
             'family_members.*.gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'family_members.*.relationships' => 'array',
+            'family_members.*.relationships.*.import_id' => 'nullable',
+            'family_members.*.relationships.*.to_member_import_id' => 'nullable',
+            'family_members.*.relationships.*.relationship_type' => ['nullable', Rule::in(['parent', 'child', 'spouse', 'sibling'])],
+            'import_mode' => ['required', Rule::in(['skip', 'update', 'duplicate'])],
         ]);
 
         $clientIdentifier = auth()->user()->identifier;
-        $validated['client_identifier'] = $clientIdentifier;
 
-        $response = Http::withToken($this->apiToken)
-            ->post("{$this->apiUrl}/family-tree/import", $validated);
+        Log::info('Starting import request to API', [
+            'client_identifier' => $clientIdentifier,
+            'mode' => $validated['import_mode'],
+            'members_count' => count($validated['family_members'])
+        ]);
 
-        if (!$response->successful()) {
-            Log::error('Failed to import family tree', [
-                'response' => $response->json(),
-                'status' => $response->status()
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/family-tree/import", array_merge($validated, [
+                    'client_identifier' => $clientIdentifier
+                ]));
+
+            if (!$response->successful()) {
+                Log::error('Failed to import family tree', [
+                    'response' => $response->json(),
+                    'status' => $response->status()
+                ]);
+                return response()->json([
+                    'error' => 'Failed to import family tree: ' . ($response->json('error') ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            Log::info('Import successful', [
+                'response' => $response->json()
             ]);
-            return response()->json(['error' => 'Failed to import family tree'], $response->status());
-        }
 
-        return response()->json($response->json(), $response->status());
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Exception during import', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to import family tree: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
