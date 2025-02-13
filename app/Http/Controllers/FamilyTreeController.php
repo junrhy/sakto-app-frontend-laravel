@@ -16,8 +16,8 @@ class FamilyTreeController extends Controller
 
     public function __construct()
     {
-        $this->apiUrl = env('API_URL');
-        $this->apiToken = env('API_TOKEN');
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
     }
 
     /**
@@ -25,217 +25,22 @@ class FamilyTreeController extends Controller
      */
     public function index()
     {
-        // $clientIdentifier = auth()->user()->identifier;
-        // $response = Http::withToken($this->apiToken)
-        //     ->get("{$this->apiUrl}/family-tree/members", [
-        //         'client_identifier' => $clientIdentifier
-        //     ]);
+        $clientIdentifier = auth()->user()->identifier;
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
 
-        // if (!$response->successful()) {
-        //     Log::error('Failed to fetch family members', [
-        //         'response' => $response->json(),
-        //         'status' => $response->status()
-        //     ]);
-        //     return back()->withErrors(['error' => 'Failed to fetch family members']);
-        // }
-
-        // Sample family tree data with 200 members across 4 generations
-        $sampleData = [];
-        
-        // First Generation (20 people - 10 couples)
-        for ($i = 1; $i <= 20; $i++) {
-            $isEven = $i % 2 === 0;
-            $spouseId = $isEven ? $i - 1 : $i + 1;
-            $birthYear = rand(1940, 1950);
-            
-            $relationships = [
-                [
-                    'id' => $i * 100,
-                    'to_member_id' => $spouseId,
-                    'relationship_type' => 'spouse'
-                ]
-            ];
-            
-            // Add parent relationships to second generation
-            for ($child = 21; $child <= 70; $child++) {
-                if ($child % 5 === ($i % 5)) {
-                    $relationships[] = [
-                        'id' => $i * 1000 + $child,
-                        'to_member_id' => $child,
-                        'relationship_type' => 'parent'
-                    ];
-                }
-            }
-            
-            $sampleData[] = [
-                'id' => $i,
-                'first_name' => $isEven ? "Mary" : "John" . ($i > 2 ? " " . chr(64 + ceil($i/2)) : ""),
-                'last_name' => "Generation1_" . ceil($i/2),
-                'birth_date' => $birthYear . "-" . str_pad(rand(1, 12), 2, "0", STR_PAD_LEFT) . "-" . str_pad(rand(1, 28), 2, "0", STR_PAD_LEFT),
-                'gender' => $isEven ? 'female' : 'male',
-                'photo' => null,
-                'notes' => "First generation - " . ($isEven ? "matriarch" : "patriarch") . " of family " . ceil($i/2),
-                'relationships' => $relationships
-            ];
-        }
-        
-        // Second Generation (50 people - includes spouses)
-        for ($i = 21; $i <= 70; $i++) {
-            $isSpouse = $i > 45; // Last 25 are spouses
-            $parentFamilyId = ($i % 5) + 1;
-            $spouseId = $isSpouse ? null : $i + 25;
-            $birthYear = rand(1965, 1975);
-            
-            $relationships = [];
-            
-            // Add spouse relationship
-            if (!$isSpouse) {
-                $relationships[] = [
-                    'id' => $i * 100,
-                    'to_member_id' => $spouseId,
-                    'relationship_type' => 'spouse'
-                ];
-            }
-            
-            // Add parent relationships
-            if (!$isSpouse) {
-                $parentId1 = ($parentFamilyId * 2) - 1;
-                $parentId2 = $parentFamilyId * 2;
-                $relationships[] = [
-                    'id' => $i * 100 + 1,
-                    'to_member_id' => $parentId1,
-                    'relationship_type' => 'child'
-                ];
-                $relationships[] = [
-                    'id' => $i * 100 + 2,
-                    'to_member_id' => $parentId2,
-                    'relationship_type' => 'child'
-                ];
-            }
-            
-            // Add parent relationships to third generation
-            if (!$isSpouse) {
-                for ($child = 71; $child <= 150; $child++) {
-                    if ($child % 25 === ($i % 25)) {
-                        $relationships[] = [
-                            'id' => $i * 1000 + $child,
-                            'to_member_id' => $child,
-                            'relationship_type' => 'parent'
-                        ];
-                    }
-                }
-            }
-            
-            $sampleData[] = [
-                'id' => $i,
-                'first_name' => $isSpouse ? 
-                    ($i % 2 === 0 ? "James" : "Sarah") . " " . chr(65 + ($i % 26)) :
-                    ($i % 2 === 0 ? "William" : "Elizabeth") . " " . chr(65 + ($i % 26)),
-                'last_name' => $isSpouse ? "Spouse_Gen2_" . ($i - 45) : "Generation2_" . $parentFamilyId,
-                'birth_date' => $birthYear . "-" . str_pad(rand(1, 12), 2, "0", STR_PAD_LEFT) . "-" . str_pad(rand(1, 28), 2, "0", STR_PAD_LEFT),
-                'gender' => $i % 2 === 0 ? 'male' : 'female',
-                'photo' => null,
-                'notes' => "Second generation - " . ($isSpouse ? "spouse" : "child") . " of family " . $parentFamilyId,
-                'relationships' => $relationships
-            ];
-        }
-        
-        // Third Generation (80 people - includes spouses)
-        for ($i = 71; $i <= 150; $i++) {
-            $isSpouse = $i > 110; // Last 40 are spouses
-            $parentFamilyId = ($i % 25) + 1;
-            $spouseId = $isSpouse ? null : $i + 40;
-            $birthYear = rand(1990, 2000);
-            
-            $relationships = [];
-            
-            // Add spouse relationship
-            if (!$isSpouse) {
-                $relationships[] = [
-                    'id' => $i * 100,
-                    'to_member_id' => $spouseId,
-                    'relationship_type' => 'spouse'
-                ];
-            }
-            
-            // Add parent relationships
-            if (!$isSpouse) {
-                $parentId1 = 21 + ($parentFamilyId - 1);
-                $parentId2 = 46 + ($parentFamilyId - 1);
-                $relationships[] = [
-                    'id' => $i * 100 + 1,
-                    'to_member_id' => $parentId1,
-                    'relationship_type' => 'child'
-                ];
-                $relationships[] = [
-                    'id' => $i * 100 + 2,
-                    'to_member_id' => $parentId2,
-                    'relationship_type' => 'child'
-                ];
-            }
-            
-            // Add parent relationships to fourth generation
-            if (!$isSpouse) {
-                for ($child = 151; $child <= 200; $child++) {
-                    if ($child % 40 === ($i % 40)) {
-                        $relationships[] = [
-                            'id' => $i * 1000 + $child,
-                            'to_member_id' => $child,
-                            'relationship_type' => 'parent'
-                        ];
-                    }
-                }
-            }
-            
-            $sampleData[] = [
-                'id' => $i,
-                'first_name' => $isSpouse ? 
-                    ($i % 2 === 0 ? "Michael" : "Emma") . " " . chr(65 + ($i % 26)) :
-                    ($i % 2 === 0 ? "Daniel" : "Sophia") . " " . chr(65 + ($i % 26)),
-                'last_name' => $isSpouse ? "Spouse_Gen3_" . ($i - 110) : "Generation3_" . $parentFamilyId,
-                'birth_date' => $birthYear . "-" . str_pad(rand(1, 12), 2, "0", STR_PAD_LEFT) . "-" . str_pad(rand(1, 28), 2, "0", STR_PAD_LEFT),
-                'gender' => $i % 2 === 0 ? 'male' : 'female',
-                'photo' => null,
-                'notes' => "Third generation - " . ($isSpouse ? "spouse" : "child") . " of family " . $parentFamilyId,
-                'relationships' => $relationships
-            ];
-        }
-        
-        // Fourth Generation (50 people - youngest generation)
-        for ($i = 151; $i <= 200; $i++) {
-            $parentFamilyId = ($i % 40) + 1;
-            $birthYear = rand(2010, 2020);
-            
-            $relationships = [];
-            
-            // Add parent relationships
-            $parentId1 = 71 + ($parentFamilyId - 1);
-            $parentId2 = 111 + ($parentFamilyId - 1);
-            $relationships[] = [
-                'id' => $i * 100 + 1,
-                'to_member_id' => $parentId1,
-                'relationship_type' => 'child'
-            ];
-            $relationships[] = [
-                'id' => $i * 100 + 2,
-                'to_member_id' => $parentId2,
-                'relationship_type' => 'child'
-            ];
-            
-            $sampleData[] = [
-                'id' => $i,
-                'first_name' => ($i % 2 === 0 ? "Lucas" : "Olivia") . " " . chr(65 + ($i % 26)),
-                'last_name' => "Generation4_" . $parentFamilyId,
-                'birth_date' => $birthYear . "-" . str_pad(rand(1, 12), 2, "0", STR_PAD_LEFT) . "-" . str_pad(rand(1, 28), 2, "0", STR_PAD_LEFT),
-                'gender' => $i % 2 === 0 ? 'male' : 'female',
-                'photo' => null,
-                'notes' => "Fourth generation - child of family " . $parentFamilyId,
-                'relationships' => $relationships
-            ];
+        if (!$response->successful()) {
+            Log::error('Failed to fetch family members', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return back()->withErrors(['error' => 'Failed to fetch family members']);
         }
 
         return Inertia::render('FamilyTree/Index', [
-            'familyMembers' => $sampleData
+            'familyMembers' => $response->json('data', [])
         ]);
     }
 

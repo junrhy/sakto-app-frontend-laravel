@@ -15,8 +15,8 @@ class PosRestaurantController extends Controller
 
     public function __construct()
     {
-        $this->apiUrl = env('API_URL');
-        $this->apiToken = env('API_TOKEN');
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
     }
 
     public function index(Request $request)

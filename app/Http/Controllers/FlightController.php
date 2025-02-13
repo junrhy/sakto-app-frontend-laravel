@@ -12,20 +12,17 @@ class FlightController extends Controller
 
     public function __construct()
     {
-        $this->baseUrl = env('AMADEUS_API_ENV') === 'production' 
-            ? 'https://api.amadeus.com' 
-            : 'https://test.api.amadeus.com';
-        
+        $this->baseUrl = config('amadeus.base_url');
         $this->getAccessToken();
     }
 
     private function getAccessToken()
     {
         try {
-            $response = Http::asForm()->post($this->baseUrl . '/v1/security/oauth2/token', [
+            $response = Http::asForm()->post("{$this->baseUrl}/v1/security/oauth2/token", [
                 'grant_type' => 'client_credentials',
-                'client_id' => env('AMADEUS_CLIENT_ID'),
-                'client_secret' => env('AMADEUS_CLIENT_SECRET'),
+                'client_id' => config('amadeus.client_id'),
+                'client_secret' => config('amadeus.client_secret'),
             ]);
 
             if ($response->successful()) {

@@ -17,10 +17,16 @@ export default defineConfig({
     },
     plugins: [
         laravel({
-            input: 'resources/js/app.tsx',
-            ssr: 'resources/js/ssr.tsx',
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.tsx',
+            ],
             refresh: true,
         }),
         react(),
     ],
+    define: {
+        'process.env.API_URL': JSON.stringify(process.env.API_URL),
+        'process.env.API_TOKEN': JSON.stringify(process.env.API_TOKEN),
+    },
 });

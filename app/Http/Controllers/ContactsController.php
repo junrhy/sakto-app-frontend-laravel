@@ -14,23 +14,48 @@ class ContactsController extends Controller
 
     public function __construct()
     {
-        $this->apiUrl = env('API_URL');
-        $this->apiToken = env('API_TOKEN');
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
     }
 
     public function index()
     {
-        $clientIdentifier = auth()->user()->identifier;
-        $response = Http::withToken($this->apiToken)    
-            ->get("{$this->apiUrl}/contacts", [
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            Log::info('Making API request', [
+                'url' => "{$this->apiUrl}/contacts",
                 'client_identifier' => $clientIdentifier
             ]);
-        
-        $contacts = $response->json();
 
-        return Inertia::render('Contacts/Index', [
-            'contacts' => $contacts
-        ]);
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/contacts", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => "{$this->apiUrl}/contacts"
+                ]);
+                
+                return back()->withErrors(['error' => 'Failed to fetch contacts']);
+            }
+
+            $contacts = $response->json();
+
+            return Inertia::render('Contacts/Index', [
+                'contacts' => $contacts
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in contacts index', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while fetching contacts']);
+        }
     }
 
     public function create()
