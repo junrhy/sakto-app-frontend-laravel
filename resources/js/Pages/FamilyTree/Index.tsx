@@ -46,6 +46,8 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         gender?: string;
         photo?: string;
     }>({});
+    const [showDeathDate, setShowDeathDate] = useState(false);
+    const [showEditDeathDate, setShowEditDeathDate] = useState(false);
 
     const filteredMembers = familyMembers.filter((member: FamilyMember) => 
         `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
@@ -59,6 +61,17 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             sibling: 'Sibling of'
         };
         return labels[type];
+    };
+
+    const calculateAge = (birthDate: string, endDate: string | null): number => {
+        const birth = new Date(birthDate);
+        const end = endDate ? new Date(endDate) : new Date();
+        let age = end.getFullYear() - birth.getFullYear();
+        const monthDiff = end.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
     };
 
     const getMemberById = (id: number): FamilyMember | undefined => {
@@ -286,6 +299,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             photo: null,
         });
         setPhotoPreview(null);
+        setShowDeathDate(false);
     };
 
     const handleEditMember = async () => {
@@ -379,10 +393,23 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     };
 
     const startEditing = (member: FamilyMember) => {
+        // Format the birth date to YYYY-MM-DD for the date input
+        const formattedBirthDate = new Date(member.birth_date).toISOString().split('T')[0];
+        
+        // Format death date if it exists
+        let formattedDeathDate = '';
+        if (member.death_date) {
+            formattedDeathDate = new Date(member.death_date).toISOString().split('T')[0];
+        }
+        
         setEditingMember({
             ...member,
+            birth_date: formattedBirthDate,
+            death_date: formattedDeathDate,
             photo: member.photo // Keep the existing photo URL as string
         });
+        // Set showEditDeathDate to true if member has a death date
+        setShowEditDeathDate(!!member.death_date);
         setIsEditModalOpen(true);
     };
 
@@ -708,6 +735,20 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         }).length}
                                     </div>
                                 </div>
+                                {/* Add new card for living members */}
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-emerald-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-emerald-600'}`}>Living Members</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                                        {familyMembers.filter(member => !member.death_date).length}
+                                    </div>
+                                </div>
+                                {/* Add new card for deceased members */}
+                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Deceased Members</div>
+                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        {familyMembers.filter(member => !!member.death_date).length}
+                                    </div>
+                                </div>
                                 {/* Add new card for members without relationships */}
                                 <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'}`}>
                                     <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-red-600'}`}>Unconnected Members</div>
@@ -733,9 +774,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                 }`}
                                                 onClick={() => startManagingRelationships(member)}
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                                        isDarkMode ? 'bg-gray-500' : 'bg-red-200'
+                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                                    <div className={`w-16 h-16 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                        isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
                                                     }`}>
                                                         {member.photo ? (
                                                             <img
@@ -745,24 +786,24 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                             />
                                                         ) : (
                                                             <span className={`text-sm ${
-                                                                isDarkMode ? 'text-gray-300' : 'text-red-600'
+                                                                isDarkMode ? 'text-gray-300' : 'text-gray-600'
                                                             }`}>
                                                                 {member.first_name[0]}
                                                                 {member.last_name[0]}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <div className={`font-medium ${
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className={`font-medium truncate ${
                                                             isDarkMode ? 'text-gray-200' : 'text-gray-900'
                                                         }`}>
                                                             {member.first_name} {member.last_name}
-                                                        </div>
-                                                        <div className={`text-sm ${
+                                                        </h4>
+                                                        <p className={`text-sm break-words ${
                                                             isDarkMode ? 'text-gray-400' : 'text-gray-600'
                                                         }`}>
                                                             Click to add relationships
-                                                        </div>
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -873,8 +914,8 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             }`}
                                             onClick={() => setSelectedMember(member)}
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                                <div className={`w-16 h-16 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                                                     isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
                                                 }`}>
                                                     {member.photo ? (
@@ -884,7 +925,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                             className="w-full h-full rounded-full object-cover"
                                                         />
                                                     ) : (
-                                                        <span className={`text-xl ${
+                                                        <span className={`text-sm ${
                                                             isDarkMode ? 'text-gray-300' : 'text-gray-600'
                                                         }`}>
                                                             {member.first_name[0]}
@@ -892,40 +933,43 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <h4 className={`font-medium ${
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className={`font-medium truncate ${
                                                         isDarkMode ? 'text-gray-200' : 'text-gray-900'
                                                     }`}>
                                                         {member.first_name} {member.last_name}
                                                     </h4>
-                                                    <p className={`text-sm ${
+                                                    <p className={`text-sm break-words ${
                                                         isDarkMode ? 'text-gray-400' : 'text-gray-600'
                                                     }`}>
-                                                        Born: {new Date(member.birth_date).toLocaleDateString()}
+                                                        Born: {new Date(member.birth_date).toLocaleDateString()} (Age: {calculateAge(member.birth_date, member.death_date || null)})
+                                                        {member.death_date && (
+                                                            <> • Died: {new Date(member.death_date).toLocaleDateString()}</>
+                                                        )}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             {selectedMember?.id === member.id && (
-                                                <div className="mt-4 space-y-2">
-                                                    <p className={`text-sm ${
+                                                <div className="mt-4 space-y-3">
+                                                    <p className={`text-sm break-words ${
                                                         isDarkMode ? 'text-gray-400' : 'text-gray-600'
                                                     }`}>
                                                         {member.notes}
                                                     </p>
                                                     <div className="mt-2">
-                                                        <h5 className={`text-sm font-medium mb-1 ${
+                                                        <h5 className={`text-sm font-medium mb-2 ${
                                                             isDarkMode ? 'text-gray-300' : 'text-gray-700'
                                                         }`}>
                                                             Relationships:
                                                         </h5>
-                                                        <ul className={`text-sm space-y-1 ${
+                                                        <ul className={`text-sm space-y-1.5 ${
                                                             isDarkMode ? 'text-gray-400' : 'text-gray-600'
                                                         }`}>
                                                             {member.relationships.map((rel: FamilyRelationship) => {
                                                                 const relatedMember = getMemberById(rel.to_member_id);
                                                                 return (
-                                                                    <li key={rel.id}>
+                                                                    <li key={rel.id} className="break-words">
                                                                         {getRelationshipLabel(rel.relationship_type)}:{' '}
                                                                         {relatedMember
                                                                             ? `${relatedMember.first_name} ${relatedMember.last_name}`
@@ -935,34 +979,43 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                             })}
                                                         </ul>
                                                     </div>
-                                                    <div className="flex gap-2 mt-4">
+                                                    <div className="flex flex-wrap gap-2 mt-4">
                                                         <button
-                                                            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
+                                                            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm rounded transition-colors duration-200 ${
                                                                 isDarkMode
                                                                     ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70'
                                                                     : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                                                             }`}
-                                                            onClick={() => startEditing(member)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                startEditing(member);
+                                                            }}
                                                         >
                                                             Edit
                                                         </button>
                                                         <button
-                                                            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
+                                                            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm rounded transition-colors duration-200 ${
                                                                 isDarkMode
                                                                     ? 'bg-purple-900/50 text-purple-300 hover:bg-purple-900/70'
                                                                     : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                                                             }`}
-                                                            onClick={() => startManagingRelationships(member)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                startManagingRelationships(member);
+                                                            }}
                                                         >
                                                             Manage Relationships
                                                         </button>
                                                         <button
-                                                            className={`px-3 py-1 text-sm rounded transition-colors duration-200 ${
+                                                            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm rounded transition-colors duration-200 ${
                                                                 isDarkMode
                                                                     ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70'
                                                                     : 'bg-red-100 text-red-700 hover:bg-red-200'
                                                             }`}
-                                                            onClick={() => handleDeleteMember(member.id)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteMember(member.id);
+                                                            }}
                                                         >
                                                             Delete
                                                         </button>
@@ -1131,22 +1184,41 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         )}
                                     </div>
                                     <div>
-                                        <label className={`block text-sm font-medium mb-1 ${
-                                            isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                        }`}>
-                                            Death Date
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={newMember.death_date}
-                                            onChange={(e) => setNewMember(prev => ({ ...prev, death_date: e.target.value }))}
-                                            min={newMember.birth_date}
-                                            className={`w-full px-3 py-2 rounded-md border ${
-                                                isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                        />
+                                        <div className="flex items-center mb-2">
+                                            <input
+                                                type="checkbox"
+                                                id="enableDeathDate"
+                                                checked={showDeathDate}
+                                                onChange={(e) => {
+                                                    setShowDeathDate(e.target.checked);
+                                                    if (!e.target.checked) {
+                                                        setNewMember(prev => ({ ...prev, death_date: '' }));
+                                                    }
+                                                }}
+                                                className="mr-2"
+                                            />
+                                            <label
+                                                htmlFor="enableDeathDate"
+                                                className={`text-sm font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                Add Death Date
+                                            </label>
+                                        </div>
+                                        {showDeathDate && (
+                                            <input
+                                                type="date"
+                                                value={newMember.death_date}
+                                                onChange={(e) => setNewMember(prev => ({ ...prev, death_date: e.target.value }))}
+                                                min={newMember.birth_date}
+                                                className={`w-full px-3 py-2 rounded-md border ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                                        : 'bg-white border-gray-300 text-gray-900'
+                                                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 
@@ -1346,25 +1418,47 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         />
                                     </div>
                                     <div>
-                                        <label className={`block text-sm font-medium mb-1 ${
-                                            isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                        }`}>
-                                            Death Date
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={editingMember.death_date || ''}
-                                            onChange={(e) => setEditingMember(prev => prev ? ({
-                                                ...prev,
-                                                death_date: e.target.value
-                                            }) : null)}
-                                            min={editingMember.birth_date}
-                                            className={`w-full px-3 py-2 rounded-md border ${
-                                                isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                        />
+                                        <div className="flex items-center mb-2">
+                                            <input
+                                                type="checkbox"
+                                                id="enableEditDeathDate"
+                                                checked={showEditDeathDate}
+                                                onChange={(e) => {
+                                                    setShowEditDeathDate(e.target.checked);
+                                                    if (!e.target.checked && editingMember) {
+                                                        setEditingMember(prev => prev ? ({
+                                                            ...prev,
+                                                            death_date: ''
+                                                        }) : null);
+                                                    }
+                                                }}
+                                                className="mr-2"
+                                            />
+                                            <label
+                                                htmlFor="enableEditDeathDate"
+                                                className={`text-sm font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                Add Death Date
+                                            </label>
+                                        </div>
+                                        {showEditDeathDate && (
+                                            <input
+                                                type="date"
+                                                value={editingMember.death_date || ''}
+                                                onChange={(e) => setEditingMember(prev => prev ? ({
+                                                    ...prev,
+                                                    death_date: e.target.value
+                                                }) : null)}
+                                                min={editingMember.birth_date}
+                                                className={`w-full px-3 py-2 rounded-md border ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                                        : 'bg-white border-gray-300 text-gray-900'
+                                                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                            />
+                                        )}
                                     </div>
                                 </div>
 
