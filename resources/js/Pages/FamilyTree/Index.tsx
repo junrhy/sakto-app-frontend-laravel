@@ -435,74 +435,97 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         try {
             // Read the file content
             const fileContent = await importFile.text();
-            const jsonData = JSON.parse(fileContent);
-            console.log('Parsed import file:', jsonData); // Debug log
-
-            // Validate the file structure
-            if (!jsonData.familyMembers && !jsonData.data?.familyMembers) {
-                throw new Error('Invalid file format: Missing family members data');
+            
+            // Validate JSON format
+            let jsonData;
+            try {
+                jsonData = JSON.parse(fileContent);
+                console.log('Successfully parsed JSON:', jsonData); // Debug log
+            } catch (parseError) {
+                console.error('JSON Parse Error:', parseError);
+                throw new Error('Invalid JSON format. Please ensure the file contains valid JSON data.');
             }
 
-            // Extract family members from the correct location in the JSON structure
-            const rawFamilyMembers = jsonData.familyMembers || jsonData.data?.familyMembers;
-
-            if (!Array.isArray(rawFamilyMembers)) {
-                throw new Error('Invalid file format: Family members must be an array');
+            // Validate the file structure and version
+            if (!jsonData.version || !jsonData.familyMembers) {
+                console.error('Invalid file structure:', jsonData);
+                throw new Error('Invalid file format: Missing required data (version or family members)');
             }
 
-            // Clean and map the family members data
-            const familyMembers = rawFamilyMembers.map((member: any, index) => ({
-                import_id: member.id || index + 1, // Use original ID or generate a temporary one
-                first_name: member.first_name,
-                last_name: member.last_name,
-                birth_date: member.birth_date,
-                death_date: member.death_date || null,
-                gender: member.gender,
-                notes: member.notes || null,
-                photo: member.photo || null,
-                relationships: member.relationships?.map((rel: { id: number; to_member_id: number; relationship_type: string }) => ({
-                    import_id: rel.id,
-                    to_member_import_id: rel.to_member_id,
-                    relationship_type: rel.relationship_type
-                })) || []
-            }));
-
-            console.log('Sending import request with data:', { // Debug log
-                family_members: familyMembers,
+            // Log the request that will be sent
+            const requestData = {
+                family_members: jsonData.familyMembers.map((member: {
+                    id: number;
+                    first_name: string;
+                    last_name: string;
+                    birth_date: string;
+                    death_date: string | null;
+                    gender: 'male' | 'female' | 'other';
+                    notes: string | null;
+                    photo: string | null;
+                    relationships?: Array<{
+                        id: number;
+                        to_member_id: number;
+                        relationship_type: RelationshipType;
+                    }>;
+                }) => ({
+                    import_id: member.id,
+                    first_name: member.first_name,
+                    last_name: member.last_name,
+                    birth_date: member.birth_date,
+                    death_date: member.death_date,
+                    gender: member.gender,
+                    notes: member.notes,
+                    photo: member.photo,
+                    relationships: member.relationships?.map((rel: {
+                        id: number;
+                        to_member_id: number;
+                        relationship_type: RelationshipType;
+                    }) => ({
+                        import_id: rel.id,
+                        to_member_import_id: rel.to_member_id,
+                        relationship_type: rel.relationship_type
+                    }))
+                })),
                 import_mode: importMode
-            });
+            };
+
+            console.log('Sending import request with data:', requestData);
+
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) {
+                throw new Error('CSRF token not found. Please refresh the page and try again.');
+            }
 
             const response = await fetch('/family-tree/import', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
                 },
-                body: JSON.stringify({
-                    family_members: familyMembers.map(member => ({
-                        import_id: member.import_id,
-                        first_name: member.first_name,
-                        last_name: member.last_name,
-                        birth_date: member.birth_date,
-                        death_date: member.death_date,
-                        gender: member.gender,
-                        notes: member.notes,
-                        photo: member.photo,
-                        relationships: member.relationships?.map((rel: { import_id: number; to_member_import_id: number; relationship_type: RelationshipType }) => ({
-                            import_id: rel.import_id,
-                            to_member_import_id: rel.to_member_import_id,
-                            relationship_type: rel.relationship_type
-                        }))
-                    })),
-                    import_mode: importMode
-                })
+                body: JSON.stringify(requestData)
             });
 
-            const result = await response.json();
-            console.log('Import response:', result); // Debug log
+            // Log the raw response for debugging
+            console.log('Raw response status:', response.status);
+            console.log('Raw response headers:', Object.fromEntries(response.headers.entries()));
+            
+            // Try to get the response content
+            const responseText = await response.text();
+            console.log('Raw response text:', responseText);
+
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (error) {
+                console.error('Error parsing response:', error);
+                throw new Error('Server returned invalid JSON response. Please try again.');
+            }
 
             if (!response.ok) {
-                throw new Error(result.error || 'Failed to import family tree');
+                throw new Error(result.error || `Import failed with status ${response.status}`);
             }
 
             // Close modal and reset state
@@ -517,6 +540,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                 skipped: 0,
                 relationships_created: 0
             };
+            
             alert(`Family tree imported successfully!\n\nStats:\n` +
                   `Total processed: ${stats.total}\n` +
                   `Created: ${stats.created}\n` +
