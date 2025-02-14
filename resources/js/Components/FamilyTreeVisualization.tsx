@@ -14,6 +14,7 @@ interface TreeNode {
     name: string;
     attributes?: {
         birth?: string;
+        death?: string;
         gender?: string;
         relationship?: string;
         isBranch?: boolean;
@@ -86,7 +87,8 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                 return {
                     name: `${member.first_name} ${member.last_name}`,
                     attributes: {
-                        birth: new Date(member.birth_date).getFullYear().toString(),
+                        birth: new Date(member.birth_date).toISOString().split('T')[0],
+                        death: member.death_date ? new Date(member.death_date).toISOString().split('T')[0] : undefined,
                         gender: member.gender,
                         isReference: true
                     }
@@ -111,7 +113,8 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                     children.push({
                         name: `${spouseMember.first_name} ${spouseMember.last_name}`,
                         attributes: {
-                            birth: new Date(spouseMember.birth_date).getFullYear().toString(),
+                            birth: new Date(spouseMember.birth_date).toISOString().split('T')[0],
+                            death: spouseMember.death_date ? new Date(spouseMember.death_date).toISOString().split('T')[0] : undefined,
                             relationship: 'Spouse',
                             gender: spouseMember.gender
                         }
@@ -195,7 +198,8 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             return {
                 name: `${member.first_name} ${member.last_name}`,
                 attributes: {
-                    birth: new Date(member.birth_date).getFullYear().toString(),
+                    birth: new Date(member.birth_date).toISOString().split('T')[0],
+                    death: member.death_date ? new Date(member.death_date).toISOString().split('T')[0] : undefined,
                     gender: member.gender
                 },
                 children: children.length > 0 ? children : undefined
@@ -233,6 +237,17 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         }
     };
 
+    const calculateAge = (birth: string, death?: string): number => {
+        const birthDate = new Date(birth);
+        const endDate = death ? new Date(death) : new Date();
+        let age = endDate.getFullYear() - birthDate.getFullYear();
+        const monthDiff = endDate.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
     const renderForeignObjectNode = ({
         nodeDatum,
         foreignObjectProps
@@ -241,6 +256,9 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         if (nodeDatum.attributes?.isBranch) {
             return <g />;
         }
+
+        const age = calculateAge(nodeDatum.attributes?.birth, nodeDatum.attributes?.death);
+        const isDeceased = !!nodeDatum.attributes?.death;
 
         return (
             <g>
@@ -292,7 +310,32 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                             lineHeight: isFullPage ? '14px' : '10px',
                             marginTop: isFullPage ? '2px' : '1px'
                         }}>
-                            {nodeDatum.attributes?.relationship || `Born: ${nodeDatum.attributes?.birth}`}
+                            {nodeDatum.attributes?.relationship ? (
+                                <>
+                                    <span>Spouse • </span>
+                                    {isDeceased ? (
+                                        <span style={{ color: isDarkMode ? '#ef4444' : '#dc2626' }}>
+                                            Age: {age}
+                                        </span>
+                                    ) : (
+                                        <span style={{ color: isDarkMode ? '#10b981' : '#059669' }}>
+                                            Age: {age}
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    {isDeceased ? (
+                                        <span style={{ color: isDarkMode ? '#ef4444' : '#dc2626' }}>
+                                            Age: {age}
+                                        </span>
+                                    ) : (
+                                        <span style={{ color: isDarkMode ? '#10b981' : '#059669' }}>
+                                            Age: {age}
+                                        </span>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                 </foreignObject>
