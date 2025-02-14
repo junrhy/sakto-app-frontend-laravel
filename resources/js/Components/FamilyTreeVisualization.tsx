@@ -316,6 +316,48 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         }
     };
 
+    const handleWheel = useCallback((event: WheelEvent) => {
+        event.preventDefault();
+        if (!containerRef.current) return;
+
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        const mouseX = event.clientX - containerRef.current.offsetLeft;
+        const mouseY = event.clientY - containerRef.current.offsetTop;
+
+        const deltaY = event.deltaY;
+        const zoomFactor = 0.1;
+        const newZoom = deltaY > 0 
+            ? Math.max(zoom - zoomFactor, 0.4) 
+            : Math.min(zoom + zoomFactor, 2);
+
+        // Calculate the point-under-mouse-before-zoom in screen coordinates
+        const pointBeforeZoomX = (mouseX - translate.x) / zoom;
+        const pointBeforeZoomY = (mouseY - translate.y) / zoom;
+
+        // Calculate the point-under-mouse-after-zoom in screen coordinates
+        const pointAfterZoomX = (mouseX - translate.x) / newZoom;
+        const pointAfterZoomY = (mouseY - translate.y) / newZoom;
+
+        // Adjust translation to keep the point under the mouse fixed
+        setTranslate(prev => ({
+            x: prev.x + (pointAfterZoomX - pointBeforeZoomX) * newZoom,
+            y: prev.y + (pointAfterZoomY - pointBeforeZoomY) * newZoom
+        }));
+        setZoom(newZoom);
+    }, [zoom, translate]);
+
+    React.useEffect(() => {
+        const container = containerRef.current;
+        if (container) {
+            container.addEventListener('wheel', handleWheel, { passive: false });
+        }
+        return () => {
+            if (container) {
+                container.removeEventListener('wheel', handleWheel);
+            }
+        };
+    }, [handleWheel]);
+
     return (
         <div 
             ref={containerRef} 
