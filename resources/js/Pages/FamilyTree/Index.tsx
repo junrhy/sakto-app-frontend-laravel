@@ -6,6 +6,7 @@ import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompre
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 
 export default function Index({ auth, familyMembers }: FamilyTreeProps) {
+    console.log(familyMembers);
     const [searchTerm, setSearchTerm] = useState('');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
@@ -90,13 +91,13 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         }
     };
 
-    const validateForm = (data: { 
+    const validateForm = (data: {
         first_name: string;
         last_name: string;
         birth_date: string;
-        death_date?: string | null | undefined;
+        death_date?: string | null;
         gender: 'male' | 'female' | 'other';
-        notes: string;
+        notes: string | null;
         photo: File | string | null;
     }) => {
         const errors: typeof formErrors = {};
@@ -155,7 +156,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         formData.append('birth_date', newMember.birth_date);
         formData.append('death_date', newMember.death_date);
         formData.append('gender', newMember.gender);
-        formData.append('notes', newMember.notes);
+        formData.append('notes', newMember.notes || '');
         if (newMember.photo) {
             formData.append('photo', newMember.photo);
         }

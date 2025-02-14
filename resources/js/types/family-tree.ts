@@ -8,14 +8,18 @@ export interface FamilyMember {
     death_date?: string | null;
     gender: 'male' | 'female' | 'other';
     photo: string | null;
-    notes: string;
+    notes: string | null;
     relationships: FamilyRelationship[];
+    related_to: FamilyRelationship[];
 }
 
 export interface FamilyRelationship {
     id: number;
+    from_member_id: number;
     to_member_id: number;
     relationship_type: RelationshipType;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface FamilyTreeProps {

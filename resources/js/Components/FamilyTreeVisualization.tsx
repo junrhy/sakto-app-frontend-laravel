@@ -54,18 +54,32 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         // Track all processed members to ensure we don't miss any
         const globalProcessedIds = new Set<number>();
 
-        // Find root nodes (members without parents or oldest in their generation)
-        const rootMembers = familyMembers.filter(member => 
-            !member.relationships.some(rel => rel.relationship_type === 'child')
+        // Find the oldest generation by birth date and relationship structure
+        const sortedByAge = [...familyMembers].sort((a, b) => 
+            new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime()
         );
 
-        // If no root members found, take the oldest members based on birth date
+        // Find members who are only parents (not children in any relationship)
+        const rootMembers = sortedByAge.filter(member => {
+            // Check if member is a parent
+            const isParent = member.relationships.some(rel => rel.relationship_type === 'parent') ||
+                            member.related_to.some(rel => rel.relationship_type === 'parent');
+
+            // Check if member is a child in any relationship
+            const isChild = member.relationships.some(rel => rel.relationship_type === 'child') ||
+                           member.related_to.some(rel => rel.relationship_type === 'child');
+
+            // Member is a root if they're a parent and not a child, or if they're one of the oldest members
+            return (isParent && !isChild) || member === sortedByAge[0];
+        });
+
+        // If still no root members found, take the oldest member
         if (rootMembers.length === 0) {
-            const sortedByAge = [...familyMembers].sort((a, b) => 
-                new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime()
-            );
             rootMembers.push(sortedByAge[0]);
         }
+
+        // Sort root members by birth date to ensure consistent ordering
+        rootMembers.sort((a, b) => new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime());
 
         const buildNode = (member: FamilyMember, processedIds = new Set<number>()): TreeNode => {
             if (processedIds.has(member.id)) {
@@ -86,13 +100,13 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             // Add spouse if exists (check both directions)
             const spouseRelationships = [
                 ...member.relationships.filter(rel => rel.relationship_type === 'spouse'),
-                ...familyMembers
-                    .filter(m => m.relationships.some(r => r.relationship_type === 'spouse' && r.to_member_id === member.id))
-                    .map(m => ({ relationship_type: 'spouse' as const, to_member_id: m.id }))
+                ...member.related_to.filter(rel => rel.relationship_type === 'spouse')
             ];
 
             spouseRelationships.forEach(spouseRel => {
-                const spouseMember = familyMembers.find(m => m.id === spouseRel.to_member_id);
+                const spouseMember = familyMembers.find(m => 
+                    m.id === (spouseRel.from_member_id === member.id ? spouseRel.to_member_id : spouseRel.from_member_id)
+                );
                 if (spouseMember && !processedIds.has(spouseMember.id)) {
                     children.push({
                         name: `${spouseMember.first_name} ${spouseMember.last_name}`,
@@ -111,31 +125,33 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             const allChildren = new Set<FamilyMember>();
             
             // Direct children (check both directions)
-            const parentRelationships = [
+            const childrenRelationships = [
                 ...member.relationships.filter(rel => rel.relationship_type === 'parent'),
-                ...familyMembers
-                    .filter(m => m.relationships.some(r => r.relationship_type === 'child' && r.to_member_id === member.id))
-                    .map(m => ({ relationship_type: 'parent' as const, to_member_id: m.id }))
+                ...member.related_to.filter(rel => rel.relationship_type === 'child')
             ];
 
-            parentRelationships.forEach(rel => {
-                const child = familyMembers.find(m => m.id === rel.to_member_id);
+            childrenRelationships.forEach(rel => {
+                const child = familyMembers.find(m => 
+                    m.id === (rel.from_member_id === member.id ? rel.to_member_id : rel.from_member_id)
+                );
                 if (child) allChildren.add(child);
             });
 
             // Children through spouse
             spouseRelationships.forEach(spouseRel => {
-                const spouse = familyMembers.find(m => m.id === spouseRel.to_member_id);
+                const spouse = familyMembers.find(m => 
+                    m.id === (spouseRel.from_member_id === member.id ? spouseRel.to_member_id : spouseRel.from_member_id)
+                );
                 if (spouse) {
                     const spouseChildren = [
                         ...spouse.relationships.filter(rel => rel.relationship_type === 'parent'),
-                        ...familyMembers
-                            .filter(m => m.relationships.some(r => r.relationship_type === 'child' && r.to_member_id === spouse.id))
-                            .map(m => ({ relationship_type: 'parent' as const, to_member_id: m.id }))
+                        ...spouse.related_to.filter(rel => rel.relationship_type === 'child')
                     ];
                     
                     spouseChildren.forEach(rel => {
-                        const child = familyMembers.find(m => m.id === rel.to_member_id);
+                        const child = familyMembers.find(m => 
+                            m.id === (rel.from_member_id === spouse.id ? rel.to_member_id : rel.from_member_id)
+                        );
                         if (child) allChildren.add(child);
                     });
                 }
@@ -146,12 +162,14 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             allChildren.forEach(child => {
                 const childSpouses = [
                     ...child.relationships.filter(rel => rel.relationship_type === 'spouse'),
-                    ...familyMembers
-                        .filter(m => m.relationships.some(r => r.relationship_type === 'spouse' && r.to_member_id === child.id))
-                        .map(m => ({ relationship_type: 'spouse' as const, to_member_id: m.id }))
+                    ...child.related_to.filter(rel => rel.relationship_type === 'spouse')
                 ];
                 
-                const spouseId = childSpouses.length > 0 ? childSpouses[0].to_member_id : null;
+                const spouseId = childSpouses.length > 0 ? 
+                    (childSpouses[0].from_member_id === child.id ? 
+                        childSpouses[0].to_member_id : 
+                        childSpouses[0].from_member_id) 
+                    : null;
                 
                 if (!childrenBySpouse.has(spouseId)) {
                     childrenBySpouse.set(spouseId, []);
@@ -197,6 +215,10 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             const additionalTrees = remainingMembers.map(member => buildNode(member));
             trees.push(...additionalTrees);
         }
+
+        // Add debug logging
+        console.log('Root members:', rootMembers);
+        console.log('All trees:', trees);
 
         return trees;
     }, [familyMembers]);
