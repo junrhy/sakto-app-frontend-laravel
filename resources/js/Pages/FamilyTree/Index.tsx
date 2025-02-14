@@ -594,11 +594,11 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     Import
                                 </button>
                                 <a
-                                    href="/family-tree/full-view"
-                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors duration-200 justify-center"
+                                    href={`/family-tree/${auth.user.identifier}/full-view`}
+                                    className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
+                                    target="_blank"
                                 >
-                                    <FaExpand className="mr-2" />
-                                    Full View
+                                    <FaExpand />
                                 </a>
                             </div>
 
