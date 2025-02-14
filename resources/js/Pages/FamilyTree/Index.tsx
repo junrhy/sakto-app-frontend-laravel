@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/family-tree';
-import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaExpand } from 'react-icons/fa';
+import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaExpand, FaUsers } from 'react-icons/fa';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 
 export default function Index({ auth, familyMembers }: FamilyTreeProps) {
@@ -626,6 +626,14 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     target="_blank"
                                 >
                                     <FaExpand />
+                                </a>
+                                <a
+                                    href={`/family-tree/${auth.user.identifier}/members`}
+                                    className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
+                                    target="_blank"
+                                    title="View Members Directory"
+                                >
+                                    <FaUsers />
                                 </a>
                             </div>
 

@@ -77,7 +77,7 @@ Route::post('/contacts/store-self', [ContactsController::class, 'storeSelf'])
 Route::get('/contacts/{id}/public', [ContactsController::class, 'publicProfile'])
     ->name('contacts.public-profile');
 
-// Public Family Tree Full View route
+// Public Family Tree routes
 Route::get('/family-tree/{clientIdentifier}/full-view', function ($clientIdentifier) {
     $response = Http::withToken(config('api.token'))
         ->get(config('api.url') . "/family-tree/members", [
@@ -93,6 +93,23 @@ Route::get('/family-tree/{clientIdentifier}/full-view', function ($clientIdentif
         'clientIdentifier' => $clientIdentifier
     ]);
 })->name('family-tree.full-view');
+
+// Public Family Member Full View route
+Route::get('/family-tree/{clientIdentifier}/members', function ($clientIdentifier) {
+    $response = Http::withToken(config('api.token'))
+        ->get(config('api.url') . "/family-tree/members", [
+            'client_identifier' => $clientIdentifier
+        ]);
+
+    if (!$response->successful()) {
+        return back()->withErrors(['error' => 'Failed to fetch family members']);
+    }
+
+    return Inertia::render('FamilyTree/FamilyMemberFullView', [
+        'familyMembers' => $response->json('data', []),
+        'clientIdentifier' => $clientIdentifier
+    ]);
+})->name('family-tree.members');
 
 Route::middleware('auth')->group(function () {
     // Help route
