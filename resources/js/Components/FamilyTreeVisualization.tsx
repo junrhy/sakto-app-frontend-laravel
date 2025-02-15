@@ -32,20 +32,72 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     const [selectedRootMember, setSelectedRootMember] = useState<number | null>(null);
     const [showCopiedToast, setShowCopiedToast] = useState(false);
     const [hideControls, setHideControls] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
-    // Read URL parameters on mount
+    // Handle window resize
     useEffect(() => {
+        const handleResize = () => {
+            if (containerRef.current) {
+                const { width, height } = containerRef.current.getBoundingClientRect();
+                setDimensions({ width, height });
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Initialize position and handle URL parameters
+    useEffect(() => {
+        if (!containerRef.current || isInitialized) return;
+
         const params = new URLSearchParams(window.location.search);
         const memberId = params.get('member');
         const hideControlsParam = params.get('hideControls');
+        const posX = params.get('x');
+        const posY = params.get('y');
+        const zoomLevel = params.get('zoom');
         
         if (memberId && familyMembers.some(member => member.id === parseInt(memberId))) {
             setSelectedRootMember(parseInt(memberId));
         }
         
         setHideControls(hideControlsParam === 'true');
-    }, [familyMembers]);
+
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
+
+        // Load position and zoom if they exist in URL
+        if (posX && posY && zoomLevel) {
+            setTranslate({ 
+                x: parseFloat(posX), 
+                y: parseFloat(posY) 
+            });
+            setZoom(parseFloat(zoomLevel));
+        } else {
+            // Set initial position if not loading from URL
+            setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
+            setZoom(isFullPage ? 0.6 : 0.8);
+        }
+
+        setIsInitialized(true);
+    }, [familyMembers, isFullPage, containerRef.current, isInitialized]);
+
+    // Function to update URL with current position
+    const updatePositionInURL = useCallback((newTranslate: { x: number, y: number }, newZoom: number) => {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('x', newTranslate.x.toString());
+        currentUrl.searchParams.set('y', newTranslate.y.toString());
+        currentUrl.searchParams.set('zoom', newZoom.toString());
+        
+        router.get(currentUrl.pathname + currentUrl.search, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    }, []);
 
     // Update URL when member is selected
     const handleMemberSelect = (value: string) => {
@@ -76,25 +128,6 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             return currentDate < oldestDate ? current : oldest;
         }, familyMembers[0]);
     }, [familyMembers]);
-
-    React.useEffect(() => {
-        if (containerRef.current) {
-            const { width, height } = containerRef.current.getBoundingClientRect();
-            setDimensions({ width, height });
-            setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
-        }
-
-        const handleResize = () => {
-            if (containerRef.current) {
-                const { width, height } = containerRef.current.getBoundingClientRect();
-                setDimensions({ width, height });
-                setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
-            }
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [isFullPage]);
 
     const buildTreeData = useCallback((): TreeNode[] => {
         if (!familyMembers.length) return [];
@@ -329,18 +362,36 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     };
 
     const handleZoomIn = () => {
-        setZoom(prev => Math.min(prev + 0.2, 2));
+        const newZoom = Math.min(zoom + 0.2, 2);
+        setZoom(newZoom);
+        updatePositionInURL(translate, newZoom);
     };
 
     const handleZoomOut = () => {
-        setZoom(prev => Math.max(prev - 0.2, 0.4));
+        const newZoom = Math.max(zoom - 0.2, 0.4);
+        setZoom(newZoom);
+        updatePositionInURL(translate, newZoom);
     };
 
     const handleReset = () => {
         if (containerRef.current) {
             const { width, height } = containerRef.current.getBoundingClientRect();
-            setZoom(isFullPage ? 0.6 : 0.8);
-            setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
+            const newZoom = isFullPage ? 0.6 : 0.8;
+            const newTranslate = { x: width / 2, y: isFullPage ? height / 4 : 50 };
+            setZoom(newZoom);
+            setTranslate(newTranslate);
+            
+            // Clear position parameters from URL
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('x');
+            currentUrl.searchParams.delete('y');
+            currentUrl.searchParams.delete('zoom');
+            
+            router.get(currentUrl.pathname + currentUrl.search, {}, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true
+            });
         }
     };
 
@@ -394,32 +445,58 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
 
     // Add keyboard controls
     useEffect(() => {
-        const moveStep = 50; // pixels to move per key press
+        const normalStep = 50; // pixels to move per normal arrow key press
+        const pageStep = 200; // pixels to move per page movement
         
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Prevent default for all our custom key combinations
+            if (
+                ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown'].includes(e.key) ||
+                (e.shiftKey && ['ArrowLeft', 'ArrowRight'].includes(e.key))
+            ) {
+                e.preventDefault();
+            }
+
+            const step = e.shiftKey ? pageStep : normalStep;
+            let newTranslate = { ...translate };
+
             switch(e.key) {
                 case 'ArrowUp':
-                    setTranslate(prev => ({ ...prev, y: prev.y + moveStep }));
-                    e.preventDefault();
+                    newTranslate = { ...translate, y: translate.y + step };
+                    setTranslate(newTranslate);
+                    if (e.shiftKey) updatePositionInURL(newTranslate, zoom);
                     break;
                 case 'ArrowDown':
-                    setTranslate(prev => ({ ...prev, y: prev.y - moveStep }));
-                    e.preventDefault();
+                    newTranslate = { ...translate, y: translate.y - step };
+                    setTranslate(newTranslate);
+                    if (e.shiftKey) updatePositionInURL(newTranslate, zoom);
                     break;
                 case 'ArrowLeft':
-                    setTranslate(prev => ({ ...prev, x: prev.x + moveStep }));
-                    e.preventDefault();
+                    newTranslate = { ...translate, x: translate.x + step };
+                    setTranslate(newTranslate);
+                    if (e.shiftKey) updatePositionInURL(newTranslate, zoom);
                     break;
                 case 'ArrowRight':
-                    setTranslate(prev => ({ ...prev, x: prev.x - moveStep }));
-                    e.preventDefault();
+                    newTranslate = { ...translate, x: translate.x - step };
+                    setTranslate(newTranslate);
+                    if (e.shiftKey) updatePositionInURL(newTranslate, zoom);
+                    break;
+                case 'PageUp':
+                    newTranslate = { ...translate, y: translate.y + pageStep };
+                    setTranslate(newTranslate);
+                    updatePositionInURL(newTranslate, zoom);
+                    break;
+                case 'PageDown':
+                    newTranslate = { ...translate, y: translate.y - pageStep };
+                    setTranslate(newTranslate);
+                    updatePositionInURL(newTranslate, zoom);
                     break;
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [translate, zoom, updatePositionInURL]);
 
     return (
         <div 
@@ -455,17 +532,32 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                         </select>
                     </div>
 
-                    {/* Add arrow key controls info */}
-                    <div className={`absolute bottom-4 left-4 z-10 p-2 rounded-lg ${
+                    {/* Updated arrow key controls info */}
+                    <div className={`absolute bottom-4 left-4 z-10 p-3 rounded-lg ${
                         isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-700'
-                    } shadow-lg`}>
+                    } shadow-lg space-y-2`}>
                         <div className="flex items-center gap-2">
-                            <span>Move with arrow keys</span>
+                            <span>Normal move:</span>
                             <div className="flex gap-1">
                                 <FaArrowUp className="text-sm" />
                                 <FaArrowDown className="text-sm" />
                                 <FaArrowLeft className="text-sm" />
                                 <FaArrowRight className="text-sm" />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span>Page move:</span>
+                            <div className="flex items-center gap-1">
+                                <span className="text-xs px-1 border rounded">Shift</span>
+                                <span>+</span>
+                                <div className="flex gap-1">
+                                    <FaArrowUp className="text-sm" />
+                                    <FaArrowDown className="text-sm" />
+                                    <FaArrowLeft className="text-sm" />
+                                    <FaArrowRight className="text-sm" />
+                                </div>
+                                <span>or</span>
+                                <span className="text-xs px-1 border rounded">Page Up/Down</span>
                             </div>
                         </div>
                     </div>
