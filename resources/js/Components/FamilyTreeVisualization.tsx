@@ -28,7 +28,17 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     const [zoom, setZoom] = useState(1);
     const [translate, setTranslate] = useState({ x: 0, y: 0 });
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [selectedRootMember, setSelectedRootMember] = useState<number | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    // Find the oldest member
+    const getOldestMember = useCallback(() => {
+        return familyMembers.reduce((oldest, current) => {
+            const oldestDate = new Date(oldest.birth_date);
+            const currentDate = new Date(current.birth_date);
+            return currentDate < oldestDate ? current : oldest;
+        }, familyMembers[0]);
+    }, [familyMembers]);
 
     React.useEffect(() => {
         if (containerRef.current) {
@@ -54,33 +64,6 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
 
         // Track all processed members to ensure we don't miss any
         const globalProcessedIds = new Set<number>();
-
-        // Find the oldest generation by birth date and relationship structure
-        const sortedByAge = [...familyMembers].sort((a, b) => 
-            new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime()
-        );
-
-        // Find members who are only parents (not children in any relationship)
-        const rootMembers = sortedByAge.filter(member => {
-            // Check if member is a parent
-            const isParent = member.relationships.some(rel => rel.relationship_type === 'parent') ||
-                            member.related_to.some(rel => rel.relationship_type === 'parent');
-
-            // Check if member is a child in any relationship
-            const isChild = member.relationships.some(rel => rel.relationship_type === 'child') ||
-                           member.related_to.some(rel => rel.relationship_type === 'child');
-
-            // Member is a root if they're a parent and not a child, or if they're one of the oldest members
-            return (isParent && !isChild) || member === sortedByAge[0];
-        });
-
-        // If still no root members found, take the oldest member
-        if (rootMembers.length === 0) {
-            rootMembers.push(sortedByAge[0]);
-        }
-
-        // Sort root members by birth date to ensure consistent ordering
-        rootMembers.sort((a, b) => new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime());
 
         const buildNode = (member: FamilyMember, processedIds = new Set<number>()): TreeNode => {
             if (processedIds.has(member.id)) {
@@ -160,40 +143,12 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                 }
             });
 
-            // Group children by their spouses
-            const childrenBySpouse = new Map<number | null, FamilyMember[]>();
-            allChildren.forEach(child => {
-                const childSpouses = [
-                    ...child.relationships.filter(rel => rel.relationship_type === 'spouse'),
-                    ...child.related_to.filter(rel => rel.relationship_type === 'spouse')
-                ];
-                
-                const spouseId = childSpouses.length > 0 ? 
-                    (childSpouses[0].from_member_id === child.id ? 
-                        childSpouses[0].to_member_id : 
-                        childSpouses[0].from_member_id) 
-                    : null;
-                
-                if (!childrenBySpouse.has(spouseId)) {
-                    childrenBySpouse.set(spouseId, []);
-                }
-                childrenBySpouse.get(spouseId)?.push(child);
-            });
-
-            // Add each child group as a separate branch
-            childrenBySpouse.forEach((childGroup) => {
-                if (childGroup.length > 0) {
-                    const familyBranch: TreeNode = {
-                        name: "Family Branch",
-                        attributes: {
-                            isBranch: true,
-                            isHidden: true
-                        },
-                        children: childGroup.map(child => buildNode(child, new Set(processedIds)))
-                    };
-                    children.push(familyBranch);
-                }
-            });
+            // Add each child as a node
+            Array.from(allChildren)
+                .sort((a, b) => new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime())
+                .forEach(child => {
+                    children.push(buildNode(child, new Set(processedIds)));
+                });
 
             return {
                 name: `${member.first_name} ${member.last_name}`,
@@ -206,26 +161,19 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
             };
         };
 
-        // Build trees starting from root members
-        const trees = rootMembers.map(member => buildNode(member));
-
-        // Handle any remaining unprocessed members
-        const remainingMembers = familyMembers.filter(member => !globalProcessedIds.has(member.id));
-        if (remainingMembers.length > 0) {
-            // Sort remaining members by birth date
-            remainingMembers.sort((a, b) => new Date(a.birth_date).getTime() - new Date(b.birth_date).getTime());
-            
-            // Create additional trees for unconnected members
-            const additionalTrees = remainingMembers.map(member => buildNode(member));
-            trees.push(...additionalTrees);
+        // If a root member is selected, build tree from that member
+        if (selectedRootMember !== null) {
+            const selectedMember = familyMembers.find(m => m.id === selectedRootMember);
+            if (selectedMember) {
+                return [buildNode(selectedMember)];
+            }
+            return [];
         }
 
-        // Add debug logging
-        console.log('Root members:', rootMembers);
-        console.log('All trees:', trees);
-
-        return trees;
-    }, [familyMembers]);
+        // For "All Trees" or default view, start with the oldest member
+        const oldestMember = getOldestMember();
+        return [buildNode(oldestMember)];
+    }, [familyMembers, selectedRootMember, getOldestMember]);
 
     const handleNodeClick = (nodeData: any) => {
         const memberName = nodeData.data.name;
@@ -408,6 +356,35 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                 isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
             }`}
         >
+            {/* Root Member Selector */}
+            <div className={`absolute top-4 left-4 z-10 p-2 rounded-lg ${
+                isDarkMode ? 'bg-gray-800' : 'bg-white'
+            } shadow-lg min-w-[200px]`}>
+                <select
+                    value={selectedRootMember || ''}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setSelectedRootMember(value === '' ? null : parseInt(value));
+                        handleReset(); // Reset zoom and position when changing root member
+                    }}
+                    className={`w-full p-2 rounded-md border ${
+                        isDarkMode 
+                            ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                >
+                    <option value="">All Trees (Oldest Member)</option>
+                    {familyMembers
+                        .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                        .map(member => (
+                            <option key={member.id} value={member.id}>
+                                {member.first_name} {member.last_name}
+                            </option>
+                        ))
+                    }
+                </select>
+            </div>
+
             {/* Controls */}
             <div className={`absolute top-4 right-4 flex flex-col gap-2 z-10 p-2 rounded-lg ${
                 isDarkMode ? 'bg-gray-800' : 'bg-white'
