@@ -1,7 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import Tree from 'react-d3-tree';
 import type { FamilyMember } from '@/types/family-tree';
-import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo } from 'react-icons/fa';
+import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo, FaShare } from 'react-icons/fa';
+import { router } from '@inertiajs/react';
 
 interface Props {
     familyMembers: FamilyMember[];
@@ -29,7 +30,43 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     const [translate, setTranslate] = useState({ x: 0, y: 0 });
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [selectedRootMember, setSelectedRootMember] = useState<number | null>(null);
+    const [showCopiedToast, setShowCopiedToast] = useState(false);
+    const [hideControls, setHideControls] = useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    // Read URL parameters on mount
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const memberId = params.get('member');
+        const hideControlsParam = params.get('hideControls');
+        
+        if (memberId && familyMembers.some(member => member.id === parseInt(memberId))) {
+            setSelectedRootMember(parseInt(memberId));
+        }
+        
+        setHideControls(hideControlsParam === 'true');
+    }, [familyMembers]);
+
+    // Update URL when member is selected
+    const handleMemberSelect = (value: string) => {
+        const newMemberId = value === '' ? null : parseInt(value);
+        setSelectedRootMember(newMemberId);
+        handleReset(); // Reset zoom and position when changing root member
+
+        // Update URL while preserving other parameters
+        const currentUrl = new URL(window.location.href);
+        if (newMemberId === null) {
+            currentUrl.searchParams.delete('member');
+        } else {
+            currentUrl.searchParams.set('member', newMemberId.toString());
+        }
+        
+        router.get(currentUrl.pathname + currentUrl.search, {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
 
     // Find the oldest member
     const getOldestMember = useCallback(() => {
@@ -349,6 +386,12 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         };
     }, [handleWheel]);
 
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href);
+        setShowCopiedToast(true);
+        setTimeout(() => setShowCopiedToast(false), 2000);
+    };
+
     return (
         <div 
             ref={containerRef} 
@@ -356,70 +399,91 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                 isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
             }`}
         >
-            {/* Root Member Selector */}
-            <div className={`absolute top-4 left-4 z-10 p-2 rounded-lg ${
-                isDarkMode ? 'bg-gray-800' : 'bg-white'
-            } shadow-lg min-w-[200px]`}>
-                <select
-                    value={selectedRootMember || ''}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setSelectedRootMember(value === '' ? null : parseInt(value));
-                        handleReset(); // Reset zoom and position when changing root member
-                    }}
-                    className={`w-full p-2 rounded-md border ${
-                        isDarkMode 
-                            ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                            : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                >
-                    <option value="">All Trees (Oldest Member)</option>
-                    {familyMembers
-                        .sort((a, b) => a.first_name.localeCompare(b.first_name))
-                        .map(member => (
-                            <option key={member.id} value={member.id}>
-                                {member.first_name} {member.last_name}
-                            </option>
-                        ))
-                    }
-                </select>
-            </div>
+            {/* Root Member Selector - Only show if controls are not hidden */}
+            {!hideControls && (
+                <div className={`absolute top-4 left-4 z-10 p-2 rounded-lg ${
+                    isDarkMode ? 'bg-gray-800' : 'bg-white'
+                } shadow-lg min-w-[200px]`}>
+                    <select
+                        value={selectedRootMember || ''}
+                        onChange={(e) => handleMemberSelect(e.target.value)}
+                        className={`w-full p-2 rounded-md border ${
+                            isDarkMode 
+                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                : 'bg-white border-gray-300 text-gray-900'
+                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                    >
+                        <option value="">All Trees (Oldest Member)</option>
+                        {familyMembers
+                            .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                            .map(member => (
+                                <option key={member.id} value={member.id}>
+                                    {member.first_name} {member.last_name}
+                                </option>
+                            ))
+                        }
+                    </select>
+                </div>
+            )}
 
-            {/* Controls */}
-            <div className={`absolute top-4 right-4 flex flex-col gap-2 z-10 p-2 rounded-lg ${
-                isDarkMode ? 'bg-gray-800' : 'bg-white'
-            } shadow-lg`}>
-                <button
-                    onClick={handleZoomIn}
-                    className={`p-2 rounded-lg transition-colors ${
-                        isDarkMode 
-                            ? 'hover:bg-gray-700 text-gray-300' 
-                            : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                    <FaSearchPlus />
-                </button>
-                <button
-                    onClick={handleZoomOut}
-                    className={`p-2 rounded-lg transition-colors ${
-                        isDarkMode 
-                            ? 'hover:bg-gray-700 text-gray-300' 
-                            : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                    <FaSearchMinus />
-                </button>
-                <button
-                    onClick={handleReset}
-                    className={`p-2 rounded-lg transition-colors ${
-                        isDarkMode 
-                            ? 'hover:bg-gray-700 text-gray-300' 
-                            : 'hover:bg-gray-100 text-gray-600'
-                    }`}
-                >
-                    <FaRedo />
-                </button>
-            </div>
+            {/* Controls - Only show if controls are not hidden */}
+            {!hideControls && (
+                <div className={`absolute top-4 right-4 flex flex-col gap-2 z-10 p-2 rounded-lg ${
+                    isDarkMode ? 'bg-gray-800' : 'bg-white'
+                } shadow-lg`}>
+                    <button
+                        onClick={handleZoomIn}
+                        className={`p-2 rounded-lg transition-colors ${
+                            isDarkMode 
+                                ? 'hover:bg-gray-700 text-gray-300' 
+                                : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                        <FaSearchPlus />
+                    </button>
+                    <button
+                        onClick={handleZoomOut}
+                        className={`p-2 rounded-lg transition-colors ${
+                            isDarkMode 
+                                ? 'hover:bg-gray-700 text-gray-300' 
+                                : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                        <FaSearchMinus />
+                    </button>
+                    <button
+                        onClick={handleReset}
+                        className={`p-2 rounded-lg transition-colors ${
+                            isDarkMode 
+                                ? 'hover:bg-gray-700 text-gray-300' 
+                                : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                        <FaRedo />
+                    </button>
+                    <button
+                        onClick={handleShare}
+                        className={`p-2 rounded-lg transition-colors ${
+                            isDarkMode 
+                                ? 'hover:bg-gray-700 text-gray-300' 
+                                : 'hover:bg-gray-100 text-gray-600'
+                        }`}
+                    >
+                        <FaShare />
+                    </button>
+                </div>
+            )}
+
+            {/* Toast - Only show if controls are not hidden */}
+            {!hideControls && showCopiedToast && (
+                <div className={`absolute top-16 right-4 z-20 p-2 rounded-lg shadow-lg ${
+                    isDarkMode 
+                        ? 'bg-gray-800 text-gray-200' 
+                        : 'bg-white text-gray-700'
+                }`}>
+                    Link copied to clipboard!
+                </div>
+            )}
 
             {/* Tree container */}
             <div className="w-full h-full">
