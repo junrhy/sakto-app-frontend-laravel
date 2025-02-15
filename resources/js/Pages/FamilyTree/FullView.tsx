@@ -54,31 +54,6 @@ export default function FullView({ familyMembers }: FamilyTreeProps) {
         <>
             <Head title="Family Tree - Full View" />
 
-            {!hideControls && (
-                <div className={`fixed top-4 left-4 z-20 flex gap-2`}>
-                    <a
-                        href="/family-tree"
-                        className={`p-2 rounded-lg transition-colors ${
-                            isDarkMode 
-                                ? 'bg-gray-800 hover:bg-gray-700 text-gray-200' 
-                                : 'bg-white hover:bg-gray-100 text-gray-700'
-                        } shadow-lg`}
-                    >
-                        <FaTimes />
-                    </a>
-                    <button
-                        onClick={() => setIsDarkMode(!isDarkMode)}
-                        className={`p-2 rounded-lg transition-colors ${
-                            isDarkMode 
-                                ? 'bg-gray-800 hover:bg-gray-700 text-gray-200' 
-                                : 'bg-white hover:bg-gray-100 text-gray-700'
-                        } shadow-lg`}
-                    >
-                        {isDarkMode ? <FaSun /> : <FaMoon />}
-                    </button>
-                </div>
-            )}
-
             <div className="relative w-screen h-screen">
                 <FamilyTreeVisualization 
                     familyMembers={familyMembers}
