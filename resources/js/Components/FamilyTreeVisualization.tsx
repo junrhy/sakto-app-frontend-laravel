@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import Tree from 'react-d3-tree';
 import type { FamilyMember } from '@/types/family-tree';
-import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo, FaShare } from 'react-icons/fa';
+import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo, FaShare, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { router } from '@inertiajs/react';
 
 interface Props {
@@ -392,6 +392,35 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         setTimeout(() => setShowCopiedToast(false), 2000);
     };
 
+    // Add keyboard controls
+    useEffect(() => {
+        const moveStep = 50; // pixels to move per key press
+        
+        const handleKeyDown = (e: KeyboardEvent) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                    setTranslate(prev => ({ ...prev, y: prev.y + moveStep }));
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    setTranslate(prev => ({ ...prev, y: prev.y - moveStep }));
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    setTranslate(prev => ({ ...prev, x: prev.x + moveStep }));
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    setTranslate(prev => ({ ...prev, x: prev.x - moveStep }));
+                    e.preventDefault();
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     return (
         <div 
             ref={containerRef} 
@@ -401,29 +430,46 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         >
             {/* Root Member Selector - Only show if controls are not hidden */}
             {!hideControls && (
-                <div className={`absolute top-4 left-4 z-10 p-2 rounded-lg ${
-                    isDarkMode ? 'bg-gray-800' : 'bg-white'
-                } shadow-lg min-w-[200px]`}>
-                    <select
-                        value={selectedRootMember || ''}
-                        onChange={(e) => handleMemberSelect(e.target.value)}
-                        className={`w-full p-2 rounded-md border ${
-                            isDarkMode 
-                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                : 'bg-white border-gray-300 text-gray-900'
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                    >
-                        <option value="">All Trees (Oldest Member)</option>
-                        {familyMembers
-                            .sort((a, b) => a.first_name.localeCompare(b.first_name))
-                            .map(member => (
-                                <option key={member.id} value={member.id}>
-                                    {member.first_name} {member.last_name}
-                                </option>
-                            ))
-                        }
-                    </select>
-                </div>
+                <>
+                    <div className={`absolute top-4 left-4 z-10 p-2 rounded-lg ${
+                        isDarkMode ? 'bg-gray-800' : 'bg-white'
+                    } shadow-lg min-w-[200px]`}>
+                        <select
+                            value={selectedRootMember || ''}
+                            onChange={(e) => handleMemberSelect(e.target.value)}
+                            className={`w-full p-2 rounded-md border ${
+                                isDarkMode 
+                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                                    : 'bg-white border-gray-300 text-gray-900'
+                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                        >
+                            <option value="">All Trees (Oldest Member)</option>
+                            {familyMembers
+                                .sort((a, b) => a.first_name.localeCompare(b.first_name))
+                                .map(member => (
+                                    <option key={member.id} value={member.id}>
+                                        {member.first_name} {member.last_name}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                    </div>
+
+                    {/* Add arrow key controls info */}
+                    <div className={`absolute bottom-4 left-4 z-10 p-2 rounded-lg ${
+                        isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-700'
+                    } shadow-lg`}>
+                        <div className="flex items-center gap-2">
+                            <span>Move with arrow keys</span>
+                            <div className="flex gap-1">
+                                <FaArrowUp className="text-sm" />
+                                <FaArrowDown className="text-sm" />
+                                <FaArrowLeft className="text-sm" />
+                                <FaArrowRight className="text-sm" />
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
 
             {/* Controls - Only show if controls are not hidden */}
