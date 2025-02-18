@@ -94,6 +94,23 @@ Route::get('/family-tree/{clientIdentifier}/full-view', function ($clientIdentif
     ]);
 })->name('family-tree.full-view');
 
+// Circular View route
+Route::get('/family-tree/{clientIdentifier}/circular', function ($clientIdentifier) {
+    $response = Http::withToken(config('api.token'))
+        ->get(config('api.url') . "/family-tree/members", [
+            'client_identifier' => $clientIdentifier
+        ]);
+
+    if (!$response->successful()) {
+        return back()->withErrors(['error' => 'Failed to fetch family members']);
+    }
+
+    return Inertia::render('FamilyTree/CircularView', [
+        'familyMembers' => $response->json('data', []),
+        'clientIdentifier' => $clientIdentifier
+    ]);
+})->name('family-tree.circular');
+
 // Public Family Member Full View route
 Route::get('/family-tree/{clientIdentifier}/members', function ($clientIdentifier) {
     $response = Http::withToken(config('api.token'))
