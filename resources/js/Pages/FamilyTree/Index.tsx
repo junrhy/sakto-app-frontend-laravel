@@ -704,9 +704,27 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     </div>
                                 </div>
                                 <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Generations</div>
+                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Levels</div>
                                     <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                        {Math.max(...familyMembers.map(member => member.last_name.match(/Generation(\d+)/)?.[1] || '1').map(Number))}
+                                        {(() => {
+                                            const getLevel = (member: FamilyMember, visited = new Set<number>()): number => {
+                                                if (visited.has(member.id)) return 0;
+                                                visited.add(member.id);
+                                                
+                                                const parentRelationships = member.relationships.filter(
+                                                    rel => rel.relationship_type === 'parent'
+                                                );
+                                                
+                                                if (parentRelationships.length === 0) return 1;
+                                                
+                                                return 1 + Math.max(...parentRelationships.map(rel => {
+                                                    const parent = familyMembers.find(m => m.id === rel.to_member_id);
+                                                    return parent ? getLevel(parent, visited) : 0;
+                                                }));
+                                            };
+
+                                            return Math.max(...familyMembers.map(member => getLevel(member)));
+                                        })()}
                                     </div>
                                 </div>
                                 <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
