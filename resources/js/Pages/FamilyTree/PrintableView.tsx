@@ -39,6 +39,7 @@ interface TreeNode {
 
 const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedRootId, setSelectedRootId] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,18 +49,22 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
     return () => clearInterval(timer);
   }, []);
 
-  // Find the oldest member to use as root
+  // Modified to use selected root or find oldest member
   const rootMember = useMemo(() => {
     if (!familyMembers.length) return null;
+    
+    if (selectedRootId) {
+      return familyMembers.find(member => member.id === selectedRootId) || null;
+    }
     
     return familyMembers.reduce((oldest, current) => {
       const oldestDate = new Date(oldest.birth_date);
       const currentDate = new Date(current.birth_date);
       return currentDate < oldestDate ? current : oldest;
     });
-  }, [familyMembers]);
+  }, [familyMembers, selectedRootId]);
 
-  // Build the family tree structure
+  // Modified buildFamilyTree function
   const buildFamilyTree = (member: FamilyMember): TreeNode => {
     const node: TreeNode = {
       member,
@@ -72,6 +77,11 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
       node.spouse = familyMembers.find(m => m.id === spouseRelation.to_member_id);
     }
 
+    // Find all relationships where this member is the "from" member
+    const allRelationships = member.relationships
+      .filter((r: Relationship) => r.relationship_type === 'parent' || r.relationship_type === 'child');
+
+    // Get all related members
     // Find children and sort by birth date
     const childrenIds = member.relationships
       .filter((r: Relationship) => r.relationship_type === 'parent')
@@ -131,8 +141,16 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
     const position = siblings.findIndex(sibling => sibling.id === child.id) + 1;
     const total = siblings.length;
 
-    // Get parent's name
-    const parentName = `${parent.first_name} ${parent.last_name}`;
+    // Find the other parent (spouse)
+    const spouseRelation = parent.relationships.find(r => r.relationship_type === 'spouse');
+    const otherParent = spouseRelation 
+      ? familyMembers.find(m => m.id === spouseRelation.to_member_id)
+      : null;
+
+    // Create parent names string
+    const parentNames = otherParent
+      ? `${parent.first_name} ${parent.last_name} & ${otherParent.first_name} ${otherParent.last_name}`
+      : `${parent.first_name} ${parent.last_name}`;
 
     // Create ordinal number
     const ordinal = (n: number): string => {
@@ -141,7 +159,27 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
       return n + (s[(v - 20) % 10] || s[v] || s[0]);
     };
 
-    return `${ordinal(position)} child of ${parentName} (of ${total})`;
+    return `${ordinal(position)} child of ${parentNames} (of ${total})`;
+  };
+
+  // Add function to get all members in the tree
+  const getMembersInTree = (node: TreeNode): Set<number> => {
+    const members = new Set<number>([node.member.id]);
+    if (node.spouse) {
+      members.add(node.spouse.id);
+    }
+    node.children.forEach(child => {
+      getMembersInTree(child).forEach(id => members.add(id));
+    });
+    return members;
+  };
+
+  // Get unconnected members
+  const getUnconnectedMembers = (treeRoot: TreeNode | null): FamilyMember[] => {
+    if (!treeRoot) return familyMembers;
+    
+    const connectedMemberIds = getMembersInTree(treeRoot);
+    return familyMembers.filter(member => !connectedMemberIds.has(member.id));
   };
 
   if (!rootMember) {
@@ -230,7 +268,31 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
       <Head title="Printable Family Tree" />
       
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-8">Family Tree</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold">Family Tree</h1>
+          <div className="flex items-center gap-2">
+            <label htmlFor="rootMember" className="text-sm text-gray-600">
+              Select root member:
+            </label>
+            <select
+              id="rootMember"
+              className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              value={selectedRootId || ''}
+              onChange={(e) => setSelectedRootId(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Oldest member</option>
+              {familyMembers
+                .sort((a, b) => `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`))
+                .map(member => (
+                  <option key={member.id} value={member.id}>
+                    {member.last_name}, {member.first_name} ({new Date(member.birth_date).getFullYear()})
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+
         <div className="mb-4 text-sm text-gray-500">
           <div className="flex gap-4">
             <span className="flex items-center gap-1">
@@ -242,11 +304,19 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
             <span className="flex items-center gap-1">✝️ Deceased</span>
           </div>
         </div>
-        {renderNode(familyTree)}
         
-        <footer className="mt-8 pt-4 border-t border-gray-200 text-center text-gray-500 text-sm">
-          Generated on {currentTime.toLocaleDateString()} at {currentTime.toLocaleTimeString()}
-        </footer>
+        {rootMember && (
+          <>
+            <div className="mb-8">
+              {renderNode(buildFamilyTree(rootMember))}
+            </div>
+
+            <footer className="mt-8 pt-4 border-t border-gray-200 text-center text-gray-500 text-sm">
+              Generated on {currentTime.toLocaleDateString()} at {currentTime.toLocaleTimeString()}
+            </footer>
+          </>
+        )}
+        
       </div>
     </div>
   );
