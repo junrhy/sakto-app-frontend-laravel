@@ -110,14 +110,14 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
   };
 
   const getGenderStyles = (gender: 'male' | 'female', isDead: boolean) => {
-    const baseStyles = "p-4 border rounded-lg shadow transition-all duration-200 hover:shadow-lg";
+    const baseStyles = "p-4 border rounded-lg shadow transition-all duration-200 hover:shadow-lg bg-white";
     const aliveStyles = {
-      male: "bg-blue-50 border-blue-200",
-      female: "bg-pink-50 border-pink-200"
+      male: "border-blue-200 text-blue-900",
+      female: "border-pink-200 text-pink-900"
     } as const;
     const deadStyles = {
-      male: "bg-gray-100 border-gray-300 opacity-75",
-      female: "bg-gray-100 border-gray-300 opacity-75"
+      male: "border-gray-300 text-gray-700 opacity-75",
+      female: "border-gray-300 text-gray-700 opacity-75"
     } as const;
 
     return `${baseStyles} ${isDead ? deadStyles[gender] : aliveStyles[gender]}`;
@@ -264,19 +264,19 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-white p-8">
       <Head title="Printable Family Tree" />
       
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Family Tree</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Family Tree</h1>
           <div className="flex items-center gap-2">
-            <label htmlFor="rootMember" className="text-sm text-gray-600">
+            <label htmlFor="rootMember" className="text-sm text-gray-700">
               Select root member:
             </label>
             <select
               id="rootMember"
-              className="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              className="rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               value={selectedRootId || ''}
               onChange={(e) => setSelectedRootId(e.target.value ? Number(e.target.value) : null)}
             >
@@ -293,13 +293,13 @@ const PrintableView: React.FC<Props> = ({ familyMembers = [], clientIdentifier }
           </div>
         </div>
 
-        <div className="mb-4 text-sm text-gray-500">
+        <div className="mb-4 text-sm text-gray-700">
           <div className="flex gap-4">
             <span className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full bg-blue-50 border border-blue-200"></div> Male
+              <div className="w-3 h-3 rounded-full bg-white border border-blue-200"></div> Male
             </span>
             <span className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full bg-pink-50 border border-pink-200"></div> Female
+              <div className="w-3 h-3 rounded-full bg-white border border-pink-200"></div> Female
             </span>
             <span className="flex items-center gap-1">✝️ Deceased</span>
           </div>
