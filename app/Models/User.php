@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -28,6 +30,7 @@ class User extends Authenticatable
         'theme_color',
         'google_id',
         'project_identifier',
+        'identifier',
     ];
 
     /**
@@ -66,5 +69,14 @@ class User extends Authenticatable
     public function latestWidget(): HasOne
     {
         return $this->hasOne(Widget::class, 'user_id', 'id')->latestOfMany();
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($user) {
+            $user->identifier = (string) Str::uuid();
+        });
     }
 }

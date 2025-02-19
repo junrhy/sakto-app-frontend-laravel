@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
             'name' => 'Test User 1',
             'email' => 'client1@sakto.app',
             'password' => Hash::make('password'),
-            'project_identifier' => 'project-1',
+            'project_identifier' => 'trial',
         ];
 
         if (!User::where('email', $user['email'])->exists()) {
