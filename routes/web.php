@@ -145,7 +145,7 @@ Route::get('/family-tree/{clientIdentifier}/members', function ($clientIdentifie
     ]);
 })->name('family-tree.members');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Help route
     Route::get('/help', function () {
         return Inertia::render('Help', [
