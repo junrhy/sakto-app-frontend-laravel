@@ -15,17 +15,58 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = [
-            'id' => 1,
-            'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0002',
-            'name' => 'Test User 1',
-            'email' => 'client1@sakto.app',
-            'password' => Hash::make('password'),
-            'project_identifier' => 'trial',
+        $users = [
+            [
+                'id' => 1,
+                'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0002',
+                'name' => 'Developer',
+                'email' => 'developer@sakto.app',
+                'password' => Hash::make('password'),
+                'project_identifier' => 'trial',
+                'email_verified_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0003',
+                'name' => 'Tester 1',
+                'email' => 'tester1@sakto.app',
+                'password' => Hash::make('password'),
+                'project_identifier' => 'trial',
+                'email_verified_at' => now(),
+            ],
+            [
+                'id' => 3,
+                'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0004',
+                'name' => 'Tester 2',
+                'email' => 'tester2@sakto.app',
+                'password' => Hash::make('password'),
+                'project_identifier' => 'trial',
+                'email_verified_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0005',
+                'name' => 'Project Manager',
+                'email' => 'projectmanager@sakto.app',
+                'password' => Hash::make('password'),
+                'project_identifier' => 'trial',
+                'email_verified_at' => now(),
+            ],
+            [
+                'id' => 5,
+                'identifier' => 'c3de000a-9b28-11ef-8470-0242ac1d0006',
+                'name' => 'Product Owner',
+                'email' => 'productowner@sakto.app',
+                'password' => Hash::make('password'),
+                'project_identifier' => 'trial',
+                'email_verified_at' => now(),
+            ],
         ];
 
-        if (!User::where('email', $user['email'])->exists()) {
-            User::create($user);
+        foreach ($users as $user) {
+            if (!User::where('email', $user['email'])->exists()) {
+                User::create($user);
+            }
         }
     }
 }
