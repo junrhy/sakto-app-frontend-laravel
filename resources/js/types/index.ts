@@ -27,7 +27,13 @@ export interface PageProps {
     [key: string]: any;
 }
 
-export type WidgetType = "retail_sales" | "retail_inventory" | "retail_orders" | "fnb_tables" | "fnb_kitchen" | "fnb_reservations";
+export type WidgetType = "retail_sales" 
+    | "retail_inventory" 
+    | "retail_orders" 
+    | "fnb_tables" 
+    | "fnb_kitchen" 
+    | "fnb_reservations" 
+    | "family_tree_stats";
 
 export interface Widget {
     id: number;
@@ -43,4 +49,8 @@ export interface Dashboard {
     favorite: boolean;
     column_count: 1 | 2 | 3;
     widgets: Widget[];
+}
+
+export interface WidgetProps {
+    className?: string;
 } 

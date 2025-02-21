@@ -47,7 +47,7 @@ interface Props {
 }
 
 // Add this type definition near the top with other interfaces
-type AppType = 'retail' | 'fnb' | null;
+type AppType = 'retail' | 'fnb' | 'family-tree' | null;
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
     const url = usePage().url;
@@ -80,25 +80,24 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         dashboard_id: currentDashboard.id
     });
 
-    // Update the availableWidgets function to be more type-safe
-    const availableWidgets: WidgetTypeImport[] = (() => {
-        switch (appParam) {
-            case 'retail':
-                return [
-                    'retail_sales',
-                    'retail_inventory',
-                    'retail_orders'
-                ] as const;
-            case 'fnb':
-                return [
-                    'fnb_tables',
-                    'fnb_kitchen',
-                    'fnb_reservations'
-                ] as const;
-            default:
-                return [];
+    const getAvailableWidgets = (type: AppType): WidgetTypeImport[] => {
+        const familyWidgets = [
+            'family_tree_stats'
+        ] as unknown as WidgetTypeImport[];
+        
+        if (type === 'retail') {
+            return ['retail_sales', 'retail_inventory', 'retail_orders'] as WidgetTypeImport[];
         }
-    })();
+        if (type === 'fnb') {
+            return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'] as WidgetTypeImport[];
+        }
+        if (type === 'family-tree') {
+            return familyWidgets;
+        }
+        return [];
+    };
+
+    const availableWidgets = getAvailableWidgets(appParam);
 
     // Modify the addWidget function to use the form from component level
     const addWidget = (type: WidgetTypeImport) => {
@@ -419,6 +418,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                                     : type === "fnb_tables" ? "F&B Tables" 
                                                     : type === "fnb_kitchen" ? "F&B Kitchen" 
                                                     : type === "fnb_reservations" ? "F&B Reservations"
+                                                    : type === "family_tree_stats" ? "Family Tree Stats"
                                                     : (type as string).replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase())}
                                                 </SelectItem>
                                             ))}
@@ -639,6 +639,9 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                         }
                                         if (appParam === 'fnb') {
                                             return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'].includes(widget.type);
+                                        }
+                                        if (appParam === 'family-tree') {
+                                            return ['family_tree_stats'].includes(widget.type);
                                         }
                                         return false;
                                     })

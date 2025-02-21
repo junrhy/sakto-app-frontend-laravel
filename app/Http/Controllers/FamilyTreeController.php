@@ -361,4 +361,28 @@ class FamilyTreeController extends Controller
 
         return response()->json($response->json('data', []), $response->status());
     }
+
+    /**
+     * Get family tree statistics for the widget
+     */
+    public function getWidgetStats()
+    {
+        $clientIdentifier = auth()->user()->identifier;
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('Failed to fetch family members for widget', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return response()->json(['error' => 'Failed to fetch family members'], $response->status());
+        }
+
+        $familyMembers = $response->json('data', []);
+
+        return response()->json($familyMembers);
+    }
 }
