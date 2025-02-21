@@ -10,12 +10,21 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Events\Registered;  
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class GoogleController extends Controller
 {
+    protected $apiUrl, $apiToken;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
+    }
+
     public function redirect()
     {
         return Socialite::driver('google')->redirect();
@@ -62,7 +71,8 @@ class GoogleController extends Controller
             'email' => request('email'),
             'google_id' => request('google_id'),
             'project_identifier' => request('project_identifier'),
-            'password' => Hash::make(str()->random(32)),
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
         ]);
 
         event(new Registered($user));
@@ -92,6 +102,22 @@ class GoogleController extends Controller
                 ->exists()) {
                 Dashboard::create($dashboard);
             }
+        }
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/clients", [
+                'name' => $request->name,
+                'email' => $request->email,
+                'client_identifier' => $user->identifier,
+                'referrer' => 'https://sakto.app',
+            ]);
+
+        if (!$response->successful()) {
+            // Log the error or handle it appropriately
+            \Log::error('Failed to create client in API', [
+                'response' => $response->json(),
+                'user' => $user->toArray()
+            ]);
         }
 
         Auth::login($user);
