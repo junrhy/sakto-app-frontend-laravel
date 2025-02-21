@@ -107,6 +107,11 @@ class CreditsController extends Controller
             'transaction_id' => 'required|string',
             'proof_of_payment' => 'nullable|image|max:2048',
         ]);
+
+        if ($request->hasFile('proof_of_payment')) {
+            $path = $request->file('proof_of_payment')->store('proof_of_payment', 'public');
+            $validated['proof_of_payment'] = Storage::disk('public')->url($path);
+        }
         
         $clientIdentifier = auth()->user()->identifier;
         $validated['client_identifier'] = $clientIdentifier;

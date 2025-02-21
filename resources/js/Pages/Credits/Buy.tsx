@@ -11,6 +11,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
 import { format } from "date-fns";
+import { Dialog, DialogContent } from "@/Components/ui/dialog";
 
 interface Package {
     id: number;
@@ -66,6 +67,7 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>(initialPaymentHistory);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const recordsPerPage = 10;
 
     // Calculate pagination values
@@ -352,6 +354,7 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                             <TableHead>Payment Method</TableHead>
                                             <TableHead>Account Details</TableHead>
                                             <TableHead>Transaction ID</TableHead>
+                                            <TableHead>Proof of Payment</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -388,6 +391,16 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="font-mono">{payment.transaction_id}</TableCell>
+                                                    <TableCell>
+                                                        {payment.proof_of_payment && (
+                                                            <img 
+                                                                src={payment.proof_of_payment} 
+                                                                alt="Proof of Payment" 
+                                                                className="w-20 h-20 object-cover cursor-pointer hover:opacity-80 transition-opacity rounded-md"
+                                                                onClick={() => setSelectedImage(payment.proof_of_payment)}
+                                                            />
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell>
                                                         <Badge
                                                             variant={payment.status === 'approved' ? 'default' : 'secondary'}
@@ -455,6 +468,21 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                             )}
                         </div>
                     </div>
+
+                    {/* Image Preview Dialog */}
+                    <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+                        <DialogContent className="max-w-2xl p-6">
+                            {selectedImage && (
+                                <div className="flex items-center justify-center">
+                                    <img 
+                                        src={selectedImage} 
+                                        alt="Proof of Payment Preview" 
+                                        className="max-h-[70vh] w-auto object-contain rounded-lg"
+                                    />
+                                </div>
+                            )}
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
         </AuthenticatedLayout>
