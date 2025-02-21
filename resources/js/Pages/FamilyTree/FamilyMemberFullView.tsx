@@ -16,7 +16,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
     const [isRootSelectorOpen, setIsRootSelectorOpen] = useState(false);
     const [showCopiedFeedback, setShowCopiedFeedback] = useState(false);
     const [showQRCode, setShowQRCode] = useState<number | null>(null);
-    const [isListView, setIsListView] = useState(false);
+    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'qr'>('grid');
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [rootSelectorSearch, setRootSelectorSearch] = useState('');
 
@@ -313,17 +313,41 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     </button>
                                     {showExportMenu && exportMenuContent}
                                 </div>
-                                <button
-                                    onClick={() => setIsListView(!isListView)}
-                                    className={`p-2 rounded-lg transition-colors ${
-                                        isDarkMode 
-                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
-                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                    }`}
-                                    title={isListView ? "Grid View" : "List View"}
-                                >
-                                    {isListView ? <FaThLarge /> : <FaList />}
-                                </button>
+                                <div className="flex items-center space-x-1">
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        className={`p-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? `${viewMode === 'list' ? 'bg-blue-600' : 'bg-gray-700'} hover:bg-gray-600 text-gray-200` 
+                                                : `${viewMode === 'list' ? 'bg-blue-100' : 'bg-gray-100'} hover:bg-gray-200 text-gray-700`
+                                        }`}
+                                        title="List View"
+                                    >
+                                        <FaList />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('grid')}
+                                        className={`p-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? `${viewMode === 'grid' ? 'bg-blue-600' : 'bg-gray-700'} hover:bg-gray-600 text-gray-200` 
+                                                : `${viewMode === 'grid' ? 'bg-blue-100' : 'bg-gray-100'} hover:bg-gray-200 text-gray-700`
+                                        }`}
+                                        title="Grid View"
+                                    >
+                                        <FaThLarge />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('qr')}
+                                        className={`p-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? `${viewMode === 'qr' ? 'bg-blue-600' : 'bg-gray-700'} hover:bg-gray-600 text-gray-200` 
+                                                : `${viewMode === 'qr' ? 'bg-blue-100' : 'bg-gray-100'} hover:bg-gray-200 text-gray-700`
+                                        }`}
+                                        title="QR Code View"
+                                    >
+                                        <FaQrcode />
+                                    </button>
+                                </div>
                                 <button
                                     onClick={copyLinkToClipboard}
                                     className={`p-2 rounded-lg transition-colors relative ${
@@ -404,17 +428,41 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 </button>
                                 {showExportMenu && exportMenuContent}
                             </div>
-                            <button
-                                onClick={() => setIsListView(!isListView)}
-                                className={`p-2 rounded-lg transition-colors ${
-                                    isDarkMode 
-                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
-                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                }`}
-                                title={isListView ? "Grid View" : "List View"}
-                            >
-                                {isListView ? <FaThLarge /> : <FaList />}
-                            </button>
+                            <div className="flex items-center space-x-1">
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        isDarkMode 
+                                            ? `${viewMode === 'list' ? 'bg-blue-600' : 'bg-gray-700'} hover:bg-gray-600 text-gray-200` 
+                                            : `${viewMode === 'list' ? 'bg-blue-100' : 'bg-gray-100'} hover:bg-gray-200 text-gray-700`
+                                    }`}
+                                    title="List View"
+                                >
+                                    <FaList />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        isDarkMode 
+                                            ? `${viewMode === 'grid' ? 'bg-blue-600' : 'bg-gray-700'} hover:bg-gray-600 text-gray-200` 
+                                            : `${viewMode === 'grid' ? 'bg-blue-100' : 'bg-gray-100'} hover:bg-gray-200 text-gray-700`
+                                    }`}
+                                    title="Grid View"
+                                >
+                                    <FaThLarge />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('qr')}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        isDarkMode 
+                                            ? `${viewMode === 'qr' ? 'bg-blue-600' : 'bg-gray-700'} hover:bg-gray-600 text-gray-200` 
+                                            : `${viewMode === 'qr' ? 'bg-blue-100' : 'bg-gray-100'} hover:bg-gray-200 text-gray-700`
+                                    }`}
+                                    title="QR Code View"
+                                >
+                                    <FaQrcode />
+                                </button>
+                            </div>
                             <button
                                 onClick={copyLinkToClipboard}
                                 className={`p-2 rounded-lg transition-colors relative ${
@@ -575,7 +623,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
 
             {/* Main Content - Adjusted with margin for sidebar */}
             <div className="container mx-auto px-4 pt-20 pb-8 lg:ml-64">
-                {isListView ? (
+                {viewMode === 'list' ? (
                     // List View
                     <div className="space-y-4">
                         {filteredMembers.map((member: FamilyMember) => (
@@ -644,7 +692,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                             </div>
                         ))}
                     </div>
-                ) : (
+                ) : viewMode === 'grid' ? (
                     // Grid View
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                         {filteredMembers.map((member: FamilyMember) => (
@@ -774,45 +822,31 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                             </div>
                         ))}
                     </div>
-                )}
-
-                {/* QR Code Modal */}
-                {showQRCode !== null && (
-                    <div 
-                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                        onClick={() => setShowQRCode(null)}
-                    >
-                        <div 
-                            className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl`}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="mb-4 text-center">
-                                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    Profile QR Code
-                                </h3>
-                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    Scan to view profile
-                                </p>
-                            </div>
-                            <div className={`p-4 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg`}>
-                                <QRCodeSVG
-                                    value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${showQRCode}`}
-                                    size={200}
-                                    level="H"
-                                    includeMargin={true}
-                                />
-                            </div>
-                            <button
-                                className={`mt-4 w-full py-2 rounded-lg text-center ${
-                                    isDarkMode
-                                        ? 'bg-gray-700 text-white hover:bg-gray-600'
-                                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                ) : (
+                    // QR Code View
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                        {filteredMembers.map((member: FamilyMember) => (
+                            <div
+                                key={member.id}
+                                className={`p-4 rounded-lg shadow-lg w-full max-w-[280px] mx-auto ${
+                                    isDarkMode ? 'bg-gray-800' : 'bg-white'
                                 }`}
-                                onClick={() => setShowQRCode(null)}
                             >
-                                Close
-                            </button>
-                        </div>
+                                <div className={`mb-4 p-3 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg flex justify-center items-center`}>
+                                    <QRCodeSVG
+                                        value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${member.id}`}
+                                        size={200}
+                                        level="H"
+                                        includeMargin={true}
+                                    />
+                                </div>
+                                <h3 className={`text-center font-semibold ${
+                                    isDarkMode ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                    {member.first_name} {member.last_name}
+                                </h3>
+                            </div>
+                        ))}
                     </div>
                 )}
 
@@ -822,6 +856,46 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                     </div>
                 )}
             </div>
+
+            {/* QR Code Modal */}
+            {showQRCode !== null && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    onClick={() => setShowQRCode(null)}
+                >
+                    <div 
+                        className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl`}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="mb-4 text-center">
+                            <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                Profile QR Code
+                            </h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Scan to view profile
+                            </p>
+                        </div>
+                        <div className={`p-4 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg`}>
+                            <QRCodeSVG
+                                value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${showQRCode}`}
+                                size={200}
+                                level="H"
+                                includeMargin={true}
+                            />
+                        </div>
+                        <button
+                            className={`mt-4 w-full py-2 rounded-lg text-center ${
+                                isDarkMode
+                                    ? 'bg-gray-700 text-white hover:bg-gray-600'
+                                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                            }`}
+                            onClick={() => setShowQRCode(null)}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
