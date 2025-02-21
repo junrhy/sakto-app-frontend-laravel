@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import type { FamilyMember, FamilyTreeProps, FamilyRelationship } from '@/types/family-tree';
 import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck, FaQrcode, FaList, FaThLarge, FaFileDownload } from 'react-icons/fa';
@@ -238,6 +238,36 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
         setShowExportMenu(false);
     };
 
+    // Update the export menu content
+    const exportMenuContent = (
+        <div 
+            className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 z-50 ${
+                isDarkMode ? 'bg-gray-800' : 'bg-white'
+            }`}
+        >
+            <button
+                onClick={() => exportToCSV(false)}
+                className={`block w-full text-left px-4 py-2 text-sm ${
+                    isDarkMode 
+                        ? 'text-gray-200 hover:bg-gray-700' 
+                        : 'text-gray-700 hover:bg-gray-100'
+                }`}
+            >
+                Export All Members
+            </button>
+            <button
+                onClick={() => exportToCSV(true)}
+                className={`block w-full text-left px-4 py-2 text-sm ${
+                    isDarkMode 
+                        ? 'text-gray-200 hover:bg-gray-700' 
+                        : 'text-gray-700 hover:bg-gray-100'
+                }`}
+            >
+                Export Living Members
+            </button>
+        </div>
+    );
+
     // Add click outside handler for export menu
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -280,34 +310,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     >
                                         <FaFileDownload />
                                     </button>
-                                    {showExportMenu && (
-                                        <div 
-                                            className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 z-50 ${
-                                                isDarkMode ? 'bg-gray-800' : 'bg-white'
-                                            }`}
-                                        >
-                                            <button
-                                                onClick={() => exportToCSV(false)}
-                                                className={`block w-full text-left px-4 py-2 text-sm ${
-                                                    isDarkMode 
-                                                        ? 'text-gray-200 hover:bg-gray-700' 
-                                                        : 'text-gray-700 hover:bg-gray-100'
-                                                }`}
-                                            >
-                                                Export All Members
-                                            </button>
-                                            <button
-                                                onClick={() => exportToCSV(true)}
-                                                className={`block w-full text-left px-4 py-2 text-sm ${
-                                                    isDarkMode 
-                                                        ? 'text-gray-200 hover:bg-gray-700' 
-                                                        : 'text-gray-700 hover:bg-gray-100'
-                                                }`}
-                                            >
-                                                Export Living Members
-                                            </button>
-                                        </div>
-                                    )}
+                                    {showExportMenu && exportMenuContent}
                                 </div>
                                 <button
                                     onClick={() => setIsListView(!isListView)}
@@ -398,34 +401,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 >
                                     <FaFileDownload />
                                 </button>
-                                {showExportMenu && (
-                                    <div 
-                                        className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 z-50 ${
-                                            isDarkMode ? 'bg-gray-800' : 'bg-white'
-                                        }`}
-                                    >
-                                        <button
-                                            onClick={() => exportToCSV(false)}
-                                            className={`block w-full text-left px-4 py-2 text-sm ${
-                                                isDarkMode 
-                                                    ? 'text-gray-200 hover:bg-gray-700' 
-                                                    : 'text-gray-700 hover:bg-gray-100'
-                                            }`}
-                                        >
-                                            Export All Members
-                                        </button>
-                                        <button
-                                            onClick={() => exportToCSV(true)}
-                                            className={`block w-full text-left px-4 py-2 text-sm ${
-                                                isDarkMode 
-                                                    ? 'text-gray-200 hover:bg-gray-700' 
-                                                    : 'text-gray-700 hover:bg-gray-100'
-                                            }`}
-                                        >
-                                            Export Living Members
-                                        </button>
-                                    </div>
-                                )}
+                                {showExportMenu && exportMenuContent}
                             </div>
                             <button
                                 onClick={() => setIsListView(!isListView)}
@@ -616,6 +592,10 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     </div>
                                     <div className={`mt-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                         <span className="inline-block mr-4">
+                                            <span className="font-medium">Birth Date:</span>{' '}
+                                            {new Date(member.birth_date).toLocaleDateString()}
+                                        </span>
+                                        <span className="inline-block mr-4">
                                             <span className="font-medium">Age:</span>{' '}
                                             {calculateAge(member.birth_date, member.death_date)} years
                                         </span>
@@ -623,6 +603,12 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                             <span className="font-medium">Gender:</span>{' '}
                                             {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}
                                         </span>
+                                        {member.death_date && (
+                                            <span className="inline-block ml-4">
+                                                <span className="font-medium">Death Date:</span>{' '}
+                                                {new Date(member.death_date).toLocaleDateString()}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
