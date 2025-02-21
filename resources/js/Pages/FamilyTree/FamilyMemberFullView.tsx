@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import type { FamilyMember, FamilyTreeProps, FamilyRelationship } from '@/types/family-tree';
-import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck, FaQrcode } from 'react-icons/fa';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface FamilyMemberFullViewProps extends FamilyTreeProps {
     clientIdentifier: string;
@@ -14,6 +15,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
     const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
     const [isRootSelectorOpen, setIsRootSelectorOpen] = useState(false);
     const [showCopiedFeedback, setShowCopiedFeedback] = useState(false);
+    const [showQRCode, setShowQRCode] = useState<number | null>(null);
 
     // Initialize rootMember from URL parameter
     const [rootMember, setRootMember] = useState<FamilyMember | null>(() => {
@@ -446,15 +448,28 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
 
                             {/* Member Info */}
                             <div className="p-4 lg:p-3">
-                                <div className="flex items-center justify-between">
-                                    <h3 className={`text-lg lg:text-base font-semibold mb-2 ${
-                                        isDarkMode ? 'text-white' : 'text-gray-900'
-                                    }`}>
-                                        {member.first_name} {member.last_name}
-                                    </h3>
+                                <h3 className={`text-lg lg:text-base font-semibold ${
+                                    isDarkMode ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                    {member.first_name} {member.last_name}
+                                </h3>
+                                <div className="flex items-center mt-2 mb-3">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowQRCode(member.id);
+                                        }}
+                                        className={`text-sm p-2 rounded-lg transition-colors mr-2 ${
+                                            isDarkMode
+                                                ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                                                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                        }`}
+                                    >
+                                        <FaQrcode className="w-4 h-4" />
+                                    </button>
                                     <a
                                         href={`/family-tree/${clientIdentifier}/member/${member.id}`}
-                                        className={`text-sm px-3 py-1 rounded-full transition-colors ${
+                                        className={`text-sm px-4 py-2 rounded-lg transition-colors flex-grow text-center ${
                                             isDarkMode
                                                 ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
                                                 : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
@@ -523,6 +538,46 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                         </div>
                     ))}
                 </div>
+
+                {/* QR Code Modal */}
+                {showQRCode !== null && (
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                        onClick={() => setShowQRCode(null)}
+                    >
+                        <div 
+                            className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="mb-4 text-center">
+                                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    Profile QR Code
+                                </h3>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Scan to view profile
+                                </p>
+                            </div>
+                            <div className={`p-4 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg`}>
+                                <QRCodeSVG
+                                    value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${showQRCode}`}
+                                    size={200}
+                                    level="H"
+                                    includeMargin={true}
+                                />
+                            </div>
+                            <button
+                                className={`mt-4 w-full py-2 rounded-lg text-center ${
+                                    isDarkMode
+                                        ? 'bg-gray-700 text-white hover:bg-gray-600'
+                                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                }`}
+                                onClick={() => setShowQRCode(null)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {filteredMembers.length === 0 && (
                     <div className={`text-center py-12 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
