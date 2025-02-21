@@ -13,6 +13,14 @@ export interface FamilyMember {
     related_to: FamilyRelationship[];
 }
 
+export interface RelatedMemberInfo {
+    id: number;
+    first_name: string;
+    last_name: string;
+    birth_date: string;
+    death_date: string | null;
+}
+
 export interface FamilyRelationship {
     id: number;
     from_member_id: number;
@@ -20,6 +28,8 @@ export interface FamilyRelationship {
     relationship_type: RelationshipType;
     created_at?: string;
     updated_at?: string;
+    to_member?: RelatedMemberInfo;
+    from_member?: RelatedMemberInfo;
 }
 
 export interface FamilyTreeProps {

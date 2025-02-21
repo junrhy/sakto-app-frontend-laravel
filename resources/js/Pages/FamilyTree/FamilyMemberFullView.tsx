@@ -3,7 +3,11 @@ import { Head, router, usePage } from '@inertiajs/react';
 import type { FamilyMember, FamilyTreeProps, FamilyRelationship } from '@/types/family-tree';
 import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck } from 'react-icons/fa';
 
-export default function FamilyMemberFullView({ familyMembers }: FamilyTreeProps) {
+interface FamilyMemberFullViewProps extends FamilyTreeProps {
+    clientIdentifier: string;
+}
+
+export default function FamilyMemberFullView({ familyMembers, clientIdentifier }: FamilyMemberFullViewProps) {
     const { url } = usePage();
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -442,11 +446,24 @@ export default function FamilyMemberFullView({ familyMembers }: FamilyTreeProps)
 
                             {/* Member Info */}
                             <div className="p-4 lg:p-3">
-                                <h3 className={`text-lg lg:text-base font-semibold mb-2 ${
-                                    isDarkMode ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                    {member.first_name} {member.last_name}
-                                </h3>
+                                <div className="flex items-center justify-between">
+                                    <h3 className={`text-lg lg:text-base font-semibold mb-2 ${
+                                        isDarkMode ? 'text-white' : 'text-gray-900'
+                                    }`}>
+                                        {member.first_name} {member.last_name}
+                                    </h3>
+                                    <a
+                                        href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                        className={`text-sm px-3 py-1 rounded-full transition-colors ${
+                                            isDarkMode
+                                                ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                                                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        View Profile
+                                    </a>
+                                </div>
                                 <div className={`space-y-2 lg:space-y-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                     <p>
                                         <span className="font-medium">Birth Date:</span>{' '}
