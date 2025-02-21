@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import type { FamilyMember, FamilyRelationship } from '@/types/family-tree';
-import { FaMoon, FaSun, FaMars, FaVenus, FaUserCircle, FaChevronLeft } from 'react-icons/fa';
+import { FaMoon, FaSun, FaMars, FaVenus, FaUserCircle, FaChevronLeft, FaEllipsisV } from 'react-icons/fa';
 
 interface MemberProfileProps {
     member: FamilyMember;
@@ -10,6 +10,7 @@ interface MemberProfileProps {
 
 export default function MemberProfile({ member, clientIdentifier }: MemberProfileProps) {
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
     const calculateAge = (birthDate: string, deathDate: string | null | undefined): number => {
         const birth = new Date(birthDate);
@@ -91,6 +92,117 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                             <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                 {calculateAge(member.birth_date, member.death_date)} years old
                             </p>
+                            
+                            {/* Menu Items */}
+                            <div className="relative">
+                                <div className="flex justify-center flex-wrap gap-2 mt-4">
+                                    <Link
+                                        href={`/family-tree/${clientIdentifier}/members`}
+                                        className={`px-4 py-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? 'text-gray-300 hover:bg-gray-700' 
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Members
+                                    </Link>
+                                    <button
+                                        className={`hidden sm:block px-4 py-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? 'text-gray-300 hover:bg-gray-700' 
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Events
+                                    </button>
+                                    <button
+                                        className={`hidden sm:block px-4 py-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? 'text-gray-300 hover:bg-gray-700' 
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Jobs
+                                    </button>
+                                    <button
+                                        className={`hidden md:block px-4 py-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? 'text-gray-300 hover:bg-gray-700' 
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Challenges
+                                    </button>
+                                    <button
+                                        className={`hidden md:block px-4 py-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? 'text-gray-300 hover:bg-gray-700' 
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Marketplace
+                                    </button>
+                                    
+                                    {/* More Dropdown for Mobile */}
+                                    <div className="sm:hidden relative inline-block">
+                                        <button
+                                            onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                                            className={`px-4 py-2 rounded-lg transition-colors ${
+                                                isDarkMode 
+                                                    ? 'text-gray-300 hover:bg-gray-700' 
+                                                    : 'text-gray-700 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            <FaEllipsisV />
+                                        </button>
+                                        
+                                        {isMoreMenuOpen && (
+                                            <div 
+                                                className={`absolute right-0 mt-2 py-2 w-48 rounded-lg shadow-xl z-10 ${
+                                                    isDarkMode ? 'bg-gray-800' : 'bg-white'
+                                                }`}
+                                            >
+                                                <button
+                                                    className={`block w-full text-left px-4 py-2 transition-colors ${
+                                                        isDarkMode 
+                                                            ? 'text-gray-300 hover:bg-gray-700' 
+                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Events
+                                                </button>
+                                                <button
+                                                    className={`block w-full text-left px-4 py-2 transition-colors ${
+                                                        isDarkMode 
+                                                            ? 'text-gray-300 hover:bg-gray-700' 
+                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Jobs
+                                                </button>
+                                                <button
+                                                    className={`block w-full text-left px-4 py-2 transition-colors ${
+                                                        isDarkMode 
+                                                            ? 'text-gray-300 hover:bg-gray-700' 
+                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Challenges
+                                                </button>
+                                                <button
+                                                    className={`block w-full text-left px-4 py-2 transition-colors ${
+                                                        isDarkMode 
+                                                            ? 'text-gray-300 hover:bg-gray-700' 
+                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    Marketplace
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -136,7 +248,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
 
                             {/* Family Relationships Card */}
                             {member.relationships && member.relationships.length > 0 && (
-                                <div className={`p-6 rounded-xl md:col-span-2 ${
+                                <div className={`p-6 rounded-xl ${
                                     isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'
                                 }`}>
                                     <h3 className={`text-lg font-semibold mb-4 ${
@@ -153,7 +265,12 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                     <span className="font-medium capitalize">{rel.relationship_type} of:</span>
                                                 </div>
                                                 {rel.to_member && (
-                                                    <span className="flex items-center gap-2">
+                                                    <Link
+                                                        href={`/family-tree/${clientIdentifier}/member/${rel.to_member.id}`}
+                                                        className={`flex items-center gap-2 hover:underline ${
+                                                            isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                                                        }`}
+                                                    >
                                                         {rel.to_member.first_name} {rel.to_member.last_name}
                                                         {rel.to_member.birth_date && (
                                                             <span className={`text-sm ${
@@ -162,7 +279,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                                 ({new Date(rel.to_member.birth_date).getFullYear()})
                                                             </span>
                                                         )}
-                                                    </span>
+                                                    </Link>
                                                 )}
                                             </div>
                                         ))}
