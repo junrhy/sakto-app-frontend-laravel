@@ -293,7 +293,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                     <div className="lg:hidden space-y-3">
                         <div className="flex items-center justify-between">
                             <h1 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                Family Members Directory
+                                Members
                             </h1>
                             <div className="flex items-center space-x-2">
                                 <div className="relative export-menu-container">
@@ -622,7 +622,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
             </div>
 
             {/* Main Content - Adjusted with margin for sidebar */}
-            <div className="container mx-auto px-4 pt-20 pb-8 lg:ml-64">
+            <div className="container mx-auto px-4 pt-28 lg:pt-20 pb-8 lg:ml-64">
                 {viewMode === 'list' ? (
                     // List View
                     <div className="space-y-4">
