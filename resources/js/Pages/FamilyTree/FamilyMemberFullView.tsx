@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import type { FamilyMember, FamilyTreeProps, FamilyRelationship } from '@/types/family-tree';
-import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck, FaQrcode } from 'react-icons/fa';
+import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck, FaQrcode, FaList, FaThLarge, FaFileDownload } from 'react-icons/fa';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface FamilyMemberFullViewProps extends FamilyTreeProps {
@@ -16,6 +16,8 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
     const [isRootSelectorOpen, setIsRootSelectorOpen] = useState(false);
     const [showCopiedFeedback, setShowCopiedFeedback] = useState(false);
     const [showQRCode, setShowQRCode] = useState<number | null>(null);
+    const [isListView, setIsListView] = useState(false);
+    const [showExportMenu, setShowExportMenu] = useState(false);
 
     // Initialize rootMember from URL parameter
     const [rootMember, setRootMember] = useState<FamilyMember | null>(() => {
@@ -192,6 +194,63 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
         setTimeout(() => setShowCopiedFeedback(false), 2000);
     };
 
+    const exportToCSV = (onlyLiving: boolean = false) => {
+        // Define CSV headers
+        const headers = [
+            'First Name',
+            'Last Name',
+            'Birth Date',
+            ...(onlyLiving ? [] : ['Death Date']),
+            'Age',
+            'Gender'
+        ].join(',');
+
+        // Filter members if onlyLiving is true
+        const membersToExport = onlyLiving 
+            ? filteredMembers.filter(member => !member.death_date)
+            : filteredMembers;
+
+        // Convert members to CSV rows
+        const csvRows = membersToExport.map(member => {
+            const values = [
+                member.first_name,
+                member.last_name,
+                new Date(member.birth_date).toLocaleDateString(),
+                ...(onlyLiving ? [] : [member.death_date ? new Date(member.death_date).toLocaleDateString() : '']),
+                calculateAge(member.birth_date, member.death_date),
+                member.gender
+            ];
+            return values.join(',');
+        });
+
+        // Combine headers and rows
+        const csvContent = [headers, ...csvRows].join('\n');
+
+        // Create and trigger download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `family_members${onlyLiving ? '_living' : ''}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setShowExportMenu(false);
+    };
+
+    // Add click outside handler for export menu
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (!target.closest('.export-menu-container')) {
+                setShowExportMenu(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+
     return (
         <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
             <Head title="Family Members - Full View" />
@@ -206,6 +265,61 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 Family Members Directory
                             </h1>
                             <div className="flex items-center space-x-2">
+                                <div className="relative export-menu-container">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowExportMenu(!showExportMenu);
+                                        }}
+                                        className={`p-2 rounded-lg transition-colors ${
+                                            isDarkMode 
+                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                        }`}
+                                        title="Export options"
+                                    >
+                                        <FaFileDownload />
+                                    </button>
+                                    {showExportMenu && (
+                                        <div 
+                                            className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 z-50 ${
+                                                isDarkMode ? 'bg-gray-800' : 'bg-white'
+                                            }`}
+                                        >
+                                            <button
+                                                onClick={() => exportToCSV(false)}
+                                                className={`block w-full text-left px-4 py-2 text-sm ${
+                                                    isDarkMode 
+                                                        ? 'text-gray-200 hover:bg-gray-700' 
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                }`}
+                                            >
+                                                Export All Members
+                                            </button>
+                                            <button
+                                                onClick={() => exportToCSV(true)}
+                                                className={`block w-full text-left px-4 py-2 text-sm ${
+                                                    isDarkMode 
+                                                        ? 'text-gray-200 hover:bg-gray-700' 
+                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                }`}
+                                            >
+                                                Export Living Members
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => setIsListView(!isListView)}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        isDarkMode 
+                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    }`}
+                                    title={isListView ? "Grid View" : "List View"}
+                                >
+                                    {isListView ? <FaThLarge /> : <FaList />}
+                                </button>
                                 <button
                                     onClick={copyLinkToClipboard}
                                     className={`p-2 rounded-lg transition-colors relative ${
@@ -216,11 +330,6 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     title="Copy link to clipboard"
                                 >
                                     {showCopiedFeedback ? <FaCheck className="text-green-500" /> : <FaLink />}
-                                    {showCopiedFeedback && (
-                                        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded bg-black text-white whitespace-nowrap">
-                                            Link copied!
-                                        </span>
-                                    )}
                                 </button>
                                 <button
                                     onClick={() => setIsDarkMode(!isDarkMode)}
@@ -274,6 +383,61 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
+                            <div className="relative export-menu-container">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowExportMenu(!showExportMenu);
+                                    }}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        isDarkMode 
+                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    }`}
+                                    title="Export options"
+                                >
+                                    <FaFileDownload />
+                                </button>
+                                {showExportMenu && (
+                                    <div 
+                                        className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 z-50 ${
+                                            isDarkMode ? 'bg-gray-800' : 'bg-white'
+                                        }`}
+                                    >
+                                        <button
+                                            onClick={() => exportToCSV(false)}
+                                            className={`block w-full text-left px-4 py-2 text-sm ${
+                                                isDarkMode 
+                                                    ? 'text-gray-200 hover:bg-gray-700' 
+                                                    : 'text-gray-700 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            Export All Members
+                                        </button>
+                                        <button
+                                            onClick={() => exportToCSV(true)}
+                                            className={`block w-full text-left px-4 py-2 text-sm ${
+                                                isDarkMode 
+                                                    ? 'text-gray-200 hover:bg-gray-700' 
+                                                    : 'text-gray-700 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            Export Living Members
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => setIsListView(!isListView)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    isDarkMode 
+                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                }`}
+                                title={isListView ? "Grid View" : "List View"}
+                            >
+                                {isListView ? <FaThLarge /> : <FaList />}
+                            </button>
                             <button
                                 onClick={copyLinkToClipboard}
                                 className={`p-2 rounded-lg transition-colors relative ${
@@ -284,11 +448,6 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 title="Copy link to clipboard"
                             >
                                 {showCopiedFeedback ? <FaCheck className="text-green-500" /> : <FaLink />}
-                                {showCopiedFeedback && (
-                                    <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded bg-black text-white whitespace-nowrap">
-                                        Link copied!
-                                    </span>
-                                )}
                             </button>
                             <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
@@ -410,134 +569,196 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
 
             {/* Main Content - Adjusted with margin for sidebar */}
             <div className="container mx-auto px-4 pt-20 pb-8 lg:ml-64">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                    {filteredMembers.map((member: FamilyMember) => (
-                        <div
-                            key={member.id}
-                            className={`rounded-lg shadow-lg overflow-hidden transition-all duration-200 cursor-pointer 
-                                ${selectedMember?.id === member.id
-                                    ? isDarkMode 
-                                        ? 'bg-blue-900/30 ring-2 ring-blue-500'
-                                        : 'bg-blue-50 ring-2 ring-blue-300'
-                                    : isDarkMode
-                                        ? 'bg-gray-800 hover:bg-gray-700'
-                                        : 'bg-white hover:bg-gray-50'
-                                }
-                                lg:max-w-sm`}
-                            onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
-                        >
-                            {/* Member Photo */}
-                            <div className={`aspect-square w-full lg:aspect-[4/3] ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-                                {member.photo ? (
-                                    <img
-                                        src={member.photo}
-                                        alt={`${member.first_name} ${member.last_name}`}
-                                        className="w-full h-full object-cover"
+                {isListView ? (
+                    // List View
+                    <div className="space-y-4">
+                        {filteredMembers.map((member: FamilyMember) => (
+                            <div
+                                key={member.id}
+                                className={`flex items-center p-4 rounded-lg shadow-lg transition-all duration-200 
+                                    ${selectedMember?.id === member.id
+                                        ? isDarkMode 
+                                            ? 'bg-blue-900/30 ring-2 ring-blue-500'
+                                            : 'bg-blue-50 ring-2 ring-blue-300'
+                                        : isDarkMode
+                                            ? 'bg-gray-800 hover:bg-gray-700'
+                                            : 'bg-white hover:bg-gray-50'
+                                    }`}
+                                onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
+                            >
+                                {/* QR Code */}
+                                <div className={`mr-6 p-3 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg flex-shrink-0`}>
+                                    <QRCodeSVG
+                                        value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${member.id}`}
+                                        size={120}
+                                        level="H"
+                                        includeMargin={true}
                                     />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <span className={`text-4xl lg:text-3xl font-semibold ${
-                                            isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                                        }`}>
-                                            {member.first_name[0]}
-                                            {member.last_name[0]}
+                                </div>
+
+                                {/* Member Info */}
+                                <div className="flex-grow min-w-0">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {member.first_name} {member.last_name}
+                                        </h3>
+                                        <a
+                                            href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                            className={`text-sm px-4 py-2 rounded-lg transition-colors ${
+                                                isDarkMode
+                                                    ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                            }`}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            View Profile
+                                        </a>
+                                    </div>
+                                    <div className={`mt-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <span className="inline-block mr-4">
+                                            <span className="font-medium">Age:</span>{' '}
+                                            {calculateAge(member.birth_date, member.death_date)} years
+                                        </span>
+                                        <span className="inline-block">
+                                            <span className="font-medium">Gender:</span>{' '}
+                                            {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}
                                         </span>
                                     </div>
-                                )}
+                                </div>
                             </div>
-
-                            {/* Member Info */}
-                            <div className="p-4 lg:p-3">
-                                <h3 className={`text-lg lg:text-base font-semibold ${
-                                    isDarkMode ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                    {member.first_name} {member.last_name}
-                                </h3>
-                                <div className="flex items-center mt-2 mb-3">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowQRCode(member.id);
-                                        }}
-                                        className={`text-sm p-2 rounded-lg transition-colors mr-2 ${
-                                            isDarkMode
-                                                ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                                                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                        }`}
-                                    >
-                                        <FaQrcode className="w-4 h-4" />
-                                    </button>
-                                    <a
-                                        href={`/family-tree/${clientIdentifier}/member/${member.id}`}
-                                        className={`text-sm px-4 py-2 rounded-lg transition-colors flex-grow text-center ${
-                                            isDarkMode
-                                                ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                                                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        View Profile
-                                    </a>
-                                </div>
-                                <div className={`space-y-2 lg:space-y-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    <p>
-                                        <span className="font-medium">Birth Date:</span>{' '}
-                                        {new Date(member.birth_date).toLocaleDateString()}
-                                    </p>
-                                    <p>
-                                        <span className="font-medium">Age:</span>{' '}
-                                        {calculateAge(member.birth_date, member.death_date)} years
-                                    </p>
-                                    {member.death_date && (
-                                        <p>
-                                            <span className="font-medium">Death Date:</span>{' '}
-                                            {new Date(member.death_date).toLocaleDateString()}
-                                        </p>
+                        ))}
+                    </div>
+                ) : (
+                    // Grid View
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                        {filteredMembers.map((member: FamilyMember) => (
+                            <div
+                                key={member.id}
+                                className={`rounded-lg shadow-lg overflow-hidden transition-all duration-200 cursor-pointer 
+                                    ${selectedMember?.id === member.id
+                                        ? isDarkMode 
+                                            ? 'bg-blue-900/30 ring-2 ring-blue-500'
+                                            : 'bg-blue-50 ring-2 ring-blue-300'
+                                        : isDarkMode
+                                            ? 'bg-gray-800 hover:bg-gray-700'
+                                            : 'bg-white hover:bg-gray-50'
+                                    }
+                                    lg:max-w-sm`}
+                                onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
+                            >
+                                {/* Member Photo */}
+                                <div className={`aspect-square w-full lg:aspect-[4/3] ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                                    {member.photo ? (
+                                        <img
+                                            src={member.photo}
+                                            alt={`${member.first_name} ${member.last_name}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <span className={`text-4xl lg:text-3xl font-semibold ${
+                                                isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                                            }`}>
+                                                {member.first_name[0]}
+                                                {member.last_name[0]}
+                                            </span>
+                                        </div>
                                     )}
-                                    <p>
-                                        <span className="font-medium">Gender:</span>{' '}
-                                        {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}
-                                    </p>
                                 </div>
 
-                                {/* Expanded Content */}
-                                {selectedMember?.id === member.id && (
-                                    <div className={`mt-4 pt-4 border-t ${
-                                        isDarkMode ? 'border-gray-700 text-gray-300' : 'border-gray-200 text-gray-600'
+                                {/* Member Info */}
+                                <div className="p-4 lg:p-3">
+                                    <h3 className={`text-lg lg:text-base font-semibold ${
+                                        isDarkMode ? 'text-white' : 'text-gray-900'
                                     }`}>
-                                        {member.notes && (
-                                            <div className="mb-4">
+                                        {member.first_name} {member.last_name}
+                                    </h3>
+                                    <div className="flex items-center mt-2 mb-3">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setShowQRCode(member.id);
+                                            }}
+                                            className={`text-sm p-2 rounded-lg transition-colors mr-2 ${
+                                                isDarkMode
+                                                    ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                            }`}
+                                        >
+                                            <FaQrcode className="w-4 h-4" />
+                                        </button>
+                                        <a
+                                            href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                            className={`text-sm px-4 py-2 rounded-lg transition-colors flex-grow text-center ${
+                                                isDarkMode
+                                                    ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                            }`}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            View Profile
+                                        </a>
+                                    </div>
+                                    <div className={`space-y-2 lg:space-y-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <p>
+                                            <span className="font-medium">Birth Date:</span>{' '}
+                                            {new Date(member.birth_date).toLocaleDateString()}
+                                        </p>
+                                        <p>
+                                            <span className="font-medium">Age:</span>{' '}
+                                            {calculateAge(member.birth_date, member.death_date)} years
+                                        </p>
+                                        {member.death_date && (
+                                            <p>
+                                                <span className="font-medium">Death Date:</span>{' '}
+                                                {new Date(member.death_date).toLocaleDateString()}
+                                            </p>
+                                        )}
+                                        <p>
+                                            <span className="font-medium">Gender:</span>{' '}
+                                            {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}
+                                        </p>
+                                    </div>
+
+                                    {/* Expanded Content */}
+                                    {selectedMember?.id === member.id && (
+                                        <div className={`mt-4 pt-4 border-t ${
+                                            isDarkMode ? 'border-gray-700 text-gray-300' : 'border-gray-200 text-gray-600'
+                                        }`}>
+                                            {member.notes && (
+                                                <div className="mb-4">
+                                                    <h4 className={`font-medium mb-2 ${
+                                                        isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                                                    }`}>Notes</h4>
+                                                    <p className="text-sm">{member.notes}</p>
+                                                </div>
+                                            )}
+                                            <div>
                                                 <h4 className={`font-medium mb-2 ${
                                                     isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                                                }`}>Notes</h4>
-                                                <p className="text-sm">{member.notes}</p>
+                                                }`}>Relationships</h4>
+                                                <ul className="space-y-1 text-sm">
+                                                    {member.relationships.map((rel: FamilyRelationship) => {
+                                                        const relatedMember = getMemberById(rel.to_member_id);
+                                                        return relatedMember ? (
+                                                            <li key={rel.id}>
+                                                                {getRelationshipLabel(rel.relationship_type)}:{' '}
+                                                                {relatedMember.first_name} {relatedMember.last_name}
+                                                            </li>
+                                                        ) : null;
+                                                    })}
+                                                    {member.relationships.length === 0 && (
+                                                        <li className="italic">No relationships defined</li>
+                                                    )}
+                                                </ul>
                                             </div>
-                                        )}
-                                        <div>
-                                            <h4 className={`font-medium mb-2 ${
-                                                isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                                            }`}>Relationships</h4>
-                                            <ul className="space-y-1 text-sm">
-                                                {member.relationships.map((rel: FamilyRelationship) => {
-                                                    const relatedMember = getMemberById(rel.to_member_id);
-                                                    return relatedMember ? (
-                                                        <li key={rel.id}>
-                                                            {getRelationshipLabel(rel.relationship_type)}:{' '}
-                                                            {relatedMember.first_name} {relatedMember.last_name}
-                                                        </li>
-                                                    ) : null;
-                                                })}
-                                                {member.relationships.length === 0 && (
-                                                    <li className="italic">No relationships defined</li>
-                                                )}
-                                            </ul>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* QR Code Modal */}
                 {showQRCode !== null && (
