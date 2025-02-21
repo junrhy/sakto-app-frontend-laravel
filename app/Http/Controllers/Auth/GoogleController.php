@@ -106,8 +106,8 @@ class GoogleController extends Controller
 
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/clients", [
-                'name' => $request->name,
-                'email' => $request->email,
+                'name' => request('name'),
+                'email' => request('email'),
                 'client_identifier' => $user->identifier,
                 'referrer' => 'https://sakto.app',
             ]);
