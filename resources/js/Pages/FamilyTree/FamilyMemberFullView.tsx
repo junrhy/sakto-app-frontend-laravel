@@ -18,6 +18,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
     const [showQRCode, setShowQRCode] = useState<number | null>(null);
     const [isListView, setIsListView] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [rootSelectorSearch, setRootSelectorSearch] = useState('');
 
     // Initialize rootMember from URL parameter
     const [rootMember, setRootMember] = useState<FamilyMember | null>(() => {
@@ -469,32 +470,61 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                             </button>
                             
                             {isRootSelectorOpen && (
-                                <div className={`absolute z-50 w-full mt-1 rounded-lg border shadow-lg max-h-60 overflow-y-auto
+                                <div className={`absolute z-50 w-full mt-1 rounded-lg border shadow-lg overflow-hidden
                                     ${isDarkMode 
                                         ? 'bg-gray-700 border-gray-600' 
                                         : 'bg-white border-gray-300'
                                     }`}>
-                                    <button
-                                        className={`w-full px-3 py-2 text-left hover:bg-opacity-10 hover:bg-blue-500
-                                            ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                                        onClick={() => updateRootMember(null)}
-                                    >
-                                        Show All Members
-                                    </button>
-                                    {[...familyMembers]
-                                        .sort((a, b) => 
-                                            `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
-                                        )
-                                        .map(member => (
+                                    {/* Search input */}
+                                    <div className="p-2 border-b ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}">
+                                        <div className="relative">
+                                            <FaSearch className={`absolute left-2 top-1/2 transform -translate-y-1/2 ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                            }`} />
+                                            <input
+                                                type="text"
+                                                placeholder="Search members..."
+                                                className={`w-full pl-8 pr-3 py-1.5 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
+                                                    ${isDarkMode 
+                                                        ? 'bg-gray-800 text-white placeholder-gray-400' 
+                                                        : 'bg-gray-50 text-gray-900 placeholder-gray-500'
+                                                    }`}
+                                                value={rootSelectorSearch}
+                                                onChange={(e) => setRootSelectorSearch(e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="max-h-60 overflow-y-auto">
                                         <button
-                                            key={member.id}
                                             className={`w-full px-3 py-2 text-left hover:bg-opacity-10 hover:bg-blue-500
                                                 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                                            onClick={() => updateRootMember(member)}
+                                            onClick={() => updateRootMember(null)}
                                         >
-                                            {member.first_name} {member.last_name}
+                                            Show All Members
                                         </button>
-                                    ))}
+                                        {[...familyMembers]
+                                            .filter(member => 
+                                                rootSelectorSearch === '' || 
+                                                `${member.first_name} ${member.last_name}`
+                                                    .toLowerCase()
+                                                    .includes(rootSelectorSearch.toLowerCase())
+                                            )
+                                            .sort((a, b) => 
+                                                `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
+                                            )
+                                            .map(member => (
+                                            <button
+                                                key={member.id}
+                                                className={`w-full px-3 py-2 text-left hover:bg-opacity-10 hover:bg-blue-500
+                                                    ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                                                onClick={() => updateRootMember(member)}
+                                            >
+                                                {member.first_name} {member.last_name}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
