@@ -5,6 +5,8 @@ import { FaMoon, FaSun, FaMars, FaVenus, FaUserCircle, FaChevronLeft, FaEllipsis
 import axios from 'axios';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { Button } from "@/Components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { X } from "lucide-react";
 
 interface MemberProfileProps {
     member: FamilyMember;
@@ -52,6 +54,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
     const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [displayCount, setDisplayCount] = useState(15);
 
     useEffect(() => {
         const fetchAllMembers = async () => {
@@ -271,45 +274,44 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                     {renderMemberPhoto(member)}
                                 </div>
 
-                                <div>
+                                <div className="flex-1">
                                     <div className="text-center md:text-left">
-                                        <div className="relative flex flex-col md:flex-row items-center md:items-center justify-center md:justify-start gap-2 mb-2">
-                                            <div className="flex items-center gap-2 w-full md:w-auto">
-                                                <h1 className={`text-3xl font-bold break-words ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                    {member.first_name} {member.last_name}
-                                                </h1>
-                                            </div>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                {member.gender === 'male' ? (
-                                                    <FaMars className="text-blue-500 text-xl" />
-                                                ) : (
-                                                    <FaVenus className="text-pink-500 text-xl" />
-                                                )}
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="sm"
-                                                            className={`p-1 hover:bg-transparent ${
-                                                                isDarkMode 
-                                                                    ? 'text-gray-400 hover:text-gray-300' 
-                                                                    : 'text-gray-500 hover:text-gray-700'
-                                                            }`}
-                                                        >
-                                                            <FaEllipsisV className="w-4 h-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent 
-                                                        align="end" 
-                                                        alignOffset={0}
-                                                        className="w-48"
+                                        <h1 className={`text-3xl font-bold break-words mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {member.first_name} {member.last_name}
+                                        </h1>
+                                        
+                                        <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
+                                            <span className={`text-sm font-medium ${
+                                                member.gender === 'male' 
+                                                    ? 'text-blue-500' 
+                                                    : 'text-pink-500'
+                                            }`}>
+                                                {member.gender === 'male' ? 'Male' : 'Female'}
+                                            </span>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm"
+                                                        className={`p-1 hover:bg-transparent ${
+                                                            isDarkMode 
+                                                                ? 'text-gray-400 hover:text-gray-300' 
+                                                                : 'text-gray-500 hover:text-gray-700'
+                                                        }`}
                                                     >
-                                                        <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
-                                                            Request Profile Edit
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
+                                                        <FaEllipsisV className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent 
+                                                    align="end" 
+                                                    alignOffset={0}
+                                                    className="w-48"
+                                                >
+                                                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                                                        Request Profile Edit
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                         
                                         <div className={`flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm ${
@@ -324,10 +326,6 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                 <span>{member.relationships?.length || 0} Family Connections</span>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
                                     </div>
                                 </div>
                             </div>
@@ -453,9 +451,9 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                         {searchQuery ? 'No members found matching your search.' : 'No family members available.'}
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {filteredMembers.map((familyMember) => {
-                                            return (
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {filteredMembers.slice(0, displayCount).map((familyMember) => (
                                                 <div 
                                                     key={familyMember.id}
                                                     className={`p-4 rounded-lg transition-colors ${
@@ -482,8 +480,20 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                         </div>
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
+                                            ))}
+                                        </div>
+                                        
+                                        {filteredMembers.length > displayCount && (
+                                            <div className="flex justify-center mt-6">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setDisplayCount(prev => prev + 15)}
+                                                    className="w-full sm:w-auto"
+                                                >
+                                                    Show More Members
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -526,52 +536,49 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                 </div>
             </div>
 
-            {/* Edit Profile Modal */}
-            {isEditModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl`}>
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                    Request Profile Edit
-                                </h3>
-                                <button
-                                    onClick={() => setIsEditModalOpen(false)}
-                                    className="text-gray-400 hover:text-gray-500"
-                                >
-                                    <span className="text-2xl">×</span>
-                                </button>
+            {/* Edit Profile Dialog */}
+            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent className="sm:max-w-2xl max-h-screen sm:max-h-[95vh] overflow-hidden flex flex-col">
+                    <DialogHeader className="sm:block hidden">
+                        <DialogTitle>Request Profile Edit</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="sm:hidden flex items-center justify-center relative border-b dark:border-gray-800 -mt-2 pb-2">
+                        <h2 className="text-lg font-semibold">Request Profile Edit</h2>
+                    </div>
+
+                    {/* Scrollable Container */}
+                    <div className="overflow-y-auto flex-1 -mr-6 pr-6">
+                        <div className="mt-4">
+                            {/* Photo Upload */}
+                            <div className="flex justify-center mb-6">
+                                <div className="relative">
+                                    <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden ${
+                                        isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                                    }`}>
+                                        {photoPreview ? (
+                                            <img
+                                                src={photoPreview}
+                                                alt="Profile Preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <FaCamera className={`w-8 h-8 ${
+                                                isDarkMode ? 'text-gray-500' : 'text-gray-400'
+                                            }`} />
+                                        )}
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handlePhotoChange}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                </div>
                             </div>
 
+                            {/* Form Fields */}
                             <div className="space-y-6">
-                                {/* Photo Upload */}
-                                <div className="flex justify-center">
-                                    <div className="relative">
-                                        <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden ${
-                                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
-                                        }`}>
-                                            {photoPreview ? (
-                                                <img
-                                                    src={photoPreview}
-                                                    alt="Profile Preview"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <FaCamera className={`w-8 h-8 ${
-                                                    isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                                                }`} />
-                                            )}
-                                        </div>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handlePhotoChange}
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Form Fields */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className={`block text-sm font-medium mb-1 ${
@@ -738,39 +745,31 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                         }`}
                                     />
                                 </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex justify-end gap-4 mt-6">
-                                    <button
-                                        onClick={() => setIsEditModalOpen(false)}
-                                        className={`px-4 py-2 rounded-md ${
-                                            isDarkMode
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        } transition-colors`}
-                                        disabled={isSubmitting}
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSubmitEdit}
-                                        disabled={isSubmitting}
-                                        className={`px-4 py-2 rounded-md ${
-                                            isDarkMode
-                                                ? 'bg-blue-600 hover:bg-blue-700'
-                                                : 'bg-blue-500 hover:bg-blue-600'
-                                        } text-white transition-colors ${
-                                            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
-                                    >
-                                        {isSubmitting ? 'Sending Request...' : 'Send Edit Request'}
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+
+                    {/* Footer - Always visible */}
+                    <div className="mt-6 border-t dark:border-gray-800 pt-4">
+                        <div className="flex flex-col sm:flex-row-reverse gap-2 sm:gap-4">
+                            <Button
+                                onClick={handleSubmitEdit}
+                                disabled={isSubmitting}
+                                className="w-full sm:w-auto"
+                            >
+                                {isSubmitting ? 'Sending Request...' : 'Send Edit Request'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsEditModalOpen(false)}
+                                className="w-full sm:w-auto"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 } 
