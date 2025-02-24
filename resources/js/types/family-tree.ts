@@ -19,6 +19,8 @@ export interface RelatedMemberInfo {
     last_name: string;
     birth_date: string;
     death_date: string | null;
+    photo?: string | null;
+    gender?: 'male' | 'female' | 'other';
 }
 
 export interface FamilyRelationship {

@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\FamilyMemberEditRequest;
 
 class FamilyTreeController extends Controller
 {
@@ -384,5 +386,82 @@ class FamilyTreeController extends Controller
         $familyMembers = $response->json('data', []);
 
         return response()->json($familyMembers);
+    }
+
+    /**
+     * Handle edit request for a family member
+     */
+    public function requestEdit(Request $request, $clientIdentifier)
+    {
+        $validated = $request->validate([
+            'member_id' => 'required|integer',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'birth_date' => 'required|date',
+            'death_date' => 'nullable|date|after:birth_date',
+            'gender' => ['required', Rule::in(['male', 'female', 'other'])],
+            'photo' => 'nullable|image|max:2048',
+            'notes' => 'nullable|string',
+        ]);
+
+        // Get the current member data
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members/{$validated['member_id']}", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('Failed to fetch member data for edit request', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return response()->json(['error' => 'Failed to process edit request'], $response->status());
+        }
+
+        $currentMember = $response->json('data');
+
+        // Store photo if provided
+        $photoUrl = null;
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('family-photos-pending', 'public');
+            $photoUrl = Storage::disk('public')->url($path);
+        }
+
+        // Get the account owner's email
+        $userEmail = auth()->user()->email;
+
+        // Prepare data for email
+        $editData = [
+            'member_id' => $validated['member_id'],
+            'current' => $currentMember,
+            'proposed' => array_merge($validated, ['photo' => $photoUrl]),
+            'client_identifier' => $clientIdentifier
+        ];
+
+        try {
+            // Send email to account owner
+            Mail::to($userEmail)->send(new FamilyMemberEditRequest($editData));
+
+            return response()->json([
+                'message' => 'Edit request has been sent to the account owner for approval.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send edit request email', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Clean up stored photo if there was an error
+            if ($photoUrl) {
+                $path = str_replace(Storage::disk('public')->url(''), '', $photoUrl);
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+
+            return response()->json([
+                'error' => 'Failed to send edit request. Please try again.'
+            ], 500);
+        }
     }
 }

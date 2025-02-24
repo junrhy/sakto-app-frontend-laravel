@@ -94,6 +94,24 @@ Route::get('/family-tree/{clientIdentifier}/full-view', function ($clientIdentif
     ]);
 })->name('family-tree.full-view');
 
+// Add route for edit request
+Route::post('/family-tree/{clientIdentifier}/request-edit', [FamilyTreeController::class, 'requestEdit'])
+    ->name('family-tree.request-edit');
+
+// Add public route for getting all members
+Route::get('/family-tree/{clientIdentifier}/all-members', function ($clientIdentifier) {
+    $response = Http::withToken(config('api.token'))
+        ->get(config('api.url') . "/family-tree/members", [
+            'client_identifier' => $clientIdentifier
+        ]);
+
+    if (!$response->successful()) {
+        return response()->json(['error' => 'Failed to fetch family members'], $response->status());
+    }
+
+    return response()->json($response->json('data', []));
+})->name('family-tree.all-members');
+
 // Member Profile route
 Route::get('/family-tree/{clientIdentifier}/member/{memberId}', function ($clientIdentifier, $memberId) {
     $response = Http::withToken(config('api.token'))

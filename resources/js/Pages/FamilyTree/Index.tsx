@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/family-tree';
-import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaExpand, FaUsers, FaCircle, FaPrint } from 'react-icons/fa';
+import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaSitemap, FaUsers, FaChartPie, FaFileAlt } from 'react-icons/fa';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 
 export default function Index({ auth, familyMembers }: FamilyTreeProps) {
@@ -625,7 +625,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
                                     target="_blank"
                                 >
-                                    <FaExpand />
+                                    <FaSitemap />
                                 </a>
                                 <a
                                     href={`/family-tree/${auth.user.identifier}/circular`}
@@ -633,7 +633,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     target="_blank"
                                     title="Circular View"
                                 >
-                                    <FaCircle />
+                                    <FaChartPie />
                                 </a>
                                 <a
                                     href={`/family-tree/${auth.user.identifier}/printable`}
@@ -641,7 +641,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     target="_blank"
                                     title="Printable View"
                                 >
-                                    <FaPrint />
+                                    <FaFileAlt />
                                 </a>
                                 <a
                                     href={`/family-tree/${auth.user.identifier}/members`}
