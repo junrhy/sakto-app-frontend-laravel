@@ -109,17 +109,34 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
     // Helper function to render member photo
     const renderMemberPhoto = (memberData: FamilyMember | RelatedMemberInfo | null | undefined) => {
         if (!memberData || !memberData.photo) return (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center overflow-hidden">
                 <FaUserCircle className="w-full h-full text-gray-400" />
             </div>
         );
 
         return (
-            <img
-                src={memberData.photo}
-                alt={`${memberData.first_name} ${memberData.last_name}`}
-                className="w-full h-full rounded-full object-cover"
-            />
+            <div className="w-full h-full overflow-hidden">
+                <img
+                    src={memberData.photo}
+                    alt={`${memberData.first_name} ${memberData.last_name}`}
+                    className="w-full h-full object-cover"
+                    style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'cover',
+                        display: 'block'
+                    }}
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = '/default-profile.png'; // Fallback to default image
+                        const parent = target.parentElement;
+                        if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="w-full h-full text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>';
+                        }
+                    }}
+                />
+            </div>
         );
     };
 
@@ -538,13 +555,35 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
 
             {/* Edit Profile Dialog */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="sm:max-w-2xl max-h-screen sm:max-h-[95vh] overflow-hidden flex flex-col">
-                    <DialogHeader className="sm:block hidden">
-                        <DialogTitle>Request Profile Edit</DialogTitle>
+                <DialogContent className={`sm:max-w-2xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden flex flex-col ${
+                    isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white'
+                }`}>
+                    <DialogHeader className={`sm:block hidden pb-2 ${
+                        isDarkMode ? 'border-b border-gray-700' : 'border-b'
+                    }`}>
+                        <DialogTitle className={isDarkMode ? 'text-gray-100' : 'text-gray-900'}>
+                            Request Profile Edit
+                        </DialogTitle>
                     </DialogHeader>
 
-                    <div className="sm:hidden flex items-center justify-center relative border-b dark:border-gray-800 -mt-2 pb-2">
-                        <h2 className="text-lg font-semibold">Request Profile Edit</h2>
+                    <div className={`sm:hidden flex items-center justify-between relative border-b pb-2 ${
+                        isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                    }`}>
+                        <h2 className={`text-lg font-semibold ${
+                            isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                        }`}>
+                            Request Profile Edit
+                        </h2>
+                        <button
+                            onClick={() => setIsEditModalOpen(false)}
+                            className={`rounded-full p-1 ${
+                                isDarkMode 
+                                    ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' 
+                                    : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
                     </div>
 
                     {/* Scrollable Container */}
@@ -553,8 +592,10 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                             {/* Photo Upload */}
                             <div className="flex justify-center mb-6">
                                 <div className="relative">
-                                    <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden ${
-                                        isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                                    <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden border-2 ${
+                                        isDarkMode 
+                                            ? 'bg-gray-700 border-gray-600' 
+                                            : 'bg-gray-200 border-gray-300'
                                     }`}>
                                         {photoPreview ? (
                                             <img
@@ -750,19 +791,29 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                     </div>
 
                     {/* Footer - Always visible */}
-                    <div className="mt-6 border-t dark:border-gray-800 pt-4">
-                        <div className="flex flex-col sm:flex-row-reverse gap-2 sm:gap-4">
+                    <div className={`mt-6 border-t pt-4 ${
+                        isDarkMode ? 'border-gray-700' : 'border-gray-200'
+                    }`}>
+                        <div className="flex flex-col-reverse sm:flex-row-reverse justify-end gap-2 sm:gap-4">
                             <Button
                                 onClick={handleSubmitEdit}
                                 disabled={isSubmitting}
-                                className="w-full sm:w-auto"
+                                className={`w-full sm:w-auto ${
+                                    isDarkMode 
+                                        ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-blue-500/50' 
+                                        : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-blue-400'
+                                }`}
                             >
                                 {isSubmitting ? 'Sending Request...' : 'Send Edit Request'}
                             </Button>
                             <Button
                                 variant="outline"
                                 onClick={() => setIsEditModalOpen(false)}
-                                className="w-full sm:w-auto"
+                                className={`w-full sm:w-auto bg-transparent ${
+                                    isDarkMode 
+                                        ? 'border-gray-500 text-gray-200 hover:bg-gray-700 hover:text-white hover:border-gray-400' 
+                                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                }`}
                             >
                                 Cancel
                             </Button>
