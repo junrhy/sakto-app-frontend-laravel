@@ -117,11 +117,12 @@ RUN chmod +x /usr/local/bin/startup.sh \
     && dos2unix /usr/local/bin/startup.sh 2>/dev/null || true
 
 # Add permission fix script
-RUN echo '#!/bin/sh\n\
-chown -R www-data:www-data /var/www/storage\n\
-chmod -R 775 /var/www/storage\n\
-exec "$@"' > /usr/local/bin/fix-permissions.sh \
-    && chmod +x /usr/local/bin/fix-permissions.sh
+RUN printf '#!/bin/sh\n' > /usr/local/bin/fix-permissions.sh && \
+    printf 'chown -R www-data:www-data /var/www/storage\n' >> /usr/local/bin/fix-permissions.sh && \
+    printf 'chmod -R 775 /var/www/storage\n' >> /usr/local/bin/fix-permissions.sh && \
+    printf 'exec "$@"\n' >> /usr/local/bin/fix-permissions.sh && \
+    chmod +x /usr/local/bin/fix-permissions.sh && \
+    dos2unix /usr/local/bin/fix-permissions.sh 2>/dev/null || true
 
 # Expose port 80
 EXPOSE 80
