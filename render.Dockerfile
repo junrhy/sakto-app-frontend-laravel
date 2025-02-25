@@ -116,6 +116,13 @@ COPY docker/nginx/docker-entrypoint.sh /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh \
     && dos2unix /usr/local/bin/startup.sh 2>/dev/null || true
 
+# Add permission fix script
+RUN echo '#!/bin/sh\n\
+chown -R www-data:www-data /var/www/storage\n\
+chmod -R 775 /var/www/storage\n\
+exec "$@"' > /usr/local/bin/fix-permissions.sh \
+    && chmod +x /usr/local/bin/fix-permissions.sh
+
 # Expose port 80
 EXPOSE 80
 
@@ -125,5 +132,6 @@ ENV PHP_OPCACHE_ENABLE=1 \
     PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
     PHP_OPCACHE_REVALIDATE_FREQ=0
 
-# Start the application
+# Start the application with permissions fix
+ENTRYPOINT ["/usr/local/bin/fix-permissions.sh"]
 CMD ["/usr/local/bin/startup.sh"] 
