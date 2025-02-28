@@ -15,19 +15,18 @@ import axios from 'axios';
 interface Payroll {
     id: number;
     name: string;
+    email: string;
     position: string;
     salary: number;
     startDate: string;
     status: 'active' | 'inactive';
 }
-  
-const INITIAL_PAYROLLS: Payroll[] = [
-    { id: 1, name: "John Doe", position: "Manager", salary: 5000, startDate: "2022-01-01", status: 'active' },
-    { id: 2, name: "Jane Smith", position: "Developer", salary: 4000, startDate: "2022-02-15", status: 'active' },
-    { id: 3, name: "Bob Johnson", position: "Designer", salary: 3500, startDate: "2022-03-01", status: 'inactive' },
-];
 
-export default function Payroll() {
+interface PageProps {
+    currency_symbol?: string;
+}
+
+export default function Payroll({ currency_symbol = '$' }: PageProps) {
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPayrollDialogOpen, setIsPayrollDialogOpen] = useState(false);
@@ -122,8 +121,21 @@ export default function Payroll() {
 
     const pageCount = Math.ceil(filteredPayrolls.length / itemsPerPage);
 
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount).replace('$', currency_symbol);
+    };
+
     const calculateTotalPayroll = () => {
-        return payrolls.reduce((total, payroll) => total + payroll.salary, 0);
+        if (!payrolls || payrolls.length === 0) return 0;
+        return payrolls.reduce((total, payroll) => {
+            const salary = Number(payroll.salary) || 0;
+            return total + salary;
+        }, 0);
     };
     
     return (
@@ -142,7 +154,7 @@ export default function Payroll() {
                     <CardTitle>Payroll Overview</CardTitle>
                     </CardHeader>
                     <CardContent>
-                    <div className="text-2xl font-bold">Total Monthly Payroll: ${calculateTotalPayroll().toFixed(2)}</div>
+                    <div className="text-2xl font-bold">Total Monthly Payroll: {formatCurrency(calculateTotalPayroll())}</div>
                     <div>Total Payrolls: {payrolls.length}</div>
                     <div>Active Payrolls: {payrolls.filter(p => p.status === 'active').length}</div>
                     </CardContent>
@@ -209,7 +221,7 @@ export default function Payroll() {
                             </TableCell>
                             <TableCell>{payroll.name}</TableCell>
                             <TableCell>{payroll.position}</TableCell>
-                            <TableCell>${payroll.salary.toFixed(2)}</TableCell>
+                            <TableCell>{formatCurrency(Number(payroll.salary) || 0)}</TableCell>
                             <TableCell>{payroll.startDate}</TableCell>
                             <TableCell>{payroll.status}</TableCell>
                             <TableCell>
@@ -268,6 +280,15 @@ export default function Payroll() {
                             id="name"
                             value={currentPayroll?.name || ''}
                             onChange={(e) => setCurrentPayroll({ ...currentPayroll!, name: e.target.value })}
+                            className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="email" className="text-right">Email</Label>
+                            <Input
+                            id="email"
+                            value={currentPayroll?.email || ''}
+                            onChange={(e) => setCurrentPayroll({ ...currentPayroll!, email: e.target.value })}
                             className="col-span-3"
                             />
                         </div>

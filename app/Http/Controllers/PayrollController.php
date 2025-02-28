@@ -20,14 +20,18 @@ class PayrollController extends Controller
 
     public function index()
     {
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
         $payrolls = $this->getList();
-        return Inertia::render('Payroll', ['payrolls' => $payrolls]);
+        return Inertia::render('Payroll', [
+            'payrolls' => $payrolls,
+            'currency_symbol' => $jsonAppCurrency->symbol
+        ]);
     }
 
     public function getList(): JsonResponse
     {
         try {
-            $client_identifier = auth()->user()->client_identifier;
+            $client_identifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/payroll", ['client_identifier' => $client_identifier]);
 
@@ -49,15 +53,15 @@ class PayrollController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
                 'position' => 'required|string|max:255',
                 'salary' => 'required|numeric|min:0',
                 'startDate' => 'required|date',
                 'status' => 'required|in:active,inactive',
             ]);
-            $validated['client_identifier'] = $request->client_identifier;
+            $validated['client_identifier'] = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/payroll", $validated);
-
             if (!$response->successful()) {
                 throw new Exception('Failed to store payroll record in API');
             }
@@ -81,7 +85,7 @@ class PayrollController extends Controller
                 'startDate' => 'required|date',
                 'status' => 'required|in:active,inactive',
             ]);
-            $validated['client_identifier'] = $request->client_identifier;
+            $validated['client_identifier'] = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
                 ->put("{$this->apiUrl}/payroll/{$id}", $validated);
 
