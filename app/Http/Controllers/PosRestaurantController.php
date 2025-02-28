@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Table;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Order;
+use Illuminate\Support\Facades\Storage;
 
 class PosRestaurantController extends Controller
 {
@@ -76,12 +77,10 @@ class PosRestaurantController extends Controller
 
             // Handle multipart form data with image
             if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('fnb-menu-items', 'public');
+                $validated['image'] = Storage::disk('public')->url($path);
+
                 $response = Http::withToken($this->apiToken)
-                    ->attach(
-                        'image', 
-                        file_get_contents($request->file('image')->path()),
-                        $request->file('image')->getClientOriginalName()
-                    )
                     ->post("{$this->apiUrl}/fnb-menu-items", $validated);
             } else {
                 $response = Http::withToken($this->apiToken)
@@ -110,13 +109,26 @@ class PosRestaurantController extends Controller
     {
         try {
             if ($request->hasFile('image')) {
+                // Delete old image if exists
+                $getResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/fnb-menu-items/{$id}");
+                if ($getResponse->successful()) {
+                    $menuItem = $getResponse->json()['data']['fnb_menu_item'];
+                    if (!empty($menuItem['image'])) {
+                        $path = str_replace(Storage::disk('public')->url(''), '', $menuItem['image']);
+                        if (Storage::disk('public')->exists($path)) {
+                            Storage::disk('public')->delete($path);
+                        }
+                    }
+                }
+    
+                $path = $request->file('image')->store('fnb-menu-items', 'public');
+
+                $requestData = $request->all();
+                $requestData['image'] = Storage::disk('public')->url($path);
+
                 $response = Http::withToken($this->apiToken)
-                    ->attach(
-                        'image', 
-                        file_get_contents($request->file('image')->path()),
-                        $request->file('image')->getClientOriginalName()
-                    )
-                    ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
+                    ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $requestData);
             } else {
                 $response = Http::withToken($this->apiToken)
                     ->put("{$this->apiUrl}/fnb-menu-items/{$id}", $request->all());
@@ -175,8 +187,9 @@ class PosRestaurantController extends Controller
     public function getTables()
     {
         try {
+            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/fnb-tables");
+                ->get("{$this->apiUrl}/fnb-tables?client_identifier={$clientIdentifier}");
 
             if(!$response->json()) {
                 return response()->json(['error' => 'Failed to connect to FNB Tables API.'], 500);
