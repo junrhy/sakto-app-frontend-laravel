@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import Tree from 'react-d3-tree';
 import type { FamilyMember } from '@/types/family-tree';
-import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo, FaShare, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo, FaShare, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight, FaChevronDown } from 'react-icons/fa';
 import { router } from '@inertiajs/react';
 
 interface Props {
@@ -33,6 +33,8 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
     const [showCopiedToast, setShowCopiedToast] = useState(false);
     const [hideControls, setHideControls] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [isRootSelectorOpen, setIsRootSelectorOpen] = useState(false);
+    const [rootSelectorSearch, setRootSelectorSearch] = useState('');
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     // Handle window resize
@@ -498,6 +500,31 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [translate, zoom, updatePositionInURL]);
 
+    // Filter members based on search term
+    const filteredMembers = familyMembers
+        .filter(member => 
+            rootSelectorSearch === '' || 
+            `${member.first_name} ${member.last_name}`
+                .toLowerCase()
+                .includes(rootSelectorSearch.toLowerCase())
+        )
+        .sort((a, b) => 
+            `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
+        );
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (!target.closest('.root-member-selector')) {
+                setIsRootSelectorOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
         <div 
             ref={containerRef} 
@@ -510,26 +537,82 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
                 <>
                     <div className={`absolute top-4 left-4 z-10 p-2 rounded-lg ${
                         isDarkMode ? 'bg-gray-800' : 'bg-white'
-                    } shadow-lg min-w-[200px]`}>
-                        <select
-                            value={selectedRootMember || ''}
-                            onChange={(e) => handleMemberSelect(e.target.value)}
-                            className={`w-full p-2 rounded-md border ${
-                                isDarkMode 
-                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                    : 'bg-white border-gray-300 text-gray-900'
-                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                        >
-                            <option value="">All Trees (Oldest Member)</option>
-                            {familyMembers
-                                .sort((a, b) => a.first_name.localeCompare(b.first_name))
-                                .map(member => (
-                                    <option key={member.id} value={member.id}>
-                                        {member.first_name} {member.last_name}
-                                    </option>
-                                ))
-                            }
-                        </select>
+                    } shadow-lg min-w-[250px] root-member-selector`}>
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsRootSelectorOpen(!isRootSelectorOpen)}
+                                className={`w-full px-3 py-2 text-left rounded-lg border flex items-center justify-between
+                                    ${isDarkMode 
+                                        ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600' 
+                                        : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <span>
+                                    {selectedRootMember 
+                                        ? familyMembers.find(m => m.id === selectedRootMember)
+                                            ? `${familyMembers.find(m => m.id === selectedRootMember)!.first_name} ${familyMembers.find(m => m.id === selectedRootMember)!.last_name}`
+                                            : 'All Trees (Oldest Member)'
+                                        : 'All Trees (Oldest Member)'
+                                    }
+                                </span>
+                                <FaChevronDown className={`transform transition-transform ${isRootSelectorOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            {isRootSelectorOpen && (
+                                <div className={`absolute z-50 w-full mt-1 rounded-lg border shadow-lg overflow-hidden
+                                    ${isDarkMode 
+                                        ? 'bg-gray-700 border-gray-600' 
+                                        : 'bg-white border-gray-300'
+                                    }`}>
+                                    {/* Search input */}
+                                    <div className={`p-2 border-b ${isDarkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                                        <div className="relative">
+                                            <FaSearch className={`absolute left-2 top-1/2 transform -translate-y-1/2 ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                            }`} />
+                                            <input
+                                                type="text"
+                                                placeholder="Search members..."
+                                                className={`w-full pl-8 pr-3 py-1.5 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500
+                                                    ${isDarkMode 
+                                                        ? 'bg-gray-800 text-white placeholder-gray-400' 
+                                                        : 'bg-gray-50 text-gray-900 placeholder-gray-500'
+                                                    }`}
+                                                value={rootSelectorSearch}
+                                                onChange={(e) => setRootSelectorSearch(e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="max-h-60 overflow-y-auto">
+                                        <button
+                                            className={`w-full px-3 py-2 text-left hover:bg-opacity-10 hover:bg-blue-500
+                                                ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                                            onClick={() => {
+                                                handleMemberSelect('');
+                                                setIsRootSelectorOpen(false);
+                                            }}
+                                        >
+                                            All Trees (Oldest Member)
+                                        </button>
+                                        {filteredMembers.map(member => (
+                                            <button
+                                                key={member.id}
+                                                className={`w-full px-3 py-2 text-left hover:bg-opacity-10 hover:bg-blue-500
+                                                    ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                                                onClick={() => {
+                                                    handleMemberSelect(member.id.toString());
+                                                    setIsRootSelectorOpen(false);
+                                                }}
+                                            >
+                                                {member.first_name} {member.last_name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Updated arrow key controls info */}
