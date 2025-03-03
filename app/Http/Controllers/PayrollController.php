@@ -102,17 +102,17 @@ class PayrollController extends Controller
         }
     }
 
-    public function destroy(Request $request, $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
         try {
             $response = Http::withToken($this->apiToken)
                 ->delete("{$this->apiUrl}/payroll/{$id}");
 
             if (!$response->successful()) {
-                throw new Exception('Failed to delete payroll record from API');
+                throw new Exception('Failed to delete payroll record in API');
             }
 
-            return response()->json(null, 204);
+            return response()->json(['message' => 'Payroll record deleted successfully']);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Failed to delete payroll record',
@@ -158,6 +158,49 @@ class PayrollController extends Controller
                 'error' => 'Failed to fetch payroll overview',
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/payroll/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch payroll settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'pay_period' => 'bi-weekly',
+                    'tax_rate' => 20,
+                    'overtime_rate' => 1.5,
+                    'standard_hours' => 40,
+                    'benefits' => [
+                        'health_insurance' => true,
+                        'dental_insurance' => true,
+                        'retirement_plan' => true
+                    ],
+                    'deductions' => [
+                        'social_security' => 6.2,
+                        'medicare' => 1.45
+                    ]
+                ]
+            ];
+
+            return Inertia::render('Payroll/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
         }
     }
 }

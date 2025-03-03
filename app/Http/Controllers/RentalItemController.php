@@ -152,4 +152,42 @@ class RentalItemController extends Controller
             return response()->json(['error' => 'Failed to fetch payment history'], 500);
         }
     }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/rental-item/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch rental item settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'default_rental_period' => 7, // days
+                    'late_fee_rate' => 10, // percentage
+                    'deposit_required' => true,
+                    'deposit_percentage' => 20,
+                    'minimum_rental_period' => 1, // day
+                    'maximum_rental_period' => 30, // days
+                    'categories' => ['Electronics', 'Tools', 'Equipment', 'Vehicles'],
+                    'insurance_required' => true
+                ]
+            ];
+
+            return Inertia::render('RentalItem/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
 }

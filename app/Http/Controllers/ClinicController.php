@@ -210,4 +210,75 @@ class ClinicController extends Controller
             return response()->json(['error' => 'Failed to update next visit'], 500);
         }
     }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/clinic/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch clinic settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'general' => [
+                        'clinic_name' => 'Sample Clinic',
+                        'description' => 'A modern healthcare facility',
+                        'address' => '123 Medical Street',
+                        'phone' => '+1234567890',
+                        'email' => 'clinic@example.com',
+                        'operating_hours' => [
+                            'monday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                            'tuesday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                            'wednesday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                            'thursday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                            'friday' => ['open' => '09:00', 'close' => '17:00', 'closed' => false],
+                            'saturday' => ['open' => '09:00', 'close' => '13:00', 'closed' => false],
+                            'sunday' => ['open' => '00:00', 'close' => '00:00', 'closed' => true]
+                        ]
+                    ],
+                    'appointments' => [
+                        'enable_appointments' => true,
+                        'appointment_duration' => 30,
+                        'appointment_buffer' => 15,
+                        'enable_reminders' => true,
+                        'reminder_hours' => 24,
+                        'enable_online_booking' => true
+                    ],
+                    'features' => [
+                        'enable_insurance' => true,
+                        'insurance_providers' => ['Blue Cross', 'Aetna', 'Cigna'],
+                        'enable_prescriptions' => true,
+                        'enable_lab_results' => true,
+                        'enable_dental_charts' => true,
+                        'enable_medical_history' => true,
+                        'enable_patient_portal' => true
+                    ],
+                    'billing' => [
+                        'enable_billing' => true,
+                        'tax_rate' => 10,
+                        'currency' => 'USD',
+                        'payment_methods' => ['Cash', 'Credit Card', 'Insurance'],
+                        'invoice_prefix' => 'INV-',
+                        'invoice_footer' => 'Thank you for choosing our clinic!'
+                    ]
+                ]
+            ];
+
+            return Inertia::render('Clinic/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
 }

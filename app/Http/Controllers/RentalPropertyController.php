@@ -142,4 +142,45 @@ class RentalPropertyController extends Controller
             return response()->json(['error' => 'Failed to fetch payment history'], 500);
         }
     }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/rental-property/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch rental property settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'default_lease_term' => 12, // months
+                    'security_deposit' => 2, // months rent
+                    'late_payment_fee' => 50,
+                    'grace_period_days' => 5,
+                    'property_types' => ['Apartment', 'House', 'Condo', 'Commercial'],
+                    'payment_methods' => ['bank_transfer', 'check', 'cash'],
+                    'utilities_included' => ['water', 'electricity', 'internet'],
+                    'maintenance_contact' => [
+                        'name' => 'John Doe',
+                        'phone' => '123-456-7890'
+                    ]
+                ]
+            ];
+
+            return Inertia::render('RentalProperty/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
 }

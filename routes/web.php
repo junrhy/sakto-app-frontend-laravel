@@ -269,6 +269,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Clinic routes
     Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
+    Route::get('/clinic/settings', [ClinicController::class, 'settings'])->name('clinic.settings');
     Route::post('/clinic/patients', [ClinicController::class, 'store']);
     Route::put('/clinic/patients/{id}', [ClinicController::class, 'update']);
     Route::delete('/clinic/patients/{id}', [ClinicController::class, 'destroy']);
@@ -286,6 +287,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
+    Route::get('/pos-restaurant/settings', [PosRestaurantController::class, 'settings'])->name('pos-restaurant.settings');
 
     // Pos Restaurant Menu Items routes
     Route::get('/pos-restaurant/menu-items', [PosRestaurantController::class, 'getMenuItems']);
@@ -332,6 +334,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rental Item routes
     Route::prefix('rental-item')->group(function () {
         Route::get('/', [RentalItemController::class, 'index'])->name('rental-items');
+        Route::get('/settings', [RentalItemController::class, 'settings'])->name('rental-item.settings');
         Route::get('/list', [RentalItemController::class, 'getItems']);
         Route::post('/', [RentalItemController::class, 'store']);
         Route::put('/{id}', [RentalItemController::class, 'update']);
@@ -344,6 +347,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rental Property routes
     Route::prefix('rental-property')->group(function () {
         Route::get('/', [RentalPropertyController::class, 'index'])->name('rental-property');
+        Route::get('/settings', [RentalPropertyController::class, 'settings'])->name('rental-property.settings');
         Route::get('/list', [RentalPropertyController::class, 'getProperties']);
         Route::post('/', [RentalPropertyController::class, 'store']);
         Route::put('/{id}', [RentalPropertyController::class, 'update']);
@@ -356,6 +360,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Loan routes
     Route::prefix('loan')->group(function () {
         Route::get('/', [LoanController::class, 'index'])->name('loan');
+        Route::get('/settings', [LoanController::class, 'settings'])->name('loan.settings');
         Route::post('/', [LoanController::class, 'store']);
         Route::put('/{id}', [LoanController::class, 'update']);
         Route::delete('/{id}', [LoanController::class, 'destroy']);
@@ -372,6 +377,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Payroll routes
     Route::prefix('payroll')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('payroll');
+        Route::get('/settings', [PayrollController::class, 'settings'])->name('payroll.settings');
         Route::get('/list', [PayrollController::class, 'getList']);
         Route::post('/', [PayrollController::class, 'store']);
         Route::put('/{id}', [PayrollController::class, 'update']);
@@ -425,6 +431,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sms-twilio/balance', [SmsTwilioController::class, 'getBalance'])->name('twilio-sms.balance');
     Route::get('/sms-twilio/status/{messageId}', [SmsTwilioController::class, 'getMessageStatus'])->name('twilio-sms.status');
 
+    // SMS routes
+    Route::prefix('sms')->group(function () {
+        Route::get('/settings', [SmsTwilioController::class, 'settings'])->name('sms.settings');
+    });
+
     // Semaphore Routes
     Route::get('/sms-semaphore', [SmsSemaphoreController::class, 'index'])->name('semaphore-sms');
     Route::post('/sms-semaphore/send', [SmsSemaphoreController::class, 'send'])->name('semaphore-sms.send');
@@ -434,11 +445,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Email routes
     Route::get('/email', [EmailController::class, 'index'])->name('email.index');
+    Route::get('/email/settings', [EmailController::class, 'settings'])->name('email.settings');
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
 
     // Contacts routes
     Route::resource('contacts', ContactsController::class);
+    Route::get('/contacts/settings', [ContactsController::class, 'settings'])->name('contacts.settings');
 
     // Credits routes
     Route::prefix('credits')->group(function () {
@@ -453,6 +466,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Family Tree routes
     Route::prefix('family-tree')->group(function () {
         Route::get('/', [FamilyTreeController::class, 'index'])->name('family-tree');
+        Route::get('/settings', [FamilyTreeController::class, 'settings'])->name('family-tree.settings');
         Route::get('/members', [FamilyTreeController::class, 'getFamilyMembers']);
         Route::get('/widget-stats', [FamilyTreeController::class, 'getWidgetStats']);
         Route::post('/members', [FamilyTreeController::class, 'store']);

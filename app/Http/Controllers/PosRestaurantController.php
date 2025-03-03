@@ -547,4 +547,45 @@ class PosRestaurantController extends Controller
             ], 500);
         }
     }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/fnb/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch restaurant settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'restaurant_name' => 'Sample Restaurant',
+                    'tax_rate' => 10,
+                    'service_charge' => 5,
+                    'opening_hours' => '10:00 AM - 10:00 PM',
+                    'table_reservation_limit' => 2, // hours
+                    'menu_categories' => ['Appetizers', 'Main Course', 'Desserts', 'Beverages'],
+                    'payment_methods' => ['cash', 'card', 'mobile_payment'],
+                    'printer_settings' => [
+                        'receipt_printer' => 'POS-58',
+                        'kitchen_printer' => 'POS-80'
+                    ]
+                ]
+            ];
+
+            return Inertia::render('PosRestaurant/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
 }

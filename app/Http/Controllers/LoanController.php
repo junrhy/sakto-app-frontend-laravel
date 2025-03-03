@@ -245,11 +245,48 @@ class LoanController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->put("{$this->apiUrl}/loan-bills/{$id}/status", $request->all());
+                ->patch("{$this->apiUrl}/loan-bills/{$id}/status", $request->all());
             return response()->json($response->json());
         } catch (\Exception $e) {
             Log::error('Error updating bill status: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to update bill status.'], 500);
+        }
+    }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/loan/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch loan settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'default_interest_rate' => 5.0,
+                    'default_loan_term' => 12, // months
+                    'min_loan_amount' => 1000,
+                    'max_loan_amount' => 50000,
+                    'allowed_payment_methods' => ['cash', 'bank_transfer', 'check'],
+                    'late_payment_fee' => 25,
+                    'grace_period_days' => 5
+                ]
+            ];
+
+            return Inertia::render('Loan/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
         }
     }
 }

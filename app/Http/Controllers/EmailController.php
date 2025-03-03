@@ -7,12 +7,25 @@ use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use App\Mail\GenericEmail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class EmailController extends Controller
 {
+    protected $apiUrl, $apiToken;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
+    }
+
     public function index()
     {
-        return Inertia::render('Email/Index');
+        return Inertia::render('Email/Index', [
+            'auth' => [
+                'user' => auth()->user()
+            ]
+        ]);
     }
 
     public function send(Request $request)
@@ -96,5 +109,43 @@ class EmailController extends Controller
             'mail_name' => config('mail.from.name'),
             'mail_driver' => config('mail.default'),
         ]);
+    }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/email/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch email settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'smtp_host' => 'smtp.example.com',
+                    'smtp_port' => 587,
+                    'smtp_encryption' => 'tls',
+                    'from_name' => 'System Admin',
+                    'from_email' => 'admin@example.com',
+                    'signature' => 'Best regards,\nSystem Administrator',
+                    'max_attachments' => 5,
+                    'max_attachment_size' => 10 // MB
+                ]
+            ];
+
+            return Inertia::render('Email/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
+        }
     }
 }

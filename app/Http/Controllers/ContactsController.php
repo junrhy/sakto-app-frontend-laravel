@@ -300,4 +300,39 @@ class ContactsController extends Controller
         return redirect()->route('contacts.self-registration')
             ->with('message', 'Registration submitted successfully! We will review your information.');
     }
+
+    public function settings()
+    {
+        try {
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/contacts/settings", [
+            //         'client_identifier' => $clientIdentifier
+            //     ]);
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('Failed to fetch contacts settings');
+            // }
+
+            // Dummy data
+            $dummySettings = [
+                'data' => [
+                    'default_view' => 'list',
+                    'items_per_page' => 10,
+                    'show_archived' => false,
+                    'contact_categories' => ['Family', 'Friends', 'Business', 'Other'],
+                    'required_fields' => ['name', 'phone', 'email']
+                ]
+            ];
+
+            return Inertia::render('Contacts/Settings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
 }

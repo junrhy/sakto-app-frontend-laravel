@@ -347,21 +347,26 @@ class FamilyTreeController extends Controller
      */
     public function getVisualizationData()
     {
-        $clientIdentifier = auth()->user()->identifier;
-        $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/family-tree/visualization", [
-                'client_identifier' => $clientIdentifier
-            ]);
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/family-tree/visualization", [
+                    'client_identifier' => $clientIdentifier
+                ]);
 
-        if (!$response->successful()) {
-            Log::error('Failed to get visualization data', [
-                'response' => $response->json(),
-                'status' => $response->status()
-            ]);
-            return response()->json(['error' => 'Failed to get visualization data'], $response->status());
+            if (!$response->successful()) {
+                Log::error('Failed to fetch visualization data', [
+                    'response' => $response->json(),
+                    'status' => $response->status()
+                ]);
+                return response()->json(['error' => 'Failed to fetch visualization data'], $response->status());
+            }
+
+            return response()->json($response->json('data', []));
+        } catch (\Exception $e) {
+            Log::error('Error fetching visualization data: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch visualization data'], 500);
         }
-
-        return response()->json($response->json('data', []), $response->status());
     }
 
     /**
@@ -462,6 +467,74 @@ class FamilyTreeController extends Controller
             return response()->json([
                 'error' => 'Failed to send edit request. Please try again.'
             ], 500);
+        }
+    }
+
+    public function settings()
+    {
+        try {
+            // Dummy settings data for development
+            $settings = [
+                "privacy" => [
+                    "tree_visibility" => "private",
+                    "allow_member_suggestions" => true,
+                    "show_living_dates" => true,
+                    "show_sensitive_info" => false
+                ],
+                "display" => [
+                    "default_view" => "tree",
+                    "show_photos" => true,
+                    "show_maiden_names" => true,
+                    "date_format" => "MM/DD/YYYY",
+                    "name_display_format" => "first_last"
+                ],
+                "notifications" => [
+                    "email_notifications" => true,
+                    "notify_on_changes" => true,
+                    "notify_on_member_requests" => true,
+                    "digest_frequency" => "weekly"
+                ],
+                "sharing" => [
+                    "allow_exports" => true,
+                    "allow_imports" => true,
+                    "require_approval_for_edits" => true,
+                    "allowed_editors" => ["family", "friends", "guests"]
+                ],
+                "customization" => [
+                    "theme" => "light",
+                    "primary_color" => "#4A90E2",
+                    "font_size" => "medium",
+                    "language" => "en"
+                ],
+                "advanced" => [
+                    "max_generations_display" => 4,
+                    "auto_arrange" => true,
+                    "show_relationship_labels" => true,
+                    "include_extended_family" => true
+                ]
+            ];
+
+            // Commented out original HTTP request
+            /*
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/family-tree/settings", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch family tree settings');
+            }
+            */
+
+            return Inertia::render('FamilyTree/Settings', [
+                'settings' => $settings,
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load settings');
         }
     }
 }
