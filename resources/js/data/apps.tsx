@@ -41,7 +41,7 @@ export const apps: App[] = [
         price: 0,
         rating: 4.5,
         categories: ['Business', 'Sales', 'Inventory'],
-        comingSoon: false,
+        comingSoon: true,
         pricingType: 'free'
     },
     {
@@ -158,7 +158,7 @@ export const apps: App[] = [
         price: 0,
         rating: 4.2,
         categories: ['Travel', 'Bookings', 'Business'],
-        comingSoon: false,
+        comingSoon: true,
         pricingType: 'free'
     },
     {

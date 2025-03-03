@@ -452,13 +452,41 @@ export default function Authenticated({
                                         </div>
                                     )}
                                     {hasFnbAccess && (
-                                        <NavLink
-                                            href={`/pos-restaurant?app=${appParam}&tab=tables`}
-                                            active={route().current('pos-restaurant')}
-                                            className="transition-all duration-200 text-white/90 hover:text-white"
-                                        >
-                                            F & B
-                                        </NavLink>
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">F & B</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/pos-restaurant?app=${appParam}&tab=tables`}>
+                                                        Restaurant
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/pos-restaurant/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
                                     )}
                                     {(hasWarehousingAccess || hasTransportationAccess) && (
                                         <div className="inline-flex items-center">
@@ -538,36 +566,130 @@ export default function Authenticated({
                                                             Rental Properties
                                                         </Dropdown.Link>
                                                     )}
+                                                    {hasRentalItemAccess && (
+                                                        <Dropdown.Link href={`/rental-item/settings?app=${appParam}`}>
+                                                            Settings
+                                                        </Dropdown.Link>
+                                                    )}
+                                                    {hasRentalPropertyAccess && (
+                                                        <Dropdown.Link href={`/rental-property/settings?app=${appParam}`}>
+                                                            Settings
+                                                        </Dropdown.Link>
+                                                    )}
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
                                     )}
                                     {hasClinicalAccess && (
-                                        <NavLink
-                                            href={`/clinic?app=${appParam}`}
-                                            active={route().current('clinic')}
-                                            className="transition-all duration-200 text-white/90 hover:text-white"
-                                        >
-                                            Clinic
-                                        </NavLink>
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Clinic</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/clinic?app=${appParam}`}>
+                                                        Clinic
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/clinic/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
                                     )}
                                     {hasLendingAccess && (
-                                        <NavLink
-                                            href={`/loan?app=${appParam}`}
-                                            active={route().current('loan')}
-                                            className="transition-all duration-200 text-white/90 hover:text-white"
-                                        >
-                                            Loans
-                                        </NavLink>
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Loans</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/loan?app=${appParam}`}>
+                                                        Loans
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/loan/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
                                     )}
                                     {hasPayrollAccess && (
-                                        <NavLink
-                                            href={`/payroll?app=${appParam}`}
-                                            active={route().current('payroll')}
-                                            className="transition-all duration-200 text-white/90 hover:text-white"
-                                        >
-                                            Payroll
-                                        </NavLink>
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Payroll</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/payroll?app=${appParam}`}>
+                                                        Payroll
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/payroll/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
                                     )}
                                     {hasTravelAccess && (
                                         <div className="inline-flex items-center">
@@ -639,27 +761,86 @@ export default function Authenticated({
                                                     <Dropdown.Link href={`/sms-semaphore?app=${appParam}`}>
                                                         Semaphore SMS
                                                     </Dropdown.Link>
+                                                    <Dropdown.Link href={`/sms/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
                                     )}
                                     {hasEmailAccess && (
-                                        <NavLink
-                                            href={`/email?app=${appParam}`}
-                                            active={route().current('email')}
-                                            className="transition-all duration-200 text-white/90 hover:text-white"
-                                        >
-                                            Email
-                                        </NavLink>
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Email</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/email?app=${appParam}`}>
+                                                        Email
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/email/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
                                     )}
                                     {hasContactsAccess && (
-                                        <NavLink
-                                            href={`/contacts?app=${appParam}`}
-                                            active={route().current('contacts')}
-                                            className="transition-all duration-200 text-white/90 hover:text-white"
-                                        >
-                                            Contacts
-                                        </NavLink>
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Contacts</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/contacts?app=${appParam}`}>
+                                                        Contacts
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/contacts/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
                                     )}
                                     {hasFamilyTreeAccess && (
                                         <div className="inline-flex items-center">
@@ -702,6 +883,9 @@ export default function Authenticated({
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/family-tree/${user.identifier}/members?app=${appParam}`}>
                                                         Members List
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/family-tree/settings?app=${appParam}`}>
+                                                        Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
