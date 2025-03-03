@@ -27,6 +27,8 @@ interface MenuItem {
     public_image_url?: string;
     created_at?: string;
     updated_at?: string;
+    is_available_personal?: boolean;
+    is_available_online?: boolean;
 }
   
 interface OrderItem extends MenuItem {
@@ -1856,49 +1858,65 @@ export default function PosRestaurant({
                             </div>
                             <Table>
                                 <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[50px]">
-                                    <Checkbox
-                                        checked={selectedMenuItems.length === paginatedMenuItems.length}
-                                        onCheckedChange={handleSelectAll}
-                                    />
-                                    </TableHead>
-                                    <TableHead>Image</TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Category</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
+                                    <TableRow>
+                                        <TableHead className="w-[50px]">
+                                            <Checkbox
+                                                checked={
+                                                    paginatedMenuItems.length > 0 &&
+                                                    paginatedMenuItems.every((item: MenuItem) =>
+                                                        selectedMenuItems.includes(item.id)
+                                                    )
+                                                }
+                                                onCheckedChange={handleSelectAll}
+                                            />
+                                        </TableHead>
+                                        <TableHead>Image</TableHead>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead>Price</TableHead>
+                                        <TableHead>Availability</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                 {paginatedMenuItems.map((item: MenuItem) => (
                                     <TableRow key={item.id}>
-                                    <TableCell>
-                                        <Checkbox
-                                        checked={selectedMenuItems.includes(item.id)}
-                                        onCheckedChange={() => toggleMenuItemSelection(item.id)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <img 
-                                        src={item.image || '/images/no-image.jpg'} 
-                                        alt={item.name} 
-                                        width={50} 
-                                        height={50} 
-                                        className="rounded-md object-cover"
-                                        />
-                                    </TableCell>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell>{item.category}</TableCell>
-                                    <TableCell>{currency_symbol}{item.price}</TableCell>
-                                    <TableCell>
-                                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
-                                        <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
-                                        <Trash className="h-4 w-4" />
-                                        </Button>
-                                    </TableCell>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedMenuItems.includes(item.id)}
+                                                onCheckedChange={() => toggleMenuItemSelection(item.id)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <img 
+                                                src={item.image || '/images/no-image.jpg'} 
+                                                alt={item.name} 
+                                                width={50} 
+                                                height={50} 
+                                                className="rounded-md object-cover"
+                                            />
+                                        </TableCell>
+                                        <TableCell>{item.name}</TableCell>
+                                        <TableCell>{item.category}</TableCell>
+                                        <TableCell>{currency_symbol}{item.price}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1 text-xs">
+                                                <span className={item.is_available_personal ? "text-green-600" : "text-red-600"}>
+                                                    {item.is_available_personal ? "✓" : "✗"} Personal Order
+                                                </span>
+                                                <span className={item.is_available_online ? "text-green-600" : "text-red-600"}>
+                                                    {item.is_available_online ? "✓" : "✗"} Online Order
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
+                                                <Trash className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                                 </TableBody>
@@ -2198,6 +2216,33 @@ export default function PosRestaurant({
                             className="col-span-3"
                             accept="image/*"
                         />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Availability</Label>
+                            <div className="col-span-3 space-y-2">
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="personal_order"
+                                        checked={currentMenuItem?.is_available_personal ?? true}
+                                        onCheckedChange={(checked) => setCurrentMenuItem({ 
+                                            ...currentMenuItem!, 
+                                            is_available_personal: checked as boolean 
+                                        })}
+                                    />
+                                    <Label htmlFor="personal_order">Available for Personal Order</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="online_order"
+                                        checked={currentMenuItem?.is_available_online ?? true}
+                                        onCheckedChange={(checked) => setCurrentMenuItem({ 
+                                            ...currentMenuItem!, 
+                                            is_available_online: checked as boolean 
+                                        })}
+                                    />
+                                    <Label htmlFor="online_order">Available for Online Order</Label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

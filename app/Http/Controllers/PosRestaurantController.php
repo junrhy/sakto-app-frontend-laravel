@@ -70,10 +70,14 @@ class PosRestaurantController extends Controller
                 'name' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'category' => 'required|string',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'is_available_personal' => 'boolean',
+                'is_available_online' => 'boolean'
             ]);
 
             $validated['client_identifier'] = auth()->user()->identifier;
+            $validated['is_available_personal'] = $request->input('is_available_personal', true);
+            $validated['is_available_online'] = $request->input('is_available_online', true);
 
             // Handle multipart form data with image
             if ($request->hasFile('image')) {
