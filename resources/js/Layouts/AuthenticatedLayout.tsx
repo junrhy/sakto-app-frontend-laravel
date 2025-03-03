@@ -110,10 +110,6 @@ export default function Authenticated({
     //     module => module.identifier === 'clinic'
     // );
 
-    const [newDashboardName, setNewDashboardName] = useState('');
-
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
     const [hideNav, setHideNav] = useState(() => {
         // Get stored preference from localStorage, default to false
         return localStorage.getItem('hideNav') === 'true';
@@ -122,15 +118,6 @@ export default function Authenticated({
     useEffect(() => {
         localStorage.setItem('hideNav', hideNav.toString());
     }, [hideNav]);
-
-    const createNewDashboard = () => {
-        if (newDashboardName.trim()) {
-            // You can implement the dashboard creation logic here
-            // For now, we'll just navigate to the dashboard page
-            window.location.href = route('dashboard');
-            setNewDashboardName("");
-        }
-    };
 
     return (
         <ThemeProvider>
@@ -154,18 +141,11 @@ export default function Authenticated({
                                 <div className="px-4 py-2">
                                     <div className="font-medium text-base text-white/90">Dashboard</div>
                                     <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                        View Dashboards
+                                        My Dashboard
                                     </ResponsiveNavLink>
-                                    <button 
-                                        className="w-full text-left block px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-150"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setIsCreateDialogOpen(true);
-                                            setShowingNavigationDropdown(false);
-                                        }}
-                                    >
-                                        Create Dashboard
-                                    </button>
+                                    <ResponsiveNavLink href={`/dashboards?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Dashboard Gallery
+                                    </ResponsiveNavLink>
                                 </div>
                             </div>
                         )}
@@ -393,18 +373,15 @@ export default function Authenticated({
                                                         as="button"
                                                         className="w-full text-left"
                                                     >
-                                                        View Dashboard
+                                                        My Dashboard
                                                     </Dropdown.Link>
+                                                    
                                                     <Dropdown.Link 
-                                                        href="#"
+                                                        href={`/dashboards?app=${appParam}`}
                                                         as="button"
                                                         className="w-full text-left"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setIsCreateDialogOpen(true);
-                                                        }}
                                                     >
-                                                        Create Dashboard
+                                                        Dashboard Gallery
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
@@ -962,31 +939,6 @@ export default function Authenticated({
                     )}
                 </button>
             </div>
-
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Create New Dashboard</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                        <Input
-                            placeholder="Dashboard name"
-                            value={newDashboardName}
-                            onChange={(e) => setNewDashboardName(e.target.value)}
-                        />
-                        <Button 
-                            onClick={() => {
-                                createNewDashboard();
-                                setIsCreateDialogOpen(false);
-                            }}
-                            disabled={!newDashboardName.trim()}
-                            className="w-full"
-                        >
-                            Create Dashboard
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </ThemeProvider>
     );
 }

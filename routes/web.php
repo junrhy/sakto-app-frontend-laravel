@@ -225,6 +225,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboards', [DashboardController::class, 'gallery'])->name('dashboard.gallery');
+    Route::post('/dashboard', [DashboardController::class, 'store'])->name('dashboard.store');
+    Route::post('/dashboard/{dashboard}/set-default', [DashboardController::class, 'setDefault'])->name('dashboard.set-default');
+    Route::post('/dashboard/{dashboard}/toggle-star', [DashboardController::class, 'toggleStar'])->name('dashboard.toggle-star');
+    Route::delete('/dashboard/{dashboard}', [DashboardController::class, 'destroy'])->name('dashboard.destroy');
     Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
     Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])
         ->name('dashboard.widgets');

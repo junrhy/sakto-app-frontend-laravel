@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from "react";
 import { Button } from "@/Components/ui/button";
-import { Plus, LayoutGrid, Columns, Columns3, Trash2, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, Edit } from "lucide-react";
+import { Plus, LayoutGrid, Columns, Columns3, MoreHorizontal, Star, RotateCw, CheckCircle2, Pencil, Edit } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,6 +31,7 @@ import { WidgetComponent } from "@/Components/widgets/WidgetComponent";
 import { Widget, Widget as WidgetImport, WidgetType as WidgetTypeImport } from '@/types';
 import { useForm, router } from '@inertiajs/react';
 import { Input } from "@/Components/ui/input";
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DroppableStateSnapshot, DraggableStateSnapshot } from 'react-beautiful-dnd';
 
 interface DashboardType {
     id: number;
@@ -39,6 +40,7 @@ interface DashboardType {
     column_count?: 1 | 2 | 3;
     is_starred?: boolean;
     is_default?: boolean;
+    app: AppType;
 }
 
 interface Props {
@@ -62,7 +64,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     const [selectedWidgetType, setSelectedWidgetType] = useState<WidgetTypeImport | null>(null);
     const [columnCount, setColumnCount] = useState<1 | 2 | 3>(currentDashboard.column_count || 2);
     const [loading, setLoading] = useState(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [defaultDashboardId, setDefaultDashboardId] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -218,17 +219,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         }
     };
 
-    const deleteDashboard = () => {
-        if (dashboards.length <= 1) {
-            return; // Prevent deleting the last dashboard
-        }
-        
-        const updatedDashboards = dashboards.filter(d => d.id !== currentDashboard.id);
-        setDashboards(updatedDashboards);
-        setCurrentDashboard(updatedDashboards[0]);
-        setIsDeleteDialogOpen(false);
-    };
-
     // Add this function near your other utility functions
     const wouldHideWidgets = (newColumnCount: number) => {
         // Check if widgets array exists and has items
@@ -372,6 +362,59 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         });
     };
 
+    const onDragEnd = (result: DropResult) => {
+        const { source, destination } = result;
+
+        // Dropped outside a valid drop zone
+        if (!destination) return;
+
+        // No movement
+        if (
+            source.droppableId === destination.droppableId &&
+            source.index === destination.index
+        ) return;
+
+        const sourceColumn = parseInt(source.droppableId);
+        const destinationColumn = parseInt(destination.droppableId);
+        const widgetId = parseInt(result.draggableId);
+
+        // Find the widget that was dragged
+        const widget = currentDashboard.widgets.find(w => w.id === widgetId);
+        if (!widget) return;
+
+        // Update the widget's column and order
+        router.patch(`/widgets/${widgetId}`, {
+            column: destinationColumn,
+            order: destination.index
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                // Update local state
+                const updatedWidgets = [...currentDashboard.widgets];
+                const movedWidget = updatedWidgets.find(w => w.id === widgetId);
+                if (movedWidget) {
+                    movedWidget.column = destinationColumn;
+                    // Update order of widgets in the destination column
+                    updatedWidgets.forEach(w => {
+                        if (w.column === destinationColumn && w.id !== widgetId) {
+                            if (destination.index <= w.order) {
+                                w.order += 1;
+                            }
+                        }
+                    });
+                    movedWidget.order = destination.index;
+                }
+
+                setCurrentDashboard(prev => ({
+                    ...prev,
+                    widgets: updatedWidgets
+                }));
+                setWidgets(updatedWidgets);
+            }
+        });
+    };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -391,6 +434,41 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                     {/* Dashboard Controls Bar */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                         <div className="flex items-center gap-3 w-full sm:w-auto">
+                            {/* Dashboard Switcher */}
+                            <Select
+                                value={currentDashboard.id.toString()}
+                                onValueChange={(value) => {
+                                    const dashboardId = parseInt(value);
+                                    router.get(`/dashboard/${dashboardId}/widgets`, {
+                                        app: appParam
+                                    });
+                                }}
+                            >
+                                <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Select dashboard" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {dashboards
+                                        .filter(dashboard => dashboard.app === appParam)
+                                        .map((dashboard) => (
+                                            <SelectItem 
+                                                key={dashboard.id} 
+                                                value={dashboard.id.toString()}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {dashboard.name}
+                                                    {dashboard.is_default && (
+                                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                                    )}
+                                                    {dashboard.is_starred && (
+                                                        <Star className="h-4 w-4 text-yellow-500" fill="currentColor" />
+                                                    )}
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                </SelectContent>
+                            </Select>
+
                             {/* Widget selection - Only show in edit mode */}
                             {isEditMode && (
                                 <>
@@ -437,24 +515,55 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     >
                                         <Plus className="h-4 w-4" />
                                     </Button>
+
+                                    {/* Column layout buttons */}
+                                    <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
+                                        <Button 
+                                            onClick={() => updateColumnCount(1)} 
+                                            variant={columnCount === 1 ? "default" : "ghost"} 
+                                            size="sm"
+                                            disabled={wouldHideWidgets(1)}
+                                            title={wouldHideWidgets(1) ? "Move widgets to column 0 first" : "Single column layout"}
+                                        >
+                                            <LayoutGrid className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                            onClick={() => updateColumnCount(2)} 
+                                            variant={columnCount === 2 ? "default" : "ghost"} 
+                                            size="sm"
+                                            disabled={wouldHideWidgets(2)}
+                                            title={wouldHideWidgets(2) ? "Move widgets to columns 0-1 first" : "Two column layout"}
+                                        >
+                                            <Columns className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                            onClick={() => updateColumnCount(3)} 
+                                            variant={columnCount === 3 ? "default" : "ghost"} 
+                                            size="sm"
+                                        >
+                                            <Columns3 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </>
                             )}
 
-                            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                            <AlertDialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Dashboard</AlertDialogTitle>
+                                        <AlertDialogTitle>Rename Dashboard</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Are you sure you want to delete "{currentDashboard.name}"? This action cannot be undone.
+                                            Enter a new name for the dashboard:
                                         </AlertDialogDescription>
+                                        <Input 
+                                            value={newDashboardName} 
+                                            onChange={(e) => setNewDashboardName(e.target.value)} 
+                                            placeholder="New Dashboard Name" 
+                                        />
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={deleteDashboard}
-                                            className="bg-red-600 hover:bg-red-700 text-white"
-                                        >
-                                            Delete
+                                        <AlertDialogCancel onClick={() => setIsRenameDialogOpen(false)}>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={renameDashboard} className="bg-blue-600 hover:bg-blue-700 text-white">
+                                            Rename
                                         </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -528,37 +637,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                 {isEditMode ? 'Done' : 'Edit'}
                             </Button>
 
-                            {/* Grid layout selection - Only show in edit mode */}
-                            {isEditMode && (
-                                <div className="bg-gray-100 dark:bg-gray-700/50 p-1 rounded-lg">
-                                    <Button 
-                                        onClick={() => updateColumnCount(1)} 
-                                        variant={columnCount === 1 ? "default" : "ghost"} 
-                                        size="sm"
-                                        disabled={wouldHideWidgets(1)}
-                                        title={wouldHideWidgets(1) ? "Move widgets to column 0 first" : "Single column layout"}
-                                    >
-                                        <LayoutGrid className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                        onClick={() => updateColumnCount(2)} 
-                                        variant={columnCount === 2 ? "default" : "ghost"} 
-                                        size="sm"
-                                        disabled={wouldHideWidgets(2)}
-                                        title={wouldHideWidgets(2) ? "Move widgets to columns 0-1 first" : "Two column layout"}
-                                    >
-                                        <Columns className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                        onClick={() => updateColumnCount(3)} 
-                                        variant={columnCount === 3 ? "default" : "ghost"} 
-                                        size="sm"
-                                    >
-                                        <Columns3 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            )}
-
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm" className="w-[40px]">
@@ -569,16 +647,34 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                     {!currentDashboard.is_default && (
                                         <DropdownMenuItem
                                             onClick={() => {
-                                                setDefaultDashboardId(currentDashboard.id);
-                                                // You might want to persist this to the backend
-                                                // axios.post('/api/dashboards/set-default', { dashboardId: currentDashboard.id });
+                                                router.post(`/dashboard/${currentDashboard.id}/set-default`, {}, {
+                                                    preserveScroll: true,
+                                                    preserveState: true,
+                                                    onSuccess: () => {
+                                                        setDefaultDashboardId(currentDashboard.id);
+                                                        setCurrentDashboard(prev => ({
+                                                            ...prev,
+                                                            is_default: true
+                                                        }));
+                                                        // Update other dashboards in the list
+                                                        setDashboards(prevDashboards => 
+                                                            prevDashboards.map(dashboard => ({
+                                                                ...dashboard,
+                                                                is_default: dashboard.id === currentDashboard.id
+                                                            }))
+                                                        );
+                                                    },
+                                                    onError: (errors) => {
+                                                        console.error('Failed to set default dashboard:', errors);
+                                                    }
+                                                });
                                             }}
                                             disabled={defaultDashboardId === currentDashboard.id}
                                         >
                                             <CheckCircle2 className={`h-4 w-4 mr-2 ${
                                                 defaultDashboardId === currentDashboard.id ? 'text-green-500' : ''
                                             }`} />
-                                            Use as Default
+                                            Set as Default
                                         </DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />
@@ -588,86 +684,87 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                         <Edit className="h-4 w-4 mr-2" />
                                         Rename Dashboard
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
-                                        disabled={dashboards.length <= 1}
-                                        onClick={() => setIsDeleteDialogOpen(true)}
-                                    >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Delete Dashboard
-                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                     </div>
 
-                    {/* Rename Dashboard Dialog */}
-                    {isRenameDialogOpen && (
-                        <AlertDialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Rename Dashboard</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Enter a new name for the dashboard:
-                                    </AlertDialogDescription>
-                                    <Input 
-                                        value={newDashboardName} 
-                                        onChange={(e) => setNewDashboardName(e.target.value)} 
-                                        placeholder="New Dashboard Name" 
-                                    />
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={() => setIsRenameDialogOpen(false)}>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={renameDashboard} className="bg-blue-600 hover:bg-blue-700 text-white">
-                                        Rename
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
-
                     {/* Update the widget grid */}
-                    <div className={`grid ${getColumnClass()} gap-4`}>
-                        {[...Array(columnCount)].map((_, colIndex) => (
-                            <div key={colIndex} className="space-y-4">
-                                {currentDashboard.widgets
-                                    .filter((widget: WidgetImport) => {
-                                        // Filter widgets based on app parameter
-                                        if (appParam === 'retail') {
-                                            return ['retail_sales', 'retail_inventory', 'retail_orders'].includes(widget.type);
-                                        }
-                                        if (appParam === 'fnb') {
-                                            return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'].includes(widget.type);
-                                        }
-                                        if (appParam === 'family-tree') {
-                                            return ['family_tree_stats'].includes(widget.type);
-                                        }
-                                        return false;
-                                    })
-                                    .filter((widget: WidgetImport) => widget.column === colIndex)
-                                    .sort((a, b) => a.order - b.order)
-                                    .map((widget: WidgetImport, index: number, filteredWidgets: WidgetImport[]) => (
-                                        <div key={widget.id} className="h-fit">
-                                            <WidgetComponent 
-                                                key={widget.id} 
-                                                widget={widget} 
-                                                onRemove={removeWidget}
-                                                onMoveLeft={() => moveWidget(widget.id, 'left')}
-                                                onMoveRight={() => moveWidget(widget.id, 'right')}
-                                                onMoveUp={() => moveWidgetVertically(widget.id, 'up')}
-                                                onMoveDown={() => moveWidgetVertically(widget.id, 'down')}
-                                                isLeftmost={widget.column === 0}
-                                                isRightmost={widget.column === columnCount - 1}
-                                                isTopmost={index === 0}
-                                                isBottommost={index === filteredWidgets.length - 1}
-                                                isEditMode={isEditMode}
-                                            />
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <div className={`grid ${getColumnClass()} gap-4`}>
+                            {[...Array(columnCount)].map((_, colIndex) => (
+                                <Droppable droppableId={colIndex.toString()} key={colIndex}>
+                                    {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.droppableProps}
+                                            className={`space-y-4 ${
+                                                isEditMode 
+                                                    ? 'p-4 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 min-h-[200px] relative' +
+                                                      (snapshot.isDraggingOver ? ' border-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : '')
+                                                    : ''
+                                            }`}
+                                        >
+                                            {isEditMode && (
+                                                <div className="absolute top-2 left-2 px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                                                    Column {colIndex + 1}
+                                                </div>
+                                            )}
+                                            {currentDashboard.widgets
+                                                .filter((widget: WidgetImport) => {
+                                                    // Filter widgets based on app parameter
+                                                    if (appParam === 'retail') {
+                                                        return ['retail_sales', 'retail_inventory', 'retail_orders'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'fnb') {
+                                                        return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'family-tree') {
+                                                        return ['family_tree_stats'].includes(widget.type);
+                                                    }
+                                                    return false;
+                                                })
+                                                .filter((widget: WidgetImport) => widget.column === colIndex)
+                                                .sort((a, b) => a.order - b.order)
+                                                .map((widget: WidgetImport, index: number, filteredWidgets: WidgetImport[]) => (
+                                                    <Draggable
+                                                        key={widget.id}
+                                                        draggableId={widget.id.toString()}
+                                                        index={index}
+                                                        isDragDisabled={!isEditMode}
+                                                    >
+                                                        {(provided: DraggableProvided, snapshot: DraggableStateSnapshot) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}
+                                                                className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
+                                                            >
+                                                                <WidgetComponent 
+                                                                    key={widget.id} 
+                                                                    widget={widget} 
+                                                                    onRemove={removeWidget}
+                                                                    onMoveLeft={() => moveWidget(widget.id, 'left')}
+                                                                    onMoveRight={() => moveWidget(widget.id, 'right')}
+                                                                    onMoveUp={() => moveWidgetVertically(widget.id, 'up')}
+                                                                    onMoveDown={() => moveWidgetVertically(widget.id, 'down')}
+                                                                    isLeftmost={widget.column === 0}
+                                                                    isRightmost={widget.column === columnCount - 1}
+                                                                    isTopmost={index === 0}
+                                                                    isBottommost={index === filteredWidgets.length - 1}
+                                                                    isEditMode={isEditMode}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                            {provided.placeholder}
                                         </div>
-                                    ))}
-                            </div>
-                        ))}
-                    </div>
+                                    )}
+                                </Droppable>
+                            ))}
+                        </div>
+                    </DragDropContext>
                 </div>
             </main>
         </AuthenticatedLayout>
