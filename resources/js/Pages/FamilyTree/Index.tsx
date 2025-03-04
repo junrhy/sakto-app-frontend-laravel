@@ -6,7 +6,6 @@ import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompre
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 
 export default function Index({ auth, familyMembers }: FamilyTreeProps) {
-    console.log(familyMembers);
     const [searchTerm, setSearchTerm] = useState('');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
@@ -1587,9 +1586,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             {/* Manage Relationships Modal */}
             {isManageRelationshipsModalOpen && managingMember && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl`}>
-                        <div className={`p-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <div className="flex justify-between items-center mb-6">
+                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-h-[90vh] flex flex-col`}>
+                        <div className={`p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <div className="flex justify-between items-center">
                                 <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                     Manage Relationships for {managingMember.first_name} {managingMember.last_name}
                                 </h3>
@@ -1603,14 +1602,16 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <span className="text-2xl">×</span>
                                 </button>
                             </div>
+                        </div>
 
+                        <div className="flex-1 overflow-y-auto p-6">
                             <div className="space-y-6">
                                 {/* Current Relationships */}
                                 <div>
-                                    <h4 className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    <h4 className={`text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                         Current Relationships
                                     </h4>
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 px-6 pt-2">
                                         {managingMember.relationships.map((rel) => {
                                             const relatedMember = getMemberById(rel.to_member_id);
                                             return (
@@ -1638,14 +1639,14 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 </div>
 
                                 {/* Add New Relationship */}
-                                <div>
+                                <div className="px-6">
                                     <h4 className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                                         Add New Relationship
                                     </h4>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                         <select
                                             name="member"
-                                            className={`flex-1 px-3 py-2 rounded-md border ${
+                                            className={`w-full sm:flex-1 px-3 py-2 rounded-md border ${
                                                 isDarkMode 
                                                     ? 'bg-gray-700 border-gray-600 text-gray-200' 
                                                     : 'bg-white border-gray-300 text-gray-900'
@@ -1663,7 +1664,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         </select>
                                         <select
                                             name="relationship"
-                                            className={`w-40 px-3 py-2 rounded-md border ${
+                                            className={`w-full sm:w-40 px-3 py-2 rounded-md border ${
                                                 isDarkMode 
                                                     ? 'bg-gray-700 border-gray-600 text-gray-200' 
                                                     : 'bg-white border-gray-300 text-gray-900'
@@ -1695,7 +1696,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                     relationshipSelect.value = '';
                                                 }
                                             }}
-                                            className={`px-4 py-2 rounded-md ${
+                                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${
                                                 isDarkMode
                                                     ? 'bg-blue-600 hover:bg-blue-700'
                                                     : 'bg-blue-500 hover:bg-blue-600'
@@ -1705,25 +1706,27 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                {/* Close Button */}
-                                <div className="flex justify-end mt-6">
-                                    <button
-                                        onClick={() => {
-                                            setIsManageRelationshipsModalOpen(false);
-                                            setManagingMember(null);
-                                            // Reload the page after closing the relationships modal
-                                            window.location.reload();
-                                        }}
-                                        className={`px-4 py-2 rounded-md ${
-                                            isDarkMode
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        } transition-colors`}
-                                    >
-                                        Done
-                                    </button>
-                                </div>
+                        {/* Footer with close button */}
+                        <div className={`p-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => {
+                                        setIsManageRelationshipsModalOpen(false);
+                                        setManagingMember(null);
+                                        // Reload the page after closing the relationships modal
+                                        window.location.reload();
+                                    }}
+                                    className={`px-4 py-2 rounded-md ${
+                                        isDarkMode
+                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                    } transition-colors`}
+                                >
+                                    Done
+                                </button>
                             </div>
                         </div>
                     </div>
