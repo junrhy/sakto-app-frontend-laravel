@@ -623,6 +623,26 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
 
             {/* Main Content - Adjusted with margin for sidebar */}
             <div className="container mx-auto px-4 pt-28 lg:pt-20 pb-8 lg:ml-64">
+                {/* Stats Section */}
+                <div className={`mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
+                        <div className="text-sm opacity-75">Total Members</div>
+                        <div className="text-2xl font-semibold mt-1">{filteredMembers.length}</div>
+                    </div>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
+                        <div className="text-sm opacity-75">Living Members</div>
+                        <div className="text-2xl font-semibold mt-1">
+                            {filteredMembers.filter(member => !member.death_date).length}
+                        </div>
+                    </div>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
+                        <div className="text-sm opacity-75">Deceased Members</div>
+                        <div className="text-2xl font-semibold mt-1">
+                            {filteredMembers.filter(member => member.death_date).length}
+                        </div>
+                    </div>
+                </div>
+
                 {viewMode === 'list' ? (
                     // List View
                     <div className="space-y-4">
