@@ -101,6 +101,11 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
             // Add root member
             memberIds.add(rootMember.id);
             
+            // Add parents of root member
+            rootMember.relationships
+                .filter(rel => rel.relationship_type === 'child')
+                .forEach(rel => memberIds.add(rel.to_member_id));
+            
             // Add spouses of root member
             rootMember.relationships
                 .filter(rel => rel.relationship_type === 'spouse')
@@ -582,40 +587,162 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                         Family Structure
                     </h2>
                     <div className="space-y-4">
-                        {parentChildStructure.map(({ parent, children }) => (
-                            <div key={parent.id} className="space-y-2">
-                                <div 
-                                    className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'} cursor-pointer hover:underline`}
-                                    onClick={() => {
-                                        setSelectedMember(parent);
-                                        setSearchTerm(`${parent.first_name} ${parent.last_name}`);
-                                    }}
-                                >
-                                    {parent.first_name} {parent.last_name}
+                        {rootMember ? (
+                            <div className="space-y-6">
+                                {/* Parents Section */}
+                                <div className="space-y-2">
+                                    <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Parents</h3>
+                                    <ul className={`pl-4 space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {rootMember.relationships
+                                            .filter(rel => rel.relationship_type === 'child')
+                                            .map(rel => {
+                                                const parent = getMemberById(rel.to_member_id);
+                                                return parent ? (
+                                                    <li 
+                                                        key={parent.id}
+                                                        className="cursor-pointer hover:underline"
+                                                        onClick={() => {
+                                                            setSelectedMember(parent);
+                                                            setSearchTerm(`${parent.first_name} ${parent.last_name}`);
+                                                        }}
+                                                    >
+                                                        {parent.first_name} {parent.last_name}
+                                                    </li>
+                                                ) : null;
+                                            })}
+                                        {rootMember.relationships.filter(rel => rel.relationship_type === 'child').length === 0 && (
+                                            <li className="italic text-sm">No parents defined</li>
+                                        )}
+                                    </ul>
                                 </div>
-                                <ul className={`pl-4 space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {children.map(child => (
-                                        <li 
-                                            key={child.id}
-                                            className="cursor-pointer hover:underline"
-                                            onClick={() => {
-                                                setSelectedMember(child);
-                                                setSearchTerm(`${child.first_name} ${child.last_name}`);
-                                            }}
-                                        >
-                                            {child.first_name} {child.last_name}
-                                        </li>
+
+                                {/* Spouse Section */}
+                                <div className="space-y-2">
+                                    <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Spouse(s)</h3>
+                                    <ul className={`pl-4 space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {rootMember.relationships
+                                            .filter(rel => rel.relationship_type === 'spouse')
+                                            .map(rel => {
+                                                const spouse = getMemberById(rel.to_member_id);
+                                                return spouse ? (
+                                                    <li 
+                                                        key={spouse.id}
+                                                        className="cursor-pointer hover:underline"
+                                                        onClick={() => {
+                                                            setSelectedMember(spouse);
+                                                            setSearchTerm(`${spouse.first_name} ${spouse.last_name}`);
+                                                        }}
+                                                    >
+                                                        {spouse.first_name} {spouse.last_name}
+                                                    </li>
+                                                ) : null;
+                                            })}
+                                        {rootMember.relationships.filter(rel => rel.relationship_type === 'spouse').length === 0 && (
+                                            <li className="italic text-sm">No spouse defined</li>
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* Siblings Section */}
+                                <div className="space-y-2">
+                                    <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Siblings</h3>
+                                    <ul className={`pl-4 space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {rootMember.relationships
+                                            .filter(rel => rel.relationship_type === 'sibling')
+                                            .map(rel => {
+                                                const sibling = getMemberById(rel.to_member_id);
+                                                return sibling ? (
+                                                    <li 
+                                                        key={sibling.id}
+                                                        className="cursor-pointer hover:underline"
+                                                        onClick={() => {
+                                                            setSelectedMember(sibling);
+                                                            setSearchTerm(`${sibling.first_name} ${sibling.last_name}`);
+                                                        }}
+                                                    >
+                                                        {sibling.first_name} {sibling.last_name}
+                                                    </li>
+                                                ) : null;
+                                            })}
+                                        {rootMember.relationships.filter(rel => rel.relationship_type === 'sibling').length === 0 && (
+                                            <li className="italic text-sm">No siblings defined</li>
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* Descendants Section */}
+                                <div className="space-y-2">
+                                    <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Descendants</h3>
+                                    {parentChildStructure.map(({ parent, children }) => (
+                                        <div key={parent.id} className="space-y-2">
+                                            <div 
+                                                className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'} cursor-pointer hover:underline`}
+                                                onClick={() => {
+                                                    setSelectedMember(parent);
+                                                    setSearchTerm(`${parent.first_name} ${parent.last_name}`);
+                                                }}
+                                            >
+                                                {parent.first_name} {parent.last_name}
+                                            </div>
+                                            <ul className={`pl-4 space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {children.map(child => (
+                                                    <li 
+                                                        key={child.id}
+                                                        className="cursor-pointer hover:underline"
+                                                        onClick={() => {
+                                                            setSelectedMember(child);
+                                                            setSearchTerm(`${child.first_name} ${child.last_name}`);
+                                                        }}
+                                                    >
+                                                        {child.first_name} {child.last_name}
+                                                    </li>
+                                                ))}
+                                                {children.length === 0 && (
+                                                    <li className="italic text-sm">No children</li>
+                                                )}
+                                            </ul>
+                                        </div>
                                     ))}
-                                    {children.length === 0 && (
-                                        <li className="italic text-sm">No children</li>
-                                    )}
-                                </ul>
+                                </div>
                             </div>
-                        ))}
-                        {parentChildStructure.length === 0 && (
-                            <p className={`italic ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                No family structure defined
-                            </p>
+                        ) : (
+                            // Show alphabetical list when no root member is selected
+                            <div className="space-y-4">
+                                {Object.entries(
+                                    [...familyMembers]
+                                        .sort((a, b) => 
+                                            `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`)
+                                        )
+                                        .reduce((acc, member) => {
+                                            const letter = member.last_name[0].toUpperCase();
+                                            if (!acc[letter]) {
+                                                acc[letter] = [];
+                                            }
+                                            acc[letter].push(member);
+                                            return acc;
+                                        }, {} as Record<string, FamilyMember[]>)
+                                ).map(([letter, members]) => (
+                                    <div key={letter} className="space-y-2">
+                                        <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {letter}
+                                        </h3>
+                                        <ul className={`pl-4 space-y-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            {members.map(member => (
+                                                <li 
+                                                    key={member.id}
+                                                    className="cursor-pointer hover:underline"
+                                                    onClick={() => {
+                                                        setSelectedMember(member);
+                                                        setSearchTerm(`${member.first_name} ${member.last_name}`);
+                                                    }}
+                                                >
+                                                    {member.last_name}, {member.first_name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -624,21 +751,75 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
             {/* Main Content - Adjusted with margin for sidebar */}
             <div className="container mx-auto px-4 pt-28 lg:pt-20 pb-8 lg:ml-64">
                 {/* Stats Section */}
-                <div className={`mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-                        <div className="text-sm opacity-75">Total Members</div>
-                        <div className="text-2xl font-semibold mt-1">{filteredMembers.length}</div>
-                    </div>
-                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-                        <div className="text-sm opacity-75">Living Members</div>
-                        <div className="text-2xl font-semibold mt-1">
-                            {filteredMembers.filter(member => !member.death_date).length}
-                        </div>
-                    </div>
-                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
-                        <div className="text-sm opacity-75">Deceased Members</div>
-                        <div className="text-2xl font-semibold mt-1">
-                            {filteredMembers.filter(member => member.death_date).length}
+                <div className="mb-6 overflow-x-auto">
+                    <div className="min-w-max">
+                        <div className={`grid grid-cols-9 gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {/* Total, Living, Deceased Stats */}
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>Total</div>
+                                <div className="text-lg font-semibold">{filteredMembers.length}</div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-green-300' : 'text-green-600'}`}>Living</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => !member.death_date).length}
+                                </div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>Deceased</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => member.death_date).length}
+                                </div>
+                            </div>
+
+                            {/* Gender Stats */}
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Male</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => member.gender === 'male').length}
+                                </div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-pink-300' : 'text-pink-600'}`}>Female</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => member.gender === 'female').length}
+                                </div>
+                            </div>
+
+                            {/* Age Group Stats */}
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-yellow-300' : 'text-yellow-600'}`}>Age 1-6</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => {
+                                        const age = calculateAge(member.birth_date, member.death_date);
+                                        return age >= 1 && age <= 6;
+                                    }).length}
+                                </div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-orange-300' : 'text-orange-600'}`}>Age 7-17</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => {
+                                        const age = calculateAge(member.birth_date, member.death_date);
+                                        return age >= 7 && age <= 17;
+                                    }).length}
+                                </div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-teal-300' : 'text-teal-600'}`}>18-59</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => {
+                                        const age = calculateAge(member.birth_date, member.death_date);
+                                        return age >= 18 && age < 60;
+                                    }).length}
+                                </div>
+                            </div>
+                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                                <div className={`text-xs ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>60+</div>
+                                <div className="text-lg font-semibold">
+                                    {filteredMembers.filter(member => calculateAge(member.birth_date, member.death_date) >= 60).length}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -652,16 +833,16 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 className={`flex items-center p-4 rounded-lg shadow-lg transition-all duration-200 
                                     ${selectedMember?.id === member.id
                                         ? isDarkMode 
-                                            ? 'bg-blue-900/30 ring-2 ring-blue-500'
-                                            : 'bg-blue-50 ring-2 ring-blue-300'
+                                            ? 'bg-indigo-900/30 ring-2 ring-indigo-500'
+                                            : 'bg-indigo-50 ring-2 ring-indigo-300'
                                         : isDarkMode
-                                            ? 'bg-gray-800 hover:bg-gray-700'
+                                            ? 'bg-gray-800/80 hover:bg-gray-800'
                                             : 'bg-white hover:bg-gray-50'
                                     }`}
                                 onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
                             >
                                 {/* QR Code */}
-                                <div className={`mr-6 p-3 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg flex-shrink-0`}>
+                                <div className={`mr-6 p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg flex-shrink-0 shadow-inner`}>
                                     <QRCodeSVG
                                         value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${member.id}`}
                                         size={120}
@@ -672,38 +853,57 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
 
                                 {/* Member Info */}
                                 <div className="flex-grow min-w-0">
-                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center justify-between mb-2">
                                         <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                             {member.first_name} {member.last_name}
                                         </h3>
-                                        <a
-                                            href={`/family-tree/${clientIdentifier}/member/${member.id}`}
-                                            className={`text-sm px-4 py-2 rounded-lg transition-colors ${
-                                                isDarkMode
-                                                    ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                            }`}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            View Profile
-                                        </a>
+                                        <div className="flex items-center space-x-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    updateRootMember(member);
+                                                }}
+                                                className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                                                    rootMember?.id === member.id
+                                                        ? isDarkMode
+                                                            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                            : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                                                        : isDarkMode
+                                                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                {rootMember?.id === member.id ? 'Current Root' : 'Set as Root'}
+                                            </button>
+                                            <a
+                                                href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                                className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                                                    isDarkMode
+                                                        ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                                                        : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                                }`}
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                View Profile
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div className={`mt-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                         <span className="inline-block mr-4">
-                                            <span className="font-medium">Birth Date:</span>{' '}
+                                            <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Birth Date:</span>{' '}
                                             {new Date(member.birth_date).toLocaleDateString()}
                                         </span>
                                         <span className="inline-block mr-4">
-                                            <span className="font-medium">Age:</span>{' '}
+                                            <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Age:</span>{' '}
                                             {calculateAge(member.birth_date, member.death_date)} years
                                         </span>
                                         <span className="inline-block">
-                                            <span className="font-medium">Gender:</span>{' '}
+                                            <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Gender:</span>{' '}
                                             {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}
                                         </span>
                                         {member.death_date && (
                                             <span className="inline-block ml-4">
-                                                <span className="font-medium">Death Date:</span>{' '}
+                                                <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Death Date:</span>{' '}
                                                 {new Date(member.death_date).toLocaleDateString()}
                                             </span>
                                         )}
@@ -721,17 +921,17 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 className={`rounded-lg shadow-lg overflow-hidden transition-all duration-200 cursor-pointer 
                                     ${selectedMember?.id === member.id
                                         ? isDarkMode 
-                                            ? 'bg-blue-900/30 ring-2 ring-blue-500'
-                                            : 'bg-blue-50 ring-2 ring-blue-300'
+                                            ? 'bg-indigo-900/30 ring-2 ring-indigo-500'
+                                            : 'bg-indigo-50 ring-2 ring-indigo-300'
                                         : isDarkMode
-                                            ? 'bg-gray-800 hover:bg-gray-700'
+                                            ? 'bg-gray-800/80 hover:bg-gray-800'
                                             : 'bg-white hover:bg-gray-50'
                                     }
                                     lg:max-w-sm`}
                                 onClick={() => setSelectedMember(selectedMember?.id === member.id ? null : member)}
                             >
                                 {/* Member Photo */}
-                                <div className={`aspect-square w-full lg:aspect-[4/3] ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                                <div className={`aspect-square w-full lg:aspect-[4/3] ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                                     {member.photo ? (
                                         <img
                                             src={member.photo}
@@ -752,9 +952,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
 
                                 {/* Member Info */}
                                 <div className="p-4 lg:p-3">
-                                    <h3 className={`text-lg lg:text-base font-semibold ${
-                                        isDarkMode ? 'text-white' : 'text-gray-900'
-                                    }`}>
+                                    <h3 className={`text-lg lg:text-base font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                                         {member.first_name} {member.last_name}
                                     </h3>
                                     <div className="flex items-center mt-2 mb-3">
@@ -765,41 +963,60 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                             }}
                                             className={`text-sm p-2 rounded-lg transition-colors mr-2 ${
                                                 isDarkMode
-                                                    ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                                    ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
                                             }`}
                                         >
                                             <FaQrcode className="w-4 h-4" />
                                         </button>
-                                        <a
-                                            href={`/family-tree/${clientIdentifier}/member/${member.id}`}
-                                            className={`text-sm px-4 py-2 rounded-lg transition-colors flex-grow text-center ${
-                                                isDarkMode
-                                                    ? 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
-                                                    : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                                            }`}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            View Profile
-                                        </a>
+                                        <div className="flex-grow flex gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    updateRootMember(member);
+                                                }}
+                                                className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex-1 ${
+                                                    rootMember?.id === member.id
+                                                        ? isDarkMode
+                                                            ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                            : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                                                        : isDarkMode
+                                                            ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                {rootMember?.id === member.id ? 'Current Root' : 'Set as Root'}
+                                            </button>
+                                            <a
+                                                href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                                className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex-1 text-center ${
+                                                    isDarkMode
+                                                        ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                                                        : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                                }`}
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                View Profile
+                                            </a>
+                                        </div>
                                     </div>
                                     <div className={`space-y-2 lg:space-y-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                         <p>
-                                            <span className="font-medium">Birth Date:</span>{' '}
+                                            <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Birth Date:</span>{' '}
                                             {new Date(member.birth_date).toLocaleDateString()}
                                         </p>
                                         <p>
-                                            <span className="font-medium">Age:</span>{' '}
+                                            <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Age:</span>{' '}
                                             {calculateAge(member.birth_date, member.death_date)} years
                                         </p>
                                         {member.death_date && (
                                             <p>
-                                                <span className="font-medium">Death Date:</span>{' '}
+                                                <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Death Date:</span>{' '}
                                                 {new Date(member.death_date).toLocaleDateString()}
                                             </p>
                                         )}
                                         <p>
-                                            <span className="font-medium">Gender:</span>{' '}
+                                            <span className={`font-medium ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Gender:</span>{' '}
                                             {member.gender.charAt(0).toUpperCase() + member.gender.slice(1)}
                                         </p>
                                     </div>
