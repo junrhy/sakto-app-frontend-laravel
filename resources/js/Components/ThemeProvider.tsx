@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { router } from '@inertiajs/react'
 
 type Theme = "dark" | "light" | "system"
 
@@ -50,9 +51,17 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+    setTheme: (newTheme: Theme) => {
+      localStorage.setItem(storageKey, newTheme)
+      setTheme(newTheme)
+      
+      // Sync with server
+      router.patch(route('profile.theme'), {
+        theme: newTheme
+      }, {
+        preserveState: true,
+        preserveScroll: true
+      })
     },
   }
 

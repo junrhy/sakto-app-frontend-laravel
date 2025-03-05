@@ -4,7 +4,7 @@ import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { apps } from '@/data/apps';
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
@@ -16,6 +16,7 @@ interface Props {
             name: string;
             credits?: number;
             identifier?: string;
+            theme?: 'light' | 'dark' | 'system';
         };
     };
 }
@@ -67,10 +68,10 @@ export default function Home({ auth }: Props) {
     return (
         <ThemeProvider>
             <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg">
+                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg">
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-cente">
-                            <div className="w-full flex justify-between items-center mb-2">
+                            <div className="w-full flex justify-between items-center mb-6">
                                 <div className="flex items-center">
                                     <ApplicationLogo className="h-10 w-auto fill-current text-white" />
                                     <span className="ml-2 text-xl font-bold text-white">Sakto</span>
@@ -123,42 +124,6 @@ export default function Home({ auth }: Props) {
                                                 onCloseAutoFocus={(e) => e.preventDefault()}
                                                 collisionPadding={16}
                                             >
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger className="flex items-center">
-                                                        {theme === 'dark' ? (
-                                                            <Moon className="h-4 w-4 mr-2" />
-                                                        ) : (
-                                                            <Sun className="h-4 w-4 mr-2" />
-                                                        )}
-                                                        <span>Theme</span>
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuSubContent>
-                                                        <DropdownMenuItem 
-                                                            onClick={() => setTheme("light")}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <Sun className="mr-2 h-4 w-4" />
-                                                            <span>Light</span>
-                                                            {theme === "light" && <span className="ml-auto">✓</span>}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem 
-                                                            onClick={() => setTheme("dark")}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <Moon className="mr-2 h-4 w-4" />
-                                                            <span>Dark</span>
-                                                            {theme === "dark" && <span className="ml-auto">✓</span>}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem 
-                                                            onClick={() => setTheme("system")}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <Monitor className="mr-2 h-4 w-4" />
-                                                            <span>System</span>
-                                                            {theme === "system" && <span className="ml-auto">✓</span>}
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuSubContent>
-                                                </DropdownMenuSub>
                                                 <DropdownMenuItem asChild>
                                                     <InertiaLink 
                                                         href={route('help')}

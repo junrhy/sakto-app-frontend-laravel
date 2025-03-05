@@ -213,6 +213,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'user' => [
                     'name' => auth()->user()->name,
                     'email' => auth()->user()->email,
+                    'identifier' => auth()->user()->identifier,
                     'app_currency' => $appCurrency,
                 ]
             ]

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Head, Link as InertiaLink } from '@inertiajs/react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
@@ -6,8 +6,8 @@ import { Message } from '@/types/chat';
 import MessageDialog from '@/Components/MessageDialog';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 import axios from 'axios';
@@ -17,6 +17,8 @@ interface Props {
     auth: {
         user: {
             name: string;
+            credits?: number;
+            identifier?: string;
         };
     };
     messages: Message[];
@@ -28,6 +30,29 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+    const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+
+    useEffect(() => {
+        const fetchCredits = async () => {
+            try {
+                if (auth.user.identifier) {
+                    const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCredits(data.available_credit);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch credits:', error);
+            }
+        };
+
+        fetchCredits();
+    }, [auth.user.identifier]);
+
+    const formatNumber = (num: number | undefined | null) => {
+        return num?.toLocaleString() ?? '0';
+    };
 
     const filteredMessages = useMemo(() => {
         return messages.filter(message => 
@@ -84,7 +109,35 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                 <ApplicationLogo className="h-10 w-auto fill-current text-white" />
                                 <span className="ml-2 text-xl font-bold text-white">Sakto</span>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <div className="hidden sm:flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
+                                        className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-white/20"
+                                    >
+                                        <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                        onClick={() => window.location.href = route('credits.buy')}
+                                    >
+                                        <CreditCardIcon className="w-4 h-4" />
+                                        Buy Credits
+                                    </Button>
+                                </div>
+                                {/* Mobile Credits Button */}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="sm:hidden text-white hover:text-blue-100 hover:bg-white/10"
+                                    onClick={() => window.location.href = route('credits.buy')}
+                                >
+                                    <CreditCardIcon className="w-5 h-5" />
+                                </Button>
                                 <div className="relative inline-block">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -104,42 +157,6 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                             onCloseAutoFocus={(e) => e.preventDefault()}
                                             collisionPadding={16}
                                         >
-                                            <DropdownMenuSub>
-                                                <DropdownMenuSubTrigger className="flex items-center">
-                                                    {theme === 'dark' ? (
-                                                        <Moon className="h-4 w-4 mr-2" />
-                                                    ) : (
-                                                        <Sun className="h-4 w-4 mr-2" />
-                                                    )}
-                                                    <span>Theme</span>
-                                                </DropdownMenuSubTrigger>
-                                                <DropdownMenuSubContent>
-                                                    <DropdownMenuItem 
-                                                        onClick={() => setTheme("light")}
-                                                        className="flex items-center cursor-pointer"
-                                                    >
-                                                        <Sun className="mr-2 h-4 w-4" />
-                                                        <span>Light</span>
-                                                        {theme === "light" && <span className="ml-auto">✓</span>}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem 
-                                                        onClick={() => setTheme("dark")}
-                                                        className="flex items-center cursor-pointer"
-                                                    >
-                                                        <Moon className="mr-2 h-4 w-4" />
-                                                        <span>Dark</span>
-                                                        {theme === "dark" && <span className="ml-auto">✓</span>}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem 
-                                                        onClick={() => setTheme("system")}
-                                                        className="flex items-center cursor-pointer"
-                                                    >
-                                                        <Monitor className="mr-2 h-4 w-4" />
-                                                        <span>System</span>
-                                                        {theme === "system" && <span className="ml-auto">✓</span>}
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuSubContent>
-                                            </DropdownMenuSub>
                                             <DropdownMenuItem>
                                                 <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink href="/help">Help</InertiaLink>
