@@ -473,44 +473,52 @@ class FamilyTreeController extends Controller
     public function settings()
     {
         try {
-            // Dummy settings data for development
+            // Dummy settings data with specific fields
             $settings = [
-                "privacy" => [
-                    "tree_visibility" => "private",
-                    "allow_member_suggestions" => true,
-                    "show_living_dates" => true,
-                    "show_sensitive_info" => false
+                "organization_info" => [
+                    "family_name" => "Sample Family Association",
+                    "email" => "samplefamily@example.com",
+                    "contact_number" => "+1234567890",
+                    "website" => "www.samplefamily.org",
+                    "address" => "123 Family Street, Community City, State 12345",
+                    "banner" => "https://placehold.co/1200x400/png",
+                    "logo" => "https://placehold.co/150x150/png"
                 ],
-                "display" => [
-                    "default_view" => "tree",
-                    "show_photos" => true,
-                    "show_maiden_names" => true,
-                    "date_format" => "MM/DD/YYYY",
-                    "name_display_format" => "first_last"
+                "auth" => [
+                    "username" => "admin",
+                    "password" => "hashed_password_here"
                 ],
-                "notifications" => [
-                    "email_notifications" => true,
-                    "notify_on_changes" => true,
-                    "notify_on_member_requests" => true,
-                    "digest_frequency" => "weekly"
-                ],
-                "sharing" => [
-                    "allow_exports" => true,
-                    "allow_imports" => true,
-                    "require_approval_for_edits" => true,
-                    "allowed_editors" => ["family", "friends", "guests"]
-                ],
-                "customization" => [
-                    "theme" => "light",
-                    "primary_color" => "#4A90E2",
-                    "font_size" => "medium",
-                    "language" => "en"
-                ],
-                "advanced" => [
-                    "max_generations_display" => 4,
-                    "auto_arrange" => true,
-                    "show_relationship_labels" => true,
-                    "include_extended_family" => true
+                "elected_officials" => [
+                    [
+                        "name" => "Executive Board",
+                        "officials" => [
+                            [
+                                "name" => "John Doe",
+                                "position" => "President",
+                                "profile_url" => "https://example.com/members/john-doe"
+                            ],
+                            [
+                                "name" => "Jane Smith",
+                                "position" => "Vice President",
+                                "profile_url" => "https://example.com/members/jane-smith"
+                            ]
+                        ]
+                    ],
+                    [
+                        "name" => "Advisory Board",
+                        "officials" => [
+                            [
+                                "name" => "Mike Johnson",
+                                "position" => "Head Advisor",
+                                "profile_url" => "https://example.com/members/mike-johnson"
+                            ],
+                            [
+                                "name" => "Sarah Williams",
+                                "position" => "Secretary",
+                                "profile_url" => "https://example.com/members/sarah-williams"
+                            ]
+                        ]
+                    ]
                 ]
             ];
 
@@ -528,10 +536,7 @@ class FamilyTreeController extends Controller
             */
 
             return Inertia::render('FamilyTree/Settings', [
-                'settings' => $settings,
-                'auth' => [
-                    'user' => auth()->user()
-                ]
+                'settings' => $settings
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');

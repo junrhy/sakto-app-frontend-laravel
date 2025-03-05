@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import SettingsForm from '@/Components/Settings/SettingsForm';
 import {
     Card,
     CardContent,
@@ -15,56 +14,38 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/Components/ui/tabs";
-import { Switch } from "@/Components/ui/switch";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
+import { Button } from "@/Components/ui/button";
 import axios from 'axios';
+import { toast } from 'sonner';
+
+interface ElectedOfficial {
+    name: string;
+    position: string;
+    profile_url: string;
+}
+
+interface OfficialGroup {
+    name: string;
+    officials: ElectedOfficial[];
+}
 
 interface Settings {
-    privacy: {
-        tree_visibility: string;
-        allow_member_suggestions: boolean;
-        show_living_dates: boolean;
-        show_sensitive_info: boolean;
+    organization_info: {
+        family_name: string;
+        email: string;
+        contact_number: string;
+        website: string;
+        address: string;
+        banner: string;
+        logo: string;
     };
-    display: {
-        default_view: string;
-        show_photos: boolean;
-        show_maiden_names: boolean;
-        date_format: string;
-        name_display_format: string;
+    auth: {
+        username: string;
+        password: string;
     };
-    notifications: {
-        email_notifications: boolean;
-        notify_on_changes: boolean;
-        notify_on_member_requests: boolean;
-        digest_frequency: string;
-    };
-    sharing: {
-        allow_exports: boolean;
-        allow_imports: boolean;
-        require_approval_for_edits: boolean;
-        allowed_editors: string[];
-    };
-    customization: {
-        theme: string;
-        primary_color: string;
-        font_size: string;
-        language: string;
-    };
-    advanced: {
-        max_generations_display: number;
-        auto_arrange: boolean;
-        show_relationship_labels: boolean;
-        include_extended_family: boolean;
-    };
+    elected_officials: OfficialGroup[];
 }
 
 interface Props {
@@ -75,381 +56,296 @@ interface Props {
 }
 
 export default function Settings({ settings, auth }: Props) {
-    const handleSubmit = async (data: Record<string, any>) => {
-        await axios.post('/api/family-tree/settings', data);
+    const [formData, setFormData] = useState<Settings>({
+        ...settings,
+        elected_officials: settings.elected_officials || []
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await axios.post('/api/family-tree/settings', formData);
+            toast.success('Settings updated successfully');
+        } catch (error) {
+            toast.error('Failed to update settings');
+            console.error('Settings update error:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const updateFormData = (path: string, value: any) => {
+        const keys = path.split('.');
+        setFormData(prev => {
+            const newData = { ...prev };
+            let current: any = newData;
+            for (let i = 0; i < keys.length - 1; i++) {
+                current = current[keys[i]];
+            }
+            current[keys[keys.length - 1]] = value;
+            return newData;
+        });
     };
 
     return (
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-white leading-tight">
-                    Family Tree Settings
+                    Organization Settings
                 </h2>
             }
         >
-            <Head title="Family Tree Settings" />
+            <Head title="Organization Settings" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Family Tree Settings</CardTitle>
+                            <CardTitle>Organization Settings</CardTitle>
                             <CardDescription>
-                                Configure your family tree settings, privacy options, and display preferences.
+                                Configure your organization information.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <SettingsForm settings={settings} onSubmit={handleSubmit}>
-                                {({ data, setData }) => (
-                                    <Tabs defaultValue="privacy" className="space-y-4">
-                                        <TabsList>
-                                            <TabsTrigger value="privacy">Privacy</TabsTrigger>
-                                            <TabsTrigger value="display">Display</TabsTrigger>
-                                            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-                                            <TabsTrigger value="sharing">Sharing</TabsTrigger>
-                                            <TabsTrigger value="customization">Customization</TabsTrigger>
-                                            <TabsTrigger value="advanced">Advanced</TabsTrigger>
-                                        </TabsList>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <Tabs defaultValue="organization" className="space-y-4">
+                                    <TabsList>
+                                        <TabsTrigger value="organization">Organization Info</TabsTrigger>
+                                        <TabsTrigger value="auth">Authentication</TabsTrigger>
+                                        <TabsTrigger value="officials">Elected Officials</TabsTrigger>
+                                    </TabsList>
 
-                                        <TabsContent value="privacy">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Tree Visibility</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Choose who can view your family tree
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.privacy.tree_visibility}
-                                                        onValueChange={(value) => setData('privacy.tree_visibility', value)}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select visibility" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="private">Private</SelectItem>
-                                                            <SelectItem value="family">Family Only</SelectItem>
-                                                            <SelectItem value="public">Public</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Allow Member Suggestions</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Let others suggest new family members
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.privacy.allow_member_suggestions}
-                                                        onCheckedChange={(checked) => setData('privacy.allow_member_suggestions', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Show Living Dates</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Display birth dates for living members
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.privacy.show_living_dates}
-                                                        onCheckedChange={(checked) => setData('privacy.show_living_dates', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Show Sensitive Information</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Display private notes and medical history
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.privacy.show_sensitive_info}
-                                                        onCheckedChange={(checked) => setData('privacy.show_sensitive_info', checked)}
-                                                    />
-                                                </div>
+                                    <TabsContent value="organization">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label>Family Name</Label>
+                                                <Input
+                                                    value={formData.organization_info.family_name}
+                                                    onChange={(e) => updateFormData('organization_info.family_name', e.target.value)}
+                                                    placeholder="Enter family name"
+                                                />
                                             </div>
-                                        </TabsContent>
 
-                                        <TabsContent value="display">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Default View</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Choose the default tree layout
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.display.default_view}
-                                                        onValueChange={(value) => setData('display.default_view', value)}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select view" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="tree">Tree View</SelectItem>
-                                                            <SelectItem value="list">List View</SelectItem>
-                                                            <SelectItem value="chart">Chart View</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Show Photos</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Display member photos in the tree
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.display.show_photos}
-                                                        onCheckedChange={(checked) => setData('display.show_photos', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Date Format</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Choose how dates are displayed
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.display.date_format}
-                                                        onValueChange={(value) => setData('display.date_format', value)}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select format" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                                                            <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                                                            <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                            <div className="space-y-2">
+                                                <Label>Email</Label>
+                                                <Input
+                                                    type="email"
+                                                    value={formData.organization_info.email}
+                                                    onChange={(e) => updateFormData('organization_info.email', e.target.value)}
+                                                    placeholder="Enter email address"
+                                                />
                                             </div>
-                                        </TabsContent>
 
-                                        <TabsContent value="notifications">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Email Notifications</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Receive email notifications
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.notifications.email_notifications}
-                                                        onCheckedChange={(checked) => setData('notifications.email_notifications', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Notify on Changes</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Get notified when changes are made
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.notifications.notify_on_changes}
-                                                        onCheckedChange={(checked) => setData('notifications.notify_on_changes', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Digest Frequency</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            How often to receive updates
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.notifications.digest_frequency}
-                                                        onValueChange={(value) => setData('notifications.digest_frequency', value)}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select frequency" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="daily">Daily</SelectItem>
-                                                            <SelectItem value="weekly">Weekly</SelectItem>
-                                                            <SelectItem value="monthly">Monthly</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                            <div className="space-y-2">
+                                                <Label>Contact Number</Label>
+                                                <Input
+                                                    value={formData.organization_info.contact_number}
+                                                    onChange={(e) => updateFormData('organization_info.contact_number', e.target.value)}
+                                                    placeholder="Enter contact number"
+                                                />
                                             </div>
-                                        </TabsContent>
 
-                                        <TabsContent value="sharing">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Allow Exports</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Allow downloading tree data
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.sharing.allow_exports}
-                                                        onCheckedChange={(checked) => setData('sharing.allow_exports', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Allow Imports</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Allow importing tree data
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.sharing.allow_imports}
-                                                        onCheckedChange={(checked) => setData('sharing.allow_imports', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Require Edit Approval</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Approve changes before they're applied
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.sharing.require_approval_for_edits}
-                                                        onCheckedChange={(checked) => setData('sharing.require_approval_for_edits', checked)}
-                                                    />
-                                                </div>
+                                            <div className="space-y-2">
+                                                <Label>Website</Label>
+                                                <Input
+                                                    value={formData.organization_info.website}
+                                                    onChange={(e) => updateFormData('organization_info.website', e.target.value)}
+                                                    placeholder="Enter website URL"
+                                                />
                                             </div>
-                                        </TabsContent>
 
-                                        <TabsContent value="customization">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Theme</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Choose light or dark mode
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.customization.theme}
-                                                        onValueChange={(value) => setData('customization.theme', value)}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select theme" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="light">Light</SelectItem>
-                                                            <SelectItem value="dark">Dark</SelectItem>
-                                                            <SelectItem value="system">System</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Primary Color</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Choose your theme color
-                                                        </div>
-                                                    </div>
-                                                    <Input
-                                                        type="color"
-                                                        value={data.customization.primary_color}
-                                                        className="w-[180px]"
-                                                        onChange={(e) => setData('customization.primary_color', e.target.value)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Font Size</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Adjust the text size
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.customization.font_size}
-                                                        onValueChange={(value) => setData('customization.font_size', value)}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select size" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="small">Small</SelectItem>
-                                                            <SelectItem value="medium">Medium</SelectItem>
-                                                            <SelectItem value="large">Large</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                            <div className="space-y-2">
+                                                <Label>Address</Label>
+                                                <Input
+                                                    value={formData.organization_info.address}
+                                                    onChange={(e) => updateFormData('organization_info.address', e.target.value)}
+                                                    placeholder="Enter organization address"
+                                                />
                                             </div>
-                                        </TabsContent>
 
-                                        <TabsContent value="advanced">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Maximum Generations Display</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Number of generations to show at once
-                                                        </div>
-                                                    </div>
-                                                    <Select
-                                                        value={data.advanced.max_generations_display.toString()}
-                                                        onValueChange={(value) => setData('advanced.max_generations_display', parseInt(value))}
-                                                    >
-                                                        <SelectTrigger className="w-[180px]">
-                                                            <SelectValue placeholder="Select generations" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="3">3 Generations</SelectItem>
-                                                            <SelectItem value="4">4 Generations</SelectItem>
-                                                            <SelectItem value="5">5 Generations</SelectItem>
-                                                            <SelectItem value="6">6 Generations</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Auto-arrange Tree</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Automatically organize the tree layout
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.advanced.auto_arrange}
-                                                        onCheckedChange={(checked) => setData('advanced.auto_arrange', checked)}
-                                                    />
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-0.5">
-                                                        <Label>Show Relationship Labels</Label>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Display how members are related
-                                                        </div>
-                                                    </div>
-                                                    <Switch
-                                                        checked={data.advanced.show_relationship_labels}
-                                                        onCheckedChange={(checked) => setData('advanced.show_relationship_labels', checked)}
-                                                    />
-                                                </div>
+                                            <div className="space-y-2">
+                                                <Label>Banner Image URL</Label>
+                                                <Input
+                                                    type="url"
+                                                    value={formData.organization_info.banner}
+                                                    onChange={(e) => updateFormData('organization_info.banner', e.target.value)}
+                                                    placeholder="Enter banner image URL"
+                                                />
                                             </div>
-                                        </TabsContent>
-                                    </Tabs>
-                                )}
-                            </SettingsForm>
+
+                                            <div className="space-y-2">
+                                                <Label>Logo URL</Label>
+                                                <Input
+                                                    type="url"
+                                                    value={formData.organization_info.logo}
+                                                    onChange={(e) => updateFormData('organization_info.logo', e.target.value)}
+                                                    placeholder="Enter logo image URL"
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+
+                                    <TabsContent value="auth">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label>Username</Label>
+                                                <Input
+                                                    value={formData.auth.username}
+                                                    onChange={(e) => updateFormData('auth.username', e.target.value)}
+                                                    placeholder="Enter username"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label>Password</Label>
+                                                <Input
+                                                    type="password"
+                                                    onChange={(e) => updateFormData('auth.password', e.target.value)}
+                                                    placeholder="Enter new password"
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+
+                                    <TabsContent value="officials">
+                                        <div className="space-y-6">
+                                            {formData.elected_officials.map((group, groupIndex) => (
+                                                <div key={groupIndex} className="space-y-4 p-4 border rounded-lg">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1 space-y-2">
+                                                            <Label>Group Name</Label>
+                                                            <Input
+                                                                value={group.name}
+                                                                onChange={(e) => {
+                                                                    const newGroups = [...formData.elected_officials];
+                                                                    newGroups[groupIndex].name = e.target.value;
+                                                                    updateFormData('elected_officials', newGroups);
+                                                                }}
+                                                                placeholder="Enter group name"
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            className="ml-4"
+                                                            onClick={() => {
+                                                                const newGroups = formData.elected_officials.filter((_, index) => index !== groupIndex);
+                                                                updateFormData('elected_officials', newGroups);
+                                                            }}
+                                                        >
+                                                            Remove Group
+                                                        </Button>
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        {group.officials.map((official, officialIndex) => (
+                                                            <div key={officialIndex} className="flex items-end gap-4">
+                                                                <div className="flex-1 space-y-2">
+                                                                    <Label>Name</Label>
+                                                                    <Input
+                                                                        value={official.name}
+                                                                        onChange={(e) => {
+                                                                            const newGroups = [...formData.elected_officials];
+                                                                            newGroups[groupIndex].officials[officialIndex].name = e.target.value;
+                                                                            updateFormData('elected_officials', newGroups);
+                                                                        }}
+                                                                        placeholder="Official's name"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1 space-y-2">
+                                                                    <Label>Position</Label>
+                                                                    <Input
+                                                                        value={official.position}
+                                                                        onChange={(e) => {
+                                                                            const newGroups = [...formData.elected_officials];
+                                                                            newGroups[groupIndex].officials[officialIndex].position = e.target.value;
+                                                                            updateFormData('elected_officials', newGroups);
+                                                                        }}
+                                                                        placeholder="Official's position"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1 space-y-2">
+                                                                    <Label>Profile URL</Label>
+                                                                    <Input
+                                                                        type="url"
+                                                                        value={official.profile_url}
+                                                                        onChange={(e) => {
+                                                                            const newGroups = [...formData.elected_officials];
+                                                                            newGroups[groupIndex].officials[officialIndex].profile_url = e.target.value;
+                                                                            updateFormData('elected_officials', newGroups);
+                                                                        }}
+                                                                        placeholder="Member's profile URL"
+                                                                    />
+                                                                </div>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="destructive"
+                                                                    onClick={() => {
+                                                                        const newGroups = [...formData.elected_officials];
+                                                                        newGroups[groupIndex].officials = group.officials.filter((_, index) => index !== officialIndex);
+                                                                        updateFormData('elected_officials', newGroups);
+                                                                    }}
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                        
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const newGroups = [...formData.elected_officials];
+                                                                newGroups[groupIndex].officials.push({ 
+                                                                    name: '', 
+                                                                    position: '',
+                                                                    profile_url: ''
+                                                                });
+                                                                updateFormData('elected_officials', newGroups);
+                                                            }}
+                                                        >
+                                                            Add Official
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            
+                                            <Button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newGroups = [...formData.elected_officials];
+                                                    newGroups.push({
+                                                        name: '',
+                                                        officials: []
+                                                    });
+                                                    updateFormData('elected_officials', newGroups);
+                                                }}
+                                            >
+                                                Add New Group
+                                            </Button>
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
+
+                                <div className="flex items-center justify-end gap-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setFormData(settings)}
+                                        disabled={isSubmitting}
+                                    >
+                                        Reset
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                    >
+                                        Save Changes
+                                    </Button>
+                                </div>
+                            </form>
                         </CardContent>
                     </Card>
                 </div>
