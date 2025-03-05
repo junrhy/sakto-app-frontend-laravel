@@ -24,7 +24,7 @@ class PosRestaurantController extends Controller
     {
         $jsonAppCurrency = json_decode(auth()->user()->app_currency);
     
-        return Inertia::render('PosRestaurant', [
+        return Inertia::render('PosRestaurant/Index', [
             'menuItems' => $this->getMenuItems(),
             'tab' => $request->query('tab', 'pos'),
             'tables' => $this->getTables(),
@@ -564,25 +564,37 @@ class PosRestaurantController extends Controller
             // Dummy data
             $dummySettings = [
                 'data' => [
-                    'restaurant_name' => 'Sample Restaurant',
-                    'tax_rate' => 10,
-                    'service_charge' => 5,
-                    'opening_hours' => '10:00 AM - 10:00 PM',
-                    'table_reservation_limit' => 2, // hours
-                    'menu_categories' => ['Appetizers', 'Main Course', 'Desserts', 'Beverages'],
-                    'payment_methods' => ['cash', 'card', 'mobile_payment'],
-                    'printer_settings' => [
-                        'receipt_printer' => 'POS-58',
-                        'kitchen_printer' => 'POS-80'
+                    'restaurant_info' => [
+                        'restaurant_name' => 'Sample Restaurant',
+                        'address' => '123 Main Street, City, Country',
+                        'contact_number' => '+1 234 567 8900',
+                        'website' => 'https://samplerestaurant.com',
+                        'banner_url' => '/images/restaurant-banner.jpg',
+                        'logo_url' => '/images/restaurant-logo.png',
+                    ],
+                    'social_links' => [
+                        'facebook' => 'https://facebook.com/samplerestaurant',
+                        'instagram' => 'https://instagram.com/samplerestaurant',
+                        'twitter' => 'https://twitter.com/samplerestaurant'
+                    ],
+                    'opening_hours' => [
+                        'monday' => '9:00 AM - 10:00 PM',
+                        'tuesday' => '9:00 AM - 10:00 PM',
+                        'wednesday' => '9:00 AM - 10:00 PM',
+                        'thursday' => '9:00 AM - 10:00 PM',
+                        'friday' => '9:00 AM - 11:00 PM',
+                        'saturday' => '10:00 AM - 11:00 PM',
+                        'sunday' => '10:00 AM - 9:00 PM'
+                    ],
+                    'auth' => [
+                        'username' => 'admin',
+                        'password' => '********' // Password will be handled securely in actual implementation
                     ]
                 ]
             ];
 
             return Inertia::render('PosRestaurant/Settings', [
-                'settings' => $dummySettings['data'],
-                'auth' => [
-                    'user' => auth()->user()
-                ]
+                'settings' => $dummySettings['data']
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');

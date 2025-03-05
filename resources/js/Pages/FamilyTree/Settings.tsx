@@ -92,7 +92,7 @@ export default function Settings({ settings, auth }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-white leading-tight">
+                <h2 className="font-semibold text-xl leading-tight">
                     Organization Settings
                 </h2>
             }
