@@ -288,7 +288,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Pos Restaurant routes
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
-    Route::get('/pos-restaurant/settings', [PosRestaurantController::class, 'settings'])->name('pos-restaurant.settings');
+    Route::get('/pos-restaurant/settings', [PosRestaurantController::class, 'settings'])
+        ->name('pos-restaurant.settings');
+    Route::post('/api/pos-restaurant/settings', [PosRestaurantController::class, 'saveSettings'])
+        ->name('pos-restaurant.settings.save');
 
     // Pos Restaurant Menu Items routes
     Route::get('/pos-restaurant/menu-items', [PosRestaurantController::class, 'getMenuItems']);

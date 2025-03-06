@@ -20,6 +20,7 @@ import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { PlusCircle, X } from 'lucide-react';
+import { z } from 'zod';
 
 interface SocialLink {
     platform: string;
@@ -62,6 +63,30 @@ interface Props {
     };
     settings: Settings;
 }
+
+const settingsSchema = z.object({
+    restaurant_info: z.object({
+        restaurant_name: z.string().min(1, 'Restaurant name is required'),
+        address: z.string().min(1, 'Address is required'),
+        contact_number: z.string().min(1, 'Contact number is required'),
+        website: z.string().url('Please enter a valid URL').or(z.string().length(0)),
+        banner_url: z.string().url('Please enter a valid banner URL').or(z.string().length(0)),
+        logo_url: z.string().url('Please enter a valid logo URL').or(z.string().length(0)),
+    }),
+    social_links: z.array(z.object({
+        platform: z.string(),
+        url: z.string().url('Please enter a valid URL').or(z.string().length(0))
+    })),
+    opening_hours: z.array(z.object({
+        day: z.string().min(1, 'Day is required'),
+        hours: z.string().min(1, 'Hours are required'),
+        is_open: z.boolean()
+    })),
+    auth: z.object({
+        username: z.string().min(1, 'Username is required'),
+        password: z.string()
+    })
+});
 
 export default function RestaurantSettings({ auth, settings }: Props) {
     // Transform the old social_links object into an array format
@@ -148,6 +173,20 @@ export default function RestaurantSettings({ auth, settings }: Props) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            // Validate form data
+            const validationResult = settingsSchema.safeParse(formData);
+            
+            if (!validationResult.success) {
+                const errors = validationResult.error.errors;
+                let errorMessage = 'Please fix the following errors:\n';
+                errors.forEach((err: z.ZodIssue) => {
+                    errorMessage += `- ${err.message}\n`;
+                });
+                toast.error(errorMessage);
+                setIsSubmitting(false);
+                return;
+            }
+
             // Transform the arrays back to objects for API compatibility
             const transformedData = {
                 ...formData,
@@ -161,11 +200,22 @@ export default function RestaurantSettings({ auth, settings }: Props) {
                 }, {} as Record<string, string>)
             };
 
-            await axios.post('/api/pos-restaurant/settings', transformedData);
-            toast.success('Settings updated successfully');
+            const response = await axios.post('/api/pos-restaurant/settings', transformedData);
+            
+            if (response.data.error) {
+                throw new Error(response.data.error);
+            }
+            
+            toast.success('Settings updated successfully', {
+                description: 'Your restaurant settings have been saved.',
+                duration: 3000,
+            });
         } catch (error) {
-            toast.error('Failed to update settings');
             console.error('Failed to save settings:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to update settings', {
+                description: 'Please try again or contact support if the problem persists.',
+                duration: 5000,
+            });
         } finally {
             setIsSubmitting(false);
         }

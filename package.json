@@ -78,13 +78,13 @@
         "react-chartjs-2": "^5.2.0",
         "react-d3-tree": "^3.6.5",
         "react-day-picker": "^8.10.1",
-        "react-hot-toast": "^2.5.1",
         "react-icons": "^5.3.0",
         "recharts": "^2.13.0",
         "run": "^1.5.0",
         "sonner": "^1.5.0",
         "tailwind-merge": "^2.6.0",
         "tailwindcss-animate": "^1.0.7",
-        "uuid": "^11.0.0"
+        "uuid": "^11.0.0",
+        "zod": "^3.24.2"
     }
 }

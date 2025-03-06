@@ -2,14 +2,11 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
-import { Input } from "@/Components/ui/input";
-import { Button } from "@/Components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'sonner';
 
 interface DashboardType {
     id: number;
@@ -122,7 +119,7 @@ export default function Authenticated({
     return (
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
-                <Toaster position="top-right" />
+                <Toaster richColors />
                 
                 {/* Mobile Navigation */}
                 <div

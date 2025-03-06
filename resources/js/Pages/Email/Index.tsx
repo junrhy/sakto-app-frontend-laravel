@@ -2,7 +2,7 @@ import React, { useState, ReactNode, useRef } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import axios from 'axios';
 
 interface User {

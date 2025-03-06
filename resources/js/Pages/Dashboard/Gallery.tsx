@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { router } from '@inertiajs/react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Badge } from '@/Components/ui/badge';
 import { motion } from 'framer-motion';
 import { PlusCircle, Layout, Calendar, Star, Filter, Trash2, Check } from 'lucide-react';

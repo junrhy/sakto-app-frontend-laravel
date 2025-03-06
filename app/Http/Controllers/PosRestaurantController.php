@@ -551,53 +551,44 @@ class PosRestaurantController extends Controller
     public function settings()
     {
         try {
-            // $clientIdentifier = auth()->user()->identifier;
-            // $response = Http::withToken($this->apiToken)
-            //     ->get("{$this->apiUrl}/fnb/settings", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-settings", [
+                    'client_identifier' => $clientIdentifier
+                ]);
 
-            // if (!$response->successful()) {
-            //     throw new \Exception('Failed to fetch restaurant settings');
-            // }
-
-            // Dummy data
-            $dummySettings = [
-                'data' => [
-                    'restaurant_info' => [
-                        'restaurant_name' => 'Sample Restaurant',
-                        'address' => '123 Main Street, City, Country',
-                        'contact_number' => '+1 234 567 8900',
-                        'website' => 'https://samplerestaurant.com',
-                        'banner_url' => '/images/restaurant-banner.jpg',
-                        'logo_url' => '/images/restaurant-logo.png',
-                    ],
-                    'social_links' => [
-                        'facebook' => 'https://facebook.com/samplerestaurant',
-                        'instagram' => 'https://instagram.com/samplerestaurant',
-                        'twitter' => 'https://twitter.com/samplerestaurant'
-                    ],
-                    'opening_hours' => [
-                        'monday' => '9:00 AM - 10:00 PM',
-                        'tuesday' => '9:00 AM - 10:00 PM',
-                        'wednesday' => '9:00 AM - 10:00 PM',
-                        'thursday' => '9:00 AM - 10:00 PM',
-                        'friday' => '9:00 AM - 11:00 PM',
-                        'saturday' => '10:00 AM - 11:00 PM',
-                        'sunday' => '10:00 AM - 9:00 PM'
-                    ],
-                    'auth' => [
-                        'username' => 'admin',
-                        'password' => '********' // Password will be handled securely in actual implementation
-                    ]
-                ]
-            ];
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch restaurant settings');
+            }
 
             return Inertia::render('PosRestaurant/Settings', [
-                'settings' => $dummySettings['data']
+                'settings' => $response->json()
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
+
+    public function saveSettings(Request $request)
+    {
+        try {
+            $request['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-settings", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to save settings');
+            }
+
+            return response()->json([
+                'message' => 'Settings saved successfully',
+                'data' => $response->json()['data'] ?? null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to save settings: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
