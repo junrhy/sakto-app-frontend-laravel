@@ -21,7 +21,7 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {
-        const userTheme = (props.initialPage.props.auth.user as InertiaUser).theme || 'system';
+        const userTheme = (props.initialPage.props.auth?.user as InertiaUser)?.theme || 'system';
         const app = (
             <ThemeProvider defaultTheme={userTheme} storageKey="sakto-theme">
                 <App {...props} />
