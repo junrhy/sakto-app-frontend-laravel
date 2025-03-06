@@ -471,6 +471,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('family-tree')->group(function () {
         Route::get('/', [FamilyTreeController::class, 'index'])->name('family-tree');
         Route::get('/settings', [FamilyTreeController::class, 'settings'])->name('family-tree.settings');
+        Route::post('/settings', [FamilyTreeController::class, 'saveSettings'])->name('family-tree.settings.save');
         Route::get('/members', [FamilyTreeController::class, 'getFamilyMembers']);
         Route::get('/widget-stats', [FamilyTreeController::class, 'getWidgetStats']);
         Route::post('/members', [FamilyTreeController::class, 'store']);

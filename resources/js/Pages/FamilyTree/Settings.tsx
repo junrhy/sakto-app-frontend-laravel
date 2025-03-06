@@ -66,10 +66,16 @@ export default function Settings({ settings, auth }: Props) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await axios.post('/api/family-tree/settings', formData);
-            toast.success('Settings updated successfully');
-        } catch (error) {
-            toast.error('Failed to update settings');
+            const response = await axios.post('/api/family-tree/settings', formData);
+            toast.success(response.data.message || 'Settings updated successfully');
+            
+            // Update the form data with the returned data if available
+            if (response.data.data) {
+                setFormData(response.data.data);
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error || 'Failed to update settings';
+            toast.error(errorMessage);
             console.error('Settings update error:', error);
         } finally {
             setIsSubmitting(false);

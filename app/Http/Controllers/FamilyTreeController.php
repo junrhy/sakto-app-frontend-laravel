@@ -522,24 +522,71 @@ class FamilyTreeController extends Controller
                 ]
             ];
 
-            // Commented out original HTTP request
-            /*
-            $clientIdentifier = auth()->user()->identifier;
-            $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/family-tree/settings", [
-                    'client_identifier' => $clientIdentifier
-                ]);
-
-            if (!$response->successful()) {
-                throw new \Exception('Failed to fetch family tree settings');
-            }
-            */
-
             return Inertia::render('FamilyTree/Settings', [
                 'settings' => $settings
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
+        }
+    }
+
+    /**
+     * Save family tree settings
+     */
+    public function saveSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'organization_info' => 'required|array',
+                'organization_info.family_name' => 'required|string|max:255',
+                'organization_info.email' => 'required|email|max:255',
+                'organization_info.contact_number' => 'required|string|max:20',
+                'organization_info.website' => 'required|string|max:255',
+                'organization_info.address' => 'required|string|max:500',
+                'organization_info.banner' => 'required|string|max:1000',
+                'organization_info.logo' => 'required|string|max:1000',
+                'auth' => 'required|array',
+                'auth.username' => 'required|string|max:255',
+                'auth.password' => 'nullable|string|min:8',
+                'elected_officials' => 'required|array',
+                'elected_officials.*.name' => 'required|string|max:255',
+                'elected_officials.*.officials' => 'required|array',
+                'elected_officials.*.officials.*.name' => 'required|string|max:255',
+                'elected_officials.*.officials.*.position' => 'required|string|max:255',
+                'elected_officials.*.officials.*.profile_url' => 'required|string|max:1000',
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+
+            // Make API request to save settings
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/family-tree/settings", array_merge($validated, [
+                    'client_identifier' => $clientIdentifier
+                ]));
+
+            if (!$response->successful()) {
+                Log::error('Failed to save family tree settings', [
+                    'response' => $response->json(),
+                    'status' => $response->status()
+                ]);
+                return response()->json([
+                    'error' => 'Failed to save settings: ' . ($response->json('error') ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            return response()->json([
+                'message' => 'Settings saved successfully',
+                'data' => $response->json('data')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error saving family tree settings', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to save settings: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
