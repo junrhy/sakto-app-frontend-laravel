@@ -7,22 +7,17 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import SocialButton from '@/Components/SocialButton';
 
-interface Project {
-    identifier: string;
-    name: string;
-}
-
 interface Props {
-    projects: Project[];
+    // Remove projects prop since it's no longer needed
 }
 
-export default function Register({ projects }: Props) {
+export default function Register({}: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
-        project_identifier: '',
+        project_identifier: 'trial', // Set default value to 'trial'
     });
 
     const submit: FormEventHandler = (e) => {
@@ -128,27 +123,7 @@ export default function Register({ projects }: Props) {
                                     <InputError message={errors.password_confirmation} className="mt-2" />
                                 </div>
 
-                                <div>
-                                    <InputLabel htmlFor="project_identifier" value="Project" className="text-gray-700 dark:text-gray-300 text-base" />
-                                    <select
-                                        id="project_identifier"
-                                        name="project_identifier"
-                                        value={data.project_identifier}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base"
-                                        onChange={(e) => setData('project_identifier', e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Select a project</option>
-                                        {projects.map((project) => (
-                                            <option key={project.identifier} value={project.identifier}>
-                                                {project.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <InputError message={errors.project_identifier} className="mt-2" />
-                                </div>
-
-                                <div className="relative my-6">
+                                <div className="relative my-6 hidden md:block">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                                     </div>
@@ -157,7 +132,7 @@ export default function Register({ projects }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 gap-4 hidden md:grid">
                                     <SocialButton
                                         provider="Google"
                                         icon="/images/google.svg"

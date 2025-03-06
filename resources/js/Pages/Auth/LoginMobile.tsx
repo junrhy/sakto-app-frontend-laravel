@@ -141,7 +141,7 @@ export default function LoginMobile({
                         <SocialButton
                             provider="Google"
                             icon="/images/google.svg"
-                            onClick={() => router.visit('/auth/google/redirect')}
+                            onClick={() => window.location.href = route('google.redirect')}
                             type="button"
                         >
                             Continue with Google

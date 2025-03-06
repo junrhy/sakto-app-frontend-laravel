@@ -21,7 +21,7 @@ interface Props {
 
 export default function SelectProject({ projects, googleUser }: Props) {
     const { data, setData, post, processing, errors } = useForm({
-        project_identifier: '',
+        project_identifier: 'trial',
         ...googleUser
     });
 
@@ -32,10 +32,10 @@ export default function SelectProject({ projects, googleUser }: Props) {
 
     return (
         <GuestLayout>
-            <Head title="Select Project" />
+            <Head title="Complete Registration" />
 
             <div className="flex w-full min-h-screen bg-white dark:bg-gray-900">
-                {/* Left side - Project Selection Form */}
+                {/* Left side - Registration Form */}
                 <div className="w-full md:w-1/2 flex flex-col">
                     {/* Logo Section */}
                     <div className="p-8">
@@ -56,31 +56,11 @@ export default function SelectProject({ projects, googleUser }: Props) {
                                     Almost there!
                                 </h2>
                                 <p className="text-base text-gray-600 dark:text-gray-400 mt-2">
-                                    Please select a project to complete your registration
+                                    Click below to complete your registration
                                 </p>
                             </div>
 
                             <form onSubmit={submit} className="space-y-6">
-                                <div>
-                                    <InputLabel htmlFor="project_identifier" value="Project" className="text-gray-700 dark:text-gray-300 text-base" />
-                                    <select
-                                        id="project_identifier"
-                                        name="project_identifier"
-                                        value={data.project_identifier}
-                                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base"
-                                        onChange={(e) => setData('project_identifier', e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Select a project</option>
-                                        {projects.map((project) => (
-                                            <option key={project.identifier} value={project.identifier}>
-                                                {project.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <InputError message={errors.project_identifier} className="mt-2" />
-                                </div>
-
                                 <div>
                                     <PrimaryButton
                                         className="w-full justify-center py-3 px-4 text-base font-medium rounded-lg"

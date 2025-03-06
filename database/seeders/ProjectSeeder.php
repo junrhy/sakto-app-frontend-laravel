@@ -15,30 +15,46 @@ class ProjectSeeder extends Seeder
      */
     public function run(): void
     {
-        $enabledModules = Module::all()->pluck('name')->toArray();
+        $enabledModules = Module::all()->pluck('identifier')->toArray();
 
-        $project = [
-            'id' => 1,
-            'name' => 'Trial',
-            'identifier' => 'trial',
-            'enabledModules' => json_encode(array_values($enabledModules)),
+        $projects = [
+            [
+                'id' => 1,
+                'name' => 'Trial',
+                'identifier' => 'trial',
+                'enabledModules' => json_encode(array_values($enabledModules)),
+            ],
+            [
+                'id' => 2,
+                'name' => 'Basic',
+                'identifier' => 'basic',
+                'enabledModules' => json_encode(array_values(['family-tree', 'email', 'sms', 'contacts'])),
+            ],
+            [
+                'id' => 3,
+                'name' => 'Premium',
+                'identifier' => 'premium',
+                'enabledModules' => json_encode(array_values(['fnb', 'rental-items', 'rental-properties', 'clinical', 'lending', 'payroll', 'contacts', 'email', 'sms', 'family-tree'])),
+            ],
         ];
 
-        $existingProject = Project::where('identifier', $project['identifier'])->first();
+        foreach ($projects as $project) {
+            $existingProject = Project::where('identifier', $project['identifier'])->first();
 
-        if (!$existingProject) {
-            Project::create($project);
-        } else {
-            // Get current enabled modules
-            $currentModules = json_decode($existingProject->enabledModules, true) ?? [];
-            
-            // Merge with new modules, removing duplicates and reindexing
-            $updatedModules = array_values(array_unique(array_merge($currentModules, $enabledModules)));
-            
-            // Update the project with new modules
-            $existingProject->update([
-                'enabledModules' => json_encode($updatedModules)
-            ]);
+            if (!$existingProject) {
+                Project::create($project);
+            } else {
+                // Get current enabled modules
+                $currentModules = json_decode($existingProject->enabledModules, true) ?? [];
+                
+                // Merge with new modules, removing duplicates and reindexing
+                $updatedModules = array_values(array_unique(array_merge($currentModules, $enabledModules)));
+                
+                // Update the project with new modules
+                $existingProject->update([
+                    'enabledModules' => json_encode($updatedModules)
+                ]);
+            }
         }
     }
 }
