@@ -204,7 +204,7 @@ export default function PosRestaurant({
     const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
     const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
-    const [tables, setTables] = useState<Table[]>(initialTables);
+    const [tables, setTables] = useState<Table[]>(Array.isArray(initialTables) ? initialTables : []);
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
@@ -856,11 +856,16 @@ export default function PosRestaurant({
     };
 
     const filteredTables = useMemo(() => {
+        // Ensure tables is an array
+        if (!Array.isArray(tables)) {
+            return [];
+        }
+
         let filtered = [...tables];
         
-        // Add joined tables if not filtered out
+        // Ensure joinedTables is an array before using it
         if (tableStatusFilter === 'all' || tableStatusFilter === 'joined') {
-            const joinedTableEntries = joinedTables.map(jt => ({
+            const joinedTableEntries = Array.isArray(joinedTables) ? joinedTables.map(jt => ({
                 id: `joined_${jt.id}`,
                 numericId: jt.id,
                 name: jt.name,
@@ -868,7 +873,7 @@ export default function PosRestaurant({
                 status: 'joined' as const,
                 isJoinedTable: true,
                 originalTableIds: jt.tableIds
-            }));
+            })) : [];
             filtered = [...filtered, ...joinedTableEntries];
         }
 
