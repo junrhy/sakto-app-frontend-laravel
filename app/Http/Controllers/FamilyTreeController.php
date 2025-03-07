@@ -473,57 +473,18 @@ class FamilyTreeController extends Controller
     public function settings()
     {
         try {
-            // Dummy settings data with specific fields
-            $settings = [
-                "organization_info" => [
-                    "family_name" => "Sample Family Association",
-                    "email" => "samplefamily@example.com",
-                    "contact_number" => "+1234567890",
-                    "website" => "www.samplefamily.org",
-                    "address" => "123 Family Street, Community City, State 12345",
-                    "banner" => "https://placehold.co/1200x400/png",
-                    "logo" => "https://placehold.co/150x150/png"
-                ],
-                "auth" => [
-                    "username" => "admin",
-                    "password" => "hashed_password_here"
-                ],
-                "elected_officials" => [
-                    [
-                        "name" => "Executive Board",
-                        "officials" => [
-                            [
-                                "name" => "John Doe",
-                                "position" => "President",
-                                "profile_url" => "https://example.com/members/john-doe"
-                            ],
-                            [
-                                "name" => "Jane Smith",
-                                "position" => "Vice President",
-                                "profile_url" => "https://example.com/members/jane-smith"
-                            ]
-                        ]
-                    ],
-                    [
-                        "name" => "Advisory Board",
-                        "officials" => [
-                            [
-                                "name" => "Mike Johnson",
-                                "position" => "Head Advisor",
-                                "profile_url" => "https://example.com/members/mike-johnson"
-                            ],
-                            [
-                                "name" => "Sarah Williams",
-                                "position" => "Secretary",
-                                "profile_url" => "https://example.com/members/sarah-williams"
-                            ]
-                        ]
-                    ]
-                ]
-            ];
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/family-tree/settings", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch family tree settings');
+            }
 
             return Inertia::render('FamilyTree/Settings', [
-                'settings' => $settings
+                'settings' => $response->json()
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
@@ -537,23 +498,21 @@ class FamilyTreeController extends Controller
     {
         try {
             $validated = $request->validate([
-                'organization_info' => 'required|array',
                 'organization_info.family_name' => 'required|string|max:255',
-                'organization_info.email' => 'required|email|max:255',
-                'organization_info.contact_number' => 'required|string|max:20',
-                'organization_info.website' => 'required|string|max:255',
-                'organization_info.address' => 'required|string|max:500',
-                'organization_info.banner' => 'required|string|max:1000',
-                'organization_info.logo' => 'required|string|max:1000',
-                'auth' => 'required|array',
-                'auth.username' => 'required|string|max:255',
-                'auth.password' => 'nullable|string|min:8',
-                'elected_officials' => 'required|array',
-                'elected_officials.*.name' => 'required|string|max:255',
-                'elected_officials.*.officials' => 'required|array',
-                'elected_officials.*.officials.*.name' => 'required|string|max:255',
-                'elected_officials.*.officials.*.position' => 'required|string|max:255',
-                'elected_officials.*.officials.*.profile_url' => 'required|string|max:1000',
+                'organization_info.email' => 'nullable|email|max:255',
+                'organization_info.contact_number' => 'nullable|string|max:50',
+                'organization_info.website' => 'nullable|url|max:255',
+                'organization_info.address' => 'nullable|string|max:500',
+                'organization_info.banner' => 'nullable|string|max:1000',
+                'organization_info.logo' => 'nullable|string|max:1000',
+                'auth.username' => 'nullable|string|max:255',
+                'auth.password' => 'nullable|string|min:6',
+                'elected_officials' => 'nullable|array',
+                'elected_officials.*.name' => 'required_with:elected_officials|string|max:255',
+                'elected_officials.*.officials' => 'required_with:elected_officials|array',
+                'elected_officials.*.officials.*.name' => 'required_with:elected_officials.*.officials|string|max:255',
+                'elected_officials.*.officials.*.position' => 'required_with:elected_officials.*.officials|string|max:255',
+                'elected_officials.*.officials.*.profile_url' => 'nullable|string'
             ]);
 
             $clientIdentifier = auth()->user()->identifier;

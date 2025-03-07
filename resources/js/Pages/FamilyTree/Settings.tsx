@@ -49,7 +49,9 @@ interface Settings {
 }
 
 interface Props {
-    settings: Settings;
+    settings: {
+        data: Settings;
+    };
     auth: {
         user: any;
     };
@@ -57,8 +59,20 @@ interface Props {
 
 export default function Settings({ settings, auth }: Props) {
     const [formData, setFormData] = useState<Settings>({
-        ...settings,
-        elected_officials: settings.elected_officials || []
+        organization_info: {
+            family_name: settings.data.organization_info?.family_name || '',
+            email: settings.data.organization_info?.email || '',
+            contact_number: settings.data.organization_info?.contact_number || '',
+            website: settings.data.organization_info?.website || '',
+            address: settings.data.organization_info?.address || '',
+            banner: settings.data.organization_info?.banner || '',
+            logo: settings.data.organization_info?.logo || ''
+        },
+        auth: {
+            username: settings.data.auth?.username || '',
+            password: settings.data.auth?.password || ''
+        },
+        elected_officials: settings.data.elected_officials || []
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,7 +80,9 @@ export default function Settings({ settings, auth }: Props) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const response = await axios.post('/api/family-tree/settings', formData);
+            console.log('Submitting form data:', JSON.stringify(formData, null, 2));
+            const response = await axios.post('/family-tree/settings', formData);
+            console.log('Response data:', response.data);
             toast.success(response.data.message || 'Settings updated successfully');
             
             // Update the form data with the returned data if available
@@ -77,6 +93,7 @@ export default function Settings({ settings, auth }: Props) {
             const errorMessage = error.response?.data?.error || 'Failed to update settings';
             toast.error(errorMessage);
             console.error('Settings update error:', error);
+            console.error('Error response:', error.response?.data);
         } finally {
             setIsSubmitting(false);
         }
@@ -339,7 +356,7 @@ export default function Settings({ settings, auth }: Props) {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => setFormData(settings)}
+                                        onClick={() => setFormData(settings.data)}
                                         disabled={isSubmitting}
                                     >
                                         Reset
