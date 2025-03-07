@@ -749,7 +749,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
             </div>
 
             {/* Main Content - Adjusted with margin for sidebar */}
-            <div className="container mx-auto px-4 pt-28 lg:pt-20 pb-8 lg:ml-64">
+            <div className="px-4 pt-28 lg:pt-20 pb-8 lg:pl-72">
                 {/* Stats Section */}
                 <div className="mb-6 overflow-x-auto">
                     <div className="min-w-max">
