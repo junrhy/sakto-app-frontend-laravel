@@ -168,7 +168,7 @@ export default function PosRestaurant({
     currency_symbol
 }: PageProps) {
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-    const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>(Array.isArray(initialMenuItems) ? initialMenuItems : []);
     const [tableNumber, setTableNumber] = useState<string>("");
     const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -1008,12 +1008,14 @@ export default function PosRestaurant({
     };
 
     const categoryFilteredMenuItems = useMemo(() => {
+        if (!Array.isArray(menuItems)) return [];
         return selectedCategory
             ? menuItems.filter((item: MenuItem) => item.category === selectedCategory)
             : menuItems;
     }, [menuItems, selectedCategory]);
 
     const filteredMenuItems = useMemo(() => {
+        if (!Array.isArray(menuItems)) return [];
         return menuItems.filter((item: MenuItem) =>
             item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -1021,6 +1023,7 @@ export default function PosRestaurant({
     }, [menuItems, searchTerm]);
 
     const paginatedMenuItems = useMemo(() => {
+        if (!Array.isArray(filteredMenuItems)) return [];
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredMenuItems.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredMenuItems, currentPage]);
