@@ -109,6 +109,12 @@ interface Order {
 }
 
 const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
+    // Ensure tables is an array
+    if (!Array.isArray(tables)) {
+        console.warn('processJoinedTables received non-array tables:', tables);
+        return [[], []];
+    }
+
     const joinedTables: JoinedTable[] = [];
     const processedTables = [...tables];
     const processedIds = new Set<number>();
@@ -117,44 +123,58 @@ const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
     const joinedGroups = new Map<string, number[]>();
     
     tables.forEach(table => {
-        if (table.status === 'joined' && table.joined_with) {
-            const joinedIds = table.joined_with.split(',').map(Number);
-            const key = joinedIds.sort().join(',');
-            if (!joinedGroups.has(key)) {
-                joinedGroups.set(key, joinedIds);
+        if (table && table.status === 'joined' && table.joined_with) {
+            try {
+                const joinedIds = table.joined_with.split(',').map(id => {
+                    const numId = Number(id);
+                    return isNaN(numId) ? null : numId;
+                }).filter((id): id is number => id !== null);
+
+                if (joinedIds.length > 0) {
+                    const key = joinedIds.sort().join(',');
+                    if (!joinedGroups.has(key)) {
+                        joinedGroups.set(key, joinedIds);
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing joined table:', error);
             }
         }
     });
 
     // Second pass: create joined table entries
     joinedGroups.forEach((tableIds) => {
-        // Get all tables in this joined group
-        const groupTables = tableIds.map(id => 
-            tables.find(t => t.id === id)
-        ).filter((t): t is Table => t !== undefined);
+        try {
+            // Get all tables in this joined group
+            const groupTables = tableIds.map(id => 
+                tables.find(t => t && typeof t.id === 'number' && t.id === id)
+            ).filter((t): t is Table => t !== undefined);
 
-        if (groupTables.length > 0) {
-            // Mark these tables as processed
-            tableIds.forEach(id => processedIds.add(id));
+            if (groupTables.length > 0) {
+                // Mark these tables as processed
+                tableIds.forEach(id => processedIds.add(id));
 
-            // Create joined table entry
-            const joinedTable: JoinedTable = {
-                id: Date.now() + Math.random(),
-                tableIds: tableIds,
-                name: `Table ${groupTables.map(t => 
-                    t.name.replace('Table ', '')
-                ).join(' & ')}`,
-                seats: groupTables.reduce((sum, t) => sum + t.seats, 0),
-                status: 'joined'
-            };
+                // Create joined table entry
+                const joinedTable: JoinedTable = {
+                    id: Date.now() + Math.random(),
+                    tableIds: tableIds,
+                    name: `Table ${groupTables.map(t => 
+                        t.name.replace('Table ', '')
+                    ).join(' & ')}`,
+                    seats: groupTables.reduce((sum, t) => sum + t.seats, 0),
+                    status: 'joined'
+                };
 
-            joinedTables.push(joinedTable);
+                joinedTables.push(joinedTable);
+            }
+        } catch (error) {
+            console.error('Error creating joined table:', error);
         }
     });
 
     // Filter out individual tables that are part of joined tables
     const remainingTables = processedTables.filter(table => 
-        !processedIds.has(table.id as number)
+        table && typeof table.id === 'number' && !processedIds.has(table.id)
     );
 
     return [remainingTables, joinedTables];
@@ -167,8 +187,13 @@ export default function PosRestaurant({
     tab = 'pos',
     currency_symbol
 }: PageProps) {
+    // Ensure initial values are arrays
+    const safeInitialTables = Array.isArray(initialTables) ? initialTables : [];
+    const safeInitialJoinedTables = Array.isArray(initialJoinedTables) ? initialJoinedTables : [];
+    const safeInitialMenuItems = Array.isArray(initialMenuItems) ? initialMenuItems : [];
+
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-    const [menuItems, setMenuItems] = useState<MenuItem[]>(Array.isArray(initialMenuItems) ? initialMenuItems : []);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>(safeInitialMenuItems);
     const [tableNumber, setTableNumber] = useState<string>("");
     const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -200,11 +225,11 @@ export default function PosRestaurant({
     const itemsPerPage = 5;
     const [newTableName, setNewTableName] = useState<string>("");
     const [newTableSeats, setNewTableSeats] = useState<number>(1);
-    const [joinedTables, setJoinedTables] = useState<JoinedTable[]>(initialJoinedTables);
+    const [joinedTables, setJoinedTables] = useState<JoinedTable[]>(safeInitialJoinedTables);
     const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
     const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
-    const [tables, setTables] = useState<Table[]>(Array.isArray(initialTables) ? initialTables : []);
+    const [tables, setTables] = useState<Table[]>(safeInitialTables);
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
     const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
@@ -216,9 +241,20 @@ export default function PosRestaurant({
 
     // Initialize tables and joined tables
     useEffect(() => {
-        const [processedTables, newJoinedTables] = processJoinedTables(initialTables);
-        setTables(processedTables);
-        setJoinedTables(newJoinedTables);
+        try {
+            if (!Array.isArray(initialTables)) {
+                console.warn('initialTables is not an array:', initialTables);
+                return;
+            }
+
+            const [processedTables, newJoinedTables] = processJoinedTables(initialTables);
+            setTables(processedTables || []);
+            setJoinedTables(newJoinedTables || []);
+        } catch (error) {
+            console.error('Error processing tables:', error);
+            setTables([]);
+            setJoinedTables([]);
+        }
     }, [initialTables]);
 
     const addItemToOrder = async (item: MenuItem) => {
@@ -226,8 +262,37 @@ export default function PosRestaurant({
             toast.error('Please select a table first');
             return;
         }
+
+        if (!item || typeof item.id === 'undefined') {
+            toast.error('Invalid menu item');
+            return;
+        }
         
         try {
+            // Ensure orderItems is an array before finding index
+            const safeOrderItems = Array.isArray(orderItems) ? orderItems : [];
+            const existingItemIndex = safeOrderItems.findIndex(orderItem => 
+                orderItem && orderItem.id === item.id
+            );
+            
+            if (existingItemIndex !== -1) {
+                const updatedOrderItems = [...safeOrderItems];
+                updatedOrderItems[existingItemIndex] = {
+                    ...updatedOrderItems[existingItemIndex],
+                    quantity: (updatedOrderItems[existingItemIndex]?.quantity || 0) + 1
+                };
+                setOrderItems(updatedOrderItems);
+            } else {
+                const newOrderItem: OrderItem = {
+                    id: item.id,
+                    name: item.name || '',
+                    price: item.price || 0,
+                    category: item.category || '',
+                    quantity: 1
+                };
+                setOrderItems(prevItems => Array.isArray(prevItems) ? [...prevItems, newOrderItem] : [newOrderItem]);
+            }
+            
             console.log("csrfToken: ", csrfToken);
             const response = await fetch('/pos-restaurant/orders/add-item', {
                 method: 'POST',
@@ -252,29 +317,6 @@ export default function PosRestaurant({
 
             const data = await response.json();
             
-            // Check if the item already exists in the order
-            const existingItemIndex = orderItems.findIndex(orderItem => orderItem.id === item.id);
-            
-            if (existingItemIndex !== -1) {
-                // If item exists, update its quantity
-                const updatedOrderItems = [...orderItems];
-                updatedOrderItems[existingItemIndex] = {
-                    ...updatedOrderItems[existingItemIndex],
-                    quantity: updatedOrderItems[existingItemIndex].quantity + 1
-                };
-                setOrderItems(updatedOrderItems);
-            } else {
-                // If item doesn't exist, add it as a new row
-                const newOrderItem: OrderItem = {
-                    id: item.id,
-                    name: item.name,
-                    price: item.price,
-                    category: item.category,
-                    quantity: 1
-                };
-                setOrderItems(prevItems => [...prevItems, newOrderItem]);
-            }
-
             // Update current order
             const updatedOrder: Order = {
                 id: data.id,
@@ -771,14 +813,16 @@ export default function PosRestaurant({
     };
 
     const handleJoinTables = async () => {
-        if (selectedTablesForJoin.length < 2) {
+        if (!Array.isArray(selectedTablesForJoin) || selectedTablesForJoin.length < 2) {
             toast.error('Please select at least 2 tables to join');
             return;
         }
 
-        const selectedTableDetails = selectedTablesForJoin.map(id => 
-            tables.find(table => table.id === id)
-        ).filter((table): table is Table => table !== undefined);
+        const selectedTableDetails = selectedTablesForJoin
+            .map(id => tables.find(table => 
+                table && typeof table.id === 'number' && table.id === id
+            ))
+            .filter((table): table is Table => table !== undefined);
 
         if (!selectedTableDetails.every(table => table.status === 'available')) {
             toast.error('Can only join available tables');
@@ -795,10 +839,10 @@ export default function PosRestaurant({
                 preserveState: true,
                 preserveScroll: true,
                 onSuccess: (response: any) => {
-                    if (response.tables) {
+                    if (response && response.tables) {
                         const [processedTables, newJoinedTables] = processJoinedTables(response.tables);
-                        setTables(processedTables);
-                        setJoinedTables(newJoinedTables);
+                        setTables(processedTables || []);
+                        setJoinedTables(newJoinedTables || []);
                     }
                     setSelectedTablesForJoin([]);
                     setIsJoinTableDialogOpen(false);
@@ -896,12 +940,25 @@ export default function PosRestaurant({
     };
 
     const handleDeleteMenuItem = async (id: number) => {
+        if (typeof id !== 'number') {
+            toast.error('Invalid menu item ID');
+            return;
+        }
+
         try {
             router.delete(`/pos-restaurant/menu-item/${id}`, {
                 onSuccess: () => {
                     toast.success('Menu item deleted successfully');
-                    setMenuItems(menuItems.filter(item => item.id !== id));
-                    setSelectedMenuItems(selectedMenuItems.filter(itemId => itemId !== id));
+                    setMenuItems(prevItems => 
+                        Array.isArray(prevItems) 
+                            ? prevItems.filter(item => item && item.id !== id)
+                            : []
+                    );
+                    setSelectedMenuItems(prevSelected => 
+                        Array.isArray(prevSelected)
+                            ? prevSelected.filter(itemId => itemId !== id)
+                            : []
+                    );
                 },
                 onError: () => {
                     toast.error('Failed to delete menu item');
@@ -1014,21 +1071,29 @@ export default function PosRestaurant({
 
     const categoryFilteredMenuItems = useMemo(() => {
         if (!Array.isArray(menuItems)) return [];
+        
         return selectedCategory
-            ? menuItems.filter((item: MenuItem) => item.category === selectedCategory)
+            ? menuItems.filter((item: MenuItem) => 
+                item && item.category === selectedCategory
+            )
             : menuItems;
     }, [menuItems, selectedCategory]);
 
     const filteredMenuItems = useMemo(() => {
         if (!Array.isArray(menuItems)) return [];
+        
+        const searchTermLower = (searchTerm || '').toLowerCase();
         return menuItems.filter((item: MenuItem) =>
-            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.category.toLowerCase().includes(searchTerm.toLowerCase())
+            item && (
+                (item.name || '').toLowerCase().includes(searchTermLower) ||
+                (item.category || '').toLowerCase().includes(searchTermLower)
+            )
         );
     }, [menuItems, searchTerm]);
 
     const paginatedMenuItems = useMemo(() => {
         if (!Array.isArray(filteredMenuItems)) return [];
+        
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredMenuItems.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredMenuItems, currentPage]);
@@ -1168,6 +1233,11 @@ export default function PosRestaurant({
     };
 
     const handleTableSelection = async (tableName: string) => {
+        if (!tableName) {
+            toast.error('Invalid table selection');
+            return;
+        }
+
         try {
             const response = await fetch(`/pos-restaurant/current-order/${tableName}`);
             const data = await response.json();
@@ -1178,15 +1248,16 @@ export default function PosRestaurant({
 
             setTableNumber(tableName);
 
-            if (data.order) {
+            if (data && data.order) {
                 setCurrentOrder(data.order);
-                setOrderItems(data.order.items.map((item: any) => ({
-                    id: item.id,
-                    name: item.item,
-                    price: parseFloat(item.price),
-                    quantity: parseInt(item.quantity),
-                    category: item.category || '',
-                    total: parseFloat(item.total)
+                const safeItems = Array.isArray(data.order.items) ? data.order.items : [];
+                setOrderItems(safeItems.map((item: any) => ({
+                    id: item?.id || 0,
+                    name: item?.item || '',
+                    price: parseFloat(item?.price || 0),
+                    quantity: parseInt(item?.quantity || 0),
+                    category: item?.category || '',
+                    total: parseFloat(item?.total || 0)
                 })));
             } else {
                 setCurrentOrder(null);
