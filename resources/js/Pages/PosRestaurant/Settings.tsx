@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -20,7 +20,6 @@ import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { PlusCircle, X } from 'lucide-react';
-import { z } from 'zod';
 
 interface SocialLink {
     platform: string;
@@ -64,49 +63,35 @@ interface Props {
     settings: Settings;
 }
 
-const settingsSchema = z.object({
-    restaurant_info: z.object({
-        restaurant_name: z.string().min(1, 'Restaurant name is required'),
-        address: z.string().min(1, 'Address is required'),
-        contact_number: z.string().min(1, 'Contact number is required'),
-        website: z.string().url('Please enter a valid URL').or(z.string().length(0)),
-        banner_url: z.string().url('Please enter a valid banner URL').or(z.string().length(0)),
-        logo_url: z.string().url('Please enter a valid logo URL').or(z.string().length(0)),
-    }),
-    social_links: z.array(z.object({
-        platform: z.string(),
-        url: z.string().url('Please enter a valid URL').or(z.string().length(0))
-    })),
-    opening_hours: z.array(z.object({
-        day: z.string().min(1, 'Day is required'),
-        hours: z.string().min(1, 'Hours are required'),
-        is_open: z.boolean()
-    })),
-    auth: z.object({
-        username: z.string().min(1, 'Username is required'),
-        password: z.string()
-    })
-});
-
 export default function RestaurantSettings({ auth, settings }: Props) {
     // Transform the old social_links object into an array format
-    const initialSocialLinks = Object.entries(settings.social_links).map(([platform, url]) => ({
+    const initialSocialLinks = Object.entries(settings?.social_links || {}).map(([platform, url]) => ({
         platform,
         url: url || ''
     }));
 
     // Transform the old opening_hours object into an array format
-    const initialOpeningHours = Object.entries(settings.opening_hours).map(([day, hours]) => ({
+    const initialOpeningHours = Object.entries(settings?.opening_hours || {}).map(([day, hours]) => ({
         day,
         hours,
         is_open: true
     }));
 
     const [formData, setFormData] = useState<FormData>({
-        restaurant_info: settings.restaurant_info,
+        restaurant_info: settings?.restaurant_info || {
+            restaurant_name: '',
+            address: '',
+            contact_number: '',
+            website: '',
+            banner_url: '',
+            logo_url: ''
+        },
         social_links: initialSocialLinks,
         opening_hours: initialOpeningHours,
-        auth: settings.auth
+        auth: settings?.auth || {
+            username: '',
+            password: ''
+        }
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -173,34 +158,26 @@ export default function RestaurantSettings({ auth, settings }: Props) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // Validate form data
-            const validationResult = settingsSchema.safeParse(formData);
-            
-            if (!validationResult.success) {
-                const errors = validationResult.error.errors;
-                let errorMessage = 'Please fix the following errors:\n';
-                errors.forEach((err: z.ZodIssue) => {
-                    errorMessage += `- ${err.message}\n`;
-                });
-                toast.error(errorMessage);
-                setIsSubmitting(false);
-                return;
-            }
-
-            // Transform the arrays back to objects for API compatibility
+            // Transform the arrays to objects for API compatibility
             const transformedData = {
-                ...formData,
+                restaurant_info: {
+                    ...formData.restaurant_info
+                },
+                auth: {
+                    ...formData.auth
+                },
                 social_links: formData.social_links.reduce((acc, { platform, url }) => {
-                    if (platform) acc[platform] = url;
+                    if (platform.trim()) acc[platform.trim()] = url;
                     return acc;
                 }, {} as Record<string, string>),
                 opening_hours: formData.opening_hours.reduce((acc, { day, hours }) => {
-                    if (day) acc[day.toLowerCase()] = hours;
+                    if (day.trim()) acc[day.toLowerCase().trim()] = hours;
                     return acc;
                 }, {} as Record<string, string>)
             };
 
-            const response = await axios.post('/api/pos-restaurant/settings', transformedData);
+            console.log('Sending settings payload:', transformedData);
+            const response = await axios.post('/pos-restaurant/settings', transformedData);
             
             if (response.data.error) {
                 throw new Error(response.data.error);
