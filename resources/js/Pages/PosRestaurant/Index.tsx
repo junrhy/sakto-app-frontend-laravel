@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2, Link2, Check, UtensilsCrossed, Calculator, ShoppingCart } from "lucide-react";
 import { Checkbox } from "@/Components/ui/checkbox";
-import { router, usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { DialogTrigger } from "@/Components/ui/dialog";
 import { Toaster } from "sonner";
+import { Page } from '@inertiajs/core';
 
 interface MenuItem {
     id: number;
@@ -108,6 +109,48 @@ interface Order {
     updated_at?: string;
 }
 
+// Add these interfaces at the top with other interfaces
+interface ApiError {
+    original?: {
+        error?: string;
+    };
+    error?: string;
+}
+
+interface ApiResponse {
+    error?: string;
+    table?: Table;
+    tables?: Table[];
+}
+
+interface TableApiResponse extends ApiResponse {
+    props?: {
+        error?: string;
+        table?: Table;
+    };
+}
+
+interface PosRestaurantProps {
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        };
+    };
+    tables?: Table[];
+    error?: string;
+}
+
+// Rename the local interface to avoid conflict
+interface PosRestaurantPageData {
+    menuItems: MenuItem[];
+    tables: Table[];
+    tab?: string;
+    joinedTables?: JoinedTable[];
+    currency_symbol?: string;
+}
+
 const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
     // Ensure tables is an array
     if (!Array.isArray(tables)) {
@@ -186,11 +229,26 @@ export default function PosRestaurant({
     joinedTables: initialJoinedTables = [], 
     tab = 'pos',
     currency_symbol
-}: PageProps) {
-    // Ensure initial values are arrays
-    const safeInitialTables = Array.isArray(initialTables) ? initialTables : [];
-    const safeInitialJoinedTables = Array.isArray(initialJoinedTables) ? initialJoinedTables : [];
-    const safeInitialMenuItems = Array.isArray(initialMenuItems) ? initialMenuItems : [];
+}: PosRestaurantPageData) {
+    // Enhanced error handling for initial values with proper type checking
+    const safeInitialTables = Array.isArray(initialTables) 
+        ? initialTables 
+        : (initialTables && typeof initialTables === 'object' && 'original' in initialTables)
+            ? []  // API error case
+            : [];
+
+    const safeInitialJoinedTables = Array.isArray(initialJoinedTables) 
+        ? initialJoinedTables 
+        : [];
+
+    const safeInitialMenuItems = Array.isArray(initialMenuItems) 
+        ? initialMenuItems 
+        : (initialMenuItems && typeof initialMenuItems === 'object' && 'original' in initialMenuItems)
+            ? []  // API error case
+            : [];
+
+    // Add error state to track API connection issues
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
     const [menuItems, setMenuItems] = useState<MenuItem[]>(safeInitialMenuItems);
@@ -239,21 +297,37 @@ export default function PosRestaurant({
     const { props } = usePage();
     const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
 
-    // Initialize tables and joined tables
+    // Initialize tables and joined tables with enhanced error handling
     useEffect(() => {
         try {
+            // Check for API error response
+            if (initialTables && typeof initialTables === 'object' && 'original' in initialTables) {
+                const errorMessage = (initialTables as any).original?.error || 'Failed to load tables';
+                setApiError(errorMessage);
+                console.error('API Error:', errorMessage);
+                setTables([]);
+                setJoinedTables([]);
+                toast.error(errorMessage);
+                return;
+            }
+
             if (!Array.isArray(initialTables)) {
                 console.warn('initialTables is not an array:', initialTables);
+                setTables([]);
+                setJoinedTables([]);
                 return;
             }
 
             const [processedTables, newJoinedTables] = processJoinedTables(initialTables);
             setTables(processedTables || []);
             setJoinedTables(newJoinedTables || []);
+            setApiError(null); // Clear any previous errors
         } catch (error) {
             console.error('Error processing tables:', error);
             setTables([]);
             setJoinedTables([]);
+            setApiError('Error processing tables data');
+            toast.error('Error processing tables data');
         }
     }, [initialTables]);
 
@@ -347,7 +421,7 @@ export default function PosRestaurant({
             // Optimistically update UI
             setOrderItems(orderItems.filter(item => item.id !== id));
 
-            // Send request to backend
+            // Send request to backend using router.delete instead of fetch
             await router.delete(`/pos-restaurant/current-order/${tableNumber}/item/${id}`, {
                 preserveState: true,
                 preserveScroll: true,
@@ -1116,6 +1190,7 @@ export default function PosRestaurant({
         );
     };
 
+    // Modify handleAddTable to handle database connection errors
     const handleAddTable = async () => {
         if (newTableName && newTableSeats > 0) {
             try {
@@ -1124,10 +1199,23 @@ export default function PosRestaurant({
                     seats: newTableSeats,
                     status: 'available'
                 }, {
-                    onSuccess: (response: any) => {
-                        // Safely access the table data from the response
+                    onSuccess: (page: any) => {
+                        // Type assertion after checking properties exist
+                        if (!page || !page.props) {
+                            toast.error('Invalid response from server');
+                            return;
+                        }
+
+                        const response = page.props as Partial<PosRestaurantProps>;
+                        
+                        if (response.error) {
+                            toast.error(response.error);
+                            return;
+                        }
+
+                        // Create new table with generated ID
                         const newTable: Table = {
-                            id: response?.table?.id ?? Date.now(), // Fallback to timestamp if id is missing
+                            id: Date.now(), // Use timestamp as temporary ID
                             name: newTableName,
                             seats: newTableSeats,
                             status: 'available'
@@ -1139,16 +1227,17 @@ export default function PosRestaurant({
                         setIsAddTableDialogOpen(false);
                         toast.success('Table added successfully');
                     },
-                    onError: (errors) => {
+                    onError: (errors: ApiError) => {
                         console.error('Error adding table:', errors);
-                        toast.error('Failed to add table');
+                        const errorMessage = errors?.original?.error || 'Failed to add table';
+                        toast.error(errorMessage);
                     },
                     preserveState: true,
                     preserveScroll: true
                 });
             } catch (error) {
                 console.error('Error adding table:', error);
-                toast.error('Failed to add table');
+                toast.error('Failed to add table. Please check database connection.');
             }
         } else {
             toast.error('Please enter valid table name and seats');
@@ -1386,6 +1475,16 @@ export default function PosRestaurant({
         printWindow.print();
         printWindow.close();
     };
+
+    // Add error message display in the UI
+    useEffect(() => {
+        if (apiError) {
+            toast.error(apiError, {
+                duration: 5000,
+                description: "Please check the database connection and try again."
+            });
+        }
+    }, [apiError]);
 
     return (
         <AuthenticatedLayout
