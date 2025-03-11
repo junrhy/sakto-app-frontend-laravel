@@ -1675,6 +1675,12 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             <option value="child">Child</option>
                                             <option value="spouse">Spouse</option>
                                             <option value="sibling">Sibling</option>
+                                            <option value="grandparent">Grandparent</option>
+                                            <option value="great-grandparent">Great Grandparent</option>
+                                            <option value="ancestor">Ancestor</option>
+                                            <option value="grandchild">Grandchild</option>
+                                            <option value="great-grandchild">Great Grandchild</option>
+                                            <option value="descendant">Descendant</option>
                                         </select>
                                         <button
                                             onClick={async () => {
