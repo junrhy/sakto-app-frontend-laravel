@@ -2,11 +2,8 @@ import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { 
     FaHome, 
-    FaStore, 
-    FaStar, 
     FaInbox, 
     FaUser,
-    FaComments,
     FaPlus
 } from 'react-icons/fa';
 

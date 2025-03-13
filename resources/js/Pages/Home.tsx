@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { apps } from '@/data/apps';
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 
@@ -21,9 +21,19 @@ interface Props {
     };
 }
 
+interface Subscription {
+    plan: {
+        name: string;
+        credits_per_month: number;
+    };
+    end_date: string;
+}
+
 export default function Home({ auth }: Props) {
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -40,7 +50,27 @@ export default function Home({ auth }: Props) {
             }
         };
 
+        const fetchSubscription = async () => {
+            try {
+                if (auth.user.identifier) {
+                    setIsLoadingSubscription(true);
+                    const response = await fetch(`/subscriptions/${auth.user.identifier}/active`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.active) {
+                            setSubscription(data.subscription);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch subscription:', error);
+            } finally {
+                setIsLoadingSubscription(false);
+            }
+        };
+
         fetchCredits();
+        fetchSubscription();
     }, [auth.user.identifier]);
 
     const getBorderColor = (colorClass: string) => {
@@ -65,10 +95,30 @@ export default function Home({ auth }: Props) {
         return num?.toLocaleString() ?? '0';
     };
 
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
     return (
         <ThemeProvider>
             <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg">
+                {/* Message for users without subscription */}
+                {!isLoadingSubscription && !subscription && (
+                    <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
+                        <span className="font-medium">Upgrade to a subscription plan for monthly credits!</span>
+                        <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="text-white underline ml-2 p-0 h-auto"
+                            onClick={() => window.location.href = route('subscriptions.index')}
+                        >
+                            View Plans
+                        </Button>
+                    </div>
+                )}
+                
+                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg`}>
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-cente">
                             <div className="w-full flex justify-between items-center mb-6">
@@ -94,6 +144,15 @@ export default function Home({ auth }: Props) {
                                         >
                                             <CreditCardIcon className="w-4 h-4" />
                                             Buy Credits
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            onClick={() => window.location.href = route('subscriptions.index')}
+                                        >
+                                            <SparklesIcon className="w-4 h-4" />
+                                            Subscriptions
                                         </Button>
                                     </div>
                                     {/* Mobile Credits Button */}
@@ -163,11 +222,19 @@ export default function Home({ auth }: Props) {
                                     {formatNumber(credits)} Credits
                                 </span>
                             </Button>
+                            {subscription && (
+                                <div className="text-white text-opacity-80 text-sm mt-1">
+                                    <span className="bg-purple-500 text-white px-2 py-0.5 rounded-full text-xs font-medium mr-1">
+                                        {subscription.plan.name}
+                                    </span>
+                                    Active until {formatDate(subscription.end_date)}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 pt-[180px] landscape:pt-[120px] md:pt-[200px] overflow-y-auto mb-4">
+                <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[180px]'} landscape:pt-[140px] md:pt-[220px] overflow-y-auto mb-4`}>
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                         {apps.filter(app => app.visible).sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
                             <InertiaLink

@@ -7,11 +7,19 @@ import MessageDialog from '@/Components/MessageDialog';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+
+interface Subscription {
+    plan: {
+        name: string;
+        credits_per_month: number;
+    };
+    end_date: string;
+}
 
 interface Props {
     auth: {
@@ -31,6 +39,8 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -47,11 +57,36 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
             }
         };
 
+        const fetchSubscription = async () => {
+            try {
+                if (auth.user.identifier) {
+                    setIsLoadingSubscription(true);
+                    const response = await fetch(`/subscriptions/${auth.user.identifier}/active`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.active) {
+                            setSubscription(data.subscription);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch subscription:', error);
+            } finally {
+                setIsLoadingSubscription(false);
+            }
+        };
+
         fetchCredits();
+        fetchSubscription();
     }, [auth.user.identifier]);
 
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
     const filteredMessages = useMemo(() => {
@@ -101,7 +136,22 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
         <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900 overflow-x-hidden">
             <Head title="Inbox" />
 
-            <div className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
+            {/* Message for users without subscription */}
+            {!isLoadingSubscription && !subscription && (
+                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
+                    <span className="font-medium">Upgrade to a subscription plan for monthly credits!</span>
+                    <Button 
+                        variant="link" 
+                        size="sm" 
+                        className="text-white underline ml-2 p-0 h-auto"
+                        onClick={() => window.location.href = route('subscriptions.index')}
+                    >
+                        View Plans
+                    </Button>
+                </div>
+            )}
+
+            <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10`}>
                 <div className="container mx-auto px-4 pt-4">
                     <div className="flex flex-col items-center mb-4">
                         <div className="w-full flex justify-between items-center mb-2">
@@ -127,6 +177,15 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                     >
                                         <CreditCardIcon className="w-4 h-4" />
                                         Buy Credits
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                        onClick={() => window.location.href = route('subscriptions.index')}
+                                    >
+                                        <SparklesIcon className="w-4 h-4" />
+                                        Subscriptions
                                     </Button>
                                 </div>
                                 {/* Mobile Credits Button */}
@@ -182,7 +241,7 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                 </div>
             </div>
 
-            <div className="w-full px-4 pt-[100px] landscape:pt-[80px] md:pt-[100px]">
+            <div className={`w-full px-4 ${!isLoadingSubscription && !subscription ? 'pt-[120px]' : 'pt-[100px]'} landscape:pt-[80px] md:pt-[100px]`}>
                 <div className="py-12">
                     <div className="max-w-7xl mx-auto">
                         <div className="bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-6">

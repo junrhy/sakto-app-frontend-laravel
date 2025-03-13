@@ -72,6 +72,9 @@ const getHeaderColorClass = (url: string): string => {
     if (url.includes('/family-tree') || appParam === 'family-tree') {
         return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
     }
+    if (url.includes('/subscriptions') || appParam === 'subscriptions') {
+        return 'from-green-600 via-green-500 to-green-400 dark:from-green-950 dark:via-green-900 dark:to-green-800';
+    }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
 };
@@ -79,15 +82,35 @@ const getHeaderColorClass = (url: string): string => {
 export default function Authenticated({
     header,
     children,
-}: PropsWithChildren<{ header?: ReactNode }>) {
-    const { auth: { user } } = usePage<PageProps>().props;
-    const url = usePage().url;
+    user,
+}: PropsWithChildren<{ header?: ReactNode, user?: any }>) {
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [showingMobileMenu, setShowingMobileMenu] = useState(false);
+    const [showingRetailMenu, setShowingRetailMenu] = useState(false);
+    const [showingClinicMenu, setShowingClinicMenu] = useState(false);
+    const [showingRestaurantMenu, setShowingRestaurantMenu] = useState(false);
+    const [showingWarehousingMenu, setShowingWarehousingMenu] = useState(false);
+    const [showingTransportationMenu, setShowingTransportationMenu] = useState(false);
+    const [showingRentalMenu, setShowingRentalMenu] = useState(false);
+    const [showingLoanMenu, setShowingLoanMenu] = useState(false);
+    const [showingPayrollMenu, setShowingPayrollMenu] = useState(false);
+    const [showingTravelMenu, setShowingTravelMenu] = useState(false);
+    const [showingFlightMenu, setShowingFlightMenu] = useState(false);
+    const [showingSmsMenu, setShowingSmsMenu] = useState(false);
+    const [showingEmailMenu, setShowingEmailMenu] = useState(false);
+    const [showingContactsMenu, setShowingContactsMenu] = useState(false);
+    const [showingFamilyTreeMenu, setShowingFamilyTreeMenu] = useState(false);
+    const [showingInboxMenu, setShowingInboxMenu] = useState(false);
+    const [showingSubscriptionMenu, setShowingSubscriptionMenu] = useState(false);
+    const [showingAdminMenu, setShowingAdminMenu] = useState(false);
+
+    const { url } = usePage();
+    const pageProps = usePage<PageProps>().props;
+    const authUser = user || pageProps.auth.user;
+
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
-    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits');
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
 
     const hasRetailAccess = url.includes('retail');
     const hasFnbAccess = url.includes('fnb');
@@ -103,6 +126,7 @@ export default function Authenticated({
     const hasEmailAccess = url.includes('email');
     const hasContactsAccess = url.includes('contacts');
     const hasFamilyTreeAccess = url.includes('family-tree');
+    const hasSubscriptionsAccess = url.includes('subscriptions');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -846,16 +870,16 @@ export default function Authenticated({
                                                     <Dropdown.Link href={`/family-tree?app=${appParam}`}>
                                                         My Family Tree
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${user.identifier}/full-view?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/full-view?app=${appParam}`}>
                                                         Full View
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${user.identifier}/circular?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/circular?app=${appParam}`}>
                                                         Circular View
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${user.identifier}/printable?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/printable?app=${appParam}`}>
                                                         Printable View
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${user.identifier}/members?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/members?app=${appParam}`}>
                                                         Members List
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/family-tree/settings?app=${appParam}`}>

@@ -16,7 +16,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import BottomNav from '@/Components/BottomNav';
 import { useState, useEffect } from 'react';
-import { CreditCardIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
+
+interface Subscription {
+    plan: {
+        name: string;
+        credits_per_month: number;
+    };
+    end_date: string;
+}
 
 export default function Edit({
     mustVerifyEmail,
@@ -39,6 +47,8 @@ export default function Edit({
 }) {
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -55,17 +65,57 @@ export default function Edit({
             }
         };
 
+        const fetchSubscription = async () => {
+            try {
+                if (auth.user.identifier) {
+                    setIsLoadingSubscription(true);
+                    const response = await fetch(`/subscriptions/${auth.user.identifier}/active`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.active) {
+                            setSubscription(data.subscription);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch subscription:', error);
+            } finally {
+                setIsLoadingSubscription(false);
+            }
+        };
+
         fetchCredits();
+        fetchSubscription();
     }, [auth.user.identifier]);
 
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
     };
 
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
     return (
         <ThemeProvider>
             <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900">
-                <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10">
+                {/* Message for users without subscription */}
+                {!isLoadingSubscription && !subscription && (
+                    <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
+                        <span className="font-medium">Upgrade to a subscription plan for monthly credits!</span>
+                        <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="text-white underline ml-2 p-0 h-auto"
+                            onClick={() => window.location.href = route('subscriptions.index')}
+                        >
+                            View Plans
+                        </Button>
+                    </div>
+                )}
+
+                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10`}>
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center mb-4">
                             <div className="w-full flex justify-between items-center mb-2">
@@ -91,6 +141,15 @@ export default function Edit({
                                         >
                                             <CreditCardIcon className="w-4 h-4" />
                                             Buy Credits
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            onClick={() => window.location.href = route('subscriptions.index')}
+                                        >
+                                            <SparklesIcon className="w-4 h-4" />
+                                            Subscriptions
                                         </Button>
                                     </div>
                                     {/* Mobile Credits Button */}
@@ -146,7 +205,7 @@ export default function Edit({
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 pt-[100px] landscape:pt-[80px] md:pt-[100px]">
+                <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[120px]' : 'pt-[100px]'} landscape:pt-[80px] md:pt-[100px]`}>
                     <div className="py-12">
                         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                             <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             DashboardSeeder::class,
             ModuleSeeder::class,
             ProjectSeeder::class,
+            SubscriptionPlanSeeder::class,
         ]);
     }
 }

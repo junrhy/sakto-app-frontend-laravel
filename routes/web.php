@@ -25,6 +25,7 @@ use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\FamilyTreeController;
 use App\Http\Controllers\InboxController;
+use App\Http\Controllers\SubscriptionController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -465,6 +466,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{clientIdentifier}/history', [CreditsController::class, 'getCreditHistory'])->name('credits.history');
         Route::get('/{clientIdentifier}/spent-history', [CreditsController::class, 'getSpentCreditHistory'])->name('credits.spent-history');
         Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
+    });
+
+    // Subscription routes
+    Route::prefix('subscriptions')->middleware(['auth'])->group(function () {
+        Route::get('/', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::post('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
+        Route::post('/{identifier}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+        Route::get('/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
+    });
+
+    // Admin Subscription routes
+    Route::prefix('admin/subscriptions')->middleware(['auth'])->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'index'])->name('admin.subscriptions.index');
+        Route::post('/plans', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'storePlan'])->name('admin.subscriptions.plans.store');
+        Route::put('/plans/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'updatePlan'])->name('admin.subscriptions.plans.update');
+        Route::delete('/plans/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'destroyPlan'])->name('admin.subscriptions.plans.destroy');
+        Route::patch('/plans/{id}/toggle-status', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'togglePlanStatus'])->name('admin.subscriptions.plans.toggle-status');
+        Route::get('/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'viewSubscription'])->name('admin.subscriptions.view');
+        Route::post('/{id}/cancel', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'cancelSubscription'])->name('admin.subscriptions.cancel');
+        Route::post('/{id}/add-credits', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'addCredits'])->name('admin.subscriptions.add-credits');
+        Route::post('/run-renewal', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'runRenewalCommand'])->name('admin.subscriptions.run-renewal');
     });
 
     // Family Tree routes

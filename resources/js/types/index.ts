@@ -22,7 +22,13 @@ export interface User {
 
 export interface PageProps {
     auth: {
-        user: User;
+        user: {
+            id: number;
+            name: string;
+            email: string;
+            identifier?: string;
+            credits?: number;
+        };
     };
     [key: string]: any;
 }
