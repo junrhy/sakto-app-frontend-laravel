@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
+use App\Services\MayaPaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -14,11 +15,13 @@ use Inertia\Inertia;
 class SubscriptionController extends Controller
 {
     protected $apiUrl, $apiToken;
+    protected $mayaPaymentService;
 
-    public function __construct()
+    public function __construct(MayaPaymentService $mayaPaymentService)
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
+        $this->mayaPaymentService = $mayaPaymentService;
     }
 
     /**
@@ -64,25 +67,108 @@ class SubscriptionController extends Controller
     }
     
     /**
-     * Subscribe to a plan.
+     * Initiate subscription payment process.
      */
     public function subscribe(Request $request)
     {
         $validated = $request->validate([
             'plan_id' => 'required|exists:subscription_plans,id',
             'payment_method' => 'required|string',
-            'payment_transaction_id' => 'required|string',
             'auto_renew' => 'boolean',
-            'proof_of_payment' => 'nullable|image|max:2048',
         ]);
         
-        $clientIdentifier = auth()->user()->identifier;
+        $user = auth()->user();
+        $clientIdentifier = $user->identifier;
         $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
         
+        // Generate a unique reference number
+        $referenceNumber = $this->mayaPaymentService->generateReferenceNumber();
+        
+        // Create checkout session with Maya
+        $checkoutData = [
+            'amount' => $plan->price,
+            'reference_number' => $referenceNumber,
+            'plan_name' => $plan->name,
+            'plan_slug' => $plan->slug,
+            'plan_description' => $plan->description,
+            'plan_id' => $plan->id,
+            'user_identifier' => $clientIdentifier,
+            'user_name' => $user->name,
+            'user_lastname' => $user->lastname ?? '',
+            'user_email' => $user->email,
+            'user_phone' => $user->phone ?? '',
+            'auto_renew' => $validated['auto_renew'] ?? false,
+        ];
+        
+        $checkoutResult = $this->mayaPaymentService->createCheckout($checkoutData);
+        
+        if (!$checkoutResult['success']) {
+            return redirect()->back()->with('error', $checkoutResult['message']);
+        }
+        
+        // Create a pending subscription
+        $subscription = new UserSubscription([
+            'user_identifier' => $clientIdentifier,
+            'subscription_plan_id' => $plan->id,
+            'start_date' => now(),
+            'end_date' => now()->addDays($plan->duration_in_days),
+            'status' => 'pending', // Set as pending until payment is confirmed
+            'payment_method' => $validated['payment_method'],
+            'payment_transaction_id' => $referenceNumber,
+            'amount_paid' => $plan->price,
+            'auto_renew' => $validated['auto_renew'] ?? false,
+            'maya_checkout_id' => $checkoutResult['checkout_id'],
+        ]);
+        
+        $subscription->save();
+        
+        // Redirect to Maya checkout page
+        return redirect($checkoutResult['checkout_url']);
+    }
+    
+    /**
+     * Handle successful payment from Maya.
+     */
+    public function paymentSuccess(Request $request)
+    {
+        $reference = $request->query('reference');
+        $checkoutId = $request->query('checkoutId');
+        
+        if (!$reference || !$checkoutId) {
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'Invalid payment reference. Please contact support if you believe this is an error.',
+            ]);
+        }
+        
+        // Verify payment with Maya
+        $paymentResult = $this->mayaPaymentService->verifyPayment($checkoutId);
+        
+        if (!$paymentResult['success'] || !$paymentResult['is_paid']) {
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'Payment verification failed. Please try again or contact support.',
+            ]);
+        }
+        
+        // Find the pending subscription
+        $subscription = UserSubscription::where('payment_transaction_id', $reference)
+            ->where('status', 'pending')
+            ->with('plan')
+            ->first();
+        
+        if (!$subscription) {
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'Subscription not found. Please contact support if you believe this is an error.',
+            ]);
+        }
+        
         // Check if user already has an active subscription
-        $activeSubscription = UserSubscription::where('user_identifier', $clientIdentifier)
+        $activeSubscription = UserSubscription::where('user_identifier', $subscription->user_identifier)
             ->where('status', 'active')
             ->where('end_date', '>', now())
+            ->where('id', '!=', $subscription->id)
             ->first();
         
         if ($activeSubscription) {
@@ -90,35 +176,16 @@ class SubscriptionController extends Controller
             $activeSubscription->cancel('Upgraded to a new plan');
         }
         
-        // Handle proof of payment upload
-        $proofOfPaymentUrl = null;
-        if ($request->hasFile('proof_of_payment')) {
-            $path = $request->file('proof_of_payment')->store('subscription_payments', 'public');
-            $proofOfPaymentUrl = Storage::disk('public')->url($path);
-        }
-        
-        // Create new subscription
-        $subscription = new UserSubscription([
-            'user_identifier' => $clientIdentifier,
-            'subscription_plan_id' => $plan->id,
-            'start_date' => now(),
-            'end_date' => now()->addDays($plan->duration_in_days),
-            'status' => 'active',
-            'payment_method' => $validated['payment_method'],
-            'payment_transaction_id' => $validated['payment_transaction_id'],
-            'amount_paid' => $plan->price,
-            'proof_of_payment' => $proofOfPaymentUrl,
-            'auto_renew' => $validated['auto_renew'] ?? false,
-        ]);
-        
+        // Update subscription to active
+        $subscription->status = 'active';
         $subscription->save();
         
         // Add credits to user's account based on the plan
         try {
             Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/credits/add", [
-                    'client_identifier' => $clientIdentifier,
-                    'amount' => $plan->credits_per_month,
+                    'client_identifier' => $subscription->user_identifier,
+                    'amount' => $subscription->plan->credits_per_month,
                     'source' => 'subscription',
                     'reference_id' => $subscription->identifier,
                 ]);
@@ -126,7 +193,63 @@ class SubscriptionController extends Controller
             Log::error('Failed to add subscription credits: ' . $e->getMessage());
         }
         
-        return redirect()->route('subscriptions.index')->with('success', 'Successfully subscribed to ' . $plan->name);
+        return Inertia::render('Subscriptions/PaymentStatus', [
+            'status' => 'success',
+            'message' => 'Your payment was successful and your subscription is now active.',
+            'subscription' => $subscription,
+        ]);
+    }
+    
+    /**
+     * Handle failed payment from Maya.
+     */
+    public function paymentFailure(Request $request)
+    {
+        $reference = $request->query('reference');
+        
+        if ($reference) {
+            // Find the pending subscription
+            $subscription = UserSubscription::where('payment_transaction_id', $reference)
+                ->where('status', 'pending')
+                ->first();
+            
+            if ($subscription) {
+                // Update subscription to failed
+                $subscription->status = 'failed';
+                $subscription->save();
+            }
+        }
+        
+        return Inertia::render('Subscriptions/PaymentStatus', [
+            'status' => 'failure',
+            'message' => 'Your payment was not successful. Please try again or contact support if the issue persists.',
+        ]);
+    }
+    
+    /**
+     * Handle cancelled payment from Maya.
+     */
+    public function paymentCancel(Request $request)
+    {
+        $reference = $request->query('reference');
+        
+        if ($reference) {
+            // Find the pending subscription
+            $subscription = UserSubscription::where('payment_transaction_id', $reference)
+                ->where('status', 'pending')
+                ->first();
+            
+            if ($subscription) {
+                // Update subscription to cancelled
+                $subscription->status = 'cancelled';
+                $subscription->save();
+            }
+        }
+        
+        return Inertia::render('Subscriptions/PaymentStatus', [
+            'status' => 'cancelled',
+            'message' => 'You cancelled the payment process. You can try again whenever you\'re ready.',
+        ]);
     }
     
     /**

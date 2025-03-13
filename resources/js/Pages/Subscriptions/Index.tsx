@@ -42,7 +42,7 @@ interface UserSubscription {
     subscription_plan_id: number;
     start_date: string;
     end_date: string;
-    status: 'active' | 'cancelled' | 'expired';
+    status: 'active' | 'cancelled' | 'expired' | 'pending' | 'failed';
     cancelled_at: string | null;
     payment_method: string;
     payment_transaction_id: string;
@@ -147,8 +147,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!selectedPlan || !transactionId) {
-            toast.error('Please fill in all required fields');
+        if (!selectedPlan) {
+            toast.error('Please select a plan');
             return;
         }
 
@@ -157,31 +157,16 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
         const formData = new FormData();
         formData.append('plan_id', selectedPlan.id.toString());
         formData.append('payment_method', paymentMethod);
-        formData.append('payment_transaction_id', transactionId);
         formData.append('auto_renew', autoRenew ? '1' : '0');
         
-        if (proofFile) {
-            formData.append('proof_of_payment', proofFile);
-        }
-
         router.post(route('subscriptions.subscribe'), formData, {
-            onSuccess: () => {
-                toast.success('Successfully subscribed to ' + selectedPlan.name);
-                setSelectedPlan(null);
-                setPaymentMethod('');
-                setTransactionId('');
-                setProofFile(null);
-                setAutoRenew(false);
-                setActiveTab('history');
-            },
             onError: (errors) => {
                 console.error(errors);
                 toast.error('Failed to process subscription');
-            },
-            onFinish: () => {
                 setIsSubmitting(false);
             }
         });
+        // Note: We don't need onSuccess handler as the controller will redirect to Maya checkout
     };
 
     const openCancelDialog = (subscriptionId: string) => {
@@ -364,52 +349,10 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-4">
                                                     <div>
-                                                        <h4 className="font-medium mb-2">Credit Card Payment</h4>
-                                                    </div>
-                                                    
-                                                    <div>
-                                                        <Label htmlFor="card-number">Card Number</Label>
-                                                        <Input 
-                                                            id="card-number" 
-                                                            placeholder="1234 5678 9012 3456"
-                                                        />
-                                                    </div>
-                                                    
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div>
-                                                            <Label htmlFor="expiry-date">Expiry Date</Label>
-                                                            <Input 
-                                                                id="expiry-date" 
-                                                                placeholder="MM/YY"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <Label htmlFor="cvv">CVV</Label>
-                                                            <Input 
-                                                                id="cvv" 
-                                                                placeholder="123"
-                                                                type="password"
-                                                                maxLength={4}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div>
-                                                        <Label htmlFor="card-holder">Cardholder Name</Label>
-                                                        <Input 
-                                                            id="card-holder" 
-                                                            placeholder="Name on card"
-                                                        />
-                                                    </div>
-                                                    
-                                                    <div>
-                                                        <Label htmlFor="transaction-id">Transaction Reference (Optional)</Label>
-                                                        <Input 
-                                                            id="transaction-id" 
-                                                            value={transactionId} 
-                                                            onChange={(e) => setTransactionId(e.target.value)}
-                                                            placeholder="Enter reference number if available"
-                                                        />
+                                                        <h4 className="font-medium mb-2">Payment Information</h4>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                            You'll be redirected to Maya's secure payment page to complete your payment after clicking "Subscribe Now".
+                                                        </p>
                                                     </div>
                                                     
                                                     <div className="flex items-center space-x-2">
@@ -421,6 +364,20 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         <Label htmlFor="auto-renew" className="cursor-pointer">
                                                             Auto-renew subscription
                                                         </Label>
+                                                    </div>
+                                                    
+                                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                                                        <div className="flex items-start">
+                                                            <div className="mr-3 mt-0.5">
+                                                                <SparklesIcon className="h-5 w-5 text-blue-500" />
+                                                            </div>
+                                                            <div>
+                                                                <h5 className="text-sm font-medium text-blue-700 dark:text-blue-300">Secure Payment</h5>
+                                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                                    Your payment will be securely processed by Maya Business, a leading payment provider in the Philippines.
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 
@@ -445,24 +402,20 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         </div>
                                                     </div>
                                                     
-                                                    {paymentMethod && (
-                                                        <div className="mt-4 pt-4 border-t dark:border-gray-700">
-                                                            <h4 className="font-medium mb-2">Payment Method</h4>
-                                                            {paymentMethods.filter(m => m.id === paymentMethod).map((method) => (
-                                                                <div key={method.id} className="text-sm space-y-1">
-                                                                    <p><span className="font-medium">{method.name}</span></p>
-                                                                    <p>{method.description}</p>
-                                                                </div>
-                                                            ))}
+                                                    <div className="mt-4 pt-4 border-t dark:border-gray-700">
+                                                        <h4 className="font-medium mb-2">Payment Method</h4>
+                                                        <div className="text-sm space-y-1">
+                                                            <p><span className="font-medium">Credit/Debit Card via Maya</span></p>
+                                                            <p>Secure online payment via Maya Business</p>
                                                         </div>
-                                                    )}
+                                                    </div>
                                                 </div>
                                             </div>
                                             
                                             <div className="flex justify-end">
                                                 <Button 
                                                     type="submit" 
-                                                    disabled={isSubmitting || !selectedPlan || !transactionId}
+                                                    disabled={isSubmitting || !selectedPlan}
                                                     className="min-w-[150px]"
                                                 >
                                                     {isSubmitting ? 'Processing...' : 'Subscribe Now'}
@@ -503,6 +456,10 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     ? 'bg-green-500 hover:bg-green-600' 
                                                                     : subscription.status === 'cancelled'
                                                                     ? 'bg-orange-500 hover:bg-orange-600'
+                                                                    : subscription.status === 'pending'
+                                                                    ? 'bg-blue-500 hover:bg-blue-600'
+                                                                    : subscription.status === 'failed'
+                                                                    ? 'bg-red-500 hover:bg-red-600'
                                                                     : 'bg-gray-500 hover:bg-gray-600'
                                                             }
                                                         >

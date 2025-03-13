@@ -30,6 +30,7 @@ class UserSubscription extends Model
         'auto_renew',
         'cancellation_reason',
         'last_credit_date',
+        'maya_checkout_id',
     ];
 
     /**
@@ -45,6 +46,17 @@ class UserSubscription extends Model
         'auto_renew' => 'boolean',
         'last_credit_date' => 'datetime',
     ];
+
+    /**
+     * The possible status values.
+     *
+     * @var array<string>
+     */
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_EXPIRED = 'expired';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_FAILED = 'failed';
 
     /**
      * Boot the model.
@@ -71,7 +83,7 @@ class UserSubscription extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === 'active' && $this->end_date > now();
+        return $this->status === self::STATUS_ACTIVE && $this->end_date > now();
     }
 
     /**
@@ -79,7 +91,7 @@ class UserSubscription extends Model
      */
     public function isCancelled(): bool
     {
-        return $this->status === 'cancelled';
+        return $this->status === self::STATUS_CANCELLED;
     }
 
     /**
@@ -87,7 +99,23 @@ class UserSubscription extends Model
      */
     public function isExpired(): bool
     {
-        return $this->status === 'expired' || $this->end_date < now();
+        return $this->status === self::STATUS_EXPIRED || $this->end_date < now();
+    }
+
+    /**
+     * Check if the subscription is pending.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    /**
+     * Check if the subscription payment failed.
+     */
+    public function isFailed(): bool
+    {
+        return $this->status === self::STATUS_FAILED;
     }
 
     /**
@@ -95,7 +123,7 @@ class UserSubscription extends Model
      */
     public function cancel(string $reason = null): bool
     {
-        $this->status = 'cancelled';
+        $this->status = self::STATUS_CANCELLED;
         $this->cancelled_at = now();
         $this->cancellation_reason = $reason;
         $this->auto_renew = false;

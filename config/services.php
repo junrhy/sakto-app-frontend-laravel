@@ -51,4 +51,13 @@ return [
         'key' => env('SEMAPHORE_API_KEY'),
         'sender_name' => env('SEMAPHORE_SENDER_NAME'),
     ],
+
+    'maya' => [
+        'public_key' => env('MAYA_PUBLIC_KEY'),
+        'secret_key' => env('MAYA_SECRET_KEY'),
+        'base_url' => env('MAYA_BASE_URL', 'https://pg-sandbox.paymaya.com'),
+        'webhook_success_url' => env('MAYA_WEBHOOK_SUCCESS_URL', config('app.url') . '/subscriptions/payment/success'),
+        'webhook_failure_url' => env('MAYA_WEBHOOK_FAILURE_URL', config('app.url') . '/subscriptions/payment/failure'),
+        'webhook_cancel_url' => env('MAYA_WEBHOOK_CANCEL_URL', config('app.url') . '/subscriptions/payment/cancel'),
+    ],
 ];

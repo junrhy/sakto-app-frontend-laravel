@@ -14,6 +14,9 @@ class Kernel extends ConsoleKernel
     {
         // Run the subscription renewal command daily at midnight
         $schedule->command('app:renew-subscriptions')->daily();
+        
+        // Register Maya webhooks weekly to ensure they're always up-to-date
+        $schedule->command('maya:register-webhooks')->weekly();
     }
 
     /**

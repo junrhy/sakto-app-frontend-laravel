@@ -26,6 +26,7 @@ use App\Http\Controllers\CreditsController;
 use App\Http\Controllers\FamilyTreeController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\MayaWebhookController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -469,11 +470,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Subscription routes
-    Route::prefix('subscriptions')->middleware(['auth'])->group(function () {
-        Route::get('/', [SubscriptionController::class, 'index'])->name('subscriptions.index');
-        Route::post('/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
-        Route::post('/{identifier}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
-        Route::get('/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+        Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
+        Route::post('/subscriptions/{identifier}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+        Route::get('/subscriptions/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
+        
+        // Maya payment callback routes
+        Route::get('/subscriptions/payment/success', [SubscriptionController::class, 'paymentSuccess'])->name('subscriptions.payment.success');
+        Route::get('/subscriptions/payment/failure', [SubscriptionController::class, 'paymentFailure'])->name('subscriptions.payment.failure');
+        Route::get('/subscriptions/payment/cancel', [SubscriptionController::class, 'paymentCancel'])->name('subscriptions.payment.cancel');
     });
 
     // Admin Subscription routes
@@ -505,6 +511,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/import', [FamilyTreeController::class, 'import']);
         Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
     });
+
+    // Maya webhook route - exclude from CSRF protection
+    Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
+        ->name('webhooks.maya')
+        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 });
 
 require __DIR__.'/auth.php';
