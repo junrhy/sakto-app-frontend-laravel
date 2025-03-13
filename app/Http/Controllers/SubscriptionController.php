@@ -43,23 +43,9 @@ class SubscriptionController extends Controller
         // Get payment methods (reusing from CreditsController)
         $paymentMethods = [
             [
-                'id' => 1,
-                'name' => 'GCash',
-                'accountName' => 'Jun Rhy Crodua',
-                'accountNumber' => '09260049848',
-            ],
-            [
-                'id' => 2,
-                'name' => 'Maya',
-                'accountName' => 'Jun Rhy Crodua',
-                'accountNumber' => '09260049848',
-            ],
-            [
-                'id' => 4,
-                'name' => 'Bank Transfer',
-                'accountName' => 'Jun Rhy Crodua',
-                'accountNumber' => '006996000660',
-                'bankName' => 'BDO'
+                'id' => 'credit_card',
+                'name' => 'Credit Card',
+                'description' => 'Secure online payment via credit card',
             ],
         ];
         

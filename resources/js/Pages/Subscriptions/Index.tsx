@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
@@ -32,9 +32,7 @@ interface SubscriptionPlan {
 interface PaymentMethod {
     id: string;
     name: string;
-    accountName: string;
-    accountNumber: string;
-    bankName?: string;
+    description: string;
 }
 
 interface UserSubscription {
@@ -81,6 +79,44 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const [subscriptionToCancel, setSubscriptionToCancel] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('plans');
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annually'>('monthly');
+    const [highlightedApp, setHighlightedApp] = useState<string | null>(null);
+
+    // Check URL parameters for plan to highlight
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const highlightPlan = params.get('highlight_plan');
+        const appName = params.get('app');
+        
+        if (highlightPlan) {
+            // Find the plan by slug instead of name
+            const planToHighlight = plans.find(plan => plan.slug === highlightPlan);
+            if (planToHighlight) {
+                // Set the billing period based on the plan's duration
+                if (planToHighlight.duration_in_days > 90) {
+                    setBillingPeriod('annually');
+                } else {
+                    setBillingPeriod('monthly');
+                }
+                
+                // Highlight the plan
+                setSelectedPlan(planToHighlight);
+                
+                // Set active tab to plans
+                setActiveTab('plans');
+            }
+        }
+        
+        if (appName) {
+            setHighlightedApp(appName);
+        }
+    }, [plans]);
+
+    // Set payment method to credit_card when a plan is selected
+    useEffect(() => {
+        if (selectedPlan) {
+            setPaymentMethod('credit_card');
+        }
+    }, [selectedPlan]);
 
     // Filter and transform plans based on billing period
     const filteredPlans = useMemo(() => {
@@ -111,7 +147,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!selectedPlan || !paymentMethod || !transactionId) {
+        if (!selectedPlan || !transactionId) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -246,7 +282,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 key={plan.id} 
                                                 className={`overflow-hidden transition-all ${
                                                     selectedPlan?.id === plan.id 
-                                                        ? 'ring-2 ring-blue-500 dark:ring-blue-400' 
+                                                        ? 'ring-2 ring-blue-500 dark:ring-blue-400' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
                                                         : 'hover:shadow-md'
                                                 }`}
                                             >
@@ -314,45 +350,65 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                     <div className="mt-8 border-t pt-6 dark:border-gray-700">
                                         <h3 className="text-lg font-semibold mb-4">Complete Your Subscription</h3>
                                         
+                                        {highlightedApp && (
+                                            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+                                                <p className="text-sm text-green-700 dark:text-green-300">
+                                                    <span className="font-medium">Great choice!</span> You're subscribing to the <span className="font-semibold">{selectedPlan.name}</span> plan 
+                                                    {highlightedApp && <span> for <span className="font-semibold">{highlightedApp}</span> app</span>}.
+                                                    This plan includes {selectedPlan.credits_per_month.toLocaleString()} credits per month.
+                                                </p>
+                                            </div>
+                                        )}
+                                        
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-4">
                                                     <div>
-                                                        <Label htmlFor="payment-method">Payment Method</Label>
-                                                        <Select 
-                                                            value={paymentMethod} 
-                                                            onValueChange={setPaymentMethod}
-                                                        >
-                                                            <SelectTrigger id="payment-method" className="w-full">
-                                                                <SelectValue placeholder="Select payment method" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {paymentMethods.map((method) => (
-                                                                    <SelectItem key={method.id} value={method.id}>
-                                                                        {method.name}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                        <h4 className="font-medium mb-2">Credit Card Payment</h4>
                                                     </div>
                                                     
                                                     <div>
-                                                        <Label htmlFor="transaction-id">Transaction ID</Label>
+                                                        <Label htmlFor="card-number">Card Number</Label>
                                                         <Input 
-                                                            id="transaction-id" 
-                                                            value={transactionId} 
-                                                            onChange={(e) => setTransactionId(e.target.value)}
-                                                            placeholder="Enter transaction ID"
+                                                            id="card-number" 
+                                                            placeholder="1234 5678 9012 3456"
+                                                        />
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <Label htmlFor="expiry-date">Expiry Date</Label>
+                                                            <Input 
+                                                                id="expiry-date" 
+                                                                placeholder="MM/YY"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label htmlFor="cvv">CVV</Label>
+                                                            <Input 
+                                                                id="cvv" 
+                                                                placeholder="123"
+                                                                type="password"
+                                                                maxLength={4}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <Label htmlFor="card-holder">Cardholder Name</Label>
+                                                        <Input 
+                                                            id="card-holder" 
+                                                            placeholder="Name on card"
                                                         />
                                                     </div>
                                                     
                                                     <div>
-                                                        <Label htmlFor="proof-file">Proof of Payment (Optional)</Label>
+                                                        <Label htmlFor="transaction-id">Transaction Reference (Optional)</Label>
                                                         <Input 
-                                                            id="proof-file" 
-                                                            type="file" 
-                                                            onChange={handleFileChange}
-                                                            accept="image/*"
+                                                            id="transaction-id" 
+                                                            value={transactionId} 
+                                                            onChange={(e) => setTransactionId(e.target.value)}
+                                                            placeholder="Enter reference number if available"
                                                         />
                                                     </div>
                                                     
@@ -391,13 +447,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     
                                                     {paymentMethod && (
                                                         <div className="mt-4 pt-4 border-t dark:border-gray-700">
-                                                            <h4 className="font-medium mb-2">Payment Details</h4>
+                                                            <h4 className="font-medium mb-2">Payment Method</h4>
                                                             {paymentMethods.filter(m => m.id === paymentMethod).map((method) => (
                                                                 <div key={method.id} className="text-sm space-y-1">
                                                                     <p><span className="font-medium">{method.name}</span></p>
-                                                                    <p>Account Name: {method.accountName}</p>
-                                                                    <p>Account Number: {method.accountNumber}</p>
-                                                                    {method.bankName && <p>Bank: {method.bankName}</p>}
+                                                                    <p>{method.description}</p>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -408,7 +462,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                             <div className="flex justify-end">
                                                 <Button 
                                                     type="submit" 
-                                                    disabled={isSubmitting || !selectedPlan || !paymentMethod || !transactionId}
+                                                    disabled={isSubmitting || !selectedPlan || !transactionId}
                                                     className="min-w-[150px]"
                                                 >
                                                     {isSubmitting ? 'Processing...' : 'Subscribe Now'}

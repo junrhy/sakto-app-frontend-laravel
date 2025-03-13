@@ -28,6 +28,7 @@ export interface App {
     categories: string[];
     comingSoon: boolean;
     pricingType: 'free' | 'one-time' | 'subscription';
+    includedInPlans?: string[]; // Array of subscription plan slugs that include this app
 }
 
 export const apps: App[] = [
@@ -42,7 +43,8 @@ export const apps: App[] = [
         rating: 4.5,
         categories: ['Business', 'Sales', 'Inventory'],
         comingSoon: true,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['pro-plan', 'business-plan']
     },
     {
         icon: <FaUtensils />,
@@ -55,7 +57,8 @@ export const apps: App[] = [
         rating: 4.8,
         categories: ['Food', 'Business', 'Inventory'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     },
     {
         icon: <FaHospital />,
@@ -68,7 +71,8 @@ export const apps: App[] = [
         rating: 4.7,
         categories: ['Medical', 'Healthcare', 'Appointments'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['pro-plan', 'business-plan']
     },
     {
         icon: <FaHandHoldingUsd />,
@@ -81,7 +85,8 @@ export const apps: App[] = [
         rating: 4.6,
         categories: ['Finance', 'Business', 'Payments'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['pro-plan', 'business-plan']
     },
     {
         icon: <FaBoxOpen />,
@@ -94,7 +99,8 @@ export const apps: App[] = [
         rating: 4.5,
         categories: ['Business', 'Inventory', 'Bookings'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     },
     {
         icon: <FaBuilding />,
@@ -107,7 +113,8 @@ export const apps: App[] = [
         rating: 4.4,
         categories: ['Real Estate', 'Business', 'Bookings'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['business-plan']
     },
     {
         icon: <FaBus />,
@@ -116,11 +123,12 @@ export const apps: App[] = [
         bgColor: 'text-yellow-500',
         visible: false,
         description: 'Fleet management system with route optimization, vehicle maintenance tracking, and driver scheduling',
-        price: 20,
+        price: 599,
         rating: 4.5,
         categories: ['Transportation', 'Business', 'Logistics'],
         comingSoon: true,
-        pricingType: 'subscription'
+        pricingType: 'subscription',
+        includedInPlans: ['business-plan']
     },
     {
         icon: <FaWarehouse />,
@@ -129,11 +137,12 @@ export const apps: App[] = [
         bgColor: 'text-teal-500',
         visible: false,
         description: 'Advanced warehouse management with inventory tracking, order fulfillment, and space optimization tools',
-        price: 20,
+        price: 599,
         rating: 4.3,
         categories: ['Logistics', 'Inventory', 'Business'],
         comingSoon: true,
-        pricingType: 'one-time'
+        pricingType: 'one-time',
+        includedInPlans: ['business-plan']
     },
     {
         icon: <FaUsers />,
@@ -146,7 +155,8 @@ export const apps: App[] = [
         rating: 4.6,
         categories: ['HR', 'Finance', 'Business'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     },
     {
         icon: <FaPlane />,
@@ -159,7 +169,8 @@ export const apps: App[] = [
         rating: 4.2,
         categories: ['Travel', 'Bookings', 'Business'],
         comingSoon: true,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['pro-plan', 'business-plan']
     },
     {
         icon: <FaComments />,
@@ -168,24 +179,26 @@ export const apps: App[] = [
         bgColor: 'text-violet-500',
         visible: false,
         description: 'Send SMS to your customers and clients. Supports Twilio and Semaphore. Easily integrate with your existing apps.',
-        price: 0,
+        price: 149,
         rating: 4.4,
         categories: ['Communication', 'Marketing', 'Business'],
-        comingSoon: false,
-        pricingType: 'free'
+        comingSoon: true,
+        pricingType: 'subscription',
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     },
     {
         icon: <FaEnvelope />,
         title: 'Email',
         route: '/dashboard?app=email',
         bgColor: 'text-emerald-500',
-        visible: true,
+        visible: false,
         description: 'Send emails to your customers and clients. Supports multiple email providers and templates. Easy to integrate with your existing apps.',
-        price: 0,
+        price: 149,
         rating: 4.3,
         categories: ['Communication', 'Marketing', 'Business'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'subscription',
+        includedInPlans: ['pro-plan', 'business-plan']
     },
     {
         icon: <FaAddressBook />,
@@ -198,19 +211,21 @@ export const apps: App[] = [
         rating: 4.4,
         categories: ['Business', 'Communication', 'CRM'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'free',
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     },
     {
         icon: <FaSitemap />,
         title: 'Family Tree',
         route: '/dashboard?app=family-tree',
         bgColor: 'text-rose-500',
-        visible: true,
+        visible: false,
         description: 'Create and manage family trees with an interactive viewer, relationship mapping, and genealogy tracking features.',
-        price: 0,
+        price: 149,
         rating: 4.0,
         categories: ['Family', 'Genealogy', 'Personal'],
         comingSoon: false,
-        pricingType: 'free'
+        pricingType: 'subscription',
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     }
 ]; 
