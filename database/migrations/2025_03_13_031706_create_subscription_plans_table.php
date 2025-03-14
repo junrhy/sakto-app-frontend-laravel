@@ -18,7 +18,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->integer('duration_in_days');
-            $table->integer('credits_per_month');
+            $table->integer('credits_per_month')->nullable();
+            $table->boolean('unlimited_access')->default(false);
             $table->json('features')->nullable();
             $table->boolean('is_popular')->default(false);
             $table->boolean('is_active')->default(true);

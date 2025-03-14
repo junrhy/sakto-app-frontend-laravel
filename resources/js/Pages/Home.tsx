@@ -24,7 +24,7 @@ interface Props {
 interface Subscription {
     plan: {
         name: string;
-        credits_per_month: number;
+        unlimited_access: boolean;
     };
     end_date: string;
 }
@@ -106,7 +106,7 @@ export default function Home({ auth }: Props) {
                 {/* Message for users without subscription */}
                 {!isLoadingSubscription && !subscription && (
                     <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
-                        <span className="font-medium">Upgrade to a subscription plan for monthly credits!</span>
+                        <span className="font-medium">Upgrade to a subscription plan for unlimited access to all features!</span>
                         <Button 
                             variant="link" 
                             size="sm" 
@@ -227,7 +227,7 @@ export default function Home({ auth }: Props) {
                                     <span className="bg-purple-500 text-white px-2 py-0.5 rounded-full text-xs font-medium mr-1">
                                         {subscription.plan.name}
                                     </span>
-                                    Active until {formatDate(subscription.end_date)}
+                                    Active until {formatDate(subscription.end_date)} • Unlimited access
                                 </div>
                             )}
                         </div>

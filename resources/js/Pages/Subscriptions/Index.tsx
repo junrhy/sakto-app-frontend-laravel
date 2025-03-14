@@ -22,7 +22,7 @@ interface SubscriptionPlan {
     description: string | null;
     price: number;
     duration_in_days: number;
-    credits_per_month: number;
+    unlimited_access: boolean;
     features: string[];
     is_popular: boolean;
     is_active: boolean;
@@ -196,11 +196,16 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
         return format(new Date(dateString), 'MMM d, yyyy');
     };
 
+    // Helper function to check if a plan has unlimited access
+    const hasUnlimitedAccess = (plan: SubscriptionPlan) => {
+        return plan.unlimited_access === true;
+    };
+
     return (
         <AuthenticatedLayout
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Subscription Plans</h2>}
         >
-            <Head title="Subscription Plans" />
+            <Head title="Unlimited Access Subscription Plans" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -211,7 +216,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                 <div>
                                     <h3 className="text-xl font-bold mb-1">Active Subscription: {activeSubscription.plan.name}</h3>
                                     <p className="text-blue-100">
-                                        Valid until {formatDate(activeSubscription.end_date)} • {activeSubscription.plan.credits_per_month.toLocaleString()} credits per month
+                                        Valid until {formatDate(activeSubscription.end_date)} • Unlimited access to all features
                                     </p>
                                 </div>
                                 <Button 
@@ -227,7 +232,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
 
                     <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="plans">Subscription Plans</TabsTrigger>
+                            <TabsTrigger value="plans">Unlimited Access Plans</TabsTrigger>
                             <TabsTrigger value="history">Subscription History</TabsTrigger>
                         </TabsList>
 
@@ -281,6 +286,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         {plan.badge_text}
                                                     </div>
                                                 )}
+                                                {!plan.badge_text && !plan.is_popular && hasUnlimitedAccess(plan) && (
+                                                    <div className="bg-purple-500 text-white text-center py-1 text-sm font-medium">
+                                                        Unlimited Access
+                                                    </div>
+                                                )}
                                                 <CardHeader>
                                                     <CardTitle className="flex justify-between items-center">
                                                         <span>{plan.name}</span>
@@ -299,12 +309,20 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                 </span>
                                                             )}
                                                         </p>
-                                                        <p className="text-lg font-semibold mt-1">
-                                                            {plan.credits_per_month.toLocaleString()} credits per month
+                                                        <p className="text-lg font-semibold mt-1 text-green-600 dark:text-green-400">
+                                                            {hasUnlimitedAccess(plan) ? 'Unlimited access to all features' : 'Standard access'}
                                                         </p>
                                                     </div>
                                                     
                                                     <div className="space-y-2">
+                                                        {hasUnlimitedAccess(plan) && (
+                                                            <>
+                                                                <div className="flex items-start">
+                                                                    <CheckIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                                                                    <span className="text-sm font-semibold">No credit usage</span>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                         {plan.features && plan.features.map((feature, index) => (
                                                             <div key={index} className="flex items-start">
                                                                 <CheckIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -340,7 +358,9 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 <p className="text-sm text-green-700 dark:text-green-300">
                                                     <span className="font-medium">Great choice!</span> You're subscribing to the <span className="font-semibold">{selectedPlan.name}</span> plan 
                                                     {highlightedApp && <span> for <span className="font-semibold">{highlightedApp}</span> app</span>}.
-                                                    This plan includes {selectedPlan.credits_per_month.toLocaleString()} credits per month.
+                                                    {hasUnlimitedAccess(selectedPlan) 
+                                                        ? ' This plan provides unlimited access to all features without using credits.'
+                                                        : ' This plan provides standard access to features.'}
                                                 </p>
                                             </div>
                                         )}
@@ -393,8 +413,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             <span>{billingPeriod === 'annually' ? 'Annual' : `${Math.floor(selectedPlan.duration_in_days / 30)} months`}</span>
                                                         </div>
                                                         <div className="flex justify-between">
-                                                            <span>Monthly Credits:</span>
-                                                            <span>{selectedPlan.credits_per_month.toLocaleString()}</span>
+                                                            <span>Access:</span>
+                                                            <span>{hasUnlimitedAccess(selectedPlan) ? 'Unlimited' : 'Standard'}</span>
                                                         </div>
                                                         <div className="flex justify-between font-semibold text-base pt-2 border-t dark:border-gray-700">
                                                             <span>Total:</span>
@@ -499,7 +519,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                     <DialogHeader>
                         <DialogTitle>Cancel Subscription</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to cancel your subscription? You will lose access to subscription benefits at the end of your current billing period.
+                            Are you sure you want to cancel your subscription? You will lose unlimited access to all features at the end of your current billing period.
                         </DialogDescription>
                     </DialogHeader>
                     

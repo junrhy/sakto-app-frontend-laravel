@@ -22,6 +22,7 @@ class SubscriptionPlan extends Model
         'price',
         'duration_in_days',
         'credits_per_month',
+        'unlimited_access',
         'features',
         'is_popular',
         'is_active',
@@ -36,6 +37,7 @@ class SubscriptionPlan extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'features' => 'array',
+        'unlimited_access' => 'boolean',
         'is_popular' => 'boolean',
         'is_active' => 'boolean',
     ];

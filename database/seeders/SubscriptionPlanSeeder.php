@@ -21,7 +21,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'description' => 'Perfect for individuals and small businesses just getting started.',
                 'price' => 149.00,
                 'duration_in_days' => 30,
-                'credits_per_month' => 200,
+                'unlimited_access' => true,
                 'features' => [
                     'Access to all basic features',
                     '200 credits per month',
@@ -38,7 +38,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'description' => 'Ideal for growing businesses with more advanced needs.',
                 'price' => 299.00,
                 'duration_in_days' => 30,
-                'credits_per_month' => 500,
+                'unlimited_access' => true,
                 'features' => [
                     'All Basic Plan features',
                     '500 credits per month',
@@ -56,7 +56,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'description' => 'For established businesses requiring maximum resources and support.',
                 'price' => 599.00,
                 'duration_in_days' => 30,
-                'credits_per_month' => 1200,
+                'unlimited_access' => true,
                 'features' => [
                     'All Pro Plan features',
                     '1,200 credits per month',
@@ -76,7 +76,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'description' => 'Save 20% with our annual Basic plan subscription.',
                 'price' => 1430.00,
                 'duration_in_days' => 365,
-                'credits_per_month' => 200,
+                'unlimited_access' => true,
                 'features' => [
                     'All Basic Plan features',
                     '200 credits per month',
@@ -94,7 +94,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'description' => 'Save 20% with our annual Pro plan subscription.',
                 'price' => 2870.00,
                 'duration_in_days' => 365,
-                'credits_per_month' => 500,
+                'unlimited_access' => true,
                 'features' => [
                     'All Pro Plan features',
                     '500 credits per month',
@@ -113,7 +113,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'description' => 'Save 20% with our annual Business plan subscription.',
                 'price' => 5750.00,
                 'duration_in_days' => 365,
-                'credits_per_month' => 1200,
+                'unlimited_access' => true,
                 'features' => [
                     'All Business Plan features',
                     '1,200 credits per month',
