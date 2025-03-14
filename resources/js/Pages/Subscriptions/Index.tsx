@@ -486,7 +486,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell>₱{subscription.amount_paid.toFixed(2)}</TableCell>
+                                                    <TableCell>₱{Number(subscription.amount_paid).toFixed(2)}</TableCell>
                                                     <TableCell>
                                                         {subscription.status === 'active' && (
                                                             <Button 
