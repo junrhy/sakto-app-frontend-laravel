@@ -426,8 +426,8 @@ export default function Apps({ auth }: PageProps) {
                                                     <CardFooter className="flex justify-between items-center">
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-yellow-500">⭐</span>
-                                                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                                                Free
+                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                                {app.rating}
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-4">
@@ -454,7 +454,7 @@ export default function Apps({ auth }: PageProps) {
                                                                     }
                                                                 }}
                                                             >
-                                                                {app.visible ? "Open" : "Install"}
+                                                                {app.visible ? "Open" : "Subscribe"}
                                                             </Button>
                                                         </div>
                                                     </CardFooter>
@@ -560,12 +560,12 @@ export default function Apps({ auth }: PageProps) {
                                                             <div className="flex flex-col items-end">
                                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                                                     {app.pricingType === 'subscription' 
-                                                                        ? `${formatPrice(app.price)}/mo`
+                                                                        ? 'Subscription Only'
                                                                         : formatPrice(app.price)
                                                                     }
                                                                 </span>
                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {app.pricingType === 'subscription' ? 'Monthly subscription' : 'One-time payment'}
+                                                                    {app.pricingType === 'subscription' ? 'Available on subscription plans' : 'One-time payment'}
                                                                 </span>
                                                             </div>
                                                             <Button 
@@ -589,7 +589,7 @@ export default function Apps({ auth }: PageProps) {
                                                                     }
                                                                 }}
                                                             >
-                                                                {app.visible ? "Open" : "Install"}
+                                                                {app.visible ? "Open" : "Subscribe"}
                                                             </Button>
                                                         </div>
                                                     </CardFooter>
@@ -688,23 +688,16 @@ export default function Apps({ auth }: PageProps) {
                                                                     {app.pricingType === 'free' 
                                                                         ? 'Free'
                                                                         : app.pricingType === 'subscription' 
-                                                                            ? `${formatPrice(app.price)}/mo`
+                                                                            ? 'Subscription Only'
                                                                             : formatPrice(app.price)
                                                                     }
                                                                 </span>
                                                                 {app.pricingType !== 'free' && (
                                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                        {app.pricingType === 'subscription' ? 'Monthly subscription' : 'One-time payment'}
+                                                                        {app.pricingType === 'subscription' ? 'Available on subscription plans' : 'One-time payment'}
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <Button 
-                                                                variant="outline"
-                                                                disabled
-                                                                className="bg-gray-100 text-gray-400 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-800 cursor-not-allowed"
-                                                            >
-                                                                Coming Soon
-                                                            </Button>
                                                         </div>
                                                     </CardFooter>
                                                 </Card>
