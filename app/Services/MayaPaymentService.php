@@ -34,56 +34,103 @@ class MayaPaymentService
     public function createCheckout(array $data)
     {
         try {
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Basic ' . base64_encode($this->publicKey . ':')
-            ])->post($this->baseUrl . '/checkout/v1/checkouts', [
-                'totalAmount' => [
-                    'value' => $data['amount'],
-                    'currency' => 'PHP',
-                ],
-                'requestReferenceNumber' => $data['reference_number'],
-                'redirectUrl' => [
-                    'success' => $this->successUrl . '?reference=' . $data['reference_number'],
-                    'failure' => $this->failureUrl . '?reference=' . $data['reference_number'],
-                    'cancel' => $this->cancelUrl . '?reference=' . $data['reference_number'],
-                ],
-                'items' => [
-                    [
-                        'name' => $data['plan_name'],
-                        'quantity' => 1,
-                        'code' => $data['plan_slug'],
-                        'description' => $data['plan_description'] ?? 'Subscription plan',
-                        'amount' => [
-                            'value' => $data['amount'],
-                            'currency' => 'PHP',
-                        ],
-                        'totalAmount' => [
-                            'value' => $data['amount'],
-                            'currency' => 'PHP',
-                        ],
-                    ]
-                ],
-                'buyer' => [
-                    'firstName' => $data['user_name'] ?? 'Valued',
-                    'lastName' => $data['user_lastname'] ?? 'Customer',
-                    'contact' => [
-                        'email' => $data['user_email'] ?? '',
-                        'phone' => $data['user_phone'] ?? '',
-                    ],
-                ],
-                'metadata' => [
-                    'user_identifier' => $data['user_identifier'],
-                    'plan_id' => $data['plan_id'],
-                    'auto_renew' => $data['auto_renew'] ?? false,
-                ],
-            ]);
+            // Add timeout and retry logic
+            $maxRetries = 2;
+            $attempt = 0;
+            $lastException = null;
+            
+            while ($attempt <= $maxRetries) {
+                try {
+                    $response = Http::timeout(30) // Set a 30-second timeout
+                        ->withHeaders([
+                            'Content-Type' => 'application/json',
+                            'Authorization' => 'Basic ' . base64_encode($this->publicKey . ':')
+                        ])
+                        ->post($this->baseUrl . '/checkout/v1/checkouts', [
+                            'totalAmount' => [
+                                'value' => $data['amount'],
+                                'currency' => 'PHP',
+                            ],
+                            'requestReferenceNumber' => $data['reference_number'],
+                            'redirectUrl' => [
+                                'success' => $this->successUrl . '?reference=' . $data['reference_number'],
+                                'failure' => $this->failureUrl . '?reference=' . $data['reference_number'],
+                                'cancel' => $this->cancelUrl . '?reference=' . $data['reference_number'],
+                            ],
+                            'items' => [
+                                [
+                                    'name' => $data['plan_name'],
+                                    'quantity' => 1,
+                                    'code' => $data['plan_slug'],
+                                    'description' => $data['plan_description'] ?? 'Subscription plan',
+                                    'amount' => [
+                                        'value' => $data['amount'],
+                                        'currency' => 'PHP',
+                                    ],
+                                    'totalAmount' => [
+                                        'value' => $data['amount'],
+                                        'currency' => 'PHP',
+                                    ],
+                                ]
+                            ],
+                            'buyer' => [
+                                'firstName' => $data['user_name'] ?? 'Valued',
+                                'lastName' => $data['user_lastname'] ?? 'Customer',
+                                'contact' => [
+                                    'email' => $data['user_email'] ?? '',
+                                    'phone' => $data['user_phone'] ?? '',
+                                ],
+                            ],
+                            'metadata' => [
+                                'user_identifier' => $data['user_identifier'],
+                                'plan_id' => $data['plan_id'],
+                                'auto_renew' => $data['auto_renew'] ?? false,
+                            ],
+                        ]);
+                    
+                    // If we get here, the request was successful
+                    break;
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    $attempt++;
+                    
+                    if ($attempt <= $maxRetries) {
+                        // Log retry attempt
+                        Log::warning('Maya checkout attempt ' . $attempt . ' failed, retrying...', [
+                            'error' => $e->getMessage(),
+                        ]);
+                        
+                        // Wait before retrying (exponential backoff)
+                        sleep(pow(2, $attempt - 1));
+                    }
+                }
+            }
+            
+            // If we've exhausted all retries and still have an exception
+            if ($attempt > $maxRetries && $lastException) {
+                throw $lastException;
+            }
 
             if ($response->successful()) {
+                $checkoutId = $response->json('checkoutId');
+                $redirectUrl = $response->json('redirectUrl');
+                
+                // Validate the response data
+                if (empty($checkoutId) || empty($redirectUrl)) {
+                    Log::error('Maya checkout response missing required data', [
+                        'response' => $response->json(),
+                    ]);
+                    
+                    return [
+                        'success' => false,
+                        'message' => 'Invalid response from payment gateway',
+                    ];
+                }
+                
                 return [
                     'success' => true,
-                    'checkout_id' => $response->json('checkoutId'),
-                    'checkout_url' => $response->json('redirectUrl'),
+                    'checkout_id' => $checkoutId,
+                    'checkout_url' => $redirectUrl,
                     'reference_number' => $data['reference_number'],
                 ];
             }

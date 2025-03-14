@@ -80,6 +80,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const [activeTab, setActiveTab] = useState('plans');
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annually'>('monthly');
     const [highlightedApp, setHighlightedApp] = useState<string | null>(null);
+    const [networkError, setNetworkError] = useState(false);
 
     // Check URL parameters for plan to highlight
     useEffect(() => {
@@ -152,21 +153,83 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
             return;
         }
 
-        setIsSubmitting(true);
+        if (!paymentMethod) {
+            toast.error('Please select a payment method');
+            return;
+        }
 
-        const formData = new FormData();
-        formData.append('plan_id', selectedPlan.id.toString());
-        formData.append('payment_method', paymentMethod);
-        formData.append('auto_renew', autoRenew ? '1' : '0');
-        
-        router.post(route('subscriptions.subscribe'), formData, {
-            onError: (errors) => {
-                console.error(errors);
-                toast.error('Failed to process subscription');
-                setIsSubmitting(false);
-            }
+        setIsSubmitting(true);
+        setNetworkError(false);
+
+        // Show a loading message
+        toast.loading('Connecting to payment gateway...', {
+            id: 'payment-loading',
+            duration: 10000 // 10 seconds
         });
-        // Note: We don't need onSuccess handler as the controller will redirect to Maya checkout
+
+        try {
+            // Store form data in session storage for fallback
+            sessionStorage.setItem('subscription_plan_id', selectedPlan.id.toString());
+            sessionStorage.setItem('subscription_payment_method', paymentMethod);
+            sessionStorage.setItem('subscription_auto_renew', autoRenew ? '1' : '0');
+            
+            // Create a hidden form and submit it directly - this is now our primary method
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = route('subscriptions.subscribe');
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+            
+            // Add form data
+            const planIdInput = document.createElement('input');
+            planIdInput.type = 'hidden';
+            planIdInput.name = 'plan_id';
+            planIdInput.value = selectedPlan.id.toString();
+            form.appendChild(planIdInput);
+            
+            const paymentMethodInput = document.createElement('input');
+            paymentMethodInput.type = 'hidden';
+            paymentMethodInput.name = 'payment_method';
+            paymentMethodInput.value = paymentMethod;
+            form.appendChild(paymentMethodInput);
+            
+            const autoRenewInput = document.createElement('input');
+            autoRenewInput.type = 'hidden';
+            autoRenewInput.name = 'auto_renew';
+            autoRenewInput.value = autoRenew ? '1' : '0';
+            form.appendChild(autoRenewInput);
+            
+            // Append to body and submit
+            document.body.appendChild(form);
+            
+            // Set a timeout to dismiss the loading toast if the form submission takes too long
+            setTimeout(() => {
+                toast.dismiss('payment-loading');
+                setIsSubmitting(false);
+                setNetworkError(true);
+            }, 10000); // 10 seconds timeout
+            
+            // Submit the form
+            form.submit();
+            
+        } catch (error) {
+            // Dismiss the loading toast
+            toast.dismiss('payment-loading');
+            
+            console.error('Subscription submission error:', error);
+            toast.error('An error occurred while processing your request. Please try again.');
+            
+            setIsSubmitting(false);
+            setNetworkError(true);
+        }
     };
 
     const openCancelDialog = (subscriptionId: string) => {
@@ -433,6 +496,19 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                             </div>
                                             
                                             <div className="flex justify-end">
+                                                {networkError && (
+                                                    <div className="mr-auto p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm">
+                                                        <p>There was a problem connecting to the payment gateway. Please try again.</p>
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            className="mt-2 text-red-600 border-red-300 hover:bg-red-50"
+                                                            onClick={handleSubmit}
+                                                        >
+                                                            Retry
+                                                        </Button>
+                                                    </div>
+                                                )}
                                                 <Button 
                                                     type="submit" 
                                                     disabled={isSubmitting || !selectedPlan}

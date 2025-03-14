@@ -116,7 +116,7 @@ export default function PaymentStatus({ auth, status, message, subscription }: P
                             </Button>
                             {(status === 'failure' || status === 'cancelled') && (
                                 <Button variant="outline" asChild>
-                                    <Link href={route('dashboard')}>
+                                    <Link href={route('home')}>
                                         Go to Dashboard
                                     </Link>
                                 </Button>

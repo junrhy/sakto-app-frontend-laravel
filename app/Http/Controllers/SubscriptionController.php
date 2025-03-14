@@ -84,46 +84,84 @@ class SubscriptionController extends Controller
         // Generate a unique reference number
         $referenceNumber = $this->mayaPaymentService->generateReferenceNumber();
         
-        // Create checkout session with Maya
-        $checkoutData = [
-            'amount' => $plan->price,
-            'reference_number' => $referenceNumber,
-            'plan_name' => $plan->name,
-            'plan_slug' => $plan->slug,
-            'plan_description' => $plan->description,
-            'plan_id' => $plan->id,
-            'user_identifier' => $clientIdentifier,
-            'user_name' => $user->name,
-            'user_lastname' => $user->lastname ?? '',
-            'user_email' => $user->email,
-            'user_phone' => $user->phone ?? '',
-            'auto_renew' => $validated['auto_renew'] ?? false,
-        ];
-        
-        $checkoutResult = $this->mayaPaymentService->createCheckout($checkoutData);
-        
-        if (!$checkoutResult['success']) {
-            return redirect()->back()->with('error', $checkoutResult['message']);
+        try {
+            // Create checkout session with Maya
+            $checkoutData = [
+                'amount' => $plan->price,
+                'reference_number' => $referenceNumber,
+                'plan_name' => $plan->name,
+                'plan_slug' => $plan->slug,
+                'plan_description' => $plan->description,
+                'plan_id' => $plan->id,
+                'user_identifier' => $clientIdentifier,
+                'user_name' => $user->name,
+                'user_lastname' => $user->lastname ?? '',
+                'user_email' => $user->email,
+                'user_phone' => $user->phone ?? '',
+                'auto_renew' => $validated['auto_renew'] ?? false,
+            ];
+            
+            $checkoutResult = $this->mayaPaymentService->createCheckout($checkoutData);
+            
+            if (!$checkoutResult['success']) {
+                return redirect()->back()->with('error', $checkoutResult['message']);
+            }
+            
+            // Create a pending subscription
+            $subscription = new UserSubscription([
+                'user_identifier' => $clientIdentifier,
+                'subscription_plan_id' => $plan->id,
+                'start_date' => now(),
+                'end_date' => now()->addDays($plan->duration_in_days),
+                'status' => 'pending', // Set as pending until payment is confirmed
+                'payment_method' => $validated['payment_method'],
+                'payment_transaction_id' => $referenceNumber,
+                'amount_paid' => $plan->price,
+                'auto_renew' => $validated['auto_renew'] ?? false,
+                'maya_checkout_id' => $checkoutResult['checkout_id'],
+            ]);
+            
+            $subscription->save();
+            
+            // Redirect to Maya checkout page
+            try {
+                if (empty($checkoutResult['checkout_url'])) {
+                    Log::error('Maya checkout URL is empty', [
+                        'checkout_result' => $checkoutResult,
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id
+                    ]);
+                    return redirect()->back()->with('error', 'Payment gateway error: Invalid checkout URL. Please try again later.');
+                }
+                
+                // Log the redirect attempt
+                Log::info('Redirecting to Maya checkout', [
+                    'checkout_url' => $checkoutResult['checkout_url'],
+                    'reference' => $referenceNumber
+                ]);
+                
+                return redirect($checkoutResult['checkout_url']);
+            } catch (\Exception $e) {
+                Log::error('Failed to redirect to Maya checkout: ' . $e->getMessage(), [
+                    'checkout_result' => $checkoutResult,
+                    'exception' => $e
+                ]);
+                
+                // Update subscription status to failed
+                $subscription->status = 'failed';
+                $subscription->save();
+                
+                return redirect()->back()->with('error', 'Failed to connect to payment gateway. Please try again later.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Subscription process failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'exception' => $e
+            ]);
+            
+            return redirect()->back()->with('error', 'An error occurred while processing your subscription. Please try again later.');
         }
-        
-        // Create a pending subscription
-        $subscription = new UserSubscription([
-            'user_identifier' => $clientIdentifier,
-            'subscription_plan_id' => $plan->id,
-            'start_date' => now(),
-            'end_date' => now()->addDays($plan->duration_in_days),
-            'status' => 'pending', // Set as pending until payment is confirmed
-            'payment_method' => $validated['payment_method'],
-            'payment_transaction_id' => $referenceNumber,
-            'amount_paid' => $plan->price,
-            'auto_renew' => $validated['auto_renew'] ?? false,
-            'maya_checkout_id' => $checkoutResult['checkout_id'],
-        ]);
-        
-        $subscription->save();
-        
-        // Redirect to Maya checkout page
-        return redirect($checkoutResult['checkout_url']);
     }
     
     /**
