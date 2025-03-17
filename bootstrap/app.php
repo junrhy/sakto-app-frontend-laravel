@@ -16,7 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // Register global middleware
+        $middleware->append([
+            \App\Http\Middleware\MaintenanceModeMiddleware::class,
+        ]);
+
+        // Register route middleware aliases
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'ip_restriction' => \App\Http\Middleware\IpRestrictionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

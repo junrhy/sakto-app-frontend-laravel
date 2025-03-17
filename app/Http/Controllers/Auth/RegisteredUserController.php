@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Dashboard;
 use App\Models\Project;
+use App\Models\Setting;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,13 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
+        // Check if registration is enabled
+        $registrationEnabled = Setting::get('registration_enabled', 'true') === 'true';
+        
+        if (!$registrationEnabled) {
+            return Inertia::render('Auth/RegistrationDisabled');
+        }
+        
         $projects = Project::select('identifier', 'name')->get();
         
         return Inertia::render('Auth/Register', [
@@ -45,6 +53,13 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Check if registration is enabled
+        $registrationEnabled = Setting::get('registration_enabled', 'true') === 'true';
+        
+        if (!$registrationEnabled) {
+            abort(403, 'User registration is currently disabled.');
+        }
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,

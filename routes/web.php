@@ -483,7 +483,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Admin Subscription routes
-    Route::prefix('admin/subscriptions')->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
+    Route::prefix('admin/subscriptions')->middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'index'])->name('admin.subscriptions.index');
         Route::post('/plans', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'storePlan'])->name('admin.subscriptions.plans.store');
         Route::put('/plans/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'updatePlan'])->name('admin.subscriptions.plans.update');
@@ -526,10 +526,10 @@ Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 
 // Admin Dashboard Route
 Route::get('/admin/dashboard', function () {
     return Inertia::render('Admin/Dashboard');
-})->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->name('admin.dashboard');
+})->middleware(['auth', 'ip_restriction', 'admin'])->name('admin.dashboard');
 
 // Admin User Management routes
-Route::prefix('admin/users')->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
+Route::prefix('admin/users')->middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\UserAdminController::class, 'index'])->name('admin.users.index');
     Route::get('/create', [App\Http\Controllers\Admin\UserAdminController::class, 'create'])->name('admin.users.create');
     Route::post('/', [App\Http\Controllers\Admin\UserAdminController::class, 'store'])->name('admin.users.store');
@@ -537,6 +537,15 @@ Route::prefix('admin/users')->middleware(['auth', \App\Http\Middleware\AdminMidd
     Route::put('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'update'])->name('admin.users.update');
     Route::delete('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'destroy'])->name('admin.users.destroy');
     Route::get('/{id}/toggle-admin', [App\Http\Controllers\Admin\UserAdminController::class, 'toggleAdminStatus'])->name('admin.users.toggle-admin');
+});
+
+// Admin Settings routes
+Route::prefix('admin/settings')->middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
+    Route::post('/update', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');
+    Route::post('/registration', [App\Http\Controllers\Admin\SettingsController::class, 'updateRegistrationEnabled'])->name('admin.settings.registration');
+    Route::post('/maintenance', [App\Http\Controllers\Admin\SettingsController::class, 'updateMaintenanceMode'])->name('admin.settings.maintenance');
+    Route::post('/ip-restriction', [App\Http\Controllers\Admin\SettingsController::class, 'updateIpRestriction'])->name('admin.settings.ip-restriction');
 });
 
 require __DIR__.'/auth.php';

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             ModuleSeeder::class,
             ProjectSeeder::class,
             SubscriptionPlanSeeder::class,
+            SettingsSeeder::class,
         ]);
     }
 }

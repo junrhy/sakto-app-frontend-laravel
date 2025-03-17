@@ -79,6 +79,17 @@ export default function AdminLayout({
                 >
                   Users
                 </NavLink>
+                <NavLink
+                  href={route('admin.settings.index')}
+                  active={route().current('admin.settings.index')}
+                  className={`text-white hover:text-white transition-colors duration-150 px-2 sm:px-3 py-1 sm:py-2 ${
+                    route().current('admin.settings.index')
+                      ? 'bg-white text-black font-medium border-transparent' 
+                      : 'border-transparent'
+                  }`}
+                >
+                  Settings
+                </NavLink>
                 {/* Add more admin navigation links here */}
               </div>
             </div>
@@ -170,6 +181,13 @@ export default function AdminLayout({
               className={`text-white hover:text-white`}
             >
               Users
+            </ResponsiveNavLink>
+            <ResponsiveNavLink
+              href={route('admin.settings.index')}
+              active={route().current('admin.settings.index')}
+              className={`text-white hover:text-white`}
+            >
+              Settings
             </ResponsiveNavLink>
             {/* Add more responsive admin navigation links here */}
           </div>
