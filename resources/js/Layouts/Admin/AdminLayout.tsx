@@ -68,6 +68,17 @@ export default function AdminLayout({
                 >
                   Subscriptions
                 </NavLink>
+                <NavLink
+                  href={route('admin.users.index')}
+                  active={route().current('admin.users.index') || route().current('admin.users.create') || route().current('admin.users.edit')}
+                  className={`text-white hover:text-white transition-colors duration-150 px-2 sm:px-3 py-1 sm:py-2 ${
+                    route().current('admin.users.index') || route().current('admin.users.create') || route().current('admin.users.edit')
+                      ? 'bg-white text-black font-medium border-transparent' 
+                      : 'border-transparent'
+                  }`}
+                >
+                  Users
+                </NavLink>
                 {/* Add more admin navigation links here */}
               </div>
             </div>
@@ -152,6 +163,13 @@ export default function AdminLayout({
               className={`text-white hover:text-white`}
             >
               Subscriptions
+            </ResponsiveNavLink>
+            <ResponsiveNavLink
+              href={route('admin.users.index')}
+              active={route().current('admin.users.index') || route().current('admin.users.create') || route().current('admin.users.edit')}
+              className={`text-white hover:text-white`}
+            >
+              Users
             </ResponsiveNavLink>
             {/* Add more responsive admin navigation links here */}
           </div>

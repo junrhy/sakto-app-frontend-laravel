@@ -34,4 +34,20 @@ export interface UserSubscription {
   last_credit_date?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  contact_number?: string;
+  email_verified_at?: string;
+  is_admin: boolean;
+  identifier: string;
+  project_identifier?: string;
+  app_currency?: string;
+  theme?: string;
+  theme_color?: string;
+  created_at: string;
+  updated_at: string;
 } 
