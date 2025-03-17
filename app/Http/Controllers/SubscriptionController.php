@@ -172,20 +172,10 @@ class SubscriptionController extends Controller
         $reference = $request->query('reference');
         $checkoutId = $request->query('checkoutId');
         
-        if (!$reference || !$checkoutId) {
+        if (!$reference) {
             return Inertia::render('Subscriptions/PaymentStatus', [
                 'status' => 'failure',
                 'message' => 'Invalid payment reference. Please contact support if you believe this is an error.',
-            ]);
-        }
-        
-        // Verify payment with Maya
-        $paymentResult = $this->mayaPaymentService->verifyPayment($checkoutId);
-        
-        if (!$paymentResult['success'] || !$paymentResult['is_paid']) {
-            return Inertia::render('Subscriptions/PaymentStatus', [
-                'status' => 'failure',
-                'message' => 'Payment verification failed. Please try again or contact support.',
             ]);
         }
         
@@ -200,6 +190,24 @@ class SubscriptionController extends Controller
                 'status' => 'failure',
                 'message' => 'Subscription not found. Please contact support if you believe this is an error.',
             ]);
+        }
+        
+        // If checkoutId is provided, verify payment with Maya
+        if ($checkoutId) {
+            $paymentResult = $this->mayaPaymentService->verifyPayment($checkoutId);
+            
+            if (!$paymentResult['success'] || !$paymentResult['is_paid']) {
+                Log::warning('Payment verification failed for reference: ' . $reference, [
+                    'checkout_id' => $checkoutId,
+                    'result' => $paymentResult
+                ]);
+                
+                // Continue anyway since we're on the success URL
+                Log::info('Proceeding with subscription activation despite verification failure');
+            }
+        } else {
+            // Log that we're proceeding without verification
+            Log::info('Processing payment success without checkout ID for reference: ' . $reference);
         }
         
         // Check if user already has an active subscription

@@ -19,6 +19,7 @@ interface PageProps extends Record<string, any> {
             name: string;
             email: string;
             identifier: string;
+            is_admin?: boolean;
         };
     };
 }

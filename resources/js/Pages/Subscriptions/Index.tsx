@@ -334,22 +334,29 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                             <Card 
                                                 key={plan.id} 
                                                 className={`overflow-hidden transition-all ${
-                                                    selectedPlan?.id === plan.id 
-                                                        ? 'ring-2 ring-blue-500 dark:ring-blue-400' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
-                                                        : 'hover:shadow-md'
+                                                    activeSubscription?.plan.id === plan.id
+                                                        ? 'ring-2 ring-green-500 dark:ring-green-400 bg-green-50 dark:bg-green-900/10'
+                                                        : selectedPlan?.id === plan.id 
+                                                            ? 'ring-2 ring-blue-500 dark:ring-blue-400' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
+                                                            : 'hover:shadow-md'
                                                 }`}
                                             >
-                                                {plan.is_popular && (
+                                                {activeSubscription?.plan.id === plan.id && (
+                                                    <div className="bg-green-500 text-white text-center py-1 text-sm font-medium">
+                                                        Current Subscription
+                                                    </div>
+                                                )}
+                                                {plan.is_popular && activeSubscription?.plan.id !== plan.id && (
                                                     <div className="bg-blue-500 text-white text-center py-1 text-sm font-medium">
                                                         Most Popular
                                                     </div>
                                                 )}
-                                                {plan.badge_text && !plan.is_popular && (
+                                                {plan.badge_text && !plan.is_popular && activeSubscription?.plan.id !== plan.id && (
                                                     <div className="bg-green-500 text-white text-center py-1 text-sm font-medium">
                                                         {plan.badge_text}
                                                     </div>
                                                 )}
-                                                {!plan.badge_text && !plan.is_popular && hasUnlimitedAccess(plan) && (
+                                                {!plan.badge_text && !plan.is_popular && hasUnlimitedAccess(plan) && activeSubscription?.plan.id !== plan.id && (
                                                     <div className="bg-purple-500 text-white text-center py-1 text-sm font-medium">
                                                         Unlimited Access
                                                     </div>
@@ -399,8 +406,14 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         className="w-full" 
                                                         onClick={() => handlePlanSelect(plan)}
                                                         variant={selectedPlan?.id === plan.id ? "default" : "outline"}
+                                                        disabled={activeSubscription?.plan.id === plan.id}
+                                                        title={activeSubscription?.plan.id === plan.id ? "You are already subscribed to this plan" : ""}
                                                     >
-                                                        {selectedPlan?.id === plan.id ? 'Selected' : 'Select Plan'}
+                                                        {activeSubscription?.plan.id === plan.id 
+                                                            ? 'Current Plan' 
+                                                            : selectedPlan?.id === plan.id 
+                                                                ? 'Selected' 
+                                                                : 'Select Plan'}
                                                     </Button>
                                                 </CardFooter>
                                             </Card>
@@ -429,6 +442,25 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                         )}
                                         
                                         <form onSubmit={handleSubmit} className="space-y-6">
+                                            {activeSubscription && (
+                                                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md mb-4">
+                                                    <div className="flex items-start">
+                                                        <div className="mr-3 mt-0.5">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <h5 className="text-sm font-medium text-amber-700 dark:text-amber-300">Changing Your Subscription</h5>
+                                                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                                                You already have an active subscription to the <strong>{activeSubscription.plan.name}</strong> plan. 
+                                                                If you subscribe to this new plan, your current subscription will be automatically cancelled and 
+                                                                replaced with the new plan. Your new benefits will be available immediately.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-4">
                                                     <div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps } from '@/types/index';
 import { UserSubscription } from '@/types/models';
 import Modal from '@/Components/Modal';
@@ -14,7 +14,7 @@ import TextArea from '@/Components/TextArea';
 
 interface Props {
   auth: PageProps['auth'];
-  subscription: UserSubscription;
+  subscription: UserSubscription & { user_name?: string };
 }
 
 export default function View({ auth, subscription }: Props) {
@@ -62,8 +62,9 @@ export default function View({ auth, subscription }: Props) {
   };
 
   return (
-    <AuthenticatedLayout
+    <AdminLayout
       user={auth.user}
+      title="Subscription Details"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription Details</h2>}
     >
       <Head title="Subscription Details" />
@@ -107,8 +108,8 @@ export default function View({ auth, subscription }: Props) {
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">User Identifier</h4>
-                    <p className="mt-1 text-sm text-gray-900">{subscription.user_identifier}</p>
+                    <h4 className="text-sm font-medium text-gray-500">User</h4>
+                    <p className="mt-1 text-sm text-gray-900">{subscription.user_name || subscription.user_identifier}</p>
                   </div>
 
                   <div className="mb-4">
@@ -118,7 +119,7 @@ export default function View({ auth, subscription }: Props) {
 
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-500">Price</h4>
-                    <p className="mt-1 text-sm text-gray-900">${subscription.amount_paid}</p>
+                    <p className="mt-1 text-sm text-gray-900">₱ {subscription.amount_paid}</p>
                   </div>
 
                   <div className="mb-4">
@@ -286,6 +287,6 @@ export default function View({ auth, subscription }: Props) {
           </div>
         </form>
       </Modal>
-    </AuthenticatedLayout>
+    </AdminLayout>
   );
 } 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { SubscriptionPlan, UserSubscription } from '@/types/models';
 import Modal from '@/Components/Modal';
 import InputLabel from '@/Components/InputLabel';
@@ -18,7 +18,7 @@ interface Props {
   auth: PageProps['auth'];
   plans: SubscriptionPlan[];
   subscriptions: {
-    data: UserSubscription[];
+    data: (UserSubscription & { user_name?: string })[];
     links: any[];
     meta: {
       current_page: number;
@@ -37,6 +37,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
   const [features, setFeatures] = useState<string[]>([]);
   const [featureInput, setFeatureInput] = useState('');
@@ -66,6 +67,8 @@ export default function Index({ auth, plans, subscriptions }: Props) {
   });
 
   const deleteForm = useForm({});
+
+  const runRenewalForm = useForm({});
 
   const openCreateModal = () => {
     createForm.reset();
@@ -151,12 +154,25 @@ export default function Index({ auth, plans, subscriptions }: Props) {
   };
 
   const runRenewalCommand = () => {
-    window.location.href = route('admin.subscriptions.run-renewal');
+    runRenewalForm.post(route('admin.subscriptions.run-renewal'), {
+      onSuccess: () => {
+        setShowRenewalModal(false);
+        // The page will be refreshed by the redirect in the controller
+      },
+      onError: (errors) => {
+        console.error('Failed to run renewal command:', errors);
+      }
+    });
+  };
+
+  const openRenewalModal = () => {
+    setShowRenewalModal(true);
   };
 
   return (
-    <AuthenticatedLayout
+    <AdminLayout
       user={auth.user}
+      title="Subscription Management"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription Management</h2>}
     >
       <Head title="Subscription Management" />
@@ -170,7 +186,9 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                 <h3 className="text-lg font-medium text-gray-900">Subscription Plans</h3>
                 <div className="flex space-x-2">
                   <PrimaryButton onClick={openCreateModal}>Add New Plan</PrimaryButton>
-                  <SecondaryButton onClick={runRenewalCommand}>Run Renewal Command</SecondaryButton>
+                  <SecondaryButton onClick={openRenewalModal}>
+                    Run Renewal Command
+                  </SecondaryButton>
                 </div>
               </div>
               
@@ -202,7 +220,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">${plan.price}</div>
+                          <div className="text-sm text-gray-900">₱ {plan.price}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{plan.duration_in_days} days</div>
@@ -273,7 +291,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                     {subscriptions.data.map((subscription) => (
                       <tr key={subscription.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{subscription.user_identifier}</div>
+                          <div className="text-sm text-gray-900">{subscription.user_name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{subscription.plan.name}</div>
@@ -346,7 +364,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <InputLabel htmlFor="price" value="Price ($)" />
+              <InputLabel htmlFor="price" value="Price (₱)" />
               <TextInput
                 id="price"
                 type="number"
@@ -493,7 +511,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <InputLabel htmlFor="edit_price" value="Price ($)" />
+              <InputLabel htmlFor="edit_price" value="Price (₱)" />
               <TextInput
                 id="edit_price"
                 type="number"
@@ -621,7 +639,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           {currentPlan && (
             <div className="mb-4 p-4 bg-gray-50 rounded">
               <p className="font-medium">{currentPlan.name}</p>
-              <p className="text-sm text-gray-600">${currentPlan.price} - {currentPlan.duration_in_days} days</p>
+              <p className="text-sm text-gray-600">₱ {currentPlan.price} - {currentPlan.duration_in_days} days</p>
             </div>
           )}
           
@@ -635,6 +653,36 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
         </form>
       </Modal>
-    </AuthenticatedLayout>
+
+      {/* Renewal Command Modal */}
+      <Modal show={showRenewalModal} onClose={() => setShowRenewalModal(false)}>
+        <div className="p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Run Subscription Renewal Command</h2>
+          
+          <p className="mb-4 text-sm text-gray-600">
+            This will process the following tasks:
+          </p>
+          
+          <ul className="list-disc pl-5 mb-4 text-sm text-gray-600">
+            <li>Add monthly credits to active subscriptions</li>
+            <li>Process auto-renewals for subscriptions ending soon</li>
+            <li>Mark expired subscriptions</li>
+          </ul>
+          
+          <p className="mb-4 text-sm text-gray-600">
+            Are you sure you want to run this command now?
+          </p>
+          
+          <div className="flex justify-end mt-6">
+            <SecondaryButton onClick={() => setShowRenewalModal(false)} className="mr-2">
+              Cancel
+            </SecondaryButton>
+            <PrimaryButton onClick={runRenewalCommand} disabled={runRenewalForm.processing}>
+              {runRenewalForm.processing ? 'Processing...' : 'Run Command'}
+            </PrimaryButton>
+          </div>
+        </div>
+      </Modal>
+    </AdminLayout>
   );
 } 

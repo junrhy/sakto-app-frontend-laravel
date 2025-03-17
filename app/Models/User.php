@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'google_id',
         'project_identifier',
         'identifier',
+        'is_admin',
     ];
 
     /**
@@ -53,6 +54,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 
@@ -69,6 +71,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function latestWidget(): HasOne
     {
         return $this->hasOne(Widget::class, 'user_id', 'id')->latestOfMany();
+    }
+
+    /**
+     * Check if the user is an admin.
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
     }
 
     protected static function boot()

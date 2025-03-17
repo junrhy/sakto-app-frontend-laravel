@@ -18,6 +18,7 @@ export interface UserSubscription {
   id: number;
   identifier: string;
   user_identifier: string;
+  user_name?: string;
   subscription_plan_id: number;
   plan: SubscriptionPlan;
   start_date: string;

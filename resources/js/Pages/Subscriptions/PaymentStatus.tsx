@@ -77,10 +77,6 @@ export default function PaymentStatus({ auth, status, message, subscription }: P
                                             <span className="font-medium">{subscription.plan.name}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500 dark:text-gray-400">Monthly Credits:</span>
-                                            <span className="font-medium">{subscription.plan.credits_per_month.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between">
                                             <span className="text-gray-500 dark:text-gray-400">Valid Until:</span>
                                             <span className="font-medium">{formatDate(subscription.end_date)}</span>
                                         </div>

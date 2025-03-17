@@ -19,7 +19,10 @@ class SubscriptionAdminController extends Controller
     {
         $plans = SubscriptionPlan::orderBy('price')->get();
         $subscriptions = UserSubscription::with('plan')
-            ->orderBy('created_at', 'desc')
+            ->select('user_subscriptions.*')
+            ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
+            ->addSelect('users.name as user_name')
+            ->orderBy('user_subscriptions.created_at', 'desc')
             ->paginate(10);
         
         return Inertia::render('Admin/Subscriptions/Index', [
@@ -119,7 +122,12 @@ class SubscriptionAdminController extends Controller
      */
     public function viewSubscription($id)
     {
-        $subscription = UserSubscription::with('plan')->findOrFail($id);
+        $subscription = UserSubscription::with('plan')
+            ->select('user_subscriptions.*')
+            ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
+            ->addSelect('users.name as user_name')
+            ->where('user_subscriptions.id', $id)
+            ->firstOrFail();
         
         return Inertia::render('Admin/Subscriptions/View', [
             'subscription' => $subscription,
@@ -183,11 +191,38 @@ class SubscriptionAdminController extends Controller
     public function runRenewalCommand()
     {
         try {
-            \Artisan::call('app:renew-subscriptions');
-            $output = \Artisan::output();
+            // Capture the output of the command
+            $output = '';
+            \Artisan::call('app:renew-subscriptions', [], $output);
             
-            return redirect()->route('admin.subscriptions.index')->with('success', 'Renewal command executed successfully');
+            // Log the output for debugging
+            \Log::info('Subscription renewal command output: ' . $output);
+            
+            // Parse the output to get counts
+            $processedCount = 0;
+            $renewedCount = 0;
+            $expiredCount = 0;
+            
+            if (preg_match('/Found (\d+) active subscriptions/', $output, $matches)) {
+                $processedCount = $matches[1];
+            }
+            
+            if (preg_match('/Found (\d+) subscriptions ending soon/', $output, $matches)) {
+                $renewedCount = $matches[1];
+            }
+            
+            if (preg_match('/Found (\d+) expired subscriptions/', $output, $matches)) {
+                $expiredCount = $matches[1];
+            }
+            
+            $message = "Renewal command executed successfully. ";
+            $message .= "Processed $processedCount active subscriptions, ";
+            $message .= "renewed $renewedCount subscriptions, ";
+            $message .= "and marked $expiredCount expired subscriptions.";
+            
+            return redirect()->route('admin.subscriptions.index')->with('success', $message);
         } catch (\Exception $e) {
+            \Log::error('Failed to run renewal command: ' . $e->getMessage());
             return redirect()->route('admin.subscriptions.index')->with('error', 'Failed to run renewal command: ' . $e->getMessage());
         }
     }
