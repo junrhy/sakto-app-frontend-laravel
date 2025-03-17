@@ -512,7 +512,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
     });
 
-    // Maya webhook route - exclude from CSRF protection
+    // Maya Webhook route - exclude from CSRF protection
     Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
         ->name('webhooks.maya')
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);

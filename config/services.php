@@ -59,5 +59,6 @@ return [
         'webhook_success_url' => env('MAYA_WEBHOOK_SUCCESS_URL', config('app.url') . '/subscriptions/payment/success'),
         'webhook_failure_url' => env('MAYA_WEBHOOK_FAILURE_URL', config('app.url') . '/subscriptions/payment/failure'),
         'webhook_cancel_url' => env('MAYA_WEBHOOK_CANCEL_URL', config('app.url') . '/subscriptions/payment/cancel'),
+        'webhook_url' => env('MAYA_WEBHOOK_URL', config('app.url') . '/webhooks/maya'),
     ],
 ];

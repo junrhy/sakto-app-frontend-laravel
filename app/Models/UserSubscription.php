@@ -31,6 +31,10 @@ class UserSubscription extends Model
         'cancellation_reason',
         'last_credit_date',
         'maya_checkout_id',
+        'maya_subscription_id',
+        'maya_payment_token_id',
+        'next_billing_date',
+        'billing_cycle',
     ];
 
     /**
@@ -45,6 +49,7 @@ class UserSubscription extends Model
         'amount_paid' => 'decimal:2',
         'auto_renew' => 'boolean',
         'last_credit_date' => 'datetime',
+        'next_billing_date' => 'datetime',
     ];
 
     /**
@@ -116,6 +121,14 @@ class UserSubscription extends Model
     public function isFailed(): bool
     {
         return $this->status === self::STATUS_FAILED;
+    }
+
+    /**
+     * Check if the subscription has a Maya subscription ID.
+     */
+    public function hasMayaSubscription(): bool
+    {
+        return !empty($this->maya_subscription_id);
     }
 
     /**

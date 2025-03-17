@@ -158,6 +158,235 @@ class MayaPaymentService
     }
 
     /**
+     * Create a subscription with Maya
+     * 
+     * @param array $data
+     * @return array
+     */
+    public function createSubscription(array $data)
+    {
+        try {
+            // First, we need to create a payment token using the initial checkout
+            $checkoutResult = $this->createCheckout($data);
+            
+            if (!$checkoutResult['success']) {
+                return $checkoutResult;
+            }
+            
+            // Store the checkout ID for later use
+            $checkoutId = $checkoutResult['checkout_id'];
+            
+            // Return the checkout URL for the customer to complete the initial payment
+            return [
+                'success' => true,
+                'checkout_id' => $checkoutId,
+                'checkout_url' => $checkoutResult['checkout_url'],
+                'reference_number' => $data['reference_number'],
+                'is_subscription' => true,
+            ];
+            
+            // Note: After the customer completes the payment, we'll receive a webhook notification
+            // At that point, we'll create the actual subscription using the payment method token
+            // This is handled in the webhook controller
+        } catch (\Exception $e) {
+            Log::error('Maya subscription creation exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Subscription creation error: ' . $e->getMessage(),
+            ];
+        }
+    }
+    
+    /**
+     * Create a recurring subscription after successful initial payment
+     * 
+     * @param string $paymentTokenId Payment token ID from the initial payment
+     * @param array $data Subscription data
+     * @return array
+     */
+    public function createRecurringSubscription(string $paymentTokenId, array $data)
+    {
+        try {
+            // Calculate the billing cycle based on the plan duration
+            $billingCycle = $this->calculateBillingCycle($data['plan_duration_in_days']);
+            
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode($this->secretKey . ':')
+            ])->post($this->baseUrl . '/payments/v1/subscriptions', [
+                'paymentTokenId' => $paymentTokenId,
+                'name' => $data['plan_name'] . ' Subscription',
+                'description' => $data['plan_description'] ?? 'Recurring subscription for ' . $data['plan_name'],
+                'amount' => [
+                    'value' => $data['amount'],
+                    'currency' => 'PHP',
+                ],
+                'requestReferenceNumber' => $data['reference_number'],
+                'billingCycle' => $billingCycle,
+                'metadata' => [
+                    'user_identifier' => $data['user_identifier'],
+                    'plan_id' => $data['plan_id'],
+                    'subscription_identifier' => $data['subscription_identifier'],
+                ],
+            ]);
+            
+            if ($response->successful()) {
+                $subscriptionId = $response->json('id');
+                
+                if (empty($subscriptionId)) {
+                    Log::error('Maya subscription response missing ID', [
+                        'response' => $response->json(),
+                    ]);
+                    
+                    return [
+                        'success' => false,
+                        'message' => 'Invalid response from payment gateway',
+                    ];
+                }
+                
+                return [
+                    'success' => true,
+                    'subscription_id' => $subscriptionId,
+                    'status' => $response->json('status'),
+                    'next_billing_date' => $response->json('nextBillingDate'),
+                ];
+            }
+            
+            Log::error('Maya subscription creation failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to create subscription: ' . ($response->json('message') ?? 'Unknown error'),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Maya recurring subscription exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Subscription creation error: ' . $e->getMessage(),
+            ];
+        }
+    }
+    
+    /**
+     * Calculate the billing cycle based on plan duration
+     * 
+     * @param int $durationInDays
+     * @return string
+     */
+    private function calculateBillingCycle(int $durationInDays)
+    {
+        // Maya supports DAILY, WEEKLY, MONTHLY, QUARTERLY, SEMI_ANNUALLY, ANNUALLY
+        if ($durationInDays <= 7) {
+            return 'WEEKLY';
+        } elseif ($durationInDays <= 31) {
+            return 'MONTHLY';
+        } elseif ($durationInDays <= 92) {
+            return 'QUARTERLY';
+        } elseif ($durationInDays <= 183) {
+            return 'SEMI_ANNUALLY';
+        } else {
+            return 'ANNUALLY';
+        }
+    }
+    
+    /**
+     * Cancel a subscription with Maya
+     * 
+     * @param string $subscriptionId
+     * @return array
+     */
+    public function cancelSubscription(string $subscriptionId)
+    {
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode($this->secretKey . ':')
+            ])->delete($this->baseUrl . '/payments/v1/subscriptions/' . $subscriptionId);
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'status' => $response->json('status'),
+                ];
+            }
+            
+            Log::error('Maya subscription cancellation failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to cancel subscription: ' . ($response->json('message') ?? 'Unknown error'),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Maya subscription cancellation exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Subscription cancellation error: ' . $e->getMessage(),
+            ];
+        }
+    }
+    
+    /**
+     * Get subscription details from Maya
+     * 
+     * @param string $subscriptionId
+     * @return array
+     */
+    public function getSubscription(string $subscriptionId)
+    {
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode($this->secretKey . ':')
+            ])->get($this->baseUrl . '/payments/v1/subscriptions/' . $subscriptionId);
+            
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'subscription' => $response->json(),
+                ];
+            }
+            
+            Log::error('Maya subscription retrieval failed', [
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Failed to retrieve subscription: ' . ($response->json('message') ?? 'Unknown error'),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Maya subscription retrieval exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Subscription retrieval error: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Verify a payment with Maya
      *
      * @param string $checkoutId
@@ -180,6 +409,7 @@ class MayaPaymentService
                     'is_paid' => $paymentStatus === 'PAYMENT_SUCCESS',
                     'reference_number' => $response->json('requestReferenceNumber'),
                     'metadata' => $response->json('metadata') ?? [],
+                    'payment_token_id' => $response->json('paymentTokenId') ?? null,
                 ];
             }
 

@@ -85,7 +85,7 @@ class SubscriptionController extends Controller
         $referenceNumber = $this->mayaPaymentService->generateReferenceNumber();
         
         try {
-            // Create checkout session with Maya
+            // Prepare checkout data
             $checkoutData = [
                 'amount' => $plan->price,
                 'reference_number' => $referenceNumber,
@@ -101,7 +101,14 @@ class SubscriptionController extends Controller
                 'auto_renew' => $validated['auto_renew'] ?? false,
             ];
             
-            $checkoutResult = $this->mayaPaymentService->createCheckout($checkoutData);
+            // Create checkout or subscription based on auto_renew setting
+            if ($validated['auto_renew'] ?? false) {
+                // Create a subscription (this will still create a checkout first)
+                $checkoutResult = $this->mayaPaymentService->createSubscription($checkoutData);
+            } else {
+                // Create a one-time checkout
+                $checkoutResult = $this->mayaPaymentService->createCheckout($checkoutData);
+            }
             
             if (!$checkoutResult['success']) {
                 return redirect()->back()->with('error', $checkoutResult['message']);
@@ -137,7 +144,8 @@ class SubscriptionController extends Controller
                 // Log the redirect attempt
                 Log::info('Redirecting to Maya checkout', [
                     'checkout_url' => $checkoutResult['checkout_url'],
-                    'reference' => $referenceNumber
+                    'reference' => $referenceNumber,
+                    'is_subscription' => $checkoutResult['is_subscription'] ?? false,
                 ]);
                 
                 return redirect($checkoutResult['checkout_url']);
@@ -313,6 +321,22 @@ class SubscriptionController extends Controller
             ->where('user_identifier', $clientIdentifier)
             ->where('status', 'active')
             ->firstOrFail();
+        
+        // If this subscription has a Maya subscription ID, cancel it with Maya
+        if ($subscription->hasMayaSubscription()) {
+            $result = $this->mayaPaymentService->cancelSubscription($subscription->maya_subscription_id);
+            
+            if (!$result['success']) {
+                Log::error('Failed to cancel Maya subscription', [
+                    'subscription_id' => $subscription->id,
+                    'maya_subscription_id' => $subscription->maya_subscription_id,
+                    'error' => $result['message'],
+                ]);
+                
+                // Continue with local cancellation even if Maya cancellation fails
+                Log::info('Proceeding with local subscription cancellation despite Maya API failure');
+            }
+        }
         
         $subscription->cancel($validated['cancellation_reason'] ?? null);
         

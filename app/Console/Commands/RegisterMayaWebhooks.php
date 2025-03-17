@@ -20,7 +20,7 @@ class RegisterMayaWebhooks extends Command
      *
      * @var string
      */
-    protected $description = 'Register webhooks with Maya Business for payment notifications';
+    protected $description = 'Register webhooks with Maya Business for payment and subscription notifications';
 
     /**
      * Execute the console command.
@@ -29,12 +29,38 @@ class RegisterMayaWebhooks extends Command
     {
         $baseUrl = config('services.maya.base_url');
         $secretKey = config('services.maya.secret_key');
+        $webhookUrl = config('services.maya.webhook_url', route('webhooks.maya'));
         
         if (!$baseUrl || !$secretKey) {
             $this->error('Maya API credentials are not configured.');
             return 1;
         }
         
+        // Register payment webhooks
+        $this->info('Registering Maya payment webhooks...');
+        $paymentWebhooks = $this->registerPaymentWebhooks($baseUrl, $secretKey);
+        
+        // Register subscription webhooks
+        $this->info('Registering Maya subscription webhooks...');
+        $subscriptionWebhooks = $this->registerSubscriptionWebhooks($baseUrl, $secretKey);
+        
+        $totalWebhooks = count($paymentWebhooks) + count($subscriptionWebhooks);
+        $successCount = $paymentWebhooks['success'] + $subscriptionWebhooks['success'];
+        
+        if ($successCount === $totalWebhooks) {
+            $this->info('All webhooks registered successfully!');
+            return 0;
+        } else {
+            $this->warn("Registered {$successCount} out of {$totalWebhooks} webhooks.");
+            return 1;
+        }
+    }
+    
+    /**
+     * Register payment webhooks.
+     */
+    private function registerPaymentWebhooks($baseUrl, $secretKey)
+    {
         $webhooks = [
             [
                 'name' => 'Payment Success Webhook',
@@ -53,8 +79,47 @@ class RegisterMayaWebhooks extends Command
             ],
         ];
         
-        $this->info('Registering Maya webhooks...');
+        return $this->registerWebhooks($baseUrl, $secretKey, $webhooks, '/checkout/v1/webhooks');
+    }
+    
+    /**
+     * Register subscription webhooks.
+     */
+    private function registerSubscriptionWebhooks($baseUrl, $secretKey)
+    {
+        $webhookUrl = config('services.maya.webhook_url', route('webhooks.maya'));
         
+        $webhooks = [
+            [
+                'name' => 'Subscription Created Webhook',
+                'callbackUrl' => $webhookUrl,
+                'eventName' => 'SUBSCRIPTION_CREATED',
+            ],
+            [
+                'name' => 'Subscription Charged Webhook',
+                'callbackUrl' => $webhookUrl,
+                'eventName' => 'SUBSCRIPTION_CHARGED',
+            ],
+            [
+                'name' => 'Subscription Cancelled Webhook',
+                'callbackUrl' => $webhookUrl,
+                'eventName' => 'SUBSCRIPTION_CANCELLED',
+            ],
+            [
+                'name' => 'Subscription Failed Webhook',
+                'callbackUrl' => $webhookUrl,
+                'eventName' => 'SUBSCRIPTION_FAILED',
+            ],
+        ];
+        
+        return $this->registerWebhooks($baseUrl, $secretKey, $webhooks, '/payments/v1/webhooks');
+    }
+    
+    /**
+     * Register webhooks with Maya.
+     */
+    private function registerWebhooks($baseUrl, $secretKey, $webhooks, $endpoint)
+    {
         $successCount = 0;
         
         foreach ($webhooks as $webhook) {
@@ -62,7 +127,7 @@ class RegisterMayaWebhooks extends Command
                 $response = Http::withHeaders([
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Basic ' . base64_encode($secretKey . ':')
-                ])->post($baseUrl . '/checkout/v1/webhooks', [
+                ])->post($baseUrl . $endpoint, [
                     'name' => $webhook['name'],
                     'callbackUrl' => $webhook['callbackUrl'],
                     'eventName' => $webhook['eventName'],
@@ -85,12 +150,9 @@ class RegisterMayaWebhooks extends Command
             }
         }
         
-        if ($successCount === count($webhooks)) {
-            $this->info('All webhooks registered successfully!');
-            return 0;
-        } else {
-            $this->warn("Registered {$successCount} out of " . count($webhooks) . " webhooks.");
-            return 1;
-        }
+        return [
+            'total' => count($webhooks),
+            'success' => $successCount,
+        ];
     }
 }
