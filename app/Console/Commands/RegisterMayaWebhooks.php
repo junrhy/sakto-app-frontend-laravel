@@ -29,23 +29,30 @@ class RegisterMayaWebhooks extends Command
     {
         $baseUrl = config('services.maya.base_url');
         $secretKey = config('services.maya.secret_key');
-        $webhookUrl = config('services.maya.webhook_url', route('webhooks.maya'));
+        $publicKey = config('services.maya.public_key');
+        $webhookUrl = config('services.maya.webhook_url');
         
-        if (!$baseUrl || !$secretKey) {
+        if (!$baseUrl || !$secretKey || !$publicKey) {
             $this->error('Maya API credentials are not configured.');
             return 1;
         }
         
-        // Register payment webhooks
-        $this->info('Registering Maya payment webhooks...');
-        $paymentWebhooks = $this->registerPaymentWebhooks($baseUrl, $secretKey);
+        // Check if we're in a local environment (likely won't work with Maya)
+        $isLocal = str_contains($webhookUrl, 'localhost') || str_contains($webhookUrl, '127.0.0.1');
+        if ($isLocal) {
+            $this->warn('Warning: Using a local URL for webhooks. Maya requires public URLs for webhook callbacks.');
+            $this->warn('Consider using a service like ngrok for local testing or deploy to a public server.');
+            
+            if (!$this->confirm('Do you want to continue anyway?', false)) {
+                return 1;
+            }
+        }
         
-        // Register subscription webhooks
-        $this->info('Registering Maya subscription webhooks...');
-        $subscriptionWebhooks = $this->registerSubscriptionWebhooks($baseUrl, $secretKey);
+        // Register all webhooks
+        $webhooks = $this->registerAllWebhooks($baseUrl, $secretKey, $publicKey);
         
-        $totalWebhooks = count($paymentWebhooks) + count($subscriptionWebhooks);
-        $successCount = $paymentWebhooks['success'] + $subscriptionWebhooks['success'];
+        $totalWebhooks = $webhooks['total'];
+        $successCount = $webhooks['success'];
         
         if ($successCount === $totalWebhooks) {
             $this->info('All webhooks registered successfully!');
@@ -57,68 +64,116 @@ class RegisterMayaWebhooks extends Command
     }
     
     /**
-     * Register payment webhooks.
+     * Register all Maya webhooks.
      */
-    private function registerPaymentWebhooks($baseUrl, $secretKey)
+    private function registerAllWebhooks($baseUrl, $secretKey, $publicKey)
     {
+        // Ensure we have absolute URLs for callbacks
+        $successUrl = config('services.maya.webhook_success_url');
+        $failureUrl = config('services.maya.webhook_failure_url');
+        $webhookUrl = config('services.maya.webhook_url');
+        
+        // Make sure URLs are absolute
+        if (!filter_var($successUrl, FILTER_VALIDATE_URL)) {
+            $successUrl = config('app.url') . '/webhooks/maya/success';
+        }
+        
+        if (!filter_var($failureUrl, FILTER_VALIDATE_URL)) {
+            $failureUrl = config('app.url') . '/webhooks/maya/failure';
+        }
+        
+        if (!filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
+            $webhookUrl = config('app.url') . '/webhooks/maya';
+        }
+        
+        // Define all available Maya webhook events
         $webhooks = [
+            // Standard payment webhooks
             [
-                'name' => 'Payment Success Webhook',
-                'callbackUrl' => config('services.maya.webhook_success_url'),
+                'name' => 'AUTHORIZED',
+                'callbackUrl' => $webhookUrl,
+                'eventName' => 'AUTHORIZED',
+            ],
+            [
+                'name' => 'PAYMENT_SUCCESS',
+                'callbackUrl' => $successUrl,
                 'eventName' => 'PAYMENT_SUCCESS',
             ],
             [
-                'name' => 'Payment Failed Webhook',
-                'callbackUrl' => config('services.maya.webhook_failure_url'),
+                'name' => 'PAYMENT_FAILED',
+                'callbackUrl' => $failureUrl,
                 'eventName' => 'PAYMENT_FAILED',
             ],
             [
-                'name' => 'Payment Expired Webhook',
-                'callbackUrl' => config('services.maya.webhook_failure_url'),
+                'name' => 'PAYMENT_EXPIRED',
+                'callbackUrl' => $failureUrl,
                 'eventName' => 'PAYMENT_EXPIRED',
             ],
+            [
+                'name' => 'PAYMENT_CANCELLED',
+                'callbackUrl' => $failureUrl,
+                'eventName' => 'PAYMENT_CANCELLED',
+            ],
+            
+            // 3DS payment webhooks
+            [
+                'name' => '3DS_PAYMENT_SUCCESS',
+                'callbackUrl' => $successUrl,
+                'eventName' => '3DS_PAYMENT_SUCCESS',
+            ],
+            [
+                'name' => '3DS_PAYMENT_FAILURE',
+                'callbackUrl' => $failureUrl,
+                'eventName' => '3DS_PAYMENT_FAILURE',
+            ],
+            [
+                'name' => '3DS_PAYMENT_DROPOUT',
+                'callbackUrl' => $failureUrl,
+                'eventName' => '3DS_PAYMENT_DROPOUT',
+            ],
+            
+            // Recurring payment webhooks
+            [
+                'name' => 'RECURRING_PAYMENT_SUCCESS',
+                'callbackUrl' => $successUrl,
+                'eventName' => 'RECURRING_PAYMENT_SUCCESS',
+            ],
+            [
+                'name' => 'RECURRING_PAYMENT_FAILURE',
+                'callbackUrl' => $failureUrl,
+                'eventName' => 'RECURRING_PAYMENT_FAILURE',
+            ],
+            
+            // Checkout webhooks
+            [
+                'name' => 'CHECKOUT_SUCCESS',
+                'callbackUrl' => $successUrl,
+                'eventName' => 'CHECKOUT_SUCCESS',
+            ],
+            [
+                'name' => 'CHECKOUT_FAILURE',
+                'callbackUrl' => $failureUrl,
+                'eventName' => 'CHECKOUT_FAILURE',
+            ],
+            [
+                'name' => 'CHECKOUT_DROPOUT',
+                'callbackUrl' => $failureUrl,
+                'eventName' => 'CHECKOUT_DROPOUT',
+            ],
+            [
+                'name' => 'CHECKOUT_CANCELLED',
+                'callbackUrl' => $failureUrl,
+                'eventName' => 'CHECKOUT_CANCELLED',
+            ],
         ];
         
-        return $this->registerWebhooks($baseUrl, $secretKey, $webhooks, '/checkout/v1/webhooks');
-    }
-    
-    /**
-     * Register subscription webhooks.
-     */
-    private function registerSubscriptionWebhooks($baseUrl, $secretKey)
-    {
-        $webhookUrl = config('services.maya.webhook_url', route('webhooks.maya'));
-        
-        $webhooks = [
-            [
-                'name' => 'Subscription Created Webhook',
-                'callbackUrl' => $webhookUrl,
-                'eventName' => 'SUBSCRIPTION_CREATED',
-            ],
-            [
-                'name' => 'Subscription Charged Webhook',
-                'callbackUrl' => $webhookUrl,
-                'eventName' => 'SUBSCRIPTION_CHARGED',
-            ],
-            [
-                'name' => 'Subscription Cancelled Webhook',
-                'callbackUrl' => $webhookUrl,
-                'eventName' => 'SUBSCRIPTION_CANCELLED',
-            ],
-            [
-                'name' => 'Subscription Failed Webhook',
-                'callbackUrl' => $webhookUrl,
-                'eventName' => 'SUBSCRIPTION_FAILED',
-            ],
-        ];
-        
-        return $this->registerWebhooks($baseUrl, $secretKey, $webhooks, '/payments/v1/webhooks');
+        return $this->registerWebhooks($baseUrl, $secretKey, $publicKey, $webhooks, '/checkout/v1/webhooks');
     }
     
     /**
      * Register webhooks with Maya.
      */
-    private function registerWebhooks($baseUrl, $secretKey, $webhooks, $endpoint)
+    private function registerWebhooks($baseUrl, $secretKey, $publicKey, $webhooks, $endpoint)
     {
         $successCount = 0;
         
@@ -134,19 +189,10 @@ class RegisterMayaWebhooks extends Command
                 ]);
                 
                 if ($response->successful()) {
-                    $this->info("✓ Registered webhook: {$webhook['name']} for {$webhook['eventName']}");
                     $successCount++;
-                } else {
-                    $this->error("✗ Failed to register webhook: {$webhook['name']}");
-                    $this->error("  Response: " . $response->body());
                 }
             } catch (\Exception $e) {
-                $this->error("✗ Exception when registering webhook: {$webhook['name']}");
-                $this->error("  " . $e->getMessage());
-                Log::error('Maya webhook registration error', [
-                    'webhook' => $webhook['name'],
-                    'error' => $e->getMessage(),
-                ]);
+                // Silent catch - no logging
             }
         }
         

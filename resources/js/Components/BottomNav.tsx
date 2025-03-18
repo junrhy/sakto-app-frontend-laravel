@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
+
 import { 
-    FaHome, 
-    FaInbox, 
-    FaUser,
-    FaPlus
-} from 'react-icons/fa';
+    RxHome,
+    RxMix,
+    RxEnvelopeOpen,
+    RxPerson
+} from 'react-icons/rx';
 
 interface NavItem {
     icon: React.ReactNode;
@@ -17,24 +18,24 @@ interface NavItem {
 
 const createNavItems = (unreadCount: number = 0): NavItem[] => [
     {
-        icon: <FaHome />,
+        icon: <RxHome />,
         label: 'Home',
         route: '/home',
         isHome: true
     },
     {
-        icon: <FaPlus />,
+        icon: <RxMix />,
         label: 'Apps',
         route: '/apps'
     },
     {
-        icon: <FaInbox />,
+        icon: <RxEnvelopeOpen />,
         label: 'Inbox',
         route: '/inbox',
         notifications: unreadCount
     },
     {
-        icon: <FaUser />,
+        icon: <RxPerson />,
         label: 'Profile',
         route: '/profile'
     }
