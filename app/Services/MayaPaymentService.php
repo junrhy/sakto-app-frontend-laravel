@@ -41,52 +41,62 @@ class MayaPaymentService
             
             while ($attempt <= $maxRetries) {
                 try {
+                    // Prepare the payload
+                    $payload = [
+                        'totalAmount' => [
+                            'value' => $data['amount'],
+                            'currency' => 'PHP',
+                        ],
+                        'requestReferenceNumber' => $data['reference_number'],
+                        'redirectUrl' => [
+                            'success' => $this->successUrl . '?reference=' . $data['reference_number'],
+                            'failure' => $this->failureUrl . '?reference=' . $data['reference_number'],
+                            'cancel' => $this->cancelUrl . '?reference=' . $data['reference_number'],
+                        ],
+                        'items' => [
+                            [
+                                'name' => $data['plan_name'],
+                                'quantity' => 1,
+                                'code' => $data['plan_slug'],
+                                'description' => $data['plan_description'] ?? 'Subscription plan',
+                                'amount' => [
+                                    'value' => $data['amount'],
+                                    'currency' => 'PHP',
+                                ],
+                                'totalAmount' => [
+                                    'value' => $data['amount'],
+                                    'currency' => 'PHP',
+                                ],
+                            ]
+                        ],
+                        'buyer' => [
+                            'firstName' => $data['user_name'] ?? 'Valued',
+                            'lastName' => $data['user_lastname'] ?? 'Customer',
+                            'contact' => [
+                                'email' => $data['user_email'] ?? '',
+                                'phone' => $data['user_phone'] ?? '',
+                            ],
+                        ],
+                        'metadata' => [
+                            'user_identifier' => $data['user_identifier'],
+                            'plan_id' => $data['plan_id'],
+                            'auto_renew' => $data['auto_renew'] ?? false,
+                        ],
+                    ];
+                    
+                    // Add transaction details for recurring payments if this is a subscription
+                    if (isset($data['is_subscription']) && $data['is_subscription']) {
+                        $payload['transaction'] = [
+                            'frequencyIndicator' => 'RECURRING'
+                        ];
+                    }
+
                     $response = Http::timeout(30) // Set a 30-second timeout
                         ->withHeaders([
                             'Content-Type' => 'application/json',
                             'Authorization' => 'Basic ' . base64_encode($this->publicKey . ':')
                         ])
-                        ->post($this->baseUrl . '/checkout/v1/checkouts', [
-                            'totalAmount' => [
-                                'value' => $data['amount'],
-                                'currency' => 'PHP',
-                            ],
-                            'requestReferenceNumber' => $data['reference_number'],
-                            'redirectUrl' => [
-                                'success' => $this->successUrl . '?reference=' . $data['reference_number'],
-                                'failure' => $this->failureUrl . '?reference=' . $data['reference_number'],
-                                'cancel' => $this->cancelUrl . '?reference=' . $data['reference_number'],
-                            ],
-                            'items' => [
-                                [
-                                    'name' => $data['plan_name'],
-                                    'quantity' => 1,
-                                    'code' => $data['plan_slug'],
-                                    'description' => $data['plan_description'] ?? 'Subscription plan',
-                                    'amount' => [
-                                        'value' => $data['amount'],
-                                        'currency' => 'PHP',
-                                    ],
-                                    'totalAmount' => [
-                                        'value' => $data['amount'],
-                                        'currency' => 'PHP',
-                                    ],
-                                ]
-                            ],
-                            'buyer' => [
-                                'firstName' => $data['user_name'] ?? 'Valued',
-                                'lastName' => $data['user_lastname'] ?? 'Customer',
-                                'contact' => [
-                                    'email' => $data['user_email'] ?? '',
-                                    'phone' => $data['user_phone'] ?? '',
-                                ],
-                            ],
-                            'metadata' => [
-                                'user_identifier' => $data['user_identifier'],
-                                'plan_id' => $data['plan_id'],
-                                'auto_renew' => $data['auto_renew'] ?? false,
-                            ],
-                        ]);
+                        ->post($this->baseUrl . '/checkout/v1/checkouts', $payload);
                     
                     // If we get here, the request was successful
                     break;
@@ -167,6 +177,9 @@ class MayaPaymentService
     {
         try {
             // First, we need to create a payment token using the initial checkout
+            // Add the is_subscription flag to indicate this is for a recurring payment
+            $data['is_subscription'] = true;
+            
             $checkoutResult = $this->createCheckout($data);
             
             if (!$checkoutResult['success']) {
@@ -214,10 +227,7 @@ class MayaPaymentService
             // Calculate the billing cycle based on the plan duration
             $billingCycle = $this->calculateBillingCycle($data['plan_duration_in_days']);
             
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Basic ' . base64_encode($this->secretKey . ':')
-            ])->post($this->baseUrl . '/payments/v1/subscriptions', [
+            $payload = [
                 'paymentTokenId' => $paymentTokenId,
                 'name' => $data['plan_name'] . ' Subscription',
                 'description' => $data['plan_description'] ?? 'Recurring subscription for ' . $data['plan_name'],
@@ -232,7 +242,19 @@ class MayaPaymentService
                     'plan_id' => $data['plan_id'],
                     'subscription_identifier' => $data['subscription_identifier'],
                 ],
-            ]);
+            ];
+            
+            // Only add transaction.frequencyIndicator when auto_renew is true
+            if (isset($data['auto_renew']) && $data['auto_renew']) {
+                $payload['transaction'] = [
+                    'frequencyIndicator' => 'RECURRING'
+                ];
+            }
+            
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode($this->secretKey . ':')
+            ])->post($this->baseUrl . '/payments/v1/subscriptions', $payload);
             
             if ($response->successful()) {
                 $subscriptionId = $response->json('id');
