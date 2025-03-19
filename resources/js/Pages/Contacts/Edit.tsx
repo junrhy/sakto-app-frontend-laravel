@@ -38,6 +38,7 @@ interface Contact {
     notes?: string;
     id_picture?: string;
     id_numbers?: IdNumber[];
+    group?: string[];
     created_at: string;
     updated_at: string;
 }
@@ -66,6 +67,7 @@ interface FormData {
     notes: string;
     id_picture: File | string | null;
     id_numbers: IdNumber[];
+    group: string[];
     _method: string;
 }
 
@@ -101,6 +103,7 @@ export default function Edit({ auth, contact }: Props) {
         notes: contact.notes || '',
         id_picture: contact.id_picture || null,
         id_numbers: parseIdNumbers(contact.id_numbers),
+        group: contact.group || [],
         _method: 'PUT'
     });
 
@@ -147,6 +150,20 @@ export default function Edit({ auth, contact }: Props) {
             [field]: value
         };
         setData('id_numbers', updatedIdNumbers);
+    };
+
+    const addGroup = () => {
+        setData('group', [...data.group, '']);
+    };
+
+    const removeGroup = (index: number) => {
+        setData('group', data.group.filter((_, i) => i !== index));
+    };
+
+    const updateGroup = (index: number, value: string) => {
+        const newGroups = [...data.group];
+        newGroups[index] = value;
+        setData('group', newGroups);
     };
 
     function handleSubmit(e: React.FormEvent) {
@@ -456,6 +473,47 @@ export default function Edit({ auth, contact }: Props) {
                                             />
                                             {errors.address && (
                                                 <p className="text-sm text-red-600 dark:text-red-400">{errors.address}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor="group" className="text-gray-700 dark:text-gray-300">Groups</Label>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={addGroup}
+                                                    className="text-xs"
+                                                >
+                                                    <PlusIcon className="h-4 w-4 mr-1" />
+                                                    Add Group
+                                                </Button>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {data.group.map((group, index) => (
+                                                    <div key={index} className="flex items-center gap-2">
+                                                        <Input
+                                                            type="text"
+                                                            value={group}
+                                                            onChange={(e) => updateGroup(index, e.target.value)}
+                                                            placeholder="Enter group name"
+                                                            className="flex-1 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => removeGroup(index)}
+                                                            className="text-red-500 hover:text-red-600"
+                                                        >
+                                                            <XIcon className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {errors.group && (
+                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.group}</p>
                                             )}
                                         </div>
 

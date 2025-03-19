@@ -22,8 +22,30 @@ interface IdNumber {
     notes?: string;
 }
 
+interface FormData {
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    gender: 'male' | 'female' | 'other';
+    fathers_name: string;
+    mothers_maiden_name: string;
+    email: string;
+    call_number: string;
+    sms_number: string;
+    whatsapp: string;
+    facebook: string;
+    instagram: string;
+    twitter: string;
+    linkedin: string;
+    address: string;
+    notes: string;
+    id_picture: File | null;
+    id_numbers: IdNumber[];
+    group: string[];
+}
+
 export default function Create({ auth, client_identifier }: Props) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm<FormData>({
         first_name: '',
         middle_name: '',
         last_name: '',
@@ -40,11 +62,13 @@ export default function Create({ auth, client_identifier }: Props) {
         linkedin: '',
         address: '',
         notes: '',
-        id_picture: null as File | null,
-        id_numbers: [] as IdNumber[],
+        id_picture: null,
+        id_numbers: [],
+        group: [],
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [fileError, setFileError] = useState<string | null>(null);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -78,9 +102,30 @@ export default function Create({ auth, client_identifier }: Props) {
         setData('id_numbers', updatedIdNumbers);
     };
 
+    const addGroup = () => {
+        setData('group', [...data.group, '']);
+    };
+
+    const removeGroup = (index: number) => {
+        setData('group', data.group.filter((_, i) => i !== index));
+    };
+
+    const updateGroup = (index: number, value: string) => {
+        const newGroups = [...data.group];
+        newGroups[index] = value;
+        setData('group', newGroups);
+    };
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        post(route('contacts.store'));
+        post(route('contacts.store'), {
+            forceFormData: true,
+            onError: (errors: Record<string, string>) => {
+                if (errors.id_picture?.includes('413')) {
+                    setFileError('The image file is too large. Please choose a smaller file (max 2MB).');
+                }
+            }
+        });
     }
 
     return (
@@ -135,8 +180,8 @@ export default function Create({ auth, client_identifier }: Props) {
                                                 onChange={handleImageChange}
                                                 className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
                                             />
-                                            {errors.id_picture && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.id_picture}</p>
+                                            {fileError && (
+                                                <p className="text-sm text-red-600 dark:text-red-400">{fileError}</p>
                                             )}
                                         </div>
                                     </div>
@@ -479,6 +524,48 @@ export default function Create({ auth, client_identifier }: Props) {
                                     ))}
                                     {errors.id_numbers && (
                                         <p className="text-sm text-red-600 dark:text-red-400">{errors.id_numbers}</p>
+                                    )}
+                                </div>
+
+                                {/* Group Selection */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="group" className="text-gray-700 dark:text-gray-300">Groups</Label>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={addGroup}
+                                            className="text-xs"
+                                        >
+                                            <PlusIcon className="h-4 w-4 mr-1" />
+                                            Add Group
+                                        </Button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {data.group.map((group, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <Input
+                                                    type="text"
+                                                    value={group}
+                                                    onChange={(e) => updateGroup(index, e.target.value)}
+                                                    placeholder="Enter group name"
+                                                    className="flex-1 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removeGroup(index)}
+                                                    className="text-red-500 hover:text-red-600"
+                                                >
+                                                    <XIcon className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {errors.group && (
+                                        <p className="text-sm text-red-600 dark:text-red-400">{errors.group}</p>
                                     )}
                                 </div>
 

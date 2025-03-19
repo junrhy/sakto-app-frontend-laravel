@@ -84,6 +84,7 @@ class ContactsController extends Controller
             'twitter' => 'nullable|string|max:255|url',
             'linkedin' => 'nullable|string|max:255|url',
             'address' => 'nullable|string|max:500',
+            'group' => 'nullable|array',
             'notes' => 'nullable|string',
             'id_picture' => 'nullable|image|max:2048', // max 2MB
         ]);
@@ -154,6 +155,7 @@ class ContactsController extends Controller
             'twitter' => 'nullable|string|max:255|url',
             'linkedin' => 'nullable|string|max:255|url',
             'address' => 'nullable|string|max:500',
+            'group' => 'nullable|array',
             'notes' => 'nullable|string',
             'id_numbers' => 'nullable|array',
             'id_numbers.*.type' => 'required_with:id_numbers|string|max:255',
@@ -276,6 +278,7 @@ class ContactsController extends Controller
             'twitter' => 'nullable|string|max:255|url',
             'linkedin' => 'nullable|string|max:255|url',
             'address' => 'nullable|string|max:500',
+            'group' => 'nullable|array',
             'notes' => 'nullable|string',
             'id_picture' => 'nullable|image|max:2048', // max 2MB
             'id_numbers' => 'nullable|array',
@@ -385,6 +388,7 @@ class ContactsController extends Controller
                     'instagram' => $contact['instagram'],
                     'twitter' => $contact['twitter'],
                     'linkedin' => $contact['linkedin'],
+                    'group' => $contact['group'],
                     'notes' => $contact['notes'],
                     'id_picture' => $contact['id_picture'],
                     'id_numbers' => $contact['id_numbers'],

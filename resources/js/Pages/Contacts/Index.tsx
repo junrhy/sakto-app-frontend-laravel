@@ -26,6 +26,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/Components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/Components/ui/select";
 
 interface IdNumber {
     id: number;
@@ -54,6 +61,7 @@ interface Contact {
     notes?: string;
     id_picture?: string;
     id_numbers?: IdNumber[];  // Make id_numbers optional
+    group?: string[];  // Add group field
     created_at: string;
     updated_at: string;
 }
@@ -68,6 +76,7 @@ export default function Index({ auth, contacts }: Props) {
     const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [groupFilter, setGroupFilter] = useState<string>('all');
 
     // Parse id_numbers if it's a string
     const parseIdNumbers = (idNumbers: any) => {
@@ -82,14 +91,11 @@ export default function Index({ auth, contacts }: Props) {
     };
 
     const filteredContacts = useMemo(() => {
-        if (!search.trim()) return contacts;
+        if (!search.trim() && groupFilter === 'all') return contacts;
 
         const searchLower = search.toLowerCase();
         return contacts.filter(contact => {
-            // Parse id_numbers for each contact
-            const parsedIdNumbers = parseIdNumbers(contact.id_numbers);
-            
-            return contact.first_name.toLowerCase().includes(searchLower) ||
+            const matchesSearch = contact.first_name.toLowerCase().includes(searchLower) ||
                 (contact.middle_name || '').toLowerCase().includes(searchLower) ||
                 contact.last_name.toLowerCase().includes(searchLower) ||
                 contact.gender.toLowerCase().includes(searchLower) ||
@@ -105,13 +111,18 @@ export default function Index({ auth, contacts }: Props) {
                 (contact.linkedin || '').toLowerCase().includes(searchLower) ||
                 (contact.address || '').toLowerCase().includes(searchLower) ||
                 (contact.notes || '').toLowerCase().includes(searchLower) ||
-                parsedIdNumbers.some((idNum: IdNumber) => 
+                (contact.group || []).some(g => g.toLowerCase().includes(searchLower)) ||
+                parseIdNumbers(contact.id_numbers).some((idNum: IdNumber) => 
                     idNum.type.toLowerCase().includes(searchLower) ||
                     idNum.number.toLowerCase().includes(searchLower) ||
                     (idNum.notes || '').toLowerCase().includes(searchLower)
                 );
+
+            const matchesGroup = groupFilter === 'all' || (contact.group && contact.group.includes(groupFilter));
+
+            return matchesSearch && matchesGroup;
         });
-    }, [contacts, search]);
+    }, [contacts, search, groupFilter]);
 
     const toggleSelectAll = () => {
         if (selectedContacts.length === filteredContacts.length) {
@@ -225,6 +236,17 @@ export default function Index({ auth, contacts }: Props) {
                                 className="pl-9 w-full sm:w-[300px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
                             />
                         </div>
+                        <Select value={groupFilter} onValueChange={setGroupFilter}>
+                            <SelectTrigger className="w-full sm:w-[200px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                                <SelectValue placeholder="Filter by group" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Groups</SelectItem>
+                                {Array.from(new Set(contacts.flatMap(contact => contact.group || []))).map(group => (
+                                    <SelectItem key={group} value={group}>{group}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         {selectedContacts.length > 0 && (
                             <div className="flex items-center gap-2">
                                 <DropdownMenu>
@@ -318,6 +340,18 @@ export default function Index({ auth, contacts }: Props) {
                                                     <div className="lg:hidden text-sm text-gray-500 dark:text-gray-400">
                                                         {contact.call_number || contact.sms_number || contact.whatsapp || '-'}
                                                     </div>
+                                                    {contact.group && contact.group.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                            {contact.group.map((group, index) => (
+                                                                <span
+                                                                    key={index}
+                                                                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                                                                >
+                                                                    {group}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="hidden md:table-cell bg-white dark:bg-gray-800/40 text-gray-700 dark:text-gray-300">
                                                     {contact.email}
@@ -429,6 +463,24 @@ export default function Index({ auth, contacts }: Props) {
                             </div>
 
                             <div className="space-y-6">
+                                <div>
+                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Groups</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedContact.group && selectedContact.group.length > 0 ? (
+                                            selectedContact.group.map((group, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                                                >
+                                                    {group}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 dark:text-gray-400">No groups assigned</p>
+                                        )}
+                                    </div>
+                                </div>
+
                                 <div>
                                     <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">ID Numbers</h4>
                                     <div className="divide-y divide-gray-100 dark:divide-gray-700">
