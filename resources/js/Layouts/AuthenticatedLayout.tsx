@@ -7,6 +7,8 @@ import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { Toaster } from 'sonner';
+import { Button } from '@/Components/ui/button';
+import { CreditCardIcon, SparklesIcon } from 'lucide-react';
 
 interface DashboardType {
     id: number;
@@ -20,9 +22,14 @@ interface PageProps extends Record<string, any> {
             email: string;
             identifier: string;
             is_admin?: boolean;
+            credits?: number;
         };
     };
 }
+
+const formatNumber = (num: number | undefined | null) => {
+    return num?.toLocaleString() ?? '0';
+};
 
 const getHeaderColorClass = (url: string): string => {
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
@@ -74,7 +81,7 @@ const getHeaderColorClass = (url: string): string => {
         return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
     }
     if (url.includes('/subscriptions') || appParam === 'subscriptions') {
-        return 'from-green-600 via-green-500 to-green-400 dark:from-green-950 dark:via-green-900 dark:to-green-800';
+        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
@@ -346,6 +353,44 @@ export default function Authenticated({
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
+                                {/* Mobile Menu Button */}
+                                <div className="flex items-center sm:hidden mr-2">
+                                    <button
+                                        onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                                        className="inline-flex items-center justify-center rounded-md p-2 text-white/80 transition duration-150 ease-in-out hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none"
+                                    >
+                                        <svg
+                                            className="h-6 w-6"
+                                            stroke="currentColor"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                className={
+                                                    !showingNavigationDropdown
+                                                        ? 'inline-flex'
+                                                        : 'hidden'
+                                                }
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M4 6h16M4 12h16M4 18h16"
+                                            />
+                                            <path
+                                                className={
+                                                    showingNavigationDropdown
+                                                        ? 'inline-flex'
+                                                        : 'hidden'
+                                                }
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+
                                 <div className="flex shrink-0 items-center">
                                     <Link href="/home" className="transition-transform hover:scale-105">
                                         <div className="flex items-center">
@@ -899,41 +944,80 @@ export default function Authenticated({
                                 </div>
                             </div>
 
-                            <div className="-me-2 flex items-center sm:hidden">
-                                <button
-                                    onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                    className="inline-flex items-center justify-center rounded-md p-2 text-white/80 transition duration-150 ease-in-out hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none"
-                                >
-                                    <svg
-                                        className="h-6 w-6"
-                                        stroke="currentColor"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
+                            <div className="flex items-center gap-4">
+                                <div className="hidden sm:flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: authUser.identifier })}
+                                        className="text-white bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20"
                                     >
-                                        <path
-                                            className={
-                                                !showingNavigationDropdown
-                                                    ? 'inline-flex'
-                                                    : 'hidden'
-                                            }
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M4 6h16M4 12h16M4 18h16"
-                                        />
-                                        <path
-                                            className={
-                                                showingNavigationDropdown
-                                                    ? 'inline-flex'
-                                                    : 'hidden'
-                                            }
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
-                                </button>
+                                        <span className="text-sm font-medium">{formatNumber(authUser.credits ?? 0)} Credits</span>
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                        onClick={() => window.location.href = route('credits.buy')}
+                                    >
+                                        <CreditCardIcon className="w-4 h-4" />
+                                        Buy Credits
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                        onClick={() => window.location.href = route('subscriptions.index')}
+                                    >
+                                        <SparklesIcon className="w-4 h-4" />
+                                        Subscriptions
+                                    </Button>
+                                </div>
+                                {/* Mobile Credits Button */}
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="sm:hidden text-white hover:text-blue-100 hover:bg-white/10"
+                                    onClick={() => window.location.href = route('credits.buy')}
+                                >
+                                    <CreditCardIcon className="w-5 h-5" />
+                                </Button>
+
+                                <div className="relative inline-block">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <span className="inline-flex rounded-md">
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                >
+                                                    {authUser.name}
+                                                    <svg
+                                                        className="ml-2 -mr-0.5 h-4 w-4"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </button>
+                                            </span>
+                                        </Dropdown.Trigger>
+
+                                        <Dropdown.Content>
+                                            <Dropdown.Link href={route('help')}>
+                                                Help
+                                            </Dropdown.Link>
+                                            <Dropdown.Link href={route('logout')} method="post" as="button">
+                                                Logout
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                </div>
                             </div>
                         </div>
                     </div>

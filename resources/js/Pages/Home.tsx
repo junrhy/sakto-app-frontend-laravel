@@ -76,18 +76,18 @@ export default function Home({ auth }: Props) {
 
     const getBorderColor = (colorClass: string) => {
         const colorMap: { [key: string]: string } = {
-            'text-blue-500': '#3B82F6',
-            'text-orange-500': '#F97316',
-            'text-green-500': '#22C55E',
-            'text-purple-500': '#A855F7',
-            'text-indigo-500': '#6366F1',
-            'text-red-500': '#EF4444',
-            'text-yellow-500': '#EAB308',
-            'text-teal-500': '#14B8A6',
-            'text-cyan-500': '#06B6D4',
-            'text-pink-500': '#EC4899',
+            'text-blue-500': '#475569', // slate-600
+            'text-orange-500': '#475569', // slate-600
+            'text-green-500': '#475569', // slate-600
+            'text-purple-500': '#475569', // slate-600
+            'text-indigo-500': '#475569', // slate-600
+            'text-red-500': '#475569', // slate-600
+            'text-yellow-500': '#475569', // slate-600
+            'text-teal-500': '#475569', // slate-600
+            'text-cyan-500': '#475569', // slate-600
+            'text-pink-500': '#475569', // slate-600
         };
-        return colorMap[colorClass] || '#3B82F6';
+        return colorMap[colorClass] || '#475569'; // Default to slate-600
     };
 
     const firstName = auth.user.name.split(' ')[0];
@@ -119,13 +119,13 @@ export default function Home({ auth }: Props) {
                     </div>
                 )}
                 
-                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10 shadow-lg`}>
+                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
                     <div className="container mx-auto px-4 pt-4">
-                        <div className="flex flex-col items-cente">
+                        <div className="flex flex-col items-center">
                             <div className="w-full flex justify-between items-center mb-6">
                                 <div className="flex items-center">
-                                    <ApplicationLogo className="h-10 w-auto fill-current text-white" />
-                                    <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                                    <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
+                                    <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">Sakto</span>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="hidden sm:flex items-center gap-2">
@@ -133,7 +133,7 @@ export default function Home({ auth }: Props) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
-                                            className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-white/20"
+                                            className="text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
                                         >
                                             <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
                                         </Button>
@@ -170,7 +170,7 @@ export default function Home({ auth }: Props) {
                                             <DropdownMenuTrigger asChild>
                                                 <Button 
                                                     variant="ghost" 
-                                                    className="text-white hover:text-blue-100 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+                                                    className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                                 >
                                                     <UserIcon className="w-5 h-5" />
                                                     <span>{auth.user.name}</span>
@@ -180,14 +180,14 @@ export default function Home({ auth }: Props) {
                                                 align="end" 
                                                 alignOffset={0}
                                                 sideOffset={8}
-                                                className="w-56 z-50"
+                                                className="w-56 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
                                                 onCloseAutoFocus={(e) => e.preventDefault()}
                                                 collisionPadding={16}
                                             >
                                                 <DropdownMenuItem asChild>
                                                     <InertiaLink 
                                                         href={route('help')}
-                                                        className="flex items-center"
+                                                        className="flex items-center text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                                                     >
                                                         <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
                                                         <span>Help</span>
@@ -200,7 +200,7 @@ export default function Home({ auth }: Props) {
                                                         href={route('logout')} 
                                                         method="post" 
                                                         as="button"
-                                                        className="w-full text-left"
+                                                        className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                                                     >
                                                         Logout
                                                     </InertiaLink>
@@ -254,10 +254,13 @@ export default function Home({ auth }: Props) {
                                 className="flex flex-col items-center"
                             >
                                 <div 
-                                    className={`w-20 h-20 bg-white dark:bg-gray-800 rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-gray-800`}
-                                    style={{ borderWidth: '2px', borderColor: getBorderColor(app.bgColor) }}
+                                    className={`w-20 h-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-2 transform hover:-translate-y-1 transition-all duration-200 shadow-md hover:shadow-lg dark:shadow-gray-800/50`}
+                                    style={{ 
+                                        borderWidth: '1px', 
+                                        borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.3)' : getBorderColor(app.bgColor)
+                                    }}
                                 >
-                                    <div className={`text-4xl ${app.bgColor}`}>
+                                    <div className={`text-4xl ${app.bgColor} dark:text-slate-300`}>
                                         {app.icon}
                                     </div>
                                 </div>

@@ -115,13 +115,13 @@ export default function Edit({
                     </div>
                 )}
 
-                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10`}>
+                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center mb-4">
                             <div className="w-full flex justify-between items-center mb-2">
                                 <div className="flex items-center">
-                                    <ApplicationLogo className="h-10 w-auto fill-current text-white" />
-                                    <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                                    <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
+                                    <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">Sakto</span>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
                                     <div className="hidden sm:flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function Edit({
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
-                                            className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-white/20"
+                                            className="text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
                                         >
                                             <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
                                         </Button>
@@ -166,7 +166,7 @@ export default function Edit({
                                             <DropdownMenuTrigger asChild>
                                                 <Button 
                                                     variant="ghost" 
-                                                    className="text-white hover:text-blue-100 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+                                                    className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                                 >
                                                     <UserIcon className="w-5 h-5" />
                                                     <span>{auth.user.name}</span>
@@ -176,13 +176,13 @@ export default function Edit({
                                                 align="end" 
                                                 alignOffset={0}
                                                 sideOffset={8}
-                                                className="w-56 z-50"
+                                                className="w-56 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
                                                 onCloseAutoFocus={(e) => e.preventDefault()}
                                                 collisionPadding={16}
                                             >
                                                 <DropdownMenuItem>
                                                     <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
-                                                    <InertiaLink href="/help">Help</InertiaLink>
+                                                    <InertiaLink href="/help" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Help</InertiaLink>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem>
@@ -191,7 +191,7 @@ export default function Edit({
                                                         href={route('logout')} 
                                                         method="post" 
                                                         as="button"
-                                                        className="w-full text-left"
+                                                        className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                                                     >
                                                         Logout
                                                     </InertiaLink>

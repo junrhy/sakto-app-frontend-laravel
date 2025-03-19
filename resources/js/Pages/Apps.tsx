@@ -204,13 +204,13 @@ export default function Apps({ auth }: PageProps) {
                 </div>
             )}
 
-            <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 z-10`}>
+            <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 w-full bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
                 <div className="container mx-auto px-4 pt-4">
                     <div className="flex flex-col items-center mb-4">
                         <div className="w-full flex justify-between items-center mb-2">
                             <div className="flex items-center">
-                                <ApplicationLogo className="h-10 w-auto fill-current text-white" />
-                                <span className="ml-2 text-xl font-bold text-white">Sakto</span>
+                                <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
+                                <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">Sakto</span>
                             </div>
                             <div className="flex items-center gap-2 sm:gap-4">
                                 <div className="hidden sm:flex items-center gap-2">
@@ -218,7 +218,7 @@ export default function Apps({ auth }: PageProps) {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
-                                        className="text-white bg-white/10 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-white/20"
+                                        className="text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
                                     >
                                         <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
                                     </Button>
@@ -255,7 +255,7 @@ export default function Apps({ auth }: PageProps) {
                                         <DropdownMenuTrigger asChild>
                                             <Button 
                                                 variant="ghost" 
-                                                className="text-white hover:text-blue-100 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+                                                className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                             >
                                                 <UserIcon className="w-5 h-5" />
                                                 <span>{auth.user.name}</span>
@@ -302,17 +302,17 @@ export default function Apps({ auth }: PageProps) {
                             <div className="mb-8">
                                 <div className="flex gap-4 mb-4">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                                         <Input
                                             placeholder="Search apps..."
-                                            className="pl-10 bg-white dark:bg-gray-900/50 backdrop-blur-sm border-gray-300 dark:border-gray-700"
+                                            className="pl-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                         />
                                     </div>
                                     <Button 
                                         variant="outline" 
-                                        className="bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                                        className="bg-white/80 hover:bg-slate-50 dark:bg-gray-800/80 dark:hover:bg-gray-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                                         onClick={() => setSelectedCategory(null)}
                                     >
                                         All Categories
@@ -323,8 +323,8 @@ export default function Apps({ auth }: PageProps) {
                                         <Badge 
                                             key={category}
                                             variant="secondary" 
-                                            className={`cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 ${
-                                                selectedCategory === category ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
+                                            className={`cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${
+                                                selectedCategory === category ? 'ring-2 ring-slate-500 dark:ring-slate-400' : ''
                                             }`}
                                             onClick={() => setSelectedCategory(category)}
                                         >
@@ -347,12 +347,12 @@ export default function Apps({ auth }: PageProps) {
                                             {groupedApps.freeApps.map((app) => (
                                                 <Card 
                                                     key={app.title} 
-                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-0 bg-white/90 dark:bg-gray-800/50 backdrop-blur-sm"
+                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
                                                 >
                                                     <CardHeader>
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm`}>
-                                                                <div className="text-2xl">
+                                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                <div className="text-2xl dark:text-slate-300">
                                                                     {app.icon}
                                                                 </div>
                                                             </div>
@@ -438,7 +438,7 @@ export default function Apps({ auth }: PageProps) {
                                                             </div>
                                                             <Button 
                                                                 variant="ghost"
-                                                                className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                                                                className="bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-800"
                                                                 onClick={() => {
                                                                     if (app.visible) {
                                                                         window.location.href = `${app.route}`;
@@ -475,12 +475,12 @@ export default function Apps({ auth }: PageProps) {
                                             {groupedApps.paidApps.map((app) => (
                                                 <Card 
                                                     key={app.title} 
-                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-0 bg-white/90 dark:bg-gray-800/50 backdrop-blur-sm"
+                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
                                                 >
                                                     <CardHeader>
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm`}>
-                                                                <div className="text-2xl">
+                                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                <div className="text-2xl dark:text-slate-300">
                                                                     {app.icon}
                                                                 </div>
                                                             </div>
@@ -571,8 +571,8 @@ export default function Apps({ auth }: PageProps) {
                                                             <Button 
                                                                 variant={app.visible ? "ghost" : "outline"}
                                                                 className={app.visible 
-                                                                    ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50" 
-                                                                    : "dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-white"
+                                                                    ? "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-800" 
+                                                                    : "border-slate-200 dark:border-slate-700 dark:text-slate-300"
                                                                 }
                                                                 onClick={() => {
                                                                     if (app.visible) {
@@ -610,12 +610,12 @@ export default function Apps({ auth }: PageProps) {
                                             {groupedApps.comingSoonApps.map((app) => (
                                                 <Card 
                                                     key={app.title} 
-                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-0 bg-white/90 dark:bg-gray-800/50 backdrop-blur-sm opacity-75"
+                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm opacity-75"
                                                 >
                                                     <CardHeader>
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
-                                                                <div className="text-2xl">
+                                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
+                                                                <div className="text-2xl dark:text-slate-300">
                                                                     {app.icon}
                                                                 </div>
                                                             </div>
