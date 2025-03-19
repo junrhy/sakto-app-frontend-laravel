@@ -11,7 +11,7 @@ interface InertiaUser extends User {
     theme?: 'light' | 'dark' | 'system';
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Sakto Business';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
