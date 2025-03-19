@@ -17,6 +17,15 @@ interface Contact {
     email: string;
 }
 
+interface EmailTemplate {
+    id: number;
+    name: string;
+    subject: string;
+    body: string;
+    category: string | null;
+    is_active: boolean;
+}
+
 interface Props {
     auth: {
         user: User;
@@ -27,9 +36,12 @@ export default function Index({ auth }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCcBcc, setShowCcBcc] = useState(false);
     const [showContactSelector, setShowContactSelector] = useState(false);
+    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
     const [contacts, setContacts] = useState<Contact[]>([]);
+    const [templates, setTemplates] = useState<EmailTemplate[]>([]);
     const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [templateSearchQuery, setTemplateSearchQuery] = useState('');
     const { data, setData, reset, errors } = useForm({
         to: [] as string[],
         subject: '',
@@ -46,21 +58,30 @@ export default function Index({ auth }: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        // Fetch contacts when the component mounts
-        const fetchContacts = async () => {
+        // Fetch contacts and templates when the component mounts
+        const fetchData = async () => {
             try {
-                const response = await axios.get('/contacts/list');
-                if (response.data.success) {
-                    setContacts(response.data.data || []);
+                // Fetch contacts
+                const contactsResponse = await axios.get('/contacts/list');
+                if (contactsResponse.data.success) {
+                    setContacts(contactsResponse.data.data || []);
                 } else {
                     toast.error('Failed to fetch contacts');
                 }
+
+                // Fetch templates
+                const templatesResponse = await axios.get('/email/templates/list');
+                if (templatesResponse.data.success) {
+                    setTemplates(templatesResponse.data.data || []);
+                } else {
+                    toast.error('Failed to fetch templates');
+                }
             } catch (error) {
-                console.error('Error fetching contacts:', error);
-                toast.error('Failed to fetch contacts');
+                console.error('Error fetching data:', error);
+                toast.error('Failed to fetch data');
             }
         };
-        fetchContacts();
+        fetchData();
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -216,6 +237,22 @@ export default function Index({ auth }: Props) {
         contact.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const loadTemplate = (template: EmailTemplate) => {
+        setData({
+            ...data,
+            subject: template.subject,
+            message: template.body
+        });
+        setShowTemplateSelector(false);
+        toast.success('Template loaded successfully');
+    };
+
+    const filteredTemplates = templates.filter(template => 
+        template.name.toLowerCase().includes(templateSearchQuery.toLowerCase()) ||
+        template.subject.toLowerCase().includes(templateSearchQuery.toLowerCase()) ||
+        (template.category?.toLowerCase() || '').includes(templateSearchQuery.toLowerCase())
+    );
+
     return (
         <AuthenticatedLayout
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Email Sender</h2>}
@@ -242,6 +279,13 @@ export default function Index({ auth }: Props) {
                                                     className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
                                                 >
                                                     Select from Contacts
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowTemplateSelector(true)}
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
+                                                >
+                                                    Load Template
                                                 </button>
                                                 <button
                                                     type="button"
@@ -539,6 +583,97 @@ export default function Index({ auth }: Props) {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-500">{contact.email}</div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Template Selector Modal */}
+            {showTemplateSelector && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">Select Template</h3>
+                            <button
+                                onClick={() => setShowTemplateSelector(false)}
+                                className="text-gray-400 hover:text-gray-500"
+                            >
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={templateSearchQuery}
+                                onChange={(e) => setTemplateSearchQuery(e.target.value)}
+                                placeholder="Search templates..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <div className="max-h-96 overflow-y-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Subject
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Category
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredTemplates.map((template) => (
+                                        <tr key={template.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {template.name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-500">
+                                                    {template.subject}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-500">
+                                                    {template.category || 'Uncategorized'}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                    template.is_active
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                    {template.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => loadTemplate(template)}
+                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                >
+                                                    Load
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}

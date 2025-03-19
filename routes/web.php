@@ -27,6 +27,7 @@ use App\Http\Controllers\FamilyTreeController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MayaWebhookController;
+use App\Http\Controllers\EmailTemplateController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -455,6 +456,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
     Route::get('/contacts/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
+
+    // Email Templates
+    Route::prefix('email/templates')->group(function () {
+        Route::get('/', [EmailTemplateController::class, 'index'])->name('email.templates.index');
+        Route::get('/list', [EmailTemplateController::class, 'getTemplates'])->name('email.templates.list');
+        Route::get('/create', [EmailTemplateController::class, 'create'])->name('email.templates.create');
+        Route::post('/', [EmailTemplateController::class, 'store'])->name('email.templates.store');
+        Route::get('/{template}', [EmailTemplateController::class, 'show'])->name('email.templates.show');
+        Route::get('/{template}/edit', [EmailTemplateController::class, 'edit'])->name('email.templates.edit');
+        Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('email.templates.update');
+        Route::delete('/{template}', [EmailTemplateController::class, 'destroy'])->name('email.templates.destroy');
+        Route::get('/{template}/preview', [EmailTemplateController::class, 'preview'])->name('email.templates.preview');
+        Route::match(['patch', 'post'], '/{template}/toggle-status', [EmailTemplateController::class, 'toggleStatus'])->name('email.templates.toggle-status');
+    });
 
     // Contacts routes
     Route::resource('contacts', ContactsController::class);

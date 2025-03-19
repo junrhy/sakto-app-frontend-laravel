@@ -304,6 +304,9 @@ export default function Authenticated({
                                     <ResponsiveNavLink href={`/email?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Email
                                     </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/email/templates?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Email Templates
+                                    </ResponsiveNavLink>
                                 </div>
                             </div>
                         )}
@@ -796,6 +799,9 @@ export default function Authenticated({
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/email?app=${appParam}`}>
                                                         Email
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/email/templates?app=${appParam}`}>
+                                                        Email Templates
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/email/settings?app=${appParam}`}>
                                                         Settings
