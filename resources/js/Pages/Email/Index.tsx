@@ -1,4 +1,4 @@
-import React, { useState, ReactNode, useRef } from 'react';
+import React, { useState, ReactNode, useRef, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
@@ -7,6 +7,13 @@ import axios from 'axios';
 
 interface User {
     name: string;
+    email: string;
+}
+
+interface Contact {
+    id: number;
+    first_name: string;
+    last_name: string;
     email: string;
 }
 
@@ -19,6 +26,10 @@ interface Props {
 export default function Index({ auth }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCcBcc, setShowCcBcc] = useState(false);
+    const [showContactSelector, setShowContactSelector] = useState(false);
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const { data, setData, reset, errors } = useForm({
         to: [] as string[],
         subject: '',
@@ -33,6 +44,24 @@ export default function Index({ auth }: Props) {
     const [ccInput, setCcInput] = useState('');
     const [bccInput, setBccInput] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        // Fetch contacts when the component mounts
+        const fetchContacts = async () => {
+            try {
+                const response = await axios.get('/contacts/list');
+                if (response.data.success) {
+                    setContacts(response.data.data || []);
+                } else {
+                    toast.error('Failed to fetch contacts');
+                }
+            } catch (error) {
+                console.error('Error fetching contacts:', error);
+                toast.error('Failed to fetch contacts');
+            }
+        };
+        fetchContacts();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -155,6 +184,38 @@ export default function Index({ auth }: Props) {
         }
     };
 
+    const toggleContactSelection = (contact: Contact) => {
+        setSelectedContacts(prev => {
+            const isSelected = prev.some(c => c.id === contact.id);
+            if (isSelected) {
+                return prev.filter(c => c.id !== contact.id);
+            } else {
+                return [...prev, contact];
+            }
+        });
+    };
+
+    const addSelectedContactsToRecipients = () => {
+        const emails = selectedContacts.map(contact => contact.email);
+        setData('to', [...new Set([...data.to, ...emails])]);
+        setSelectedContacts([]);
+        setShowContactSelector(false);
+        toast.success('Selected contacts added to recipients');
+    };
+
+    const addAllContactsToRecipients = () => {
+        const emails = contacts.map(contact => contact.email);
+        setData('to', [...new Set([...data.to, ...emails])]);
+        setShowContactSelector(false);
+        toast.success('All contacts added to recipients');
+    };
+
+    const filteredContacts = contacts.filter(contact => 
+        contact.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <AuthenticatedLayout
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Email Sender</h2>}
@@ -174,13 +235,22 @@ export default function Index({ auth }: Props) {
                                             <label className="block text-sm font-semibold text-gray-700">
                                                 To <span className="text-red-500">*</span>
                                             </label>
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowCcBcc(!showCcBcc)}
-                                                className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
-                                            >
-                                                {showCcBcc ? 'Hide CC/BCC' : 'Show CC/BCC'}
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowContactSelector(true)}
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
+                                                >
+                                                    Select from Contacts
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowCcBcc(!showCcBcc)}
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
+                                                >
+                                                    {showCcBcc ? 'Hide CC/BCC' : 'Show CC/BCC'}
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="flex gap-2">
                                             <input
@@ -392,6 +462,92 @@ export default function Index({ auth }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Contact Selector Modal */}
+            {showContactSelector && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">Select Contacts</h3>
+                            <button
+                                onClick={() => setShowContactSelector(false)}
+                                className="text-gray-400 hover:text-gray-500"
+                            >
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search contacts..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <div className="flex justify-between mb-4">
+                            <button
+                                onClick={addSelectedContactsToRecipients}
+                                disabled={selectedContacts.length === 0}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add Selected ({selectedContacts.length})
+                            </button>
+                            <button
+                                onClick={addAllContactsToRecipients}
+                                disabled={contacts.length === 0}
+                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Add All ({contacts.length})
+                            </button>
+                        </div>
+
+                        <div className="max-h-96 overflow-y-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Select
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Email
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredContacts.map((contact) => (
+                                        <tr key={contact.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedContacts.some(c => c.id === contact.id)}
+                                                    onChange={() => toggleContactSelection(contact)}
+                                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                />
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {contact.first_name} {contact.last_name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-500">{contact.email}</div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

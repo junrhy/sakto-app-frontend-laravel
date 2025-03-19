@@ -454,6 +454,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/email/settings', [EmailController::class, 'settings'])->name('email.settings');
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
     Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
+    Route::get('/contacts/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
 
     // Contacts routes
     Route::resource('contacts', ContactsController::class);

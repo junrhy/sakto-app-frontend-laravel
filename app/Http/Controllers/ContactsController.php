@@ -335,4 +335,77 @@ class ContactsController extends Controller
             return redirect()->back()->with('error', 'Failed to load settings');
         }
     }
+
+    public function getContacts()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            Log::info('Fetching contacts', [
+                'url' => "{$this->apiUrl}/contacts",
+                'client_identifier' => $clientIdentifier
+            ]);
+
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/contacts", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to fetch contacts', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => "{$this->apiUrl}/contacts"
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch contacts'
+                ], 500);
+            }
+
+            $contacts = $response->json();
+
+            // Transform the contacts data to include only necessary fields
+            $transformedContacts = collect($contacts)->map(function ($contact) {
+                return [
+                    'id' => $contact['id'],
+                    'first_name' => $contact['first_name'],
+                    'middle_name' => $contact['middle_name'],
+                    'last_name' => $contact['last_name'],
+                    'email' => $contact['email'],
+                    'call_number' => $contact['call_number'],
+                    'sms_number' => $contact['sms_number'],
+                    'whatsapp' => $contact['whatsapp'],
+                    'address' => $contact['address'],
+                    'gender' => $contact['gender'],
+                    'fathers_name' => $contact['fathers_name'],
+                    'mothers_maiden_name' => $contact['mothers_maiden_name'],
+                    'facebook' => $contact['facebook'],
+                    'instagram' => $contact['instagram'],
+                    'twitter' => $contact['twitter'],
+                    'linkedin' => $contact['linkedin'],
+                    'notes' => $contact['notes'],
+                    'id_picture' => $contact['id_picture'],
+                    'id_numbers' => $contact['id_numbers'],
+                ];
+            })->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $transformedContacts
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Exception in getContacts', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching contacts'
+            ], 500);
+        }
+    }
 }
