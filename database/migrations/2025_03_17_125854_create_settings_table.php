@@ -25,6 +25,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        if (Schema::hasTable('settings')) {
+            $count = DB::table('settings')->count();
+            if ($count === 0) {
+                Schema::dropIfExists('settings');
+            }
+        }
     }
 };

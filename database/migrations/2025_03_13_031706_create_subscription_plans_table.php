@@ -33,6 +33,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscription_plans');
+        if (Schema::hasTable('subscription_plans')) {
+            $count = DB::table('subscription_plans')->count();
+            if ($count === 0) {
+                Schema::dropIfExists('subscription_plans');
+            }
+        }
     }
 };

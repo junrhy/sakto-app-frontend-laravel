@@ -15,6 +15,7 @@ interface Contact {
     first_name: string;
     last_name: string;
     email: string;
+    group?: string[];
 }
 
 interface EmailTemplate {
@@ -42,6 +43,7 @@ export default function Index({ auth }: Props) {
     const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [templateSearchQuery, setTemplateSearchQuery] = useState('');
+    const [groupFilter, setGroupFilter] = useState<string>('all');
     const { data, setData, reset, errors } = useForm({
         to: [] as string[],
         subject: '',
@@ -231,11 +233,28 @@ export default function Index({ auth }: Props) {
         toast.success('All contacts added to recipients');
     };
 
-    const filteredContacts = contacts.filter(contact => 
-        contact.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const selectContactsByGroup = (group: string) => {
+        if (group === 'all') {
+            setSelectedContacts(contacts);
+            toast.success('All contacts selected');
+        } else {
+            const groupContacts = contacts.filter(contact => contact.group?.includes(group));
+            setSelectedContacts(groupContacts);
+            toast.success(`${groupContacts.length} contacts from group "${group}" selected`);
+        }
+    };
+
+    const filteredContacts = contacts.filter(contact => {
+        const matchesSearch = 
+            contact.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            contact.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (contact.group || []).some(g => g.toLowerCase().includes(searchQuery.toLowerCase()));
+        
+        const matchesGroup = groupFilter === 'all' || (contact.group && contact.group.includes(groupFilter));
+        
+        return matchesSearch && matchesGroup;
+    });
 
     const loadTemplate = (template: EmailTemplate) => {
         setData({
@@ -523,14 +542,36 @@ export default function Index({ auth }: Props) {
                             </button>
                         </div>
 
-                        <div className="mb-4">
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search contacts..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+                        <div className="flex gap-4 mb-4">
+                            <div className="flex-1">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search contacts..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="w-48">
+                                    <select
+                                        value={groupFilter}
+                                        onChange={(e) => setGroupFilter(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    >
+                                        <option value="all">All Groups</option>
+                                        {Array.from(new Set(contacts.flatMap(contact => contact.group || []))).map(group => (
+                                            <option key={group} value={group}>{group}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <button
+                                    onClick={() => selectContactsByGroup(groupFilter)}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                >
+                                    Select Group
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex justify-between mb-4">
@@ -580,6 +621,18 @@ export default function Index({ auth }: Props) {
                                                 <div className="text-sm font-medium text-gray-900">
                                                     {contact.first_name} {contact.last_name}
                                                 </div>
+                                                {contact.group && contact.group.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                        {contact.group.map((group, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                                                            >
+                                                                {group}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-500">{contact.email}</div>

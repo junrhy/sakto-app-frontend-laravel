@@ -40,6 +40,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_subscriptions');
+        if (Schema::hasTable('user_subscriptions')) {
+            $count = DB::table('user_subscriptions')->count();
+            if ($count === 0) {
+                Schema::dropIfExists('user_subscriptions');
+            }
+        }
     }
 };

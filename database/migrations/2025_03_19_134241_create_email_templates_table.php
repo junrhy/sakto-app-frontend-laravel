@@ -32,6 +32,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('email_templates');
+        if (Schema::hasTable('email_templates')) {
+            $count = DB::table('email_templates')->count();
+            if ($count === 0) {
+                Schema::dropIfExists('email_templates');
+            }
+        }
     }
 };
