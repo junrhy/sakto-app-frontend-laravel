@@ -11,7 +11,20 @@ interface InertiaUser extends User {
     theme?: 'light' | 'dark' | 'system';
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Sakto Business';
+interface InertiaProps {
+    initialPage: {
+        props: {
+            auth?: {
+                user?: InertiaUser;
+            };
+            app?: {
+                name: string;
+            };
+        };
+    };
+}
+
+const appName = 'Sakto Business'; // Default fallback
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
@@ -20,7 +33,11 @@ createInertiaApp({
             `./Pages/${name}.tsx`,
             import.meta.glob('./Pages/**/*.tsx'),
         ),
-    setup({ el, App, props }) {
+    setup({ el, App, props }: { el: HTMLElement; App: any; props: InertiaProps }) {
+        const resolvedAppName = import.meta.env.VITE_APP_NAME || 
+                              import.meta.env.APP_NAME || 
+                              props.initialPage.props.app?.name || 
+                              appName;
         const userTheme = (props.initialPage.props.auth?.user as InertiaUser)?.theme || 'system';
         const app = (
             <ThemeProvider defaultTheme={userTheme} storageKey="sakto-theme">
