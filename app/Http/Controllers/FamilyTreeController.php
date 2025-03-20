@@ -447,6 +447,19 @@ class FamilyTreeController extends Controller
             // Send email to account owner
             Mail::to($userEmail)->send(new FamilyMemberEditRequest($editData));
 
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/family-tree/edit-requests", [
+                    'member_id' => $validated['member_id'],
+                    'first_name' => $validated['first_name'],
+                    'last_name' => $validated['last_name'],
+                    'birth_date' => $validated['birth_date'],
+                    'death_date' => $validated['death_date'],
+                    'gender' => $validated['gender'],
+                    'photo' => $photoUrl,
+                    'notes' => $validated['notes'],
+                    'client_identifier' => $clientIdentifier
+                ]);
+
             return response()->json([
                 'message' => 'Edit request has been sent to the account owner for approval.'
             ]);
@@ -547,5 +560,82 @@ class FamilyTreeController extends Controller
                 'error' => 'Failed to save settings: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get all pending edit requests for the current user
+     */
+    public function getEditRequests()
+    {
+        $clientIdentifier = auth()->user()->identifier;
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/edit-requests", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('Failed to fetch edit requests', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return response()->json(['error' => 'Failed to fetch edit requests'], $response->status());
+        }
+
+        return response()->json($response->json('data', []));
+    }
+
+    /**
+     * Accept an edit request
+     */
+    public function acceptEditRequest(Request $request, $id)
+    {
+        $clientIdentifier = auth()->user()->identifier;
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/family-tree/edit-requests/{$id}/accept", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('Failed to accept edit request', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return response()->json(['error' => 'Failed to accept edit request'], $response->status());
+        }
+
+        return response()->json([
+            'message' => 'Edit request accepted successfully',
+            'data' => $response->json('data')
+        ]);
+    }
+
+    /**
+     * Reject an edit request
+     */
+    public function rejectEditRequest(Request $request, $id)
+    {
+        $clientIdentifier = auth()->user()->identifier;
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/family-tree/edit-requests/{$id}/reject", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            Log::error('Failed to reject edit request', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return response()->json(['error' => 'Failed to reject edit request'], $response->status());
+        }
+
+        return response()->json(null, $response->status());
+    }
+
+    /**
+     * Display the edit requests management page
+     */
+    public function editRequests()
+    {
+        return Inertia::render('FamilyTree/EditRequests');
     }
 }

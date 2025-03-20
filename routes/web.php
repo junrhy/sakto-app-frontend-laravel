@@ -532,6 +532,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
         ->name('webhooks.maya')
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+    // Family Tree Edit Requests
+    Route::get('/family-tree/edit-requests', [FamilyTreeController::class, 'editRequests'])->name('family-tree.edit-requests');
+    Route::get('/family-tree/edit-requests/data', [FamilyTreeController::class, 'getEditRequests'])->name('family-tree.edit-requests.data');
+    Route::post('/family-tree/edit-requests/{id}/accept', [FamilyTreeController::class, 'acceptEditRequest'])->name('family-tree.edit-requests.accept');
+    Route::post('/family-tree/edit-requests/{id}/reject', [FamilyTreeController::class, 'rejectEditRequest'])->name('family-tree.edit-requests.reject');
 });
 
 // Admin Auth Routes

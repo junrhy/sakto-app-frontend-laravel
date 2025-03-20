@@ -355,6 +355,9 @@ export default function Authenticated({
                                     <ResponsiveNavLink href={`/family-tree?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Family Tree
                                     </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/family-tree/edit-requests?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Edit Requests
+                                    </ResponsiveNavLink>
                                 </div>
                             </div>
                         )}
@@ -940,6 +943,9 @@ export default function Authenticated({
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/family-tree?app=${appParam}`}>
                                                         My Family Tree
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/family-tree/edit-requests?app=${appParam}`}>
+                                                        Edit Requests
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/family-tree/${authUser.identifier}/full-view?app=${appParam}`}>
                                                         Full View
