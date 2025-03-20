@@ -44,7 +44,7 @@ export const apps: App[] = [
         categories: ['Business', 'Sales', 'Inventory'],
         comingSoon: true,
         pricingType: 'free',
-        includedInPlans: ['pro-plan', 'business-plan']
+        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
     },
     {
         icon: <RxFace />,
@@ -65,14 +65,14 @@ export const apps: App[] = [
         title: 'Clinic',
         route: '/dashboard?app=clinic',
         bgColor: 'text-slate-600',
-        visible: true,
+        visible: false,
         description: 'Medical practice management with patient records, appointment scheduling, and billing system',
-        price: 0,
+        price: 149,
         rating: 4.7,
         categories: ['Medical', 'Healthcare', 'Appointments'],
         comingSoon: false,
-        pricingType: 'free',
-        includedInPlans: ['pro-plan', 'business-plan']
+        pricingType: 'subscription',
+        includedInPlans: ['business-plan']
     },
     {
         icon: <RxAccessibility />,
@@ -170,7 +170,7 @@ export const apps: App[] = [
         categories: ['Travel', 'Bookings', 'Business'],
         comingSoon: true,
         pricingType: 'free',
-        includedInPlans: ['pro-plan', 'business-plan']
+        includedInPlans: ['business-plan']
     },
     {
         icon: <RxChatBubble />,
@@ -184,7 +184,7 @@ export const apps: App[] = [
         categories: ['Communication', 'Marketing', 'Business'],
         comingSoon: true,
         pricingType: 'subscription',
-        includedInPlans: ['basic-plan', 'pro-plan', 'business-plan']
+        includedInPlans: ['pro-plan', 'business-plan']
     },
     {
         icon: <RxEnvelopeClosed />,
