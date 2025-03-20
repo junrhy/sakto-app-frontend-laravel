@@ -107,13 +107,13 @@ export const apps: App[] = [
         title: 'Real Estate',
         route: '/dashboard?app=real-estate',
         bgColor: 'text-slate-600',
-        visible: true,
+        visible: false,
         description: 'Property management solution with tenant tracking, rent collection, and maintenance request handling',
-        price: 0,
+        price: 599,
         rating: 4.4,
         categories: ['Real Estate', 'Business', 'Bookings'],
         comingSoon: false,
-        pricingType: 'free',
+        pricingType: 'subscription',
         includedInPlans: ['business-plan']
     },
     {

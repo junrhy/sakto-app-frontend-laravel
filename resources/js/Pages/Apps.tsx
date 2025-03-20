@@ -51,6 +51,7 @@ export default function Apps({ auth }: PageProps) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
     const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({ PHP: 56.50 }); // Default fallback rate
+    const [selectedApp, setSelectedApp] = useState<App | null>(null);
 
     // Fetch credits first
     useEffect(() => {
@@ -295,425 +296,302 @@ export default function Apps({ auth }: PageProps) {
             </div>
 
             <div className={`w-full px-4 ${!isLoadingSubscription && !subscription ? 'pt-[120px]' : 'pt-[100px]'} landscape:pt-[80px] md:pt-[100px]`}>
-                <div className="py-12">
+                <div className="py-8">
                     <div className="max-w-7xl mx-auto">
-                        <div className="bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-6">
-                            {/* Search and Filter Section */}
-                            <div className="mb-8">
-                                <div className="flex gap-4 mb-4">
-                                    <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
-                                        <Input
-                                            placeholder="Search apps..."
-                                            className="pl-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                        />
-                                    </div>
-                                    <Button 
-                                        variant="outline" 
-                                        className="bg-white/80 hover:bg-slate-50 dark:bg-gray-800/80 dark:hover:bg-gray-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
-                                        onClick={() => setSelectedCategory(null)}
-                                    >
-                                        All Categories
-                                    </Button>
-                                </div>
-                                <div className="flex gap-2 flex-wrap">
-                                    {allCategories.map((category) => (
-                                        <Badge 
-                                            key={category}
-                                            variant="secondary" 
-                                            className={`cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${
-                                                selectedCategory === category ? 'ring-2 ring-slate-500 dark:ring-slate-400' : ''
-                                            }`}
-                                            onClick={() => setSelectedCategory(category)}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            {/* Left Column - App Listing */}
+                            <div className="lg:col-span-4 bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
+                                {/* Search and Filter Section */}
+                                <div className="mb-6">
+                                    <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
+                                            <Input
+                                                placeholder="Search apps..."
+                                                className="pl-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                        <Button 
+                                            variant="outline" 
+                                            className="bg-white/80 hover:bg-slate-50 dark:bg-gray-800/80 dark:hover:bg-gray-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                            onClick={() => setSelectedCategory(null)}
                                         >
-                                            {category}
-                                        </Badge>
-                                    ))}
+                                            All Categories
+                                        </Button>
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {allCategories.map((category) => (
+                                            <Badge 
+                                                key={category}
+                                                variant="secondary" 
+                                                className={`cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${
+                                                    selectedCategory === category ? 'ring-2 ring-slate-500 dark:ring-slate-400' : ''
+                                                }`}
+                                                onClick={() => setSelectedCategory(category)}
+                                            >
+                                                {category}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Apps List */}
+                                <div className="space-y-4">
+                                    {/* Free Apps */}
+                                    {groupedApps.freeApps.length > 0 && (
+                                        <div>
+                                            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
+                                                <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Free</span>
+                                                Free Apps
+                                            </h2>
+                                            <div className="space-y-3">
+                                                {groupedApps.freeApps.map((app) => (
+                                                    <Card 
+                                                        key={app.title} 
+                                                        className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
+                                                        onClick={() => setSelectedApp(app)}
+                                                    >
+                                                        <CardHeader className="p-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                    <div className="text-xl dark:text-slate-300">
+                                                                        {app.icon}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
+                                                                        {!isAppIncludedInCurrentPlan(app) && app.includedInPlans && app.includedInPlans.length > 0 && (
+                                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
+                                                                                Available on {app.includedInPlans[0].replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
+                                                                        {app.description}
+                                                                    </CardDescription>
+                                                                </div>
+                                                            </div>
+                                                        </CardHeader>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Paid Apps */}
+                                    {groupedApps.paidApps.length > 0 && (
+                                        <div>
+                                            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
+                                                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Paid</span>
+                                                Paid Apps
+                                            </h2>
+                                            <div className="space-y-3">
+                                                {groupedApps.paidApps.map((app) => (
+                                                    <Card 
+                                                        key={app.title} 
+                                                        className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
+                                                        onClick={() => setSelectedApp(app)}
+                                                    >
+                                                        <CardHeader className="p-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                    <div className="text-xl dark:text-slate-300">
+                                                                        {app.icon}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
+                                                                        {!isAppIncludedInCurrentPlan(app) && app.includedInPlans && app.includedInPlans.length > 0 && (
+                                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
+                                                                                Available on {app.includedInPlans[0].replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
+                                                                        {app.description}
+                                                                    </CardDescription>
+                                                                </div>
+                                                            </div>
+                                                        </CardHeader>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Coming Soon Apps */}
+                                    {groupedApps.comingSoonApps.length > 0 && (
+                                        <div>
+                                            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
+                                                <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Coming Soon</span>
+                                                Coming Soon
+                                            </h2>
+                                            <div className="space-y-3">
+                                                {groupedApps.comingSoonApps.map((app) => (
+                                                    <Card 
+                                                        key={app.title} 
+                                                        className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm opacity-75 cursor-pointer"
+                                                        onClick={() => setSelectedApp(app)}
+                                                    >
+                                                        <CardHeader className="p-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
+                                                                    <div className="text-xl dark:text-slate-300">
+                                                                        {app.icon}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
+                                                                    </div>
+                                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
+                                                                        {app.description}
+                                                                    </CardDescription>
+                                                                </div>
+                                                            </div>
+                                                        </CardHeader>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Apps Grid */}
-                            <div className="space-y-8">
-                                {/* Free Apps Section */}
-                                {groupedApps.freeApps.length > 0 && (
-                                    <div>
-                                        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white flex items-center">
-                                            <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Free</span>
-                                            Free Apps
-                                        </h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {groupedApps.freeApps.map((app) => (
-                                                <Card 
-                                                    key={app.title} 
-                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
+                            {/* Right Column - App Details */}
+                            <div className="lg:col-span-8 bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
+                                {selectedApp ? (
+                                    <div className="space-y-6">
+                                        <div className="flex items-start gap-4">
+                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${selectedApp.bgColor} shadow-sm`}>
+                                                <div className="text-2xl dark:text-slate-300">
+                                                    {selectedApp.icon}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{selectedApp.title}</h2>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-yellow-500">⭐</span>
+                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{selectedApp.rating}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+                                            <p className="text-gray-600 dark:text-gray-300">{selectedApp.description}</p>
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Categories</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedApp.categories.map((category) => (
+                                                    <Badge 
+                                                        key={category} 
+                                                        variant="secondary" 
+                                                        className="bg-gray-50 dark:bg-gray-900/50"
+                                                    >
+                                                        {category}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {selectedApp.includedInPlans && selectedApp.includedInPlans.length > 0 && (
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Available Plans</h3>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedApp.includedInPlans.map((plan) => (
+                                                        <Badge 
+                                                            key={plan} 
+                                                            variant="outline" 
+                                                            className={`${
+                                                                subscription && subscription.plan.slug === plan
+                                                                ? "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700"
+                                                                : "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                                                            }`}
+                                                        >
+                                                            {plan.replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                                            {subscription && subscription.plan.slug === plan && (
+                                                                <span className="ml-1">✓</span>
+                                                            )}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div>
+                                                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                        {selectedApp.pricingType === 'free' 
+                                                            ? 'Free'
+                                                            : selectedApp.pricingType === 'subscription' 
+                                                                ? 'Subscription Only'
+                                                                : formatPrice(selectedApp.price)
+                                                        }
+                                                    </span>
+                                                    {selectedApp.pricingType !== 'free' && (
+                                                        <span className="text-sm text-gray-500 dark:text-gray-400 block">
+                                                            {selectedApp.pricingType === 'subscription' ? 'Available on subscription plans' : 'One-time payment'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <Button 
+                                                    variant={selectedApp.visible ? "default" : "outline"}
+                                                    className={selectedApp.visible 
+                                                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                                                        : "border-slate-200 dark:border-slate-700"
+                                                    }
+                                                    onClick={() => {
+                                                        if (selectedApp.visible) {
+                                                            window.location.href = `${selectedApp.route}`;
+                                                        } else if (selectedApp.includedInPlans && selectedApp.includedInPlans.length > 0) {
+                                                            window.location.href = route('subscriptions.index', { 
+                                                                highlight_plan: selectedApp.includedInPlans[0],
+                                                                app: selectedApp.title
+                                                            });
+                                                        } else {
+                                                            window.location.href = route('subscriptions.index');
+                                                        }
+                                                    }}
                                                 >
-                                                    <CardHeader>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm`}>
-                                                                <div className="text-2xl dark:text-slate-300">
-                                                                    {app.icon}
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <CardTitle className="text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                    {isAppIncludedInCurrentPlan(app) && (
-                                                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
-                                                                            Included in your plan
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                <div>
-                                                                    <CardDescription className="text-gray-600 dark:text-gray-300">
-                                                                        {expandedDescriptions[app.title] ? app.description : truncateDescription(app.description)}
-                                                                    </CardDescription>
-                                                                    {app.description.length > 80 && (
-                                                                        <button
-                                                                            onClick={() => toggleDescription(app.title)}
-                                                                            className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 mt-1 focus:outline-none"
-                                                                        >
-                                                                            {expandedDescriptions[app.title] ? 'Read less' : 'Read more'}
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2 mt-3">
-                                                            {app.categories.map((category) => (
-                                                                <Badge 
-                                                                    key={category} 
-                                                                    variant="secondary" 
-                                                                    className="bg-gray-50 dark:bg-gray-900/50 text-xs"
-                                                                >
-                                                                        {category}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                        
-                                                        {/* Subscription Plan Information */}
-                                                        {app.includedInPlans && app.includedInPlans.length > 0 ? (
-                                                            <div className="mt-3">
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Included in plans:</p>
-                                                                <div className="flex flex-wrap gap-1.5">
-                                                                    {app.includedInPlans.map((plan) => (
-                                                                        <Badge 
-                                                                            key={plan} 
-                                                                            variant="outline" 
-                                                                            className={`text-xs ${
-                                                                                subscription && subscription.plan.slug === plan
-                                                                                ? "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700"
-                                                                                : "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                                                            }`}
-                                                                        >
-                                                                            {plan.replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                                            {subscription && subscription.plan.slug === plan && (
-                                                                                <span className="ml-1">✓</span>
-                                                                            )}
-                                                                        </Badge>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="mt-3">
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    Not included in any subscription plan
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </CardHeader>
-                                                    <CardFooter className="flex justify-between items-center">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-yellow-500">⭐</span>
-                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                                                                {app.rating}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="flex flex-col items-end">
-                                                                <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                                                    Free
-                                                                </span>
-                                                            </div>
-                                                            <Button 
-                                                                variant="ghost"
-                                                                className="bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-800"
-                                                                onClick={() => {
-                                                                    if (app.visible) {
-                                                                        window.location.href = `${app.route}`;
-                                                                    } else if (app.includedInPlans && app.includedInPlans.length > 0) {
-                                                                        // Redirect to subscription page with the first plan from includedInPlans
-                                                                        window.location.href = route('subscriptions.index', { 
-                                                                            highlight_plan: app.includedInPlans[0],
-                                                                            app: app.title
-                                                                        });
-                                                                    } else {
-                                                                        // If no plans included, just go to subscription page
-                                                                        window.location.href = route('subscriptions.index');
-                                                                    }
-                                                                }}
-                                                            >
-                                                                {app.visible ? "Open" : "Subscribe"}
-                                                            </Button>
-                                                        </div>
-                                                    </CardFooter>
-                                                </Card>
-                                            ))}
+                                                    {selectedApp.visible ? "Open App" : "Subscribe Now"}
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
-                                )}
-
-                                {/* Paid Apps Section */}
-                                {groupedApps.paidApps.length > 0 && (
-                                    <div>
-                                        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white flex items-center">
-                                            <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Paid</span>
-                                            Paid Apps
-                                        </h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {groupedApps.paidApps.map((app) => (
-                                                <Card 
-                                                    key={app.title} 
-                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"
-                                                >
-                                                    <CardHeader>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm`}>
-                                                                <div className="text-2xl dark:text-slate-300">
-                                                                    {app.icon}
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <CardTitle className="text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                    {isAppIncludedInCurrentPlan(app) && (
-                                                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
-                                                                            Included in your plan
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                <div>
-                                                                    <CardDescription className="text-gray-600 dark:text-gray-300">
-                                                                        {expandedDescriptions[app.title] ? app.description : truncateDescription(app.description)}
-                                                                    </CardDescription>
-                                                                    {app.description.length > 80 && (
-                                                                        <button
-                                                                            onClick={() => toggleDescription(app.title)}
-                                                                            className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 mt-1 focus:outline-none"
-                                                                        >
-                                                                            {expandedDescriptions[app.title] ? 'Read less' : 'Read more'}
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2 mt-3">
-                                                            {app.categories.map((category) => (
-                                                                <Badge 
-                                                                    key={category} 
-                                                                    variant="secondary" 
-                                                                    className="bg-gray-50 dark:bg-gray-900/50 text-xs"
-                                                                >
-                                                                        {category}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                        
-                                                        {/* Subscription Plan Information */}
-                                                        {app.includedInPlans && app.includedInPlans.length > 0 ? (
-                                                            <div className="mt-3">
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Included in plans:</p>
-                                                                <div className="flex flex-wrap gap-1.5">
-                                                                    {app.includedInPlans.map((plan) => (
-                                                                        <Badge 
-                                                                            key={plan} 
-                                                                            variant="outline" 
-                                                                            className={`text-xs ${
-                                                                                subscription && subscription.plan.slug === plan
-                                                                                ? "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700"
-                                                                                : "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                                                            }`}
-                                                                        >
-                                                                            {plan.replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                                            {subscription && subscription.plan.slug === plan && (
-                                                                                <span className="ml-1">✓</span>
-                                                                            )}
-                                                                        </Badge>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="mt-3">
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    Not included in any subscription plan
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </CardHeader>
-                                                    <CardFooter className="flex justify-between items-center">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-yellow-500">⭐</span>
-                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{app.rating}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="flex flex-col items-end">
-                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                                                                    {app.pricingType === 'subscription' 
-                                                                        ? 'Subscription Only'
-                                                                        : formatPrice(app.price)
-                                                                    }
-                                                                </span>
-                                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {app.pricingType === 'subscription' ? 'Available on subscription plans' : 'One-time payment'}
-                                                                </span>
-                                                            </div>
-                                                            <Button 
-                                                                variant={app.visible ? "ghost" : "outline"}
-                                                                className={app.visible 
-                                                                    ? "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-800" 
-                                                                    : "border-slate-200 dark:border-slate-700 dark:text-slate-300"
-                                                                }
-                                                                onClick={() => {
-                                                                    if (app.visible) {
-                                                                        window.location.href = `${app.route}`;
-                                                                    } else if (app.includedInPlans && app.includedInPlans.length > 0) {
-                                                                        // Redirect to subscription page with the first plan from includedInPlans
-                                                                        window.location.href = route('subscriptions.index', { 
-                                                                            highlight_plan: app.includedInPlans[0],
-                                                                            app: app.title
-                                                                        });
-                                                                    } else {
-                                                                        // If no plans included, just go to subscription page
-                                                                        window.location.href = route('subscriptions.index');
-                                                                    }
-                                                                }}
-                                                            >
-                                                                {app.visible ? "Open" : "Subscribe"}
-                                                            </Button>
-                                                        </div>
-                                                    </CardFooter>
-                                                </Card>
-                                            ))}
+                                ) : (
+                                    <div className="flex flex-col items-center text-center py-8">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl flex items-center justify-center mb-6">
+                                            <Search className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* Coming Soon Apps Section */}
-                                {groupedApps.comingSoonApps.length > 0 && (
-                                    <div>
-                                        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white flex items-center">
-                                            <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Coming Soon</span>
-                                            Coming Soon
-                                        </h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {groupedApps.comingSoonApps.map((app) => (
-                                                <Card 
-                                                    key={app.title} 
-                                                    className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm opacity-75"
-                                                >
-                                                    <CardHeader>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
-                                                                <div className="text-2xl dark:text-slate-300">
-                                                                    {app.icon}
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <CardTitle className="text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400 text-xs">
-                                                                        Coming Soon
-                                                                    </Badge>
-                                                                </div>
-                                                                <div>
-                                                                    <CardDescription className="text-gray-600 dark:text-gray-300">
-                                                                        {expandedDescriptions[app.title] ? app.description : truncateDescription(app.description)}
-                                                                    </CardDescription>
-                                                                    {app.description.length > 80 && (
-                                                                        <button
-                                                                            onClick={() => toggleDescription(app.title)}
-                                                                            className="text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 mt-1 focus:outline-none"
-                                                                        >
-                                                                            {expandedDescriptions[app.title] ? 'Read less' : 'Read more'}
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2 mt-3">
-                                                            {app.categories.map((category) => (
-                                                                <Badge 
-                                                                    key={category} 
-                                                                    variant="secondary" 
-                                                                    className="bg-gray-50 dark:bg-gray-900/50 text-xs opacity-75"
-                                                                >
-                                                                        {category}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                        
-                                                        {/* Subscription Plan Information */}
-                                                        {app.includedInPlans && app.includedInPlans.length > 0 ? (
-                                                            <div className="mt-3">
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Will be included in plans:</p>
-                                                                <div className="flex flex-wrap gap-1.5">
-                                                                    {app.includedInPlans.map((plan) => (
-                                                                        <Badge 
-                                                                            key={plan} 
-                                                                            variant="outline" 
-                                                                            className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                                                        >
-                                                                            {plan.replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                                        </Badge>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="mt-3">
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    Not included in any subscription plan
-                                                                </p>
-                                                            </div>
-                                                        )}
-                                                    </CardHeader>
-                                                    <CardFooter className="flex justify-between items-center">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-yellow-500">⭐</span>
-                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{app.rating}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="flex flex-col items-end">
-                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                                                                    {app.pricingType === 'free' 
-                                                                        ? 'Free'
-                                                                        : app.pricingType === 'subscription' 
-                                                                            ? 'Subscription Only'
-                                                                            : formatPrice(app.price)
-                                                                    }
-                                                                </span>
-                                                                {app.pricingType !== 'free' && (
-                                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                        {app.pricingType === 'subscription' ? 'Available on subscription plans' : 'One-time payment'}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </CardFooter>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* No apps found message */}
-                                {filteredApps.length === 0 && (
-                                    <div className="text-center py-8">
-                                        <p className="text-gray-500 dark:text-gray-400">
-                                            {searchQuery || selectedCategory 
-                                                ? "No apps found matching your criteria" 
-                                                : "Loading apps..."}
+                                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Explore Our Apps</h3>
+                                        <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+                                            Browse through our collection of powerful apps. Select an app from the list to view detailed information, features, and subscription options.
                                         </p>
+                                        <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
+                                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
+                                                <div className="text-2xl mb-2">🎯</div>
+                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Free Apps</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Access basic features at no cost</p>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
+                                                <div className="text-2xl mb-2">⚡</div>
+                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Pro Apps</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Enhanced features for professionals</p>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
+                                                <div className="text-2xl mb-2">🏢</div>
+                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Business Apps</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Complete solutions for enterprises</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
