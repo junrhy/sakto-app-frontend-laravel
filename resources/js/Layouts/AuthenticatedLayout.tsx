@@ -111,10 +111,29 @@ export default function Authenticated({
     const [showingInboxMenu, setShowingInboxMenu] = useState(false);
     const [showingSubscriptionMenu, setShowingSubscriptionMenu] = useState(false);
     const [showingAdminMenu, setShowingAdminMenu] = useState(false);
+    const [credits, setCredits] = useState<number>(user?.credits ?? 0);
 
     const { url } = usePage();
     const pageProps = usePage<PageProps>().props;
     const authUser = user || pageProps.auth.user;
+
+    useEffect(() => {
+        const fetchCredits = async () => {
+            try {
+                if (authUser.identifier) {
+                    const response = await fetch(`/credits/${authUser.identifier}/balance`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCredits(data.available_credit);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch credits:', error);
+            }
+        };
+
+        fetchCredits();
+    }, [authUser.identifier]);
 
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
@@ -952,7 +971,7 @@ export default function Authenticated({
                                         onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: authUser.identifier })}
                                         className="text-white bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20"
                                     >
-                                        <span className="text-sm font-medium">{formatNumber(authUser.credits ?? 0)} Credits</span>
+                                        <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
                                     </Button>
                                     <Button
                                         variant="secondary"

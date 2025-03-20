@@ -295,7 +295,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
 
                     <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="plans">Unlimited Access Plans</TabsTrigger>
+                            <TabsTrigger value="plans">Premium Plans</TabsTrigger>
                             <TabsTrigger value="history">Subscription History</TabsTrigger>
                         </TabsList>
 
@@ -380,19 +380,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             )}
                                                         </p>
                                                         <p className="text-lg font-semibold mt-1 text-green-600 dark:text-green-400">
-                                                            {hasUnlimitedAccess(plan) ? 'Unlimited access to all features' : 'Standard access'}
+                                                            {hasUnlimitedAccess(plan) ? 'Access to Premium apps' : 'Access to Free apps'}
                                                         </p>
                                                     </div>
                                                     
                                                     <div className="space-y-2">
-                                                        {hasUnlimitedAccess(plan) && (
-                                                            <>
-                                                                <div className="flex items-start">
-                                                                    <CheckIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                                                                    <span className="text-sm font-semibold">No credit usage</span>
-                                                                </div>
-                                                            </>
-                                                        )}
                                                         {plan.features && plan.features.map((feature, index) => (
                                                             <div key={index} className="flex items-start">
                                                                 <CheckIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />

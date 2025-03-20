@@ -107,15 +107,17 @@ export default function Home({ auth }: Props) {
                 {/* Message for users without subscription */}
                 {!isLoadingSubscription && !subscription && (
                     <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
-                        <span className="font-medium">Upgrade to a subscription plan for unlimited access to all features!</span>
-                        <Button 
-                            variant="link" 
-                            size="sm" 
-                            className="text-white underline ml-2 p-0 h-auto"
-                            onClick={() => window.location.href = route('subscriptions.index')}
-                        >
-                            View Plans
-                        </Button>
+                        <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
+                            <span className="font-medium">Upgrade to a subscription plan for premium access to all features!</span>
+                            <Button 
+                                variant="link" 
+                                size="sm" 
+                                className="text-white underline p-0 h-auto"
+                                onClick={() => window.location.href = route('subscriptions.index')}
+                            >
+                                View Plans
+                            </Button>
+                        </div>
                     </div>
                 )}
                 
@@ -217,18 +219,18 @@ export default function Home({ auth }: Props) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => window.location.href = route('credits.history', { clientIdentifier: auth.user.identifier })}
-                                className="text-white hover:bg-white/10"
+                                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
-                                <span className="text-lg text-white text-opacity-90 mt-1 text-center max-w-2xl">
+                                <span className="text-lg text-gray-900 dark:text-white text-opacity-90 mt-1 text-center max-w-2xl">
                                     {formatNumber(credits)} Credits
                                 </span>
                             </Button>
                             {subscription && (
-                                <div className="text-white text-opacity-80 text-sm mt-1">
+                                <div className="text-gray-900 dark:text-white text-opacity-80 text-sm mt-1">
                                     <span className="bg-purple-500 text-white px-2 py-0.5 rounded-full text-xs font-medium mr-1">
                                         {subscription.plan.name}
                                     </span>
-                                    Active until {formatDate(subscription.end_date)} • Unlimited access
+                                    Active until {formatDate(subscription.end_date)} • Premium access
                                 </div>
                             )}
                         </div>

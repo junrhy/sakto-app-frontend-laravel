@@ -52,6 +52,7 @@ export default function Apps({ auth }: PageProps) {
     const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
     const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({ PHP: 56.50 }); // Default fallback rate
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
+    const [showAllCategories, setShowAllCategories] = useState(false);
 
     // Fetch credits first
     useEffect(() => {
@@ -151,6 +152,11 @@ export default function Apps({ auth }: PageProps) {
         });
         return Array.from(categories).sort();
     }, []);
+
+    // Get visible categories based on showAllCategories state
+    const visibleCategories = useMemo(() => {
+        return showAllCategories ? allCategories : allCategories.slice(0, 5);
+    }, [allCategories, showAllCategories]);
 
     // Filter apps based on search query and selected category
     const filteredApps = useMemo(() => {
@@ -300,7 +306,7 @@ export default function Apps({ auth }: PageProps) {
                     <div className="max-w-7xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                             {/* Left Column - App Listing */}
-                            <div className="lg:col-span-4 bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
+                            <div className="lg:col-span-4 bg-gray-50/50 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
                                 {/* Search and Filter Section */}
                                 <div className="mb-6">
                                     <div className="flex flex-col sm:flex-row gap-3 mb-3">
@@ -322,7 +328,7 @@ export default function Apps({ auth }: PageProps) {
                                         </Button>
                                     </div>
                                     <div className="flex gap-2 flex-wrap">
-                                        {allCategories.map((category) => (
+                                        {visibleCategories.map((category) => (
                                             <Badge 
                                                 key={category}
                                                 variant="secondary" 
@@ -334,6 +340,16 @@ export default function Apps({ auth }: PageProps) {
                                                 {category}
                                             </Badge>
                                         ))}
+                                        {allCategories.length > 5 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                                onClick={() => setShowAllCategories(!showAllCategories)}
+                                            >
+                                                {showAllCategories ? 'Show Less' : `Show ${allCategories.length - 5} More`}
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -350,12 +366,12 @@ export default function Apps({ auth }: PageProps) {
                                                 {groupedApps.freeApps.map((app) => (
                                                     <Card 
                                                         key={app.title} 
-                                                        className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
+                                                        className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
                                                         onClick={() => setSelectedApp(app)}
                                                     >
                                                         <CardHeader className="p-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
                                                                     <div className="text-xl dark:text-slate-300">
                                                                         {app.icon}
                                                                     </div>
@@ -392,12 +408,12 @@ export default function Apps({ auth }: PageProps) {
                                                 {groupedApps.paidApps.map((app) => (
                                                     <Card 
                                                         key={app.title} 
-                                                        className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
+                                                        className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
                                                         onClick={() => setSelectedApp(app)}
                                                     >
                                                         <CardHeader className="p-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
                                                                     <div className="text-xl dark:text-slate-300">
                                                                         {app.icon}
                                                                     </div>
@@ -434,12 +450,12 @@ export default function Apps({ auth }: PageProps) {
                                                 {groupedApps.comingSoonApps.map((app) => (
                                                     <Card 
                                                         key={app.title} 
-                                                        className="hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-800/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm opacity-75 cursor-pointer"
+                                                        className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm opacity-75 cursor-pointer"
                                                         onClick={() => setSelectedApp(app)}
                                                     >
                                                         <CardHeader className="p-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
                                                                     <div className="text-xl dark:text-slate-300">
                                                                         {app.icon}
                                                                     </div>
@@ -463,11 +479,11 @@ export default function Apps({ auth }: PageProps) {
                             </div>
 
                             {/* Right Column - App Details */}
-                            <div className="lg:col-span-8 bg-white/95 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
+                            <div className="lg:col-span-8 bg-gray-50/50 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
                                 {selectedApp ? (
                                     <div className="space-y-6">
                                         <div className="flex items-start gap-4">
-                                            <div className={`min-w-[4rem] w-16 h-16 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${selectedApp.bgColor} shadow-sm`}>
+                                            <div className={`min-w-[4rem] w-16 h-16 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${selectedApp.bgColor} shadow-sm`}>
                                                 <div className="text-2xl dark:text-slate-300">
                                                     {selectedApp.icon}
                                                 </div>
