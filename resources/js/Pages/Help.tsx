@@ -1,5 +1,5 @@
 import { Head, Link as InertiaLink } from '@inertiajs/react';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/Components/ui/accordion";
 import { Input } from "@/Components/ui/input";
@@ -8,7 +8,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 import BottomNav from '@/Components/BottomNav';
@@ -17,8 +17,19 @@ interface Props {
     auth: {
         user: {
             name: string;
+            credits?: number;
+            identifier?: string;
         };
     };
+}
+
+interface Subscription {
+    plan: {
+        name: string;
+        unlimited_access: boolean;
+        slug: string;
+    };
+    end_date: string;
 }
 
 const defaultFAQItems = [
@@ -48,6 +59,51 @@ export default function Help({ auth }: Props) {
     const { theme, setTheme } = useTheme();
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredFAQs, setFilteredFAQs] = useState(defaultFAQItems);
+    const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
+
+    useEffect(() => {
+        const fetchCredits = async () => {
+            try {
+                if (auth.user.identifier) {
+                    const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCredits(data.available_credit);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch credits:', error);
+            }
+        };
+
+        const fetchSubscription = async () => {
+            try {
+                if (auth.user.identifier) {
+                    setIsLoadingSubscription(true);
+                    const response = await fetch(`/subscriptions/${auth.user.identifier}/active`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.active) {
+                            setSubscription(data.subscription);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch subscription:', error);
+            } finally {
+                setIsLoadingSubscription(false);
+            }
+        };
+
+        fetchCredits();
+        fetchSubscription();
+    }, [auth.user.identifier]);
+
+    const formatNumber = (num: number | undefined | null) => {
+        return num?.toLocaleString() ?? '0';
+    };
 
     const handleSearch = (term: string) => {
         setSearchTerm(term);
@@ -61,7 +117,24 @@ export default function Help({ auth }: Props) {
     return (
         <ThemeProvider>
             <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
-                <div className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm">
+                {/* Message for users without subscription */}
+                {!isLoadingSubscription && !subscription && (
+                    <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
+                        <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
+                            <span className="font-medium">Upgrade to a subscription plan for premium access to all features!</span>
+                            <Button 
+                                variant="link" 
+                                size="sm" 
+                                className="text-white underline p-0 h-auto"
+                                onClick={() => window.location.href = route('subscriptions.index')}
+                            >
+                                View Plans
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                
+                <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
                     <div className="container mx-auto px-4 pt-4">
                         <div className="flex flex-col items-center">
                             <div className="w-full flex justify-between items-center mb-6">
@@ -70,6 +143,43 @@ export default function Help({ auth }: Props) {
                                     <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">Sakto</span>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
+                                    <div className="hidden sm:flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
+                                            className="text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+                                        >
+                                            <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            onClick={() => window.location.href = route('credits.buy')}
+                                        >
+                                            <CreditCardIcon className="w-4 h-4" />
+                                            Buy Credits
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            onClick={() => window.location.href = route('subscriptions.index')}
+                                        >
+                                            <SparklesIcon className="w-4 h-4" />
+                                            Subscriptions
+                                        </Button>
+                                    </div>
+                                    {/* Mobile Credits Button */}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="sm:hidden text-white hover:text-blue-100 hover:bg-white/10"
+                                        onClick={() => window.location.href = route('credits.buy')}
+                                    >
+                                        <CreditCardIcon className="w-5 h-5" />
+                                    </Button>
                                     <div className="relative inline-block">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
