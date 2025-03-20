@@ -17,29 +17,9 @@ interface Props {
 
 export default function SettingsForm({ settings, onSubmit, children, submitLabel = 'Save Changes' }: Props) {
     const form = useForm({
-        smtp: {
-            host: settings.smtp?.host || '',
-            port: settings.smtp?.port || 587,
-            encryption: settings.smtp?.encryption || 'tls',
-            username: settings.smtp?.username || '',
-            password: settings.smtp?.password || '',
-        },
-        sender: {
-            from_name: settings.sender?.from_name || '',
-            from_email: settings.sender?.from_email || '',
-            reply_to: settings.sender?.reply_to || '',
-            signature: settings.sender?.signature || '',
-        },
-        attachments: {
-            max_size: settings.attachments?.max_size || 10,
-            max_files: settings.attachments?.max_files || 5,
-            allowed_types: settings.attachments?.allowed_types || ['pdf', 'doc', 'docx', 'jpg', 'png', 'gif'],
-        },
-        templates: {
-            enabled: settings.templates?.enabled || false,
-            default_language: settings.templates?.default_language || 'en',
-            custom_variables: settings.templates?.custom_variables || [],
-        },
+        notifications: {
+            email_notifications: settings.notifications?.email_notifications ?? true
+        }
     });
 
     const handleSubmit: FormEventHandler = async (e) => {

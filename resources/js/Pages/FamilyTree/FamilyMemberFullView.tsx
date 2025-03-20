@@ -755,17 +755,17 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                     <div className="min-w-max">
                         <div className={`grid grid-cols-9 gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                             {/* Total, Living, Deceased Stats */}
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>Total</div>
                                 <div className="text-lg font-semibold">{filteredMembers.length}</div>
                             </div>
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-green-300' : 'text-green-600'}`}>Living</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => !member.death_date).length}
                                 </div>
                             </div>
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-purple-300' : 'text-purple-600'}`}>Deceased</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => member.death_date).length}
@@ -773,13 +773,13 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                             </div>
 
                             {/* Gender Stats */}
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>Male</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => member.gender === 'male').length}
                                 </div>
                             </div>
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-pink-300' : 'text-pink-600'}`}>Female</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => member.gender === 'female').length}
@@ -787,7 +787,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                             </div>
 
                             {/* Age Group Stats */}
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-yellow-300' : 'text-yellow-600'}`}>Age 1-6</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => {
@@ -796,7 +796,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     }).length}
                                 </div>
                             </div>
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-orange-300' : 'text-orange-600'}`}>Age 7-17</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => {
@@ -805,7 +805,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     }).length}
                                 </div>
                             </div>
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-teal-300' : 'text-teal-600'}`}>18-59</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => {
@@ -814,7 +814,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                     }).length}
                                 </div>
                             </div>
-                            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
+                            <div className={`p-2 border border-gray-200 rounded-lg ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-800' : 'bg-white hover:bg-gray-50'} shadow-lg min-w-[90px] transition-colors`}>
                                 <div className={`text-xs ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>60+</div>
                                 <div className="text-lg font-semibold">
                                     {filteredMembers.filter(member => calculateAge(member.birth_date, member.death_date) >= 60).length}
@@ -918,7 +918,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                         {filteredMembers.map((member: FamilyMember) => (
                             <div
                                 key={member.id}
-                                className={`rounded-lg shadow-lg overflow-hidden transition-all duration-200 cursor-pointer 
+                                className={`border border-gray-200 rounded-lg shadow-lg overflow-hidden transition-all duration-200 cursor-pointer 
                                     ${selectedMember?.id === member.id
                                         ? isDarkMode 
                                             ? 'bg-indigo-900/30 ring-2 ring-indigo-500'

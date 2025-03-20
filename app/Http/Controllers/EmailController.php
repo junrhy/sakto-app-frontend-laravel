@@ -126,20 +126,12 @@ class EmailController extends Controller
 
             // Dummy data
             $dummySettings = [
-                'data' => [
-                    'smtp_host' => 'smtp.example.com',
-                    'smtp_port' => 587,
-                    'smtp_encryption' => 'tls',
-                    'from_name' => 'System Admin',
-                    'from_email' => 'admin@example.com',
-                    'signature' => 'Best regards,\nSystem Administrator',
-                    'max_attachments' => 5,
-                    'max_attachment_size' => 10 // MB
+                'notifications' => [
+                    'email_notifications' => true
                 ]
             ];
-
             return Inertia::render('Email/Settings', [
-                'settings' => $dummySettings['data'],
+                'settings' => $dummySettings,
                 'auth' => [
                     'user' => auth()->user()
                 ]
