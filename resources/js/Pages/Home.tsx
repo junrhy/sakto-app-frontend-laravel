@@ -5,7 +5,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { apps } from '@/data/apps';
+import { getApps, type App } from '@/data/apps';
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
@@ -35,8 +35,22 @@ export default function Home({ auth }: Props) {
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
+    const [apps, setApps] = useState<App[]>([]);
+    const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
     useEffect(() => {
+        const fetchApps = async () => {
+            try {
+                setIsLoadingApps(true);
+                const appData = await getApps();
+                setApps(appData);
+            } catch (error) {
+                console.error('Failed to fetch apps:', error);
+            } finally {
+                setIsLoadingApps(false);
+            }
+        };
+
         const fetchCredits = async () => {
             try {
                 if (auth.user.identifier) {
@@ -72,6 +86,7 @@ export default function Home({ auth }: Props) {
 
         fetchCredits();
         fetchSubscription();
+        fetchApps();
     }, [auth.user.identifier]);
 
     const getBorderColor = (colorClass: string) => {

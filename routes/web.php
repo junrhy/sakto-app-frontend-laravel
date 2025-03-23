@@ -28,6 +28,7 @@ use App\Http\Controllers\InboxController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MayaWebhookController;
 use App\Http\Controllers\EmailTemplateController;
+use App\Http\Controllers\AppsController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,198 +37,77 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-// Add these routes with your other auth routes
-Route::get('auth/google', [GoogleController::class, 'redirect'])
-    ->name('google.redirect');
-Route::get('auth/google/callback', [GoogleController::class, 'callback'])
-    ->name('google.callback');
-Route::post('auth/google/register', [GoogleController::class, 'register'])->name('google.register');
+// Public routes
+Route::group(['middleware' => ['web']], function () {
+    // Welcome and Policy Routes
+    Route::get('/', function () {
+        return Inertia::render('Welcome', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+        ]);
+    });
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    // Policy Routes
+    Route::prefix('policies')->group(function () {
+        Route::get('/privacy', function () { return Inertia::render('PrivacyPolicy'); })->name('privacy-policy');
+        Route::get('/terms', function () { return Inertia::render('TermsAndConditions'); })->name('terms-and-conditions');
+        Route::get('/cookies', function () { return Inertia::render('CookiePolicy'); })->name('cookie-policy');
+        Route::get('/faq', function () { return Inertia::render('FAQ'); })->name('faq');
+    });
+
+    // Google Auth Routes
+    Route::prefix('auth/google')->group(function () {
+        Route::get('/', [GoogleController::class, 'redirect'])->name('google.redirect');
+        Route::get('/callback', [GoogleController::class, 'callback'])->name('google.callback');
+        Route::post('/register', [GoogleController::class, 'register'])->name('google.register');
+    });
+
+    // Public Contact Routes
+    Route::prefix('contacts')->group(function () {
+        Route::get('/self-registration', [ContactsController::class, 'selfRegistration'])->name('contacts.self-registration');
+        Route::post('/store-self', [ContactsController::class, 'storeSelf'])->name('contacts.store-self');
+        Route::get('/{id}/public', [ContactsController::class, 'publicProfile'])->name('contacts.public-profile');
+    });
+
+    // Public Family Tree Routes
+    Route::prefix('family-tree/{clientIdentifier}')->group(function () {
+        Route::get('/full-view', [FamilyTreeController::class, 'fullView'])->name('family-tree.full-view');
+        Route::post('/request-edit', [FamilyTreeController::class, 'requestEdit'])->name('family-tree.request-edit');
+        Route::get('/all-members', [FamilyTreeController::class, 'getAllMembers'])->name('family-tree.all-members');
+        Route::get('/member/{memberId}', [FamilyTreeController::class, 'memberProfile'])->name('family-tree.member-profile');
+        Route::get('/circular', [FamilyTreeController::class, 'circularView'])->name('family-tree.circular');
+        Route::get('/printable', [FamilyTreeController::class, 'printableView'])->name('family-tree.printable');
+        Route::get('/members', [FamilyTreeController::class, 'familyMemberFullView'])->name('family-tree.members');
+        Route::get('/settings', [FamilyTreeController::class, 'getPublicSettings'])->name('family-tree.public-settings');
+    });
+
+    // Maya Webhook Route - exclude from CSRF protection
+    Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
+        ->name('webhooks.maya')
+        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 });
 
-// Privacy Policy route
-Route::get('/privacy-policy', function () {
-    return Inertia::render('PrivacyPolicy');
-})->name('privacy-policy');
+// Admin Auth Routes
+Route::get('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.attempt');
+Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('admin.logout');
 
-// Terms and Conditions route
-Route::get('/terms-and-conditions', function () {
-    return Inertia::render('TermsAndConditions');
-})->name('terms-and-conditions');
-
-// Cookie Policy route
-Route::get('/cookie-policy', function () {
-    return Inertia::render('CookiePolicy');
-})->name('cookie-policy');
-
-// FAQ route
-Route::get('/faq', function () {
-    return Inertia::render('FAQ');
-})->name('faq');
-
-// Public routes
-Route::get('/contacts/self-registration', [ContactsController::class, 'selfRegistration'])
-    ->name('contacts.self-registration');
-Route::post('/contacts/store-self', [ContactsController::class, 'storeSelf'])
-    ->name('contacts.store-self');
-Route::get('/contacts/{id}/public', [ContactsController::class, 'publicProfile'])
-    ->name('contacts.public-profile');
-
-// Public Family Tree routes
-Route::get('/family-tree/{clientIdentifier}/full-view', function ($clientIdentifier) {
-    $response = Http::withToken(config('api.token'))
-        ->get(config('api.url') . "/family-tree/members", [
-            'client_identifier' => $clientIdentifier
-        ]);
-
-    if (!$response->successful()) {
-        return back()->withErrors(['error' => 'Failed to fetch family members']);
-    }
-
-    return Inertia::render('FamilyTree/FullView', [
-        'familyMembers' => $response->json('data', []),
-        'clientIdentifier' => $clientIdentifier
-    ]);
-})->name('family-tree.full-view');
-
-// Add route for edit request
-Route::post('/family-tree/{clientIdentifier}/request-edit', [FamilyTreeController::class, 'requestEdit'])
-    ->name('family-tree.request-edit');
-
-// Add public route for getting all members
-Route::get('/family-tree/{clientIdentifier}/all-members', function ($clientIdentifier) {
-    $response = Http::withToken(config('api.token'))
-        ->get(config('api.url') . "/family-tree/members", [
-            'client_identifier' => $clientIdentifier
-        ]);
-
-    if (!$response->successful()) {
-        return response()->json(['error' => 'Failed to fetch family members'], $response->status());
-    }
-
-    return response()->json($response->json('data', []));
-})->name('family-tree.all-members');
-
-// Member Profile route
-Route::get('/family-tree/{clientIdentifier}/member/{memberId}', function ($clientIdentifier, $memberId) {
-    $response = Http::withToken(config('api.token'))
-        ->get(config('api.url') . "/family-tree/members/" . $memberId, [
-            'client_identifier' => $clientIdentifier
-        ]);
-
-    if (!$response->successful()) {
-        return back()->withErrors(['error' => 'Failed to fetch family members']);
-    }
-
-    $member = $response->json('data', []);
-
-    if (!$member) {
-        return back()->withErrors(['error' => 'Member not found']);
-    }
-
-    return Inertia::render('FamilyTree/MemberProfile', [
-        'member' => $member,
-        'clientIdentifier' => $clientIdentifier
-    ]);
-})->name('family-tree.member-profile');
-
-// Circular View route
-Route::get('/family-tree/{clientIdentifier}/circular', function ($clientIdentifier) {
-    $response = Http::withToken(config('api.token'))
-        ->get(config('api.url') . "/family-tree/members", [
-            'client_identifier' => $clientIdentifier
-        ]);
-
-    if (!$response->successful()) {
-        return back()->withErrors(['error' => 'Failed to fetch family members']);
-    }
-
-    return Inertia::render('FamilyTree/CircularView', [
-        'familyMembers' => $response->json('data', []),
-        'clientIdentifier' => $clientIdentifier
-    ]);
-})->name('family-tree.circular');
-
-// Printable View route
-Route::get('/family-tree/{clientIdentifier}/printable', function ($clientIdentifier) {
-    $response = Http::withToken(config('api.token'))
-        ->get(config('api.url') . "/family-tree/members", [
-            'client_identifier' => $clientIdentifier
-        ]);
-
-    if (!$response->successful()) {
-        return back()->withErrors(['error' => 'Failed to fetch family members']);
-    }
-
-    return Inertia::render('FamilyTree/PrintableView', [
-        'familyMembers' => $response->json('data', []),
-        'clientIdentifier' => $clientIdentifier
-    ]);
-})->name('family-tree.printable');
-
-// Public Family Member Full View route
-Route::get('/family-tree/{clientIdentifier}/members', function ($clientIdentifier) {
-    $response = Http::withToken(config('api.token'))
-        ->get(config('api.url') . "/family-tree/members", [
-            'client_identifier' => $clientIdentifier
-        ]);
-
-    if (!$response->successful()) {
-        return back()->withErrors(['error' => 'Failed to fetch family members']);
-    }
-
-    return Inertia::render('FamilyTree/FamilyMemberFullView', [
-        'familyMembers' => $response->json('data', []),
-        'clientIdentifier' => $clientIdentifier
-    ]);
-})->name('family-tree.members');
-
+// Routes that require authentication but not subscription
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Help route
-    Route::get('/help', function () {
-        return Inertia::render('Help', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
-    })->name('help');
-
-    // Home routes
-    Route::get('/home', function () {
-        return Inertia::render('Home', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
-    })->name('home');
-
-    Route::get('/apps', function () {
-        $appCurrency = json_decode(auth()->user()->app_currency);
-
-        return Inertia::render('Apps', [
-            'auth' => [
-                'user' => [
-                    'name' => auth()->user()->name,
-                    'email' => auth()->user()->email,
-                    'identifier' => auth()->user()->identifier,
-                    'app_currency' => $appCurrency,
-                ]
-            ]
-        ]);
-    })->name('apps');
-
-    Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
-    Route::patch('/inbox/{id}/read', [InboxController::class, 'markAsRead'])->name('inbox.mark-as-read');
-    Route::delete('/inbox/{id}', [InboxController::class, 'delete'])->name('inbox.delete');
-
-    // Dashboard routes
+    // Core features
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile/currency', [ProfileController::class, 'updateCurrency'])->name('profile.currency');
+    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])->name('profile.theme');
+    Route::patch('/profile/color', [ProfileController::class, 'updateColor'])->name('profile.color');
+    Route::post('/profile/addresses', [ProfileController::class, 'updateAddresses'])->name('profile.addresses.update');
+    
+    // Apps and Dashboard
+    Route::get('/apps', [AppsController::class, 'index'])->name('apps');
+    Route::get('/api/apps', [AppsController::class, 'getApps'])->name('api.apps');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboards', [DashboardController::class, 'gallery'])->name('dashboard.gallery');
     Route::post('/dashboard', [DashboardController::class, 'store'])->name('dashboard.store');
@@ -235,136 +115,56 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/dashboard/{dashboard}/toggle-star', [DashboardController::class, 'toggleStar'])->name('dashboard.toggle-star');
     Route::delete('/dashboard/{dashboard}', [DashboardController::class, 'destroy'])->name('dashboard.destroy');
     Route::patch('/dashboard/{dashboard}', [DashboardController::class, 'update'])->name('dashboard.update');
-    Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])
-        ->name('dashboard.widgets');
-
-    // Widget routes
+    Route::get('/dashboard/{dashboard}/widgets', [DashboardController::class, 'getWidgets'])->name('dashboard.widgets');
+    
+    // Widgets
     Route::post('/widgets', [WidgetController::class, 'store'])->name('widgets.store');
     Route::delete('/widgets/{widget}', [WidgetController::class, 'destroy'])->name('widgets.destroy');
     Route::patch('/widgets/{widget}', [WidgetController::class, 'update'])->name('widgets.update');
-    Route::patch('/widgets/{widget}/reorder', [WidgetController::class, 'reorder'])
-        ->name('widgets.reorder');
-
-    // Inventory routes
-    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
-    Route::get('/inventory/products', [InventoryController::class, 'getProducts']);
-    Route::post('/inventory', [InventoryController::class, 'store']);
-    Route::put('/inventory/{id}', [InventoryController::class, 'update']);
-    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
-    Route::post('/inventory/bulk', [InventoryController::class, 'bulkDestroy']);
-    Route::get('/inventory/export', [InventoryController::class, 'exportProducts']);
-    Route::post('/inventory/import', [InventoryController::class, 'importProducts']);
-    Route::get('/inventory/low-stock', [InventoryController::class, 'checkLowStock']);
-    Route::get('/inventory/{id}/history', [InventoryController::class, 'getInventoryHistory']);
-    Route::get('/inventory/{sku}/barcode', [InventoryController::class, 'generateBarcode']);
-    Route::get('/inventory/products-overview', [InventoryController::class, 'getProductsOverview']);
-
-    // Pos Retail routes
+    Route::patch('/widgets/{widget}/reorder', [WidgetController::class, 'reorder'])->name('widgets.reorder');
+    
+    // Free Apps (based on config/apps.php)
+    // POS Retail
     Route::get('/pos-retail', [PosRetailController::class, 'index'])->name('pos-retail');
     Route::post('/pos-retail', [PosRetailController::class, 'store']);
     Route::put('/pos-retail/{id}', [PosRetailController::class, 'update']);
     Route::delete('/pos-retail/{id}', [PosRetailController::class, 'destroy']);
-
-    // Pos Retail Sale routes
     Route::get('/retail-sale', [PosRetailSaleController::class, 'index'])->name('retail-sale');
     Route::delete('/retail-sale/{id}', [PosRetailSaleController::class, 'destroy'])->name('sales.destroy');
     Route::delete('/retail-sales/bulk-delete', [PosRetailSaleController::class, 'bulkDelete'])->name('sales.bulk-delete');
     Route::get('/retail-sale-overview', [PosRetailSaleController::class, 'getSalesOverview']);
-
-    // Clinic routes
-    Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic');
-    Route::get('/clinic/settings', [ClinicController::class, 'settings'])->name('clinic.settings');
-    Route::post('/clinic/patients', [ClinicController::class, 'store']);
-    Route::put('/clinic/patients/{id}', [ClinicController::class, 'update']);
-    Route::delete('/clinic/patients/{id}', [ClinicController::class, 'destroy']);
-    Route::post('/clinic/patients/{patientId}/bills', [ClinicController::class, 'addBill']);
-    Route::delete('/clinic/patients/{patientId}/bills/{billId}', [ClinicController::class, 'deleteBill']);
-    Route::post('/clinic/patients/{patientId}/payments', [ClinicController::class, 'addPayment']);
-    Route::delete('/clinic/patients/{patientId}/payments/{id}', [ClinicController::class, 'deletePayment']);
-    Route::post('/clinic/patients/{patientId}/checkups', [ClinicController::class, 'addCheckup']);
-    Route::delete('/clinic/patients/{patientId}/checkups/{checkupId}', [ClinicController::class, 'deleteCheckup']);
-    Route::put('/clinic/patients/{patientId}/dental-chart', [ClinicController::class, 'updateDentalChart']);
-    Route::put('/clinic/patients/{patientId}/next-visit', [ClinicController::class, 'updateNextVisit']);
-    Route::get('/clinic/patients/{patientId}/bills', [ClinicController::class, 'getBills']);
-    Route::get('/clinic/patients/{patientId}/payments', [ClinicController::class, 'getPayments']);
-    Route::get('/clinic/patients/{patientId}/checkups', [ClinicController::class, 'getCheckups']);
-
-    // Pos Restaurant routes
+    
+    // Restaurant Management
     Route::get('/pos-restaurant', [PosRestaurantController::class, 'index'])->name('pos-restaurant');
-    Route::get('/pos-restaurant/settings', [PosRestaurantController::class, 'settings'])
-        ->name('pos-restaurant.settings');
-    Route::post('/pos-restaurant/settings', [PosRestaurantController::class, 'saveSettings'])
-        ->name('pos-restaurant.settings.save');
-
-    // Pos Restaurant Menu Items routes
-    Route::get('/pos-restaurant/menu-items', [PosRestaurantController::class, 'getMenuItems']);
-    Route::post('/pos-restaurant/menu-items', [PosRestaurantController::class, 'storeMenuItem']);
-    Route::put('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'updateMenuItem']);
-    Route::delete('/pos-restaurant/menu-item/{id}', [PosRestaurantController::class, 'destroyMenuItem']);
-    Route::post('/pos-restaurant/menu-items/bulk-destroy', [PosRestaurantController::class, 'bulkDestroyMenuItem']);
-
-    // Pos Restaurant Tables routes
-    Route::get('/pos-restaurant/tables', [PosRestaurantController::class, 'getTables']);
-    Route::post('/pos-restaurant/tables', [PosRestaurantController::class, 'storeTable']);
-    Route::put('/pos-restaurant/table/{id}', [PosRestaurantController::class, 'updateTable']);
-    Route::delete('/pos-restaurant/table/{id}', [PosRestaurantController::class, 'destroyTable']);
-    Route::get('/pos-restaurant/tables/joined', [PosRestaurantController::class, 'getJoinedTables'])
-        ->name('pos-restaurant.tables.joined');
-    Route::post('/pos-restaurant/tables/join', [PosRestaurantController::class, 'joinTables'])
-        ->name('pos-restaurant.tables.join');
-    Route::post('/pos-restaurant/tables/unjoin', [PosRestaurantController::class, 'unjoinTables'])
-        ->name('pos-restaurant.tables.unjoin');
-    Route::get('/pos-restaurant/tables-overview', [PosRestaurantController::class, 'getTablesOverview']);
-    // Pos Restaurant Kitchen Order routes
-    Route::post('/pos-restaurant/kitchen-order', [PosRestaurantController::class, 'storeKitchenOrder']);
-
-    // Pos Restaurant Current Order routes
-    Route::get('/pos-restaurant/current-order/{tableNumber}', [PosRestaurantController::class, 'getCurrentOrder']);
-    Route::post('/pos-restaurant/orders/add-item', [PosRestaurantController::class, 'addItemToOrder'])
-        ->name('pos-restaurant.add-item-to-order');
-    Route::delete('/pos-restaurant/current-order/{table}/item/{id}', [PosRestaurantController::class, 'removeOrderItem'])
-        ->name('pos-restaurant.remove-order-item');
-    Route::post('/pos-restaurant/orders/complete', [PosRestaurantController::class, 'completeOrder'])
-        ->name('pos-restaurant.complete-order');
-    Route::get('/pos-restaurant/kitchen-orders/overview', [PosRestaurantController::class, 'getKitchenOrdersOverview']);
-    // Pos Restaurant Reservations routes
-    Route::get('/pos-restaurant/reservations', [PosRestaurantController::class, 'getReservations']);
-    Route::post('/pos-restaurant/reservations', [PosRestaurantController::class, 'storeReservation']);
-    Route::delete('/pos-restaurant/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
-    Route::get('/pos-restaurant/reservations-overview', [PosRestaurantController::class, 'getReservationsOverview']);
-    // Warehousing routes
-    Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
-
-    // Transportation routes
-    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
-
-    // Rental Item routes
-    Route::prefix('rental-item')->group(function () {
-        Route::get('/', [RentalItemController::class, 'index'])->name('rental-items');
-        Route::get('/settings', [RentalItemController::class, 'settings'])->name('rental-item.settings');
-        Route::get('/list', [RentalItemController::class, 'getItems']);
-        Route::post('/', [RentalItemController::class, 'store']);
-        Route::put('/{id}', [RentalItemController::class, 'update']);
-        Route::delete('/{id}', [RentalItemController::class, 'destroy']);
-        Route::post('/bulk-delete', [RentalItemController::class, 'bulkDestroy']);
-        Route::post('/{id}/payment', [RentalItemController::class, 'recordPayment']);
-        Route::get('/{id}/payment-history', [RentalItemController::class, 'getPaymentHistory']);
+    Route::get('/pos-restaurant/settings', [PosRestaurantController::class, 'settings'])->name('pos-restaurant.settings');
+    Route::post('/pos-restaurant/settings', [PosRestaurantController::class, 'saveSettings'])->name('pos-restaurant.settings.save');
+    Route::prefix('pos-restaurant')->group(function () {
+        Route::get('/menu-items', [PosRestaurantController::class, 'getMenuItems']);
+        Route::post('/menu-items', [PosRestaurantController::class, 'storeMenuItem']);
+        Route::put('/menu-item/{id}', [PosRestaurantController::class, 'updateMenuItem']);
+        Route::delete('/menu-item/{id}', [PosRestaurantController::class, 'destroyMenuItem']);
+        Route::post('/menu-items/bulk-destroy', [PosRestaurantController::class, 'bulkDestroyMenuItem']);
+        Route::get('/tables', [PosRestaurantController::class, 'getTables']);
+        Route::post('/tables', [PosRestaurantController::class, 'storeTable']);
+        Route::put('/table/{id}', [PosRestaurantController::class, 'updateTable']);
+        Route::delete('/table/{id}', [PosRestaurantController::class, 'destroyTable']);
+        Route::get('/tables/joined', [PosRestaurantController::class, 'getJoinedTables'])->name('pos-restaurant.tables.joined');
+        Route::post('/tables/join', [PosRestaurantController::class, 'joinTables'])->name('pos-restaurant.tables.join');
+        Route::post('/tables/unjoin', [PosRestaurantController::class, 'unjoinTables'])->name('pos-restaurant.tables.unjoin');
+        Route::get('/tables-overview', [PosRestaurantController::class, 'getTablesOverview']);
+        Route::post('/kitchen-order', [PosRestaurantController::class, 'storeKitchenOrder']);
+        Route::get('/current-order/{tableNumber}', [PosRestaurantController::class, 'getCurrentOrder']);
+        Route::post('/orders/add-item', [PosRestaurantController::class, 'addItemToOrder'])->name('pos-restaurant.add-item-to-order');
+        Route::delete('/current-order/{table}/item/{id}', [PosRestaurantController::class, 'removeOrderItem'])->name('pos-restaurant.remove-order-item');
+        Route::post('/orders/complete', [PosRestaurantController::class, 'completeOrder'])->name('pos-restaurant.complete-order');
+        Route::get('/kitchen-orders/overview', [PosRestaurantController::class, 'getKitchenOrdersOverview']);
+        Route::get('/reservations', [PosRestaurantController::class, 'getReservations']);
+        Route::post('/reservations', [PosRestaurantController::class, 'storeReservation']);
+        Route::delete('/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
+        Route::get('/reservations-overview', [PosRestaurantController::class, 'getReservationsOverview']);
     });
-
-    // Rental Property routes
-    Route::prefix('rental-property')->group(function () {
-        Route::get('/', [RentalPropertyController::class, 'index'])->name('rental-property');
-        Route::get('/settings', [RentalPropertyController::class, 'settings'])->name('rental-property.settings');
-        Route::get('/list', [RentalPropertyController::class, 'getProperties']);
-        Route::post('/', [RentalPropertyController::class, 'store']);
-        Route::put('/{id}', [RentalPropertyController::class, 'update']);
-        Route::delete('/{id}', [RentalPropertyController::class, 'destroy']);
-        Route::post('/bulk', [RentalPropertyController::class, 'bulkDestroy']);
-        Route::post('/{id}/payment', [RentalPropertyController::class, 'recordPayment']);
-        Route::get('/{id}/payment-history', [RentalPropertyController::class, 'getPaymentHistory']);
-    });
-
-    // Loan routes
+    
+    // Lending
     Route::prefix('loan')->group(function () {
         Route::get('/', [LoanController::class, 'index'])->name('loan');
         Route::get('/settings', [LoanController::class, 'settings'])->name('loan.settings');
@@ -380,8 +180,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/bill/{id}', [LoanController::class, 'deleteBill']);
         Route::patch('/bill/{id}/status', [LoanController::class, 'updateBillStatus']);
     });
-
-    // Payroll routes
+    
+    // Rental Items
+    Route::prefix('rental-item')->group(function () {
+        Route::get('/', [RentalItemController::class, 'index'])->name('rental-items');
+        Route::get('/settings', [RentalItemController::class, 'settings'])->name('rental-item.settings');
+        Route::get('/list', [RentalItemController::class, 'getItems']);
+        Route::post('/', [RentalItemController::class, 'store']);
+        Route::put('/{id}', [RentalItemController::class, 'update']);
+        Route::delete('/{id}', [RentalItemController::class, 'destroy']);
+        Route::post('/bulk-delete', [RentalItemController::class, 'bulkDestroy']);
+        Route::post('/{id}/payment', [RentalItemController::class, 'recordPayment']);
+        Route::get('/{id}/payment-history', [RentalItemController::class, 'getPaymentHistory']);
+    });
+    
+    // Payroll
     Route::prefix('payroll')->group(function () {
         Route::get('/', [PayrollController::class, 'index'])->name('payroll');
         Route::get('/settings', [PayrollController::class, 'settings'])->name('payroll.settings');
@@ -391,8 +204,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}', [PayrollController::class, 'destroy']);
         Route::delete('/bulk', [PayrollController::class, 'bulkDestroy']);
     });
+    
+    // Contacts
+    Route::resource('contacts', ContactsController::class);
+    Route::get('/contacts/settings', [ContactsController::class, 'settings'])->name('contacts.settings');
+    Route::get('/contacts/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
+    
+    // Subscription Management
+    Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
+    Route::post('/subscriptions/{identifier}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+    Route::get('/subscriptions/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
+    Route::get('/subscriptions/payment/success', [SubscriptionController::class, 'paymentSuccess'])->name('subscriptions.payment.success');
+    Route::get('/subscriptions/payment/failure', [SubscriptionController::class, 'paymentFailure'])->name('subscriptions.payment.failure');
+    Route::get('/subscriptions/payment/cancel', [SubscriptionController::class, 'paymentCancel'])->name('subscriptions.payment.cancel');
+    
+    // Credits
+    Route::prefix('credits')->group(function () {
+        Route::get('/buy', [CreditsController::class, 'buy'])->name('credits.buy');
+        Route::get('/{clientIdentifier}/balance', [CreditsController::class, 'getBalance'])->name('credits.balance');
+        Route::post('/request', [CreditsController::class, 'requestCredit'])->name('credits.request');
+        Route::get('/{clientIdentifier}/history', [CreditsController::class, 'getCreditHistory'])->name('credits.history');
+        Route::get('/{clientIdentifier}/spent-history', [CreditsController::class, 'getSpentCreditHistory'])->name('credits.spent-history');
+        Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
+    });
 
-    // Travel routes
+    // Home route
+    Route::get('/home', function () {
+        return Inertia::render('Home', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('home');
+
+    // Inbox
+    Route::get('/inbox', [InboxController::class, 'index'])->name('inbox');
+    Route::patch('/inbox/{id}/read', [InboxController::class, 'markAsRead'])->name('inbox.mark-as-read');
+    Route::delete('/inbox/{id}', [InboxController::class, 'delete'])->name('inbox.delete');
+
+    // Travel
     Route::prefix('travel')->group(function () {
         Route::get('/', [TravelController::class, 'index'])->name('travel');
         Route::get('/packages', [TravelController::class, 'getPackages']);
@@ -405,101 +256,168 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/bookings/{id}', [TravelController::class, 'deleteBooking']);
     });
 
-    // Flight search route
+    // Flight search
     Route::get('/flight-search', [FlightController::class, 'index'])->name('flight-search');
     Route::get('/flights', [FlightController::class, 'index'])->name('flights');
     Route::get('/api/flights/search-airports', [FlightController::class, 'searchAirports']);
-     Route::get('/api/flights/search', [FlightController::class, 'search']);
+    Route::get('/api/flights/search', [FlightController::class, 'search']);
 
-    // Profile routes
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Inventory
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+    Route::get('/inventory/products', [InventoryController::class, 'getProducts']);
+    Route::post('/inventory', [InventoryController::class, 'store']);
+    Route::put('/inventory/{id}', [InventoryController::class, 'update']);
+    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy']);
+    Route::post('/inventory/bulk', [InventoryController::class, 'bulkDestroy']);
+    Route::get('/inventory/export', [InventoryController::class, 'exportProducts']);
+    Route::post('/inventory/import', [InventoryController::class, 'importProducts']);
+    Route::get('/inventory/low-stock', [InventoryController::class, 'checkLowStock']);
+    Route::get('/inventory/{id}/history', [InventoryController::class, 'getInventoryHistory']);
+    Route::get('/inventory/{sku}/barcode', [InventoryController::class, 'generateBarcode']);
+    Route::get('/inventory/products-overview', [InventoryController::class, 'getProductsOverview']);
+});
 
-    Route::patch('/profile/currency', [ProfileController::class, 'updateCurrency'])
-        ->middleware(['auth'])
-        ->name('profile.currency');
-
-    Route::patch('/profile/theme', [ProfileController::class, 'updateTheme'])
-        ->middleware(['auth'])
-        ->name('profile.theme');
-
-    Route::patch('/profile/color', [ProfileController::class, 'updateColor'])
-        ->middleware(['auth'])
-        ->name('profile.color');
-
-    Route::post('/profile/addresses', [ProfileController::class, 'updateAddresses'])
-        ->middleware(['auth'])
-        ->name('profile.addresses.update');
-
-    // Twilio Routes
+// Routes that require subscription
+Route::middleware(['auth', 'verified', 'subscription.access'])->group(function () {
+    // Help route
+    Route::get('/help', function () {
+        return Inertia::render('Help', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('help');
+    
+    // Clinic (subscription required)
+    Route::prefix('clinic')->group(function () {
+        Route::get('/', [ClinicController::class, 'index'])->name('clinic');
+        Route::get('/settings', [ClinicController::class, 'settings'])->name('clinic.settings');
+        Route::post('/patients', [ClinicController::class, 'store']);
+        Route::put('/patients/{id}', [ClinicController::class, 'update']);
+        Route::delete('/patients/{id}', [ClinicController::class, 'destroy']);
+        Route::post('/patients/{patientId}/bills', [ClinicController::class, 'addBill']);
+        Route::delete('/patients/{patientId}/bills/{billId}', [ClinicController::class, 'deleteBill']);
+        Route::post('/patients/{patientId}/payments', [ClinicController::class, 'addPayment']);
+        Route::delete('/patients/{patientId}/payments/{id}', [ClinicController::class, 'deletePayment']);
+        Route::post('/patients/{patientId}/checkups', [ClinicController::class, 'addCheckup']);
+        Route::delete('/patients/{patientId}/checkups/{checkupId}', [ClinicController::class, 'deleteCheckup']);
+        Route::put('/patients/{patientId}/dental-chart', [ClinicController::class, 'updateDentalChart']);
+        Route::put('/patients/{patientId}/next-visit', [ClinicController::class, 'updateNextVisit']);
+        Route::get('/patients/{patientId}/bills', [ClinicController::class, 'getBills']);
+        Route::get('/patients/{patientId}/payments', [ClinicController::class, 'getPayments']);
+        Route::get('/patients/{patientId}/checkups', [ClinicController::class, 'getCheckups']);
+    });
+    
+    // Real Estate (subscription required)
+    Route::prefix('rental-property')->group(function () {
+        Route::get('/', [RentalPropertyController::class, 'index'])->name('rental-property');
+        Route::get('/settings', [RentalPropertyController::class, 'settings'])->name('rental-property.settings');
+        Route::get('/list', [RentalPropertyController::class, 'getProperties']);
+        Route::post('/', [RentalPropertyController::class, 'store']);
+        Route::put('/{id}', [RentalPropertyController::class, 'update']);
+        Route::delete('/{id}', [RentalPropertyController::class, 'destroy']);
+        Route::post('/bulk', [RentalPropertyController::class, 'bulkDestroy']);
+        Route::post('/{id}/payment', [RentalPropertyController::class, 'recordPayment']);
+        Route::get('/{id}/payment-history', [RentalPropertyController::class, 'getPaymentHistory']);
+    });
+    
+    // Transportation (subscription required)
+    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
+    
+    // SMS (subscription required)
+    Route::prefix('sms')->group(function () {
+        Route::get('/settings', [SmsTwilioController::class, 'settings'])->name('sms.settings');
+    });
+    
+    // Twilio SMS
     Route::get('/sms-twilio', [SmsTwilioController::class, 'index'])->name('twilio-sms');
     Route::post('/sms-twilio/send', [SmsTwilioController::class, 'send'])->name('twilio-sms.send');
     Route::get('/sms-twilio/balance', [SmsTwilioController::class, 'getBalance'])->name('twilio-sms.balance');
     Route::get('/sms-twilio/status/{messageId}', [SmsTwilioController::class, 'getMessageStatus'])->name('twilio-sms.status');
-
-    // SMS routes
-    Route::prefix('sms')->group(function () {
-        Route::get('/settings', [SmsTwilioController::class, 'settings'])->name('sms.settings');
-    });
-
-    // Semaphore Routes
+    
+    // Semaphore SMS
     Route::get('/sms-semaphore', [SmsSemaphoreController::class, 'index'])->name('semaphore-sms');
     Route::post('/sms-semaphore/send', [SmsSemaphoreController::class, 'send'])->name('semaphore-sms.send');
     Route::get('/sms-semaphore/balance', [SmsSemaphoreController::class, 'getBalance'])->name('semaphore-sms.balance');
     Route::get('/sms-semaphore/status/{messageId}', [SmsSemaphoreController::class, 'getMessageStatus'])->name('semaphore-sms.status');
     Route::get('/sms-semaphore/pricing', [SmsSemaphoreController::class, 'getPricing'])->name('semaphore-sms.pricing');
-
-    // Email routes
-    Route::get('/email', [EmailController::class, 'index'])->name('email.index');
-    Route::get('/email/settings', [EmailController::class, 'settings'])->name('email.settings');
-    Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
-    Route::get('/email/config', [EmailController::class, 'getConfig'])->name('email.config');
-    Route::get('/contacts/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
-
-    // Email Templates
-    Route::prefix('email/templates')->group(function () {
-        Route::get('/', [EmailTemplateController::class, 'index'])->name('email.templates.index');
-        Route::get('/list', [EmailTemplateController::class, 'getTemplates'])->name('email.templates.list');
-        Route::get('/create', [EmailTemplateController::class, 'create'])->name('email.templates.create');
-        Route::post('/', [EmailTemplateController::class, 'store'])->name('email.templates.store');
-        Route::get('/{template}', [EmailTemplateController::class, 'show'])->name('email.templates.show');
-        Route::get('/{template}/edit', [EmailTemplateController::class, 'edit'])->name('email.templates.edit');
-        Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('email.templates.update');
-        Route::delete('/{template}', [EmailTemplateController::class, 'destroy'])->name('email.templates.destroy');
-        Route::get('/{template}/preview', [EmailTemplateController::class, 'preview'])->name('email.templates.preview');
-        Route::match(['patch', 'post'], '/{template}/toggle-status', [EmailTemplateController::class, 'toggleStatus'])->name('email.templates.toggle-status');
-    });
-
-    // Contacts routes
-    Route::resource('contacts', ContactsController::class);
-    Route::get('/contacts/settings', [ContactsController::class, 'settings'])->name('contacts.settings');
-
-    // Credits routes
-    Route::prefix('credits')->group(function () {
-        Route::get('/buy', [CreditsController::class, 'buy'])->name('credits.buy');
-        Route::get('/{clientIdentifier}/balance', [CreditsController::class, 'getBalance'])->name('credits.balance');
-        Route::post('/request', [CreditsController::class, 'requestCredit'])->name('credits.request');
-        Route::get('/{clientIdentifier}/history', [CreditsController::class, 'getCreditHistory'])->name('credits.history');
-        Route::get('/{clientIdentifier}/spent-history', [CreditsController::class, 'getSpentCreditHistory'])->name('credits.spent-history');
-        Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
-    });
-
-    // Subscription routes
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
-        Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
-        Route::post('/subscriptions/{identifier}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
-        Route::get('/subscriptions/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
+    
+    // Email (subscription required)
+    Route::prefix('email')->group(function () {
+        Route::get('/', [EmailController::class, 'index'])->name('email.index');
+        Route::get('/settings', [EmailController::class, 'settings'])->name('email.settings');
+        Route::post('/send', [EmailController::class, 'send'])->name('email.send');
+        Route::get('/config', [EmailController::class, 'getConfig'])->name('email.config');
         
-        // Maya payment callback routes
-        Route::get('/subscriptions/payment/success', [SubscriptionController::class, 'paymentSuccess'])->name('subscriptions.payment.success');
-        Route::get('/subscriptions/payment/failure', [SubscriptionController::class, 'paymentFailure'])->name('subscriptions.payment.failure');
-        Route::get('/subscriptions/payment/cancel', [SubscriptionController::class, 'paymentCancel'])->name('subscriptions.payment.cancel');
+        // Email Templates
+        Route::prefix('templates')->group(function () {
+            Route::get('/', [EmailTemplateController::class, 'index'])->name('email.templates.index');
+            Route::get('/list', [EmailTemplateController::class, 'getTemplates'])->name('email.templates.list');
+            Route::get('/create', [EmailTemplateController::class, 'create'])->name('email.templates.create');
+            Route::post('/', [EmailTemplateController::class, 'store'])->name('email.templates.store');
+            Route::get('/{template}', [EmailTemplateController::class, 'show'])->name('email.templates.show');
+            Route::get('/{template}/edit', [EmailTemplateController::class, 'edit'])->name('email.templates.edit');
+            Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('email.templates.update');
+            Route::delete('/{template}', [EmailTemplateController::class, 'destroy'])->name('email.templates.destroy');
+            Route::get('/{template}/preview', [EmailTemplateController::class, 'preview'])->name('email.templates.preview');
+            Route::match(['patch', 'post'], '/{template}/toggle-status', [EmailTemplateController::class, 'toggleStatus'])->name('email.templates.toggle-status');
+        });
+    });
+    
+    // Family Tree (subscription required)
+    Route::prefix('family-tree')->group(function () {
+        Route::get('/', [FamilyTreeController::class, 'index'])->name('family-tree');
+        Route::get('/settings', [FamilyTreeController::class, 'settings'])->name('family-tree.settings');
+        Route::post('/settings', [FamilyTreeController::class, 'saveSettings'])->name('family-tree.settings.save');
+        Route::get('/members', [FamilyTreeController::class, 'getFamilyMembers']);
+        Route::get('/widget-stats', [FamilyTreeController::class, 'getWidgetStats'])->name('family-tree.widget-stats');
+        Route::post('/members', [FamilyTreeController::class, 'store']);
+        Route::put('/members/{id}', [FamilyTreeController::class, 'update']);
+        Route::delete('/members/{id}', [FamilyTreeController::class, 'destroy']);
+        Route::post('/relationships', [FamilyTreeController::class, 'addRelationship']);
+        Route::delete('/relationships/{id}', [FamilyTreeController::class, 'removeRelationship']);
+        Route::get('/export', [FamilyTreeController::class, 'export']);
+        Route::post('/import', [FamilyTreeController::class, 'import']);
+        Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
+        Route::get('/edit-requests', [FamilyTreeController::class, 'editRequests'])->name('family-tree.edit-requests');
+        Route::get('/edit-requests/data', [FamilyTreeController::class, 'getEditRequests'])->name('family-tree.edit-requests.data');
+        Route::post('/edit-requests/{id}/accept', [FamilyTreeController::class, 'acceptEditRequest'])->name('family-tree.edit-requests.accept');
+        Route::post('/edit-requests/{id}/reject', [FamilyTreeController::class, 'rejectEditRequest'])->name('family-tree.edit-requests.reject');
     });
 
-    // Admin Subscription routes
-    Route::prefix('admin/subscriptions')->middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
+    // Warehousing (one-time payment/subscription required)
+    Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
+});
+
+// Admin routes
+Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
+    // Admin Dashboard
+    Route::get('/admin/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    })->name('admin.dashboard');
+    
+    // Admin User Management
+    Route::prefix('admin/users')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\UserAdminController::class, 'index'])->name('admin.users.index');
+        Route::get('/create', [App\Http\Controllers\Admin\UserAdminController::class, 'create'])->name('admin.users.create');
+        Route::post('/', [App\Http\Controllers\Admin\UserAdminController::class, 'store'])->name('admin.users.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\Admin\UserAdminController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'update'])->name('admin.users.update');
+        Route::delete('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/{id}/toggle-admin', [App\Http\Controllers\Admin\UserAdminController::class, 'toggleAdminStatus'])->name('admin.users.toggle-admin');
+    });
+    
+    // Admin Settings
+    Route::prefix('admin/settings')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
+        Route::post('/update', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');
+        Route::post('/registration', [App\Http\Controllers\Admin\SettingsController::class, 'updateRegistrationEnabled'])->name('admin.settings.registration');
+        Route::post('/maintenance', [App\Http\Controllers\Admin\SettingsController::class, 'updateMaintenanceMode'])->name('admin.settings.maintenance');
+        Route::post('/ip-restriction', [App\Http\Controllers\Admin\SettingsController::class, 'updateIpRestriction'])->name('admin.settings.ip-restriction');
+    });
+    
+    // Admin Subscription Management
+    Route::prefix('admin/subscriptions')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'index'])->name('admin.subscriptions.index');
         Route::post('/plans', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'storePlan'])->name('admin.subscriptions.plans.store');
         Route::put('/plans/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'updatePlan'])->name('admin.subscriptions.plans.update');
@@ -510,64 +428,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{id}/add-credits', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'addCredits'])->name('admin.subscriptions.add-credits');
         Route::post('/run-renewal', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'runRenewalCommand'])->name('admin.subscriptions.run-renewal');
     });
-
-    // Family Tree routes
-    Route::prefix('family-tree')->group(function () {
-        Route::get('/', [FamilyTreeController::class, 'index'])->name('family-tree');
-        Route::get('/settings', [FamilyTreeController::class, 'settings'])->name('family-tree.settings');
-        Route::post('/settings', [FamilyTreeController::class, 'saveSettings'])->name('family-tree.settings.save');
-        Route::get('/members', [FamilyTreeController::class, 'getFamilyMembers']);
-        Route::get('/widget-stats', [FamilyTreeController::class, 'getWidgetStats']);
-        Route::post('/members', [FamilyTreeController::class, 'store']);
-        Route::put('/members/{id}', [FamilyTreeController::class, 'update']);
-        Route::delete('/members/{id}', [FamilyTreeController::class, 'destroy']);
-        Route::post('/relationships', [FamilyTreeController::class, 'addRelationship']);
-        Route::delete('/relationships/{id}', [FamilyTreeController::class, 'removeRelationship']);
-        Route::get('/export', [FamilyTreeController::class, 'export']);
-        Route::post('/import', [FamilyTreeController::class, 'import']);
-        Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
-    });
-
-    // Maya Webhook route - exclude from CSRF protection
-    Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
-        ->name('webhooks.maya')
-        ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
-
-    // Family Tree Edit Requests
-    Route::get('/family-tree/edit-requests', [FamilyTreeController::class, 'editRequests'])->name('family-tree.edit-requests');
-    Route::get('/family-tree/edit-requests/data', [FamilyTreeController::class, 'getEditRequests'])->name('family-tree.edit-requests.data');
-    Route::post('/family-tree/edit-requests/{id}/accept', [FamilyTreeController::class, 'acceptEditRequest'])->name('family-tree.edit-requests.accept');
-    Route::post('/family-tree/edit-requests/{id}/reject', [FamilyTreeController::class, 'rejectEditRequest'])->name('family-tree.edit-requests.reject');
-});
-
-// Admin Auth Routes
-Route::get('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('admin.login');
-Route::post('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.attempt');
-Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('admin.logout');
-
-// Admin Dashboard Route
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('Admin/Dashboard');
-})->middleware(['auth', 'ip_restriction', 'admin'])->name('admin.dashboard');
-
-// Admin User Management routes
-Route::prefix('admin/users')->middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
-    Route::get('/', [App\Http\Controllers\Admin\UserAdminController::class, 'index'])->name('admin.users.index');
-    Route::get('/create', [App\Http\Controllers\Admin\UserAdminController::class, 'create'])->name('admin.users.create');
-    Route::post('/', [App\Http\Controllers\Admin\UserAdminController::class, 'store'])->name('admin.users.store');
-    Route::get('/{id}/edit', [App\Http\Controllers\Admin\UserAdminController::class, 'edit'])->name('admin.users.edit');
-    Route::put('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'update'])->name('admin.users.update');
-    Route::delete('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'destroy'])->name('admin.users.destroy');
-    Route::get('/{id}/toggle-admin', [App\Http\Controllers\Admin\UserAdminController::class, 'toggleAdminStatus'])->name('admin.users.toggle-admin');
-});
-
-// Admin Settings routes
-Route::prefix('admin/settings')->middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
-    Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
-    Route::post('/update', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('admin.settings.update');
-    Route::post('/registration', [App\Http\Controllers\Admin\SettingsController::class, 'updateRegistrationEnabled'])->name('admin.settings.registration');
-    Route::post('/maintenance', [App\Http\Controllers\Admin\SettingsController::class, 'updateMaintenanceMode'])->name('admin.settings.maintenance');
-    Route::post('/ip-restriction', [App\Http\Controllers\Admin\SettingsController::class, 'updateIpRestriction'])->name('admin.settings.ip-restriction');
 });
 
 require __DIR__.'/auth.php';

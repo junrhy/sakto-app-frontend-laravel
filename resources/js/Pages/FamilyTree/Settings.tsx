@@ -49,9 +49,7 @@ interface Settings {
 }
 
 interface Props {
-    settings: {
-        data: Settings;
-    };
+    settings: Settings;
     auth: {
         user: any;
     };
@@ -60,19 +58,19 @@ interface Props {
 export default function Settings({ settings, auth }: Props) {
     const [formData, setFormData] = useState<Settings>({
         organization_info: {
-            family_name: settings.data.organization_info?.family_name || '',
-            email: settings.data.organization_info?.email || '',
-            contact_number: settings.data.organization_info?.contact_number || '',
-            website: settings.data.organization_info?.website || '',
-            address: settings.data.organization_info?.address || '',
-            banner: settings.data.organization_info?.banner || '',
-            logo: settings.data.organization_info?.logo || ''
+            family_name: settings.organization_info?.family_name || '',
+            email: settings.organization_info?.email || '',
+            contact_number: settings.organization_info?.contact_number || '',
+            website: settings.organization_info?.website || '',
+            address: settings.organization_info?.address || '',
+            banner: settings.organization_info?.banner || '',
+            logo: settings.organization_info?.logo || ''
         },
         auth: {
-            username: settings.data.auth?.username || '',
-            password: settings.data.auth?.password || ''
+            username: settings.auth?.username || '',
+            password: settings.auth?.password || ''
         },
-        elected_officials: settings.data.elected_officials || []
+        elected_officials: settings.elected_officials || []
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -356,7 +354,7 @@ export default function Settings({ settings, auth }: Props) {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => setFormData(settings.data)}
+                                        onClick={() => setFormData(settings)}
                                         disabled={isSubmitting}
                                     >
                                         Reset

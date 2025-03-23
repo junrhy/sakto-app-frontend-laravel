@@ -13,6 +13,16 @@ interface MemberProfileProps {
     clientIdentifier: string;
 }
 
+interface OrganizationInfo {
+    family_name: string;
+    email: string;
+    contact_number: string;
+    website: string;
+    address: string;
+    banner: string;
+    logo: string;
+}
+
 // Update the RelatedMemberInfo type to include photo and match FamilyMember interface
 interface RelatedMemberInfo {
     id: number;
@@ -37,9 +47,9 @@ interface EditFormData {
 
 export default function MemberProfile({ member, clientIdentifier }: MemberProfileProps) {
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [allMembers, setAllMembers] = useState<FamilyMember[]>([]);
     const [loading, setLoading] = useState(true);
+    const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editFormData, setEditFormData] = useState<EditFormData>({
         first_name: member.first_name,
@@ -85,7 +95,17 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
             }
         };
 
+        const fetchSettings = async () => {
+            try {
+                const response = await axios.get(`/family-tree/${clientIdentifier}/settings`);
+                setOrganizationInfo(response.data.organization_info);
+            } catch (error) {
+                console.error('Failed to fetch settings:', error);
+            }
+        };
+
         fetchAllMembers();
+        fetchSettings();
     }, [member, clientIdentifier]);
 
     const calculateAge = (birthDate: string, deathDate: string | null | undefined): number => {
@@ -97,13 +117,6 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
             age--;
         }
         return age;
-    };
-
-    // Helper function to get relationship type
-    const getRelationshipType = (memberId: number): string => {
-        const relationship = member.relationships?.find(rel => rel.to_member?.id === memberId);
-        if (!relationship?.relationship_type) return '';
-        return relationship.relationship_type.charAt(0).toUpperCase() + relationship.relationship_type.slice(1);
     };
 
     // Helper function to render member photo
@@ -232,33 +245,43 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
 
     return (
         <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-            <Head title={`${member.first_name} ${member.last_name} - Profile`} />
+            <Head title={`${member.first_name} ${member.last_name} - ${organizationInfo?.family_name || 'Family Tree'}`} />
 
             {/* Cover Photo Section */}
             <div className="relative h-[300px] w-full overflow-hidden">
-                <div className={`absolute inset-0 ${
-                    isDarkMode 
-                        ? 'bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900' 
-                        : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'
-                }`}>
-                    {/* Family Tree Pattern Overlay */}
-                    <div className="absolute inset-0 opacity-10">
-                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <pattern id="family-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                                <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="currentColor"/>
-                                <circle cx="10" cy="10" r="3" fill="currentColor"/>
-                            </pattern>
-                            <rect x="0" y="0" width="100" height="100" fill="url(#family-pattern)"/>
-                        </svg>
+                {organizationInfo?.banner ? (
+                    <div className="absolute inset-0">
+                        <img 
+                            src={organizationInfo.banner} 
+                            alt="Family Banner"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null;
+                                target.src = '/default-banner.jpg';
+                            }}
+                        />
+                        {/* Dark overlay for better text visibility */}
+                        <div className="absolute inset-0 bg-black/30" />
                     </div>
-                    
-                    {/* Decorative Elements */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-24 h-24 opacity-20">
-                            <FaUserFriends className="w-full h-full text-white" />
+                ) : (
+                    <div className={`absolute inset-0 ${
+                        isDarkMode 
+                            ? 'bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900' 
+                            : 'bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500'
+                    }`}>
+                        {/* Family Tree Pattern Overlay */}
+                        <div className="absolute inset-0 opacity-10">
+                            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                <pattern id="family-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                                    <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="currentColor"/>
+                                    <circle cx="10" cy="10" r="3" fill="currentColor"/>
+                                </pattern>
+                                <rect x="0" y="0" width="100" height="100" fill="url(#family-pattern)"/>
+                            </svg>
                         </div>
                     </div>
-                </div>
+                )}
                 
                 {/* Dark Mode Toggle */}
                 <div className="absolute top-4 right-4 z-10">
@@ -278,6 +301,42 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
             {/* Main Content */}
             <div className="container mx-auto px-4 -mt-[100px] relative z-10">
                 <div className="max-w-4xl mx-auto">
+                    {/* Family Name Section */}
+                    {organizationInfo?.family_name && (
+                        <div className="mb-8">
+                            <div className={`relative px-6 py-4 rounded-lg backdrop-blur-sm ${
+                                isDarkMode 
+                                    ? 'bg-gray-900/50 text-white' 
+                                    : 'bg-white/80 text-gray-900'
+                            } shadow-lg`}>
+                                <div className="flex items-center justify-center gap-4">
+                                    {organizationInfo.logo && (
+                                        <div className="w-24 h-24 rounded-full overflow-hidden border-4 shadow-lg flex-shrink-0">
+                                            <img 
+                                                src={organizationInfo.logo} 
+                                                alt="Family Logo"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.onerror = null;
+                                                    target.src = '/default-logo.png';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    <h1 className="text-4xl font-bold tracking-wide">
+                                        {organizationInfo.family_name}
+                                    </h1>
+                                </div>
+                                <div className={`absolute inset-0 rounded-lg border ${
+                                    isDarkMode 
+                                        ? 'border-gray-700/50' 
+                                        : 'border-gray-200/50'
+                                }`} />
+                            </div>
+                        </div>
+                    )}
+
                     {/* Profile Card */}
                     <div className={`rounded-xl shadow-xl overflow-hidden mb-6 ${
                         isDarkMode ? 'bg-gray-800 ring-1 ring-gray-700' : 'bg-white'
@@ -348,6 +407,82 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                             </div>
                         </div>
                     </div>
+
+                    {/* Organization Info Card */}
+                    {organizationInfo && (
+                        <div className={`rounded-xl shadow-lg overflow-hidden mb-6 ${
+                            isDarkMode ? 'bg-gray-800 ring-1 ring-gray-700' : 'bg-white'
+                        }`}>
+                            <div className="p-6">
+                                <h3 className={`text-lg font-semibold mb-4 ${
+                                    isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                                }`}>
+                                    Family Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {organizationInfo.email && (
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                            }`}>
+                                                Email:
+                                            </span>
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                                            }`}>
+                                                {organizationInfo.email}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {organizationInfo.contact_number && (
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                            }`}>
+                                                Contact:
+                                            </span>
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                                            }`}>
+                                                {organizationInfo.contact_number}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {organizationInfo.website && (
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                            }`}>
+                                                Website:
+                                            </span>
+                                            <a 
+                                                href={organizationInfo.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`text-sm hover:underline ${
+                                                    isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                                                }`}
+                                            >
+                                                {organizationInfo.website}
+                                            </a>
+                                        </div>
+                                    )}
+                                    {organizationInfo.address && (
+                                        <div className="flex items-center gap-2">
+                                            <FaMapMarkerAlt className={`w-4 h-4 ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                            }`} />
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                                            }`}>
+                                                {organizationInfo.address}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Timeline/Feed Section */}
                     <div className="space-y-6">

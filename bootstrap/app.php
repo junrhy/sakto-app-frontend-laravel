@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'ip_restriction' => \App\Http\Middleware\IpRestrictionMiddleware::class,
+            'subscription.access' => \App\Http\Middleware\CheckSubscriptionAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

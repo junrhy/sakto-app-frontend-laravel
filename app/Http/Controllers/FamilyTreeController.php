@@ -483,21 +483,46 @@ class FamilyTreeController extends Controller
         }
     }
 
-    public function settings()
+    /**
+     * Get family tree settings from API
+     */
+    private function getSettingsFromApi($clientIdentifier)
     {
         try {
-            $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/family-tree/settings", [
                     'client_identifier' => $clientIdentifier
                 ]);
 
             if (!$response->successful()) {
+                Log::error('Failed to fetch family tree settings', [
+                    'response' => $response->json(),
+                    'status' => $response->status()
+                ]);
                 throw new \Exception('Failed to fetch family tree settings');
             }
 
+            return $response->json('data', []);
+        } catch (\Exception $e) {
+            Log::error('Error fetching family tree settings', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Display the family tree settings page
+     */
+    public function settings()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $settings = $this->getSettingsFromApi($clientIdentifier);
+
             return Inertia::render('FamilyTree/Settings', [
-                'settings' => $response->json()
+                'settings' => $settings
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');
@@ -590,9 +615,55 @@ class FamilyTreeController extends Controller
     public function acceptEditRequest(Request $request, $id)
     {
         $clientIdentifier = auth()->user()->identifier;
+
+        // First get the edit request data to check for pending photo
+        $getResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/edit-requests/{$id}", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$getResponse->successful()) {
+            Log::error('Failed to fetch edit request data', [
+                'response' => $getResponse->json(),
+                'status' => $getResponse->status()
+            ]);
+            return response()->json(['error' => 'Failed to fetch edit request data'], $getResponse->status());
+        }
+
+        $editRequest = $getResponse->json('data');
+        $photoUrl = $editRequest['photo'] ?? null;
+
+        // If there's a pending photo, move it to the main photos folder
+        if ($photoUrl) {
+            try {
+                // Extract the path from the URL
+                $pendingPath = str_replace(Storage::disk('public')->url(''), '', $photoUrl);
+                
+                // Check if the file exists in pending folder
+                if (Storage::disk('public')->exists($pendingPath)) {
+                    // Create new path in main photos folder
+                    $newPath = str_replace('family-photos-pending', 'family-photos', $pendingPath);
+                    
+                    // Move the file to the new location
+                    Storage::disk('public')->move($pendingPath, $newPath);
+                    
+                    // Update the photo URL to point to the new location
+                    $photoUrl = Storage::disk('public')->url($newPath);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to move pending photo', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json(['error' => 'Failed to process photo'], 500);
+            }
+        }
+
+        // Accept the edit request with the updated photo URL
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/family-tree/edit-requests/{$id}/accept", [
-                'client_identifier' => $clientIdentifier
+                'client_identifier' => $clientIdentifier,
+                'photo' => $photoUrl
             ]);
 
         if (!$response->successful()) {
@@ -637,5 +708,141 @@ class FamilyTreeController extends Controller
     public function editRequests()
     {
         return Inertia::render('FamilyTree/EditRequests');
+    }
+
+    /**
+     * Display the full view of the family tree
+     */
+    public function fullView($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to fetch family members']);
+        }
+
+        return Inertia::render('FamilyTree/FullView', [
+            'familyMembers' => $response->json('data', []),
+            'clientIdentifier' => $clientIdentifier
+        ]);
+    }
+
+    /**
+     * Get all family members for public view
+     */
+    public function getAllMembers($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            return response()->json(['error' => 'Failed to fetch family members'], $response->status());
+        }
+
+        return response()->json($response->json('data', []));
+    }
+
+    /**
+     * Display a specific family member's profile
+     */
+    public function memberProfile($clientIdentifier, $memberId)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members/{$memberId}", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to fetch family members']);
+        }
+
+        $member = $response->json('data', []);
+
+        if (!$member) {
+            return back()->withErrors(['error' => 'Member not found']);
+        }
+
+        return Inertia::render('FamilyTree/MemberProfile', [
+            'member' => $member,
+            'clientIdentifier' => $clientIdentifier
+        ]);
+    }
+
+    /**
+     * Display the circular view of the family tree
+     */
+    public function circularView($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to fetch family members']);
+        }
+
+        return Inertia::render('FamilyTree/CircularView', [
+            'familyMembers' => $response->json('data', []),
+            'clientIdentifier' => $clientIdentifier
+        ]);
+    }
+
+    /**
+     * Display the printable view of the family tree
+     */
+    public function printableView($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to fetch family members']);
+        }
+
+        return Inertia::render('FamilyTree/PrintableView', [
+            'familyMembers' => $response->json('data', []),
+            'clientIdentifier' => $clientIdentifier
+        ]);
+    }
+
+    /**
+     * Display the full view of all family members
+     */
+    public function familyMemberFullView($clientIdentifier)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/family-tree/members", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to fetch family members']);
+        }
+
+        return Inertia::render('FamilyTree/FamilyMemberFullView', [
+            'familyMembers' => $response->json('data', []),
+            'clientIdentifier' => $clientIdentifier
+        ]);
+    }
+
+    /**
+     * Get public family tree settings
+     */
+    public function getPublicSettings($clientIdentifier)
+    {
+        try {
+            $settings = $this->getSettingsFromApi($clientIdentifier);
+            return response()->json($settings);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch settings'], 500);
+        }
     }
 }

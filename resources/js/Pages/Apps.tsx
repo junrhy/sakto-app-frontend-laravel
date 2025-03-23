@@ -1,4 +1,4 @@
-import { Head, Link as InertiaLink } from '@inertiajs/react';
+import { Head, Link as InertiaLink, usePage } from '@inertiajs/react';
 import BottomNav from '@/Components/BottomNav';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Input } from '@/Components/ui/input';
@@ -10,7 +10,7 @@ import { Search, Sun, Moon, Monitor } from 'lucide-react';
 import { useTheme } from "@/Components/ThemeProvider";
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { apps, App } from '@/data/apps';
+import { getApps, type App } from '@/data/apps';
 import { useState, useMemo, useEffect } from 'react';
 import { CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
@@ -28,21 +28,25 @@ interface Subscription {
     end_date: string;
 }
 
-interface PageProps {
+interface Props {
     auth: {
         user: {
             name: string;
             email: string;
+            identifier: string;
+            app_currency: any;
             credits?: number;
-            identifier?: string;
-            app_currency: {
-                symbol: string;
-            };
         };
     };
+    flash?: {
+        type: 'info' | 'success' | 'error';
+        message: string;
+    };
+    [key: string]: any;
 }
 
-export default function Apps({ auth }: PageProps) {
+export default function Apps({ auth }: Props) {
+    const { flash } = usePage<Props>().props;
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -53,9 +57,22 @@ export default function Apps({ auth }: PageProps) {
     const [exchangeRates, setExchangeRates] = useState<ExchangeRates>({ PHP: 56.50 }); // Default fallback rate
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [showAllCategories, setShowAllCategories] = useState(false);
+    const [apps, setApps] = useState<App[]>([]);
+    const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
-    // Fetch credits first
     useEffect(() => {
+        const fetchApps = async () => {
+            try {
+                setIsLoadingApps(true);
+                const appData = await getApps();
+                setApps(appData);
+            } catch (error) {
+                console.error('Failed to fetch apps:', error);
+            } finally {
+                setIsLoadingApps(false);
+            }
+        };
+
         const fetchCredits = async () => {
             try {
                 console.log(auth.user.identifier);
@@ -90,6 +107,7 @@ export default function Apps({ auth }: PageProps) {
             }
         };
 
+        fetchApps();
         fetchCredits();
         fetchSubscription();
     }, [auth.user.identifier]);
@@ -151,7 +169,7 @@ export default function Apps({ auth }: PageProps) {
             app.categories.forEach(category => categories.add(category));
         });
         return Array.from(categories).sort();
-    }, []);
+    }, [apps]);
 
     // Get visible categories based on showAllCategories state
     const visibleCategories = useMemo(() => {
@@ -166,7 +184,7 @@ export default function Apps({ auth }: PageProps) {
             const matchesCategory = !selectedCategory || app.categories.includes(selectedCategory);
             return matchesSearch && matchesCategory;
         });
-    }, [searchQuery, selectedCategory]);
+    }, [searchQuery, selectedCategory, apps]);
 
     // Group apps by their status (free, paid, coming soon)
     const groupedApps = useMemo(() => {
@@ -196,6 +214,19 @@ export default function Apps({ auth }: PageProps) {
         <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900 overflow-x-hidden">
             <Head title="Apps" />
 
+            {/* Flash Message */}
+            {flash && flash.message && (
+                <div className={`fixed top-0 left-0 right-0 z-50 p-4 text-center text-sm font-medium ${
+                    flash.type === 'info' 
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                        : flash.type === 'success'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                }`}>
+                    {flash.message}
+                </div>
+            )}
+
             {/* Message for users without subscription */}
             {!isLoadingSubscription && !subscription && (
                 <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
@@ -211,7 +242,7 @@ export default function Apps({ auth }: PageProps) {
                 </div>
             )}
 
-            <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-7' : 'top-0'} left-0 w-full bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
+            <div className={`fixed ${!isLoadingSubscription && !subscription ? 'top-[52px]' : 'top-0'} left-0 w-full bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 z-10 shadow-sm`}>
                 <div className="container mx-auto px-4 pt-4">
                     <div className="flex flex-col items-center mb-4">
                         <div className="w-full flex justify-between items-center mb-2">
