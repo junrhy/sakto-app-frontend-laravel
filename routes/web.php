@@ -69,6 +69,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/self-registration', [ContactsController::class, 'selfRegistration'])->name('contacts.self-registration');
         Route::post('/store-self', [ContactsController::class, 'storeSelf'])->name('contacts.store-self');
         Route::get('/{id}/public', [ContactsController::class, 'publicProfile'])->name('contacts.public-profile');
+        Route::get('/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
     });
 
     // Public Family Tree Routes

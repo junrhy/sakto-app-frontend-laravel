@@ -342,11 +342,20 @@ class ContactsController extends Controller
     public function getContacts()
     {
         try {
+            Log::info('getContacts method called', [
+                'user' => auth()->user(),
+                'is_authenticated' => auth()->check(),
+                'request_url' => request()->url(),
+                'request_method' => request()->method(),
+                'request_headers' => request()->headers->all()
+            ]);
+
             $clientIdentifier = auth()->user()->identifier;
             
-            Log::info('Fetching contacts', [
+            Log::info('Starting getContacts request', [
                 'url' => "{$this->apiUrl}/contacts",
-                'client_identifier' => $clientIdentifier
+                'client_identifier' => $clientIdentifier,
+                'api_token' => substr($this->apiToken, 0, 10) . '...' // Log first 10 chars of token for debugging
             ]);
 
             $response = Http::withToken($this->apiToken)    
@@ -354,16 +363,23 @@ class ContactsController extends Controller
                     'client_identifier' => $clientIdentifier
                 ]);
             
+            Log::info('API Response received', [
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'body' => $response->body()
+            ]);
+
             if (!$response->successful()) {
                 Log::error('Failed to fetch contacts', [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'url' => "{$this->apiUrl}/contacts"
+                    'url' => "{$this->apiUrl}/contacts",
+                    'headers' => $response->headers()
                 ]);
                 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to fetch contacts'
+                    'message' => 'Failed to fetch contacts: ' . $response->body()
                 ], 500);
             }
 
@@ -389,11 +405,9 @@ class ContactsController extends Controller
                     'twitter' => $contact['twitter'],
                     'linkedin' => $contact['linkedin'],
                     'group' => $contact['group'],
-                    'notes' => $contact['notes'],
-                    'id_picture' => $contact['id_picture'],
-                    'id_numbers' => $contact['id_numbers'],
+                    'notes' => $contact['notes']
                 ];
-            })->values();
+            });
 
             return response()->json([
                 'success' => true,
