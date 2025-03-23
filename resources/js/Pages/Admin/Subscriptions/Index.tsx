@@ -81,12 +81,12 @@ export default function Index({ auth, plans, subscriptions }: Props) {
     editForm.setData({
       name: plan.name,
       description: plan.description || '',
-      price: plan.price.toString(),
-      duration_in_days: plan.duration_in_days.toString(),
-      credits_per_month: plan.credits_per_month.toString(),
+      price: plan.price?.toString() || '0',
+      duration_in_days: plan.duration_in_days?.toString() || '0',
+      credits_per_month: plan.credits_per_month?.toString() || '0',
       features: plan.features || [],
-      is_popular: plan.is_popular,
-      is_active: plan.is_active,
+      is_popular: plan.is_popular || false,
+      is_active: plan.is_active || true,
       badge_text: plan.badge_text || '',
     });
     setFeatures(plan.features || []);
