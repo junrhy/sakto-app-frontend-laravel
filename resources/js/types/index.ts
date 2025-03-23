@@ -39,7 +39,13 @@ export type WidgetType = "retail_sales"
     | "fnb_tables" 
     | "fnb_kitchen" 
     | "fnb_reservations" 
-    | "family_tree_stats";
+    | "family_tree_stats"
+    | "contacts"
+    | "emails_sent"
+    | "loan_stats"
+    | "payroll_stats"
+    | "rental_item_stats"
+    | "sms_stats";
 
 export interface Widget {
     id: number;

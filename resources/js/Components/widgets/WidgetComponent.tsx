@@ -8,6 +8,12 @@ import { FnbTablesWidget } from "./FnbTablesWidget";
 import { FnbKitchenWidget } from "./FnbKitchenWidget";
 import { FnbReservationsWidget } from "./FnbReservationsWidget";
 import FamilyTreeStatsWidget from "./FamilyTreeStatsWidget";
+import { ContactsWidget } from "./ContactsWidget";
+import { EmailsSentWidget } from "./EmailsSentWidget";
+import { LoanStatsWidget } from "./LoanStatsWidget";
+import { PayrollStatsWidget } from "./PayrollStatsWidget";
+import { RentalItemStatsWidget } from "./RentalItemStatsWidget";
+import { SmsStatsWidget } from "./SmsStatsWidget";
 import { Widget } from "@/types";
 import { MouseEventHandler } from "react";
 
@@ -84,6 +90,42 @@ export function WidgetComponent({
                             Family Tree Statistics
                         </>
                     )}
+                    {(widget.type as string) === "contacts" && (
+                        <>
+                            <span className="h-2 w-2 bg-pink-500 rounded-full"></span>
+                            Recent Contacts
+                        </>
+                    )}
+                    {(widget.type as string) === "emails_sent" && (
+                        <>
+                            <span className="h-2 w-2 bg-cyan-500 rounded-full"></span>
+                            Sent Emails
+                        </>
+                    )}
+                    {(widget.type as string) === "loan_stats" && (
+                        <>
+                            <span className="h-2 w-2 bg-emerald-500 rounded-full"></span>
+                            Loan Statistics
+                        </>
+                    )}
+                    {(widget.type as string) === "payroll_stats" && (
+                        <>
+                            <span className="h-2 w-2 bg-violet-500 rounded-full"></span>
+                            Payroll Statistics
+                        </>
+                    )}
+                    {(widget.type as string) === "rental_item_stats" && (
+                        <>
+                            <span className="h-2 w-2 bg-amber-500 rounded-full"></span>
+                            Rental Statistics
+                        </>
+                    )}
+                    {(widget.type as string) === "sms_stats" && (
+                        <>
+                            <span className="h-2 w-2 bg-teal-500 rounded-full"></span>
+                            SMS Statistics
+                        </>
+                    )}
                 </CardTitle>
                 {isEditMode && (
                     <Button 
@@ -105,6 +147,12 @@ export function WidgetComponent({
                 {(widget.type as string) === "fnb_kitchen" && <FnbKitchenWidget />}
                 {(widget.type as string) === "fnb_reservations" && <FnbReservationsWidget />}
                 {(widget.type as string) === "family_tree_stats" && <FamilyTreeStatsWidget />}
+                {(widget.type as string) === "contacts" && <ContactsWidget />}
+                {(widget.type as string) === "emails_sent" && <EmailsSentWidget />}
+                {(widget.type as string) === "loan_stats" && <LoanStatsWidget />}
+                {(widget.type as string) === "payroll_stats" && <PayrollStatsWidget />}
+                {(widget.type as string) === "rental_item_stats" && <RentalItemStatsWidget />}
+                {(widget.type as string) === "sms_stats" && <SmsStatsWidget />}
             </div>
 
             {isEditMode && (

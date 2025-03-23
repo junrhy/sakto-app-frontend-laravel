@@ -49,7 +49,7 @@ interface Props {
 }
 
 // Add this type definition near the top with other interfaces
-type AppType = 'retail' | 'fnb' | 'family-tree' | null;
+type AppType = 'retail' | 'fnb' | 'family-tree' | 'contacts' | 'email' | 'lending' | 'payroll' | 'rental-item' | 'sms' | null;
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
     const url = usePage().url;
@@ -82,10 +82,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
     });
 
     const getAvailableWidgets = (type: AppType): WidgetTypeImport[] => {
-        const familyWidgets = [
-            'family_tree_stats'
-        ] as unknown as WidgetTypeImport[];
-        
         if (type === 'retail') {
             return ['retail_sales', 'retail_inventory', 'retail_orders'] as WidgetTypeImport[];
         }
@@ -93,7 +89,25 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
             return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'] as WidgetTypeImport[];
         }
         if (type === 'family-tree') {
-            return familyWidgets;
+            return ['family_tree_stats'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'contacts') {
+            return ['contacts'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'email') {
+            return ['emails_sent'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'lending') {
+            return ['loan_stats'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'payroll') {
+            return ['payroll_stats'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'rental-item') {
+            return ['rental_item_stats'] as unknown as WidgetTypeImport[];
+        }
+        if (type === 'sms') {
+            return ['sms_stats'] as unknown as WidgetTypeImport[];
         }
         return [];
     };
@@ -721,6 +735,24 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                                     }
                                                     if (appParam === 'family-tree') {
                                                         return ['family_tree_stats'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'contacts') {
+                                                        return ['contacts'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'email') {
+                                                        return ['emails_sent'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'lending') {
+                                                        return ['loan_stats'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'payroll') {
+                                                        return ['payroll_stats'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'rental-item') {
+                                                        return ['rental_item_stats'].includes(widget.type);
+                                                    }
+                                                    if (appParam === 'sms') {
+                                                        return ['sms_stats'].includes(widget.type);
                                                     }
                                                     return false;
                                                 })
