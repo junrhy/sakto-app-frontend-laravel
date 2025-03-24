@@ -13,22 +13,29 @@ export interface Address {
 }
 
 export interface User {
-    id?: number;
+    id: number;
     name: string;
     email: string;
-    email_verified_at?: string | null;
-    contact_number?: string | null;
+    email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+    identifier?: string;
+    app_currency?: {
+        symbol: string;
+    };
+    credits?: number;
+    is_admin?: boolean;
+    project_identifier?: string;
+    theme?: 'light' | 'dark' | 'system';
+    theme_color?: string;
 }
 
 export interface PageProps {
     auth: {
-        user: {
-            id: number;
-            name: string;
-            email: string;
-            identifier?: string;
-            credits?: number;
-        };
+        user: User;
+    };
+    app?: {
+        name: string;
     };
     [key: string]: any;
 }

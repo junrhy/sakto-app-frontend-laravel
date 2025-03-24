@@ -15,12 +15,7 @@ class DashboardSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::where('name', 'Developer')
-            ->orWhere('name', 'Project Manager')
-            ->orWhere('name', 'Product Owner')
-            ->orWhere('name', 'Tester 1')
-            ->orWhere('name', 'Tester 2')
-            ->get();
+        $users = User::all();
 
         foreach ($users as $user) {
             $dashboards = [
@@ -39,6 +34,7 @@ class DashboardSeeder extends Seeder
                 ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'email'],
                 ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'contacts'],
                 ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'family-tree'],
+                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'events'],
             ];
 
             foreach ($dashboards as $dashboard) {

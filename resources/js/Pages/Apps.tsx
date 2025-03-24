@@ -13,6 +13,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { getApps, type App } from '@/data/apps';
 import { useState, useMemo, useEffect } from 'react';
 import { CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { PageProps } from '@/types';
+import { User } from '@/types';
 
 interface ExchangeRates {
     PHP?: number;
@@ -28,25 +30,29 @@ interface Subscription {
     end_date: string;
 }
 
-interface Props {
-    auth: {
-        user: {
-            name: string;
-            email: string;
-            identifier: string;
-            app_currency: any;
-            credits?: number;
-        };
-    };
+interface Props extends PageProps {
     flash?: {
         type: 'info' | 'success' | 'error';
         message: string;
     };
+    auth: {
+        user: User & {
+            identifier: string;
+            app_currency: {
+                symbol: string;
+            };
+            credits: number;
+            is_admin: boolean;
+            project_identifier: string;
+            theme: 'light' | 'dark' | 'system';
+            theme_color: string;
+        };
+    };
     [key: string]: any;
 }
 
-export default function Apps({ auth }: Props) {
-    const { flash } = usePage<Props>().props;
+export default function Apps() {
+    const { flash, auth } = usePage<Props>().props;
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);

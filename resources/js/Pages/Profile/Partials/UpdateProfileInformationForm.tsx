@@ -5,6 +5,7 @@ import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
+import { PageProps } from '@/types';
 
 interface User {
     name: string;
@@ -13,16 +14,14 @@ interface User {
     contact_number?: string;
 }
 
-export default function UpdateProfileInformation({
-    mustVerifyEmail,
-    status,
-    className = '',
-}: {
+interface Props {
     mustVerifyEmail: boolean;
     status?: string;
     className?: string;
-}) {
-    const user = usePage<{ auth: { user: User } }>().props.auth.user;
+}
+
+export default function UpdateProfileInformationForm({ mustVerifyEmail, status, className = '' }: Props) {
+    const user = usePage<{ auth: { user: any } }>().props.auth.user;
     const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     
     const { data, setData, patch, errors, processing, recentlySuccessful } =

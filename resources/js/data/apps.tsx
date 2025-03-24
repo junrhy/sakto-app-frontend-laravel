@@ -13,7 +13,8 @@ import {
     RxFace,
     RxShare1,
     RxAccessibility,
-    RxTokens
+    RxTokens,
+    RxCalendar
 } from 'react-icons/rx';
 
 export interface App {
@@ -45,7 +46,8 @@ type AppTitle =
     | 'SMS'
     | 'Email'
     | 'Contacts'
-    | 'Family Tree';
+    | 'Family Tree'
+    | 'Events';
 
 // Map of app titles to their respective icons
 const iconMap: Record<AppTitle, JSX.Element> = {
@@ -62,7 +64,8 @@ const iconMap: Record<AppTitle, JSX.Element> = {
     'SMS': <RxChatBubble />,
     'Email': <RxEnvelopeClosed />,
     'Contacts': <RxIdCard />,
-    'Family Tree': <RxShare1 />
+    'Family Tree': <RxShare1 />,
+    'Events': <RxCalendar />
 };
 
 // Function to get apps from backend

@@ -16,7 +16,17 @@ declare global {
 declare module '@inertiajs/core' {
     interface PageProps extends InertiaPageProps, AppPageProps {
         auth: {
-            user: User;
+            user: User & {
+                identifier: string;
+                app_currency: {
+                    symbol: string;
+                };
+                credits: number;
+                is_admin: boolean;
+                project_identifier: string;
+                theme: 'light' | 'dark' | 'system';
+                theme_color: string;
+            };
         };
     }
 }

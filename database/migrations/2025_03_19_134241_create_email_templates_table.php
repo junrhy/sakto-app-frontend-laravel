@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('email_templates', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('subject');
-            $table->text('body');
-            $table->json('variables')->nullable(); // Store available variables for the template
-            $table->string('category')->nullable(); // e.g., 'welcome', 'notification', 'marketing'
-            $table->boolean('is_active')->default(true);
-            $table->string('client_identifier');
-            $table->timestamps();
+        if (!Schema::hasTable('email_templates')) {
+            Schema::create('email_templates', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('subject');
+                $table->text('body');
+                $table->json('variables')->nullable(); // Store available variables for the template
+                $table->string('category')->nullable(); // e.g., 'welcome', 'notification', 'marketing'
+                $table->boolean('is_active')->default(true);
+                $table->string('client_identifier');
+                $table->timestamps();
 
-            $table->index('client_identifier');
-            $table->index('category');
-        });
+                $table->index('client_identifier');
+                $table->index('category');
+            });
+        }
     }
 
     /**

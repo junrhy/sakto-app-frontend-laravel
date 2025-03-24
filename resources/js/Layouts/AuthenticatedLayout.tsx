@@ -9,22 +9,17 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 import { Toaster } from 'sonner';
 import { Button } from '@/Components/ui/button';
 import { CreditCardIcon, SparklesIcon } from 'lucide-react';
+import { PageProps } from '@/types';
 
 interface DashboardType {
     id: number;
     name: string;
 }
 
-interface PageProps extends Record<string, any> {
-    auth: {
-        user: {
-            name: string;
-            email: string;
-            identifier: string;
-            is_admin?: boolean;
-            credits?: number;
-        };
-    };
+interface Props {
+    children: React.ReactNode;
+    header?: React.ReactNode;
+    user?: any;
 }
 
 const formatNumber = (num: number | undefined | null) => {
@@ -83,38 +78,19 @@ const getHeaderColorClass = (url: string): string => {
     if (url.includes('/subscriptions') || appParam === 'subscriptions') {
         return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
+    if (url.includes('/events') || appParam === 'events') {
+        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+    }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
 };
 
-export default function Authenticated({
-    header,
-    children,
-    user,
-}: PropsWithChildren<{ header?: ReactNode, user?: any }>) {
+export default function Authenticated({ children, header, user }: Props) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-    const [showingMobileMenu, setShowingMobileMenu] = useState(false);
-    const [showingRetailMenu, setShowingRetailMenu] = useState(false);
-    const [showingClinicMenu, setShowingClinicMenu] = useState(false);
-    const [showingRestaurantMenu, setShowingRestaurantMenu] = useState(false);
-    const [showingWarehousingMenu, setShowingWarehousingMenu] = useState(false);
-    const [showingTransportationMenu, setShowingTransportationMenu] = useState(false);
-    const [showingRentalMenu, setShowingRentalMenu] = useState(false);
-    const [showingLoanMenu, setShowingLoanMenu] = useState(false);
-    const [showingPayrollMenu, setShowingPayrollMenu] = useState(false);
-    const [showingTravelMenu, setShowingTravelMenu] = useState(false);
-    const [showingFlightMenu, setShowingFlightMenu] = useState(false);
-    const [showingSmsMenu, setShowingSmsMenu] = useState(false);
-    const [showingEmailMenu, setShowingEmailMenu] = useState(false);
-    const [showingContactsMenu, setShowingContactsMenu] = useState(false);
-    const [showingFamilyTreeMenu, setShowingFamilyTreeMenu] = useState(false);
-    const [showingInboxMenu, setShowingInboxMenu] = useState(false);
-    const [showingSubscriptionMenu, setShowingSubscriptionMenu] = useState(false);
-    const [showingAdminMenu, setShowingAdminMenu] = useState(false);
-    const [credits, setCredits] = useState<number>(user?.credits ?? 0);
+    const [credits, setCredits] = useState<number>(0);
 
     const { url } = usePage();
-    const pageProps = usePage<PageProps>().props;
+    const pageProps = usePage<{ auth: { user: any } }>().props;
     const authUser = user || pageProps.auth.user;
 
     useEffect(() => {
@@ -154,6 +130,7 @@ export default function Authenticated({
     const hasContactsAccess = url.includes('contacts');
     const hasFamilyTreeAccess = url.includes('family-tree');
     const hasSubscriptionsAccess = url.includes('subscriptions');
+    const hasEventsAccess = url.includes('events');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -357,6 +334,17 @@ export default function Authenticated({
                                     </ResponsiveNavLink>
                                     <ResponsiveNavLink href={`/family-tree/edit-requests?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Edit Requests
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasEventsAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Events</div>
+                                    <ResponsiveNavLink href={`/events?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Events
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -960,6 +948,43 @@ export default function Authenticated({
                                                         Members List
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/family-tree/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
+                                    )}
+                                    {hasEventsAccess && (
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Events</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/events?app=${appParam}`}>
+                                                        Events
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/events/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>

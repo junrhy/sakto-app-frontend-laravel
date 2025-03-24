@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 
 import { 
     RxHome,
@@ -41,9 +42,13 @@ const createNavItems = (unreadCount: number = 0): NavItem[] => [
     }
 ];
 
+interface Props {
+    unreadCount?: number;
+}
+
 export default function BottomNav() {
     const { url } = usePage();
-    const page = usePage<{ auth: { user: { name: string; email: string } }; unreadCount: number }>();
+    const page = usePage<{ auth: { user: any }; unreadCount?: number }>();
     const unreadCount = page.props.unreadCount ?? 0;
 
     const items = createNavItems(unreadCount);

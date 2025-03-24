@@ -11,28 +11,30 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_subscriptions', function (Blueprint $table) {
-            $table->id();
-            $table->string('identifier')->unique();
-            $table->string('user_identifier');
-            $table->foreignId('subscription_plan_id')->constrained('subscription_plans');
-            $table->dateTime('start_date');
-            $table->dateTime('end_date');
-            $table->string('status')->default('pending'); // active, cancelled, expired, pending, failed
-            $table->dateTime('cancelled_at')->nullable();
-            $table->string('payment_method')->nullable();
-            $table->string('payment_transaction_id')->nullable();
-            $table->decimal('amount_paid', 10, 2);
-            $table->string('proof_of_payment')->nullable();
-            $table->boolean('auto_renew')->default(false);
-            $table->dateTime('last_credit_date')->nullable();
-            $table->text('cancellation_reason')->nullable();
-            $table->string('maya_checkout_id')->nullable();
-            $table->timestamps();
-            
-            $table->index('user_identifier');
-            $table->index('status');
-        });
+        if (!Schema::hasTable('user_subscriptions')) {
+            Schema::create('user_subscriptions', function (Blueprint $table) {
+                $table->id();
+                $table->string('identifier')->unique();
+                $table->string('user_identifier');
+                $table->foreignId('subscription_plan_id')->constrained('subscription_plans');
+                $table->dateTime('start_date');
+                $table->dateTime('end_date');
+                $table->string('status')->default('pending'); // active, cancelled, expired, pending, failed
+                $table->dateTime('cancelled_at')->nullable();
+                $table->string('payment_method')->nullable();
+                $table->string('payment_transaction_id')->nullable();
+                $table->decimal('amount_paid', 10, 2);
+                $table->string('proof_of_payment')->nullable();
+                $table->boolean('auto_renew')->default(false);
+                $table->dateTime('last_credit_date')->nullable();
+                $table->text('cancellation_reason')->nullable();
+                $table->string('maya_checkout_id')->nullable();
+                $table->timestamps();
+                
+                $table->index('user_identifier');
+                $table->index('status');
+            });
+        }
     }
 
     /**

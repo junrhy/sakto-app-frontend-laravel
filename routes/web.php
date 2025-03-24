@@ -29,6 +29,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MayaWebhookController;
 use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\AppsController;
+use App\Http\Controllers\EventController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -388,6 +389,42 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
 
     // Warehousing (one-time payment/subscription required)
     Route::get('/warehousing', [WarehousingController::class, 'index'])->name('warehousing');
+
+    // Community Events (subscription required)
+    Route::prefix('events')->group(function () {
+        // Main resource routes
+        Route::resource('', EventController::class)->except(['create', 'edit', 'show']);
+        
+        // Create and edit routes
+        Route::get('/create', [EventController::class, 'create'])->name('events.create');
+        Route::get('/{id}/edit', [EventController::class, 'edit'])->name('events.edit');
+        
+        // Settings route
+        Route::get('/settings', [EventController::class, 'settings'])->name('events.settings');
+        
+        // Calendar routes
+        Route::get('/calendar', [EventController::class, 'calendar'])->name('events.calendar');
+        Route::get('/calendar-events', [EventController::class, 'getCalendarEvents'])->name('events.calendar-events');
+        
+        // Participant management routes
+        Route::prefix('{event}/participants')->group(function () {
+            Route::get('/', [EventController::class, 'getParticipants'])->name('events.participants.index');
+            Route::post('/', [EventController::class, 'registerParticipant'])->name('events.participants.register');
+            Route::delete('/{participant}', [EventController::class, 'unregisterParticipant'])->name('events.participants.unregister');
+            Route::post('/{participant}/check-in', [EventController::class, 'checkInParticipant'])->name('events.participants.check-in');
+        });
+        
+        // Filtering routes
+        Route::get('/upcoming', [EventController::class, 'getUpcomingEvents'])->name('events.upcoming');
+        Route::get('/past', [EventController::class, 'getPastEvents'])->name('events.past');
+        
+        // Bulk operations
+        Route::post('/bulk-delete', [EventController::class, 'bulkDestroy'])->name('events.bulk-delete');
+        
+        // Import/Export routes
+        Route::get('/export', [EventController::class, 'exportEvents'])->name('events.export');
+        Route::post('/import', [EventController::class, 'importEvents'])->name('events.import');
+    });
 });
 
 // Admin routes

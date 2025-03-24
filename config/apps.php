@@ -168,5 +168,18 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+    ],
+    [
+        'title' => 'Events',
+        'route' => '/dashboard?app=events',
+        'visible' => true,
+        'description' => 'Manage and track events, including registration, check-in, and analytics.',
+        'price' => 149,
+        'rating' => 4.0,
+        'categories' => ['Events', 'Community', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
     ]
+    
 ]; 

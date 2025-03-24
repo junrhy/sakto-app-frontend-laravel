@@ -6,6 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { ThemeProvider } from '@/Components/ThemeProvider';
 import type { User } from '@/types/index';
+import { PageProps } from '@/types';
 
 interface InertiaUser extends User {
     theme?: 'light' | 'dark' | 'system';
@@ -14,11 +15,10 @@ interface InertiaUser extends User {
 interface InertiaProps {
     initialPage: {
         props: {
-            auth?: {
-                user?: InertiaUser;
-            };
-            app?: {
-                name: string;
+            auth: {
+                user: {
+                    theme?: 'light' | 'dark' | 'system';
+                };
             };
         };
     };
@@ -36,9 +36,8 @@ createInertiaApp({
     setup({ el, App, props }: { el: HTMLElement; App: any; props: InertiaProps }) {
         const resolvedAppName = import.meta.env.VITE_APP_NAME || 
                               import.meta.env.APP_NAME || 
-                              props.initialPage.props.app?.name || 
                               appName;
-        const userTheme = (props.initialPage.props.auth?.user as InertiaUser)?.theme || 'system';
+        const userTheme = props.initialPage.props.auth?.user?.theme || 'system';
         const app = (
             <ThemeProvider defaultTheme={userTheme} storageKey="sakto-theme">
                 <App {...props} />
