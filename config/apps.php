@@ -204,5 +204,18 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+    ],
+    [
+        'title' => 'Digital Products',
+        'route' => '/dashboard?app=digital-products',
+        'visible' => true,
+        'description' => 'Create and manage digital products, including ebooks, courses, and memberships.',
+        'price' => 149,
+        'rating' => 4.0,
+        'categories' => ['Digital', 'Products', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
     ]
+    
 ]; 
