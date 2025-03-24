@@ -180,6 +180,19 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+    ],
+    [
+        'title' => 'Challenges',
+        'route' => '/dashboard?app=challenges',
+        'visible' => true,
+        'description' => 'Create and manage challenges, including participants, progress, and rewards.',
+        'price' => 149,
+        'rating' => 4.0,
+        'categories' => ['Challenges', 'Community', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
     ]
+    
     
 ]; 

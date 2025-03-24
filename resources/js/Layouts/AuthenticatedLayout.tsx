@@ -81,6 +81,9 @@ const getHeaderColorClass = (url: string): string => {
     if (url.includes('/events') || appParam === 'events') {
         return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
+    if (url.includes('/challenges') || appParam === 'challenges') {
+        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+    }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
 };
@@ -131,6 +134,7 @@ export default function Authenticated({ children, header, user }: Props) {
     const hasFamilyTreeAccess = url.includes('family-tree');
     const hasSubscriptionsAccess = url.includes('subscriptions');
     const hasEventsAccess = url.includes('events');
+    const hasChallengesAccess = url.includes('challenges');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -345,6 +349,17 @@ export default function Authenticated({ children, header, user }: Props) {
                                     <div className="font-medium text-base text-white/90">Events</div>
                                     <ResponsiveNavLink href={`/events?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Events
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasChallengesAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Challenges</div>
+                                    <ResponsiveNavLink href={`/challenges?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Challenges
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -985,6 +1000,43 @@ export default function Authenticated({ children, header, user }: Props) {
                                                         Events
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/events/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
+                                    )}
+                                    {hasChallengesAccess && (
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Challenges</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/challenges?app=${appParam}`}>
+                                                        Challenges
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/challenges/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>

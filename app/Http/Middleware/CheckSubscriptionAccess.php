@@ -75,7 +75,8 @@ class CheckSubscriptionAccess
             'email' => 'Email',
             'contacts' => 'Contacts',
             'family-tree' => 'Family Tree',
-            'events' => 'Events'
+            'events' => 'Events',
+            'challenges' => 'Challenges'
         ];
 
         // Check route prefix
@@ -103,7 +104,8 @@ class CheckSubscriptionAccess
                 'email' => 'Email',
                 'contacts' => 'Contacts',
                 'family-tree' => 'Family Tree',
-                'events' => 'Events'
+                'events' => 'Events',
+                'challenges' => 'Challenges'
             ];
 
             return $appParamToNameMap[$appParam] ?? null;
