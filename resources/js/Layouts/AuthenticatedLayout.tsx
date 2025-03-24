@@ -84,6 +84,9 @@ const getHeaderColorClass = (url: string): string => {
     if (url.includes('/challenges') || appParam === 'challenges') {
         return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
+    if (url.includes('/content-creator') || appParam === 'content-creator') {
+        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+    }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
 };
@@ -135,6 +138,7 @@ export default function Authenticated({ children, header, user }: Props) {
     const hasSubscriptionsAccess = url.includes('subscriptions');
     const hasEventsAccess = url.includes('events');
     const hasChallengesAccess = url.includes('challenges');
+    const hasContentCreatorAccess = url.includes('content-creator');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -360,6 +364,16 @@ export default function Authenticated({ children, header, user }: Props) {
                                     <div className="font-medium text-base text-white/90">Challenges</div>
                                     <ResponsiveNavLink href={`/challenges?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Challenges
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+                        {hasContentCreatorAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Content Creator</div>
+                                    <ResponsiveNavLink href={`/content-creator?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Content Creator
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -1037,6 +1051,43 @@ export default function Authenticated({ children, header, user }: Props) {
                                                         Challenges
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/challenges/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
+                                    )}
+                                    {hasContentCreatorAccess && (
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Content Creator</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/content-creator?app=${appParam}`}>
+                                                        Content Creator
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/content-creator/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>

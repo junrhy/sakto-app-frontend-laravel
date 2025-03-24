@@ -192,7 +192,17 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+    ],
+    [
+        'title' => 'Content Creator',
+        'route' => '/dashboard?app=content-creator',
+        'visible' => true,
+        'description' => 'Create and manage content, including articles, pages, and posts.',
+        'price' => 149,
+        'rating' => 4.0,
+        'categories' => ['Content', 'Business', 'Marketing'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
     ]
-    
-    
 ]; 
