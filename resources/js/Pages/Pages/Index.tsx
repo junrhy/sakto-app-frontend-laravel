@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Content, ContentFilters } from '@/types/content';
+import { Page } from '@/types/pages';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
@@ -15,7 +14,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -23,72 +22,49 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/Components/ui/select";
 
-interface Props extends PageProps {
-    content: Content[];
+interface Props {
+    pages: Page[];
 }
 
-export default function Index({ auth, content }: Props) {
+export default function Index({ pages }: Props) {
     const [search, setSearch] = useState('');
-    const [selectedItems, setSelectedItems] = useState<number[]>([]);
-    const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [typeFilter, setTypeFilter] = useState<string>('all');
+    const [selectedPages, setSelectedPages] = useState<number[]>([]);
 
-    const filteredContent = useMemo(() => {
-        let filtered = content;
-        
-        if (search.trim()) {
-            const searchLower = search.toLowerCase();
-            filtered = filtered.filter(item => 
-                item.title.toLowerCase().includes(searchLower) ||
-                item.content.toLowerCase().includes(searchLower) ||
-                item.author?.name.toLowerCase().includes(searchLower)
-            );
-        }
-
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(item => item.status === statusFilter);
-        }
-
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(item => item.type === typeFilter);
-        }
-
-        return filtered;
-    }, [content, search, statusFilter, typeFilter]);
+    const filteredPages = useMemo(() => {
+        if (!search.trim()) return pages;
+        const searchLower = search.toLowerCase();
+        return pages.filter(page => 
+            page.title.toLowerCase().includes(searchLower) ||
+            page.slug.toLowerCase().includes(searchLower) ||
+            page.content.toLowerCase().includes(searchLower)
+        );
+    }, [pages, search]);
 
     const toggleSelectAll = () => {
-        if (selectedItems.length === filteredContent.length) {
-            setSelectedItems([]);
+        if (selectedPages.length === filteredPages.length) {
+            setSelectedPages([]);
         } else {
-            setSelectedItems(filteredContent.map(item => item.id));
+            setSelectedPages(filteredPages.map(page => page.id));
         }
     };
 
     const toggleSelect = (id: number) => {
-        if (selectedItems.includes(id)) {
-            setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+        if (selectedPages.includes(id)) {
+            setSelectedPages(selectedPages.filter(pageId => pageId !== id));
         } else {
-            setSelectedItems([...selectedItems, id]);
+            setSelectedPages([...selectedPages, id]);
         }
     };
 
     const exportToCSV = () => {
-        const selectedData = content.filter(item => selectedItems.includes(item.id));
-        const headers = ['Title', 'Type', 'Status', 'Author', 'Created At'];
-        const csvData = selectedData.map(item => [
-            item.title,
-            item.type,
-            item.status,
-            item.author?.name || '',
-            format(new Date(item.created_at), 'PPP')
+        const selectedData = pages.filter(page => selectedPages.includes(page.id));
+        const headers = ['Title', 'Slug', 'Status', 'Last Updated'];
+        const csvData = selectedData.map(page => [
+            page.title,
+            page.slug,
+            page.is_published ? 'Published' : 'Draft',
+            format(new Date(page.updated_at), 'PPP')
         ]);
 
         const csvContent = [
@@ -99,26 +75,13 @@ export default function Index({ auth, content }: Props) {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'content.csv';
+        link.download = 'pages.csv';
         link.click();
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this content?')) {
-            router.delete(route('content-creator.destroy', id));
-        }
-    };
-
-    const getStatusBadgeColor = (status: string) => {
-        switch (status) {
-            case 'published':
-                return 'default';
-            case 'draft':
-                return 'secondary';
-            case 'archived':
-                return 'destructive';
-            default:
-                return 'outline';
+        if (confirm('Are you sure you want to delete this page?')) {
+            router.delete(route('pages.destroy', id));
         }
     };
 
@@ -127,42 +90,20 @@ export default function Index({ auth, content }: Props) {
             header={
                 <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
                     <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Content Management
+                        Pages
                     </h2>
                     <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
                         <div className="relative">
                             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
                             <Input
                                 type="search"
-                                placeholder="Search content..."
+                                placeholder="Search pages..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-9 w-full sm:w-[300px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
                             />
                         </div>
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-full sm:w-[200px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Statuses</SelectItem>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="published">Published</SelectItem>
-                                <SelectItem value="archived">Archived</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={typeFilter} onValueChange={setTypeFilter}>
-                            <SelectTrigger className="w-full sm:w-[200px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
-                                <SelectValue placeholder="Filter by type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Types</SelectItem>
-                                <SelectItem value="article">Article</SelectItem>
-                                <SelectItem value="page">Page</SelectItem>
-                                <SelectItem value="post">Post</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {selectedItems.length > 0 && (
+                        {selectedPages.length > 0 && (
                             <Button
                                 variant="outline"
                                 onClick={exportToCSV}
@@ -172,25 +113,17 @@ export default function Index({ auth, content }: Props) {
                                 Export Selected
                             </Button>
                         )}
-                        <div className="flex gap-2">
-                            <Link href={route('content-creator.create')}>
-                                <Button>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Create Content
-                                </Button>
-                            </Link>
-                            <Link href={route('content-creator.settings')}>
-                                <Button variant="outline">
-                                    <Settings className="w-4 h-4 mr-2" />
-                                    Settings
-                                </Button>
-                            </Link>
-                        </div>
+                        <Link href={route('pages.create')}>
+                            <Button>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create Page
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             }
         >
-            <Head title="Content Management" />
+            <Head title="Pages" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -201,39 +134,34 @@ export default function Index({ auth, content }: Props) {
                                     <TableRow>
                                         <TableHead className="w-[50px]">
                                             <Checkbox
-                                                checked={selectedItems.length === filteredContent.length}
+                                                checked={selectedPages.length === filteredPages.length}
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </TableHead>
                                         <TableHead>Title</TableHead>
-                                        <TableHead>Type</TableHead>
+                                        <TableHead>Slug</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Author</TableHead>
-                                        <TableHead>Created</TableHead>
+                                        <TableHead>Last Updated</TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredContent.map((item) => (
-                                        <TableRow key={item.id}>
+                                    {filteredPages.map((page) => (
+                                        <TableRow key={page.id}>
                                             <TableCell>
                                                 <Checkbox
-                                                    checked={selectedItems.includes(item.id)}
-                                                    onCheckedChange={() => toggleSelect(item.id)}
+                                                    checked={selectedPages.includes(page.id)}
+                                                    onCheckedChange={() => toggleSelect(page.id)}
                                                 />
                                             </TableCell>
-                                            <TableCell className="font-medium">{item.title}</TableCell>
-                                            <TableCell className="capitalize">{item.type}</TableCell>
+                                            <TableCell className="font-medium">{page.title}</TableCell>
+                                            <TableCell>{page.slug}</TableCell>
                                             <TableCell>
-                                                <Badge 
-                                                    variant={getStatusBadgeColor(item.status)}
-                                                    className="capitalize"
-                                                >
-                                                    {item.status}
+                                                <Badge variant={page.is_published ? "default" : "secondary"}>
+                                                    {page.is_published ? 'Published' : 'Draft'}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{item.author?.name}</TableCell>
-                                            <TableCell>{format(new Date(item.created_at), 'PPP')}</TableCell>
+                                            <TableCell>{format(new Date(page.updated_at), 'PPP')}</TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -246,20 +174,20 @@ export default function Index({ auth, content }: Props) {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem asChild>
-                                                            <Link href={route('content-creator.preview', item.id)}>
+                                                            <Link href={route('pages.show', page.id)}>
                                                                 <Eye className="w-4 h-4 mr-2" />
                                                                 View
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem asChild>
-                                                            <Link href={route('content-creator.edit', item.id)}>
+                                                            <Link href={route('pages.edit', page.id)}>
                                                                 <Edit className="w-4 h-4 mr-2" />
                                                                 Edit
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
                                                             className="text-red-600"
-                                                            onClick={() => handleDelete(item.id)}
+                                                            onClick={() => handleDelete(page.id)}
                                                         >
                                                             <Trash2 className="w-4 h-4 mr-2" />
                                                             Delete

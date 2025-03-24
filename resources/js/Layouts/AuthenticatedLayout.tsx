@@ -90,6 +90,9 @@ const getHeaderColorClass = (url: string): string => {
     if (url.includes('/digital-products') || appParam === 'digital-products') {
         return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
+    if (url.includes('/pages') || appParam === 'pages') {
+        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+    }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
 };
@@ -143,6 +146,7 @@ export default function Authenticated({ children, header, user }: Props) {
     const hasChallengesAccess = url.includes('challenges');
     const hasContentCreatorAccess = url.includes('content-creator');
     const hasDigitalProductsAccess = url.includes('digital-products');
+    const hasPagesAccess = url.includes('pages');
     // const hasClinicAccess = user.project?.modules?.some(
     //     module => module.identifier === 'clinic'
     // );
@@ -388,6 +392,16 @@ export default function Authenticated({ children, header, user }: Props) {
                                     <div className="font-medium text-base text-white/90">Digital Products</div>
                                     <ResponsiveNavLink href={`/digital-products?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Digital Products
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+                        {hasPagesAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Pages</div>
+                                    <ResponsiveNavLink href={`/pages?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Pages
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -1139,6 +1153,43 @@ export default function Authenticated({ children, header, user }: Props) {
                                                         Digital Products
                                                     </Dropdown.Link>
                                                     <Dropdown.Link href={`/digital-products/settings?app=${appParam}`}>
+                                                        Settings
+                                                    </Dropdown.Link>
+                                                </Dropdown.Content>
+                                            </Dropdown>
+                                        </div>
+                                    )}
+                                    {hasPagesAccess && (
+                                        <div className="inline-flex items-center">
+                                            <Dropdown>
+                                                <Dropdown.Trigger>
+                                                    <span className="inline-flex rounded-md">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                        >
+                                                            <span className="mt-[1px]">Pages</span>
+                                                            <svg
+                                                                className="ml-2 -mr-0.5 h-4 w-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 20 20"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </span>
+                                                </Dropdown.Trigger>
+
+                                                <Dropdown.Content>
+                                                    <Dropdown.Link href={`/pages?app=${appParam}`}>
+                                                        Pages
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/pages/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>

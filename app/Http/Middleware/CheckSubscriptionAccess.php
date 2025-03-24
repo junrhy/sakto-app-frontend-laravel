@@ -77,7 +77,9 @@ class CheckSubscriptionAccess
             'family-tree' => 'Family Tree',
             'events' => 'Events',
             'challenges' => 'Challenges',
-            'content-creator' => 'Content Creator'
+            'content-creator' => 'Content Creator',
+            'digital-products' => 'Digital Products',
+            'pages' => 'Pages'
         ];
 
         // Check route prefix
@@ -107,7 +109,9 @@ class CheckSubscriptionAccess
                 'family-tree' => 'Family Tree',
                 'events' => 'Events',
                 'challenges' => 'Challenges',
-                'content-creator' => 'Content Creator'
+                'content-creator' => 'Content Creator',
+                'digital-products' => 'Digital Products',
+                'pages' => 'Pages'
             ];
 
             return $appParamToNameMap[$appParam] ?? null;

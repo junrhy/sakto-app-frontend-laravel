@@ -33,6 +33,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\ContentCreatorController;
 use App\Http\Controllers\DigitalProductController;
+use App\Http\Controllers\PagesController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -476,6 +477,11 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         Route::get('/export', [EventController::class, 'exportEvents'])->name('events.export');
         Route::post('/import', [EventController::class, 'importEvents'])->name('events.import');
     });
+
+    // Pages Creator
+    Route::resource('pages', PagesController::class);
+    Route::get('/pages/settings', [PagesController::class, 'settings'])->name('pages.settings');
+    Route::get('/pages/list', [PagesController::class, 'getPages'])->name('pages.list');
 });
 
 // Admin routes

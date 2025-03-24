@@ -216,6 +216,18 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
-    ]
+    ],
+    [
+        'title' => 'Pages',
+        'route' => '/dashboard?app=pages',
+        'visible' => true,
+        'description' => 'Create and manage pages, including articles, pages, and posts.',
+        'price' => 149,
+        'rating' => 4.0,
+        'categories' => ['Digital', 'Products', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+    ]   
     
 ]; 
