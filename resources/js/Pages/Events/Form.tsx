@@ -45,11 +45,11 @@ export default function Form({ auth, event }: Props) {
     const { data, setData, post, put, processing, errors, reset } = useForm<FormData>({
         title: event?.title || '',
         description: event?.description || '',
-        start_date: event?.start_date || '',
-        end_date: event?.end_date || '',
+        start_date: event?.start_date ? (event.start_date.includes('T') ? event.start_date : `${event.start_date}T00:00`) : '',
+        end_date: event?.end_date ? (event.end_date.includes('T') ? event.end_date : `${event.end_date}T00:00`) : '',
         location: event?.location || '',
         max_participants: event?.max_participants || 0,
-        registration_deadline: event?.registration_deadline || '',
+        registration_deadline: event?.registration_deadline ? (event.registration_deadline.includes('T') ? event.registration_deadline : `${event.registration_deadline}T00:00`) : '',
         is_public: event?.is_public || false,
         category: event?.category || '',
         image: event?.image || '',
@@ -60,7 +60,7 @@ export default function Form({ auth, event }: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (event?.id) {
-            put(`/events/${event.id}`, {
+            put(`/${event.id}`, {
                 onSuccess: () => {
                     toast.success('Event updated successfully');
                     window.location.href = '/events';

@@ -30,23 +30,22 @@ class EventController extends Controller
                 'client_identifier' => $clientIdentifier
             ]);
 
-            // $response = Http::withToken($this->apiToken)    
-            //     ->get("{$this->apiUrl}/events", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/events", [
+                    'client_identifier' => $clientIdentifier
+                ]);
             
-            // if (!$response->successful()) {
-            //     Log::error('API request failed', [
-            //         'status' => $response->status(),
-            //         'body' => $response->body(),
-            //         'url' => "{$this->apiUrl}/events"
-            //     ]);
+            if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => "{$this->apiUrl}/events"
+                ]);
                 
-            //     return back()->withErrors(['error' => 'Failed to fetch events']);
-            // }
+                return back()->withErrors(['error' => 'Failed to fetch events']);
+            }
 
-            // $events = $response->json();
-            $events = [];
+            $events = $response->json();
 
             return Inertia::render('Events/Index', [
                 'events' => $events
@@ -112,6 +111,32 @@ class EventController extends Controller
         }
 
         return $response->json();
+    }
+
+    public function edit($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events/{$id}");
+
+            if (!$response->successful()) {
+                return back()->withErrors(['error' => 'Failed to fetch event']);
+            }
+
+            $responseData = $response->json();
+            $event = $responseData['data'] ?? $responseData;
+
+            return Inertia::render('Events/Form', [
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in event edit', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while fetching event']);
+        }
     }
 
     public function update(Request $request, $id)
@@ -263,62 +288,16 @@ class EventController extends Controller
         try {
             $clientIdentifier = auth()->user()->identifier;
             
-            // $response = Http::withToken($this->apiToken)
-            //     ->get("{$this->apiUrl}/events", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events", [
+                    'client_identifier' => $clientIdentifier
+                ]);
 
-            // if (!$response->successful()) {
-            //     return response()->json(['error' => 'Failed to fetch calendar events'], $response->status());
-            // }
+            if (!$response->successful()) {
+                return response()->json(['error' => 'Failed to fetch calendar events'], $response->status());
+            }
 
-            // return $response->json();
-
-            // Dummy data for testing
-            return [
-                [
-                    'id' => 1,
-                    'title' => 'Team Meeting',
-                    'description' => 'Weekly team sync meeting',
-                    'start_date' => now()->format('Y-m-d H:i:s'),
-                    'end_date' => now()->addHours(1)->format('Y-m-d H:i:s'),
-                    'location' => 'Conference Room A',
-                    'max_participants' => 10,
-                    'current_participants' => 5,
-                    'registration_deadline' => now()->addDays(1)->format('Y-m-d H:i:s'),
-                    'is_public' => false,
-                    'category' => 'Meeting',
-                    'image' => null
-                ],
-                [
-                    'id' => 2,
-                    'title' => 'Product Launch',
-                    'description' => 'Launch of new product line',
-                    'start_date' => now()->addDays(5)->format('Y-m-d H:i:s'),
-                    'end_date' => now()->addDays(5)->addHours(3)->format('Y-m-d H:i:s'),
-                    'location' => 'Main Hall',
-                    'max_participants' => 100,
-                    'current_participants' => 75,
-                    'registration_deadline' => now()->addDays(3)->format('Y-m-d H:i:s'),
-                    'is_public' => true,
-                    'category' => 'Launch',
-                    'image' => null
-                ],
-                [
-                    'id' => 3,
-                    'title' => 'Training Session',
-                    'description' => 'Employee training on new systems',
-                    'start_date' => now()->addDays(10)->format('Y-m-d H:i:s'),
-                    'end_date' => now()->addDays(10)->addHours(4)->format('Y-m-d H:i:s'),
-                    'location' => 'Training Room',
-                    'max_participants' => 20,
-                    'current_participants' => 15,
-                    'registration_deadline' => now()->addDays(8)->format('Y-m-d H:i:s'),
-                    'is_public' => false,
-                    'category' => 'Training',
-                    'image' => null
-                ]
-            ];
+            return $response->json();
         } catch (\Exception $e) {
             Log::error('Exception in getCalendarEvents', [
                 'message' => $e->getMessage(),
@@ -401,31 +380,6 @@ class EventController extends Controller
 
     public function create()
     {
-        return Inertia::render('Events/Create');
-    }
-
-    public function edit($id)
-    {
-        try {
-            $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/events/{$id}");
-
-            if (!$response->successful()) {
-                return back()->withErrors(['error' => 'Failed to fetch event']);
-            }
-
-            $event = $response->json();
-
-            return Inertia::render('Events/Form', [
-                'event' => $event
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Exception in events edit', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return back()->withErrors(['error' => 'An error occurred while fetching event']);
-        }
+        return Inertia::render('Events/Form');
     }
 }

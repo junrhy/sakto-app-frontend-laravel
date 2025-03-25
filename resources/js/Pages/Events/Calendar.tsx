@@ -42,10 +42,12 @@ export default function Calendar({ auth }: PageProps) {
         try {
             const response = await fetch('/events/calendar-events');
             if (!response.ok) throw new Error('Failed to fetch calendar events');
-            const data = await response.json();
-            setEvents(data);
+            const { data } = await response.json();
+            setEvents(Array.isArray(data) ? data : []);
         } catch (error) {
+            console.error('Error fetching calendar events:', error);
             toast.error('Failed to load calendar events');
+            setEvents([]);
         } finally {
             setLoading(false);
         }
