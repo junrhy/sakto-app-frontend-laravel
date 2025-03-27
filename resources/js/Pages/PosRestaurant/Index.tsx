@@ -30,6 +30,7 @@ interface MenuItem {
     updated_at?: string;
     is_available_personal?: boolean;
     is_available_online?: boolean;
+    delivery_fee?: number;
 }
   
 interface OrderItem extends MenuItem {
@@ -65,6 +66,7 @@ interface MenuItemFormData {
     price: number;
     category: string;
     image?: string;
+    delivery_fee?: number;
 }
 
 interface JoinedTable {
@@ -1083,7 +1085,8 @@ export default function PosRestaurant({
                 name: currentMenuItem?.name || '',
                 price: currentMenuItem?.price || 0,
                 category: currentMenuItem?.category || '',
-                image: currentMenuItem?.image
+                image: currentMenuItem?.image,
+                delivery_fee: currentMenuItem?.delivery_fee
             };
 
             Object.entries(menuItemData).forEach(([key, value]) => {
@@ -2052,6 +2055,7 @@ export default function PosRestaurant({
                                         <TableHead>Name</TableHead>
                                         <TableHead>Category</TableHead>
                                         <TableHead>Price</TableHead>
+                                        <TableHead>Delivery Fee</TableHead>
                                         <TableHead>Availability</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
@@ -2077,6 +2081,7 @@ export default function PosRestaurant({
                                         <TableCell>{item.name}</TableCell>
                                         <TableCell>{item.category}</TableCell>
                                         <TableCell>{currency_symbol}{item.price}</TableCell>
+                                        <TableCell>{item.delivery_fee ? `${currency_symbol}${item.delivery_fee}` : '-'}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1 text-xs">
                                                 <span className={item.is_available_personal ? "text-green-600" : "text-red-600"}>
@@ -2383,6 +2388,21 @@ export default function PosRestaurant({
                             })}
                             className="col-span-3"
                             required
+                        />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="delivery_fee" className="text-right">Delivery Fee</Label>
+                            <Input
+                            id="delivery_fee"
+                            type="number"
+                            step="0.01"
+                            value={currentMenuItem?.delivery_fee || ''}
+                            onChange={(e) => setCurrentMenuItem({ 
+                                ...currentMenuItem!, 
+                                delivery_fee: e.target.value ? parseFloat(e.target.value) : undefined
+                            })}
+                            className="col-span-3"
+                            placeholder="Optional"
                         />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">

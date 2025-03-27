@@ -72,7 +72,8 @@ class PosRestaurantController extends Controller
                 'category' => 'required|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'is_available_personal' => 'boolean',
-                'is_available_online' => 'boolean'
+                'is_available_online' => 'boolean',
+                'delivery_fee' => 'nullable|numeric|min:0'
             ]);
 
             $validated['client_identifier'] = auth()->user()->identifier;
