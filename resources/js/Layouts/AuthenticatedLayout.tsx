@@ -6,7 +6,6 @@ import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { Toaster } from 'sonner';
 import { Button } from '@/Components/ui/button';
 import { CreditCardIcon, SparklesIcon } from 'lucide-react';
 import { PageProps } from '@/types';
@@ -79,19 +78,19 @@ const getHeaderColorClass = (url: string): string => {
         return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
     }
     if (url.includes('/events') || appParam === 'events') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+        return 'from-amber-600 via-orange-500 to-amber-400 dark:from-amber-950 dark:via-orange-900 dark:to-amber-800';
     }
     if (url.includes('/challenges') || appParam === 'challenges') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+        return 'from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-950 dark:via-teal-900 dark:to-emerald-800';
     }
     if (url.includes('/content-creator') || appParam === 'content-creator') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+        return 'from-pink-600 via-rose-500 to-pink-400 dark:from-pink-950 dark:via-rose-900 dark:to-pink-800';
     }
     if (url.includes('/digital-products') || appParam === 'digital-products') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+        return 'from-blue-600 via-sky-500 to-blue-400 dark:from-blue-950 dark:via-sky-900 dark:to-blue-800';
     }
     if (url.includes('/pages') || appParam === 'pages') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
+        return 'from-emerald-600 via-green-500 to-emerald-400 dark:from-emerald-950 dark:via-green-900 dark:to-emerald-800';
     }
     // Default gradient for unmatched routes
     return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
@@ -141,7 +140,6 @@ export default function Authenticated({ children, header, user }: Props) {
     const hasEmailAccess = url.includes('email');
     const hasContactsAccess = url.includes('contacts');
     const hasFamilyTreeAccess = url.includes('family-tree');
-    const hasSubscriptionsAccess = url.includes('subscriptions');
     const hasEventsAccess = url.includes('events');
     const hasChallengesAccess = url.includes('challenges');
     const hasContentCreatorAccess = url.includes('content-creator');
@@ -163,8 +161,6 @@ export default function Authenticated({ children, header, user }: Props) {
     return (
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
-                <Toaster richColors />
-                
                 {/* Mobile Navigation */}
                 <div
                     className={
