@@ -330,6 +330,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                 <div className="flex-shrink-0 flex items-center">
                                     <ApplicationLogo className="block h-9 w-auto" />
                                 </div>
+                                {/* Desktop Navigation */}
                                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                                     <button
                                         onClick={() => setActiveTab('order')}
@@ -367,7 +368,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                 {auth.user ? (
                                     <Link
                                         href={route('dashboard')}
-                                        className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                        className="hidden sm:block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                                     >
                                         My Account
                                     </Link>
@@ -378,7 +379,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                 </nav>
 
                 {/* Main Content */}
-                <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pb-20 sm:pb-6">
                     {/* Order Food Section */}
                     {activeTab === 'order' && (
                         <div className="space-y-6">
@@ -401,9 +402,9 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                             </div>
 
                             {/* Popular Restaurants */}
-                            <div className="bg-white shadow rounded-lg p-6">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-4">Popular Restaurants</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Restaurants</h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                     {loading ? (
                                         <div className="col-span-full text-center py-8">
                                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
@@ -453,8 +454,8 @@ export default function WelcomeDelivery({ auth }: PageProps) {
 
                     {/* Menu Section */}
                     {activeTab === 'menu' && selectedRestaurant && (
-                        <div className="bg-white shadow rounded-lg p-6">
-                            <div className="flex items-center mb-6">
+                        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+                            <div className="flex items-center mb-4 sm:mb-6">
                                 <button
                                     onClick={() => setActiveTab('order')}
                                     className="text-gray-500 hover:text-gray-700 mr-4"
@@ -463,13 +464,13 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
-                                <h2 className="text-2xl font-bold text-gray-900">{selectedRestaurant.restaurant_name}</h2>
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{selectedRestaurant.restaurant_name}</h2>
                             </div>
-                            <div className="space-y-6">
+                            <div className="space-y-4 sm:space-y-6">
                                 {Object.entries(groupMenuItemsByCategory(selectedRestaurant.menu_items)).map(([category, items]) => (
                                     <div key={category}>
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-2">{category}</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">{category}</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             {items.map((item) => (
                                                 <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                                     <div>
@@ -495,8 +496,8 @@ export default function WelcomeDelivery({ auth }: PageProps) {
 
                     {/* Cart Section */}
                     {activeTab === 'cart' && (
-                        <div className="bg-white shadow rounded-lg p-6">
-                            <div className="flex items-center mb-6">
+                        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+                            <div className="flex items-center mb-4 sm:mb-6">
                                 <button
                                     onClick={() => setActiveTab('order')}
                                     className="text-gray-500 hover:text-gray-700 mr-4"
@@ -505,7 +506,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
-                                <h2 className="text-2xl font-bold text-gray-900">Your Cart</h2>
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Your Cart</h2>
                             </div>
                             {cartItems.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">
@@ -710,8 +711,8 @@ export default function WelcomeDelivery({ auth }: PageProps) {
 
                     {/* Track Order Section */}
                     {activeTab === 'tracking' && (
-                        <div className="bg-white shadow rounded-lg p-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">Track Your Order</h2>
+                        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Track Your Order</h2>
                             <div className="space-y-4">
                                 <div>
                                     <label htmlFor="tracking-number" className="block text-sm font-medium text-gray-700">
@@ -725,7 +726,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                             className="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md border-gray-300 sm:text-sm"
                                             placeholder="Enter your order number"
                                         />
-                                        <button className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                        <button className="ml-2 sm:ml-3 inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                             Track
                                         </button>
                                     </div>
@@ -733,6 +734,69 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* Mobile Bottom Navigation */}
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+                    <div className="flex justify-around items-center h-16">
+                        <button
+                            onClick={() => setActiveTab('order')}
+                            className={`flex flex-col items-center justify-center flex-1 h-full ${
+                                activeTab === 'order'
+                                    ? 'text-indigo-600'
+                                    : 'text-gray-500'
+                            }`}
+                        >
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span className="text-xs mt-1">Order</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('tracking')}
+                            className={`flex flex-col items-center justify-center flex-1 h-full ${
+                                activeTab === 'tracking'
+                                    ? 'text-indigo-600'
+                                    : 'text-gray-500'
+                            }`}
+                        >
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <span className="text-xs mt-1">Track</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('cart')}
+                            className={`flex flex-col items-center justify-center flex-1 h-full ${
+                                activeTab === 'cart'
+                                    ? 'text-indigo-600'
+                                    : 'text-gray-500'
+                            }`}
+                        >
+                            <div className="relative">
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                {cartItems.length > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                        {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                                    </span>
+                                )}
+                            </div>
+                            <span className="text-xs mt-1">Cart</span>
+                        </button>
+                        {auth.user && (
+                            <Link
+                                href={route('dashboard')}
+                                className="flex flex-col items-center justify-center flex-1 h-full text-gray-500"
+                            >
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span className="text-xs mt-1">Account</span>
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </div>
         </>
