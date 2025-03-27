@@ -89,7 +89,9 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                         'Authorization': `Bearer ${window.config.api.token}`
                     }
                 });
-                setRestaurants(response.data.restaurants);
+                // Convert the restaurants object into an array with proper type assertion
+                const restaurantsArray = Object.values(response.data.restaurants) as Restaurant[];
+                setRestaurants(restaurantsArray);
             } catch (error) {
                 console.error('Error fetching restaurants:', error);
             } finally {
