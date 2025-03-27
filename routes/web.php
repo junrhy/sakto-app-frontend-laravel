@@ -54,6 +54,22 @@ Route::group(['middleware' => ['web']], function () {
         ]);
     });
 
+    Route::get('/pricing', function () {
+        return Inertia::render('Pricing', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('pricing');
+
+    Route::get('/features', function () {
+        return Inertia::render('Features', [
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('features');
+
     // Policy Routes
     Route::prefix('policies')->group(function () {
         Route::get('/privacy', function () { return Inertia::render('PrivacyPolicy'); })->name('privacy-policy');
