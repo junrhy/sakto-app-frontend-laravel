@@ -43,6 +43,14 @@
         @inertiaHead
 
         <script>
+            // Inject API configuration
+            window.config = {
+                api: {
+                    url: '{{ config('api.url') }}',
+                    token: '{{ config('api.token') }}'
+                }
+            };
+
             // Check system dark mode preference and set class accordingly
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 document.documentElement.classList.add('dark')

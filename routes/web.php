@@ -45,7 +45,44 @@ use Illuminate\Support\Facades\Auth;
 // Public routes
 Route::group(['middleware' => ['web']], function () {
     // Welcome and Policy Routes
-    Route::get('/', function () {
+    Route::get('/', function (Request $request) {
+        $host = $request->getHost();
+        $path = $request->path();
+        
+        // Check for shop, delivery, or jobs in host or path
+        if (stripos($host, 'shop') !== false || stripos($path, 'shop') !== false) {
+            return Inertia::render('WelcomeShop', [
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+                'auth' => [
+                    'user' => Auth::user()
+                ]
+            ]);
+        } elseif (stripos($host, 'delivery') !== false || stripos($path, 'delivery') !== false) {
+            return Inertia::render('WelcomeDelivery', [
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+                'auth' => [
+                    'user' => Auth::user()
+                ]
+            ]);
+        } elseif (stripos($host, 'jobs') !== false || stripos($path, 'jobs') !== false) {
+            return Inertia::render('WelcomeJobs', [
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+                'auth' => [
+                    'user' => Auth::user()
+                ]
+            ]);
+        }
+        
+        // Default welcome page
         return Inertia::render('Welcome', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -53,6 +90,43 @@ Route::group(['middleware' => ['web']], function () {
             'phpVersion' => PHP_VERSION,
         ]);
     });
+
+    // Specific routes for shop, delivery, and jobs
+    Route::get('/shop', function () {
+        return Inertia::render('WelcomeShop', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('shop');
+
+    Route::get('/delivery', function () {
+        return Inertia::render('WelcomeDelivery', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('delivery');
+
+    Route::get('/jobs', function () {
+        return Inertia::render('WelcomeJobs', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'auth' => [
+                'user' => Auth::user()
+            ]
+        ]);
+    })->name('jobs');
 
     Route::get('/pricing', function () {
         return Inertia::render('Pricing', [
