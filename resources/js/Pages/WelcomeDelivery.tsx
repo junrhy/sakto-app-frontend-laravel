@@ -34,6 +34,9 @@ interface Restaurant {
     client_identifier: string;
     restaurant_name: string;
     menu_items: MenuItem[];
+    contact_number: string;
+    website: string;
+    address: string;
 }
 
 interface DeliveryInfo {
@@ -59,7 +62,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
     const [loading, setLoading] = useState(true);
     const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'maya' | null>(null);
+    const [paymentMethod, setPaymentMethod] = useState<'cod' | null>(null);
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
         name: '',
@@ -179,94 +182,28 @@ export default function WelcomeDelivery({ auth }: PageProps) {
             return;
         }
 
-        if (paymentMethod === 'maya') {
-            setIsProcessingPayment(true);
-            try {
-                // Create a hidden form and submit it directly
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'https://api.sakto.app/api/orders';
-                
-                // Add CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = csrfToken;
-                    form.appendChild(csrfInput);
-                }
-                
-                // Add order data
-                const itemsInput = document.createElement('input');
-                itemsInput.type = 'hidden';
-                itemsInput.name = 'items';
-                itemsInput.value = JSON.stringify(cartItems.map(item => ({
+        // Handle COD order
+        try {
+            const response = await axios.post('https://api.sakto.app/api/orders', {
+                items: cartItems.map(item => ({
                     id: item.id,
                     quantity: item.quantity
-                })));
-                form.appendChild(itemsInput);
-                
-                const totalAmountInput = document.createElement('input');
-                totalAmountInput.type = 'hidden';
-                totalAmountInput.name = 'total_amount';
-                totalAmountInput.value = calculateTotal().toString();
-                form.appendChild(totalAmountInput);
-                
-                const paymentMethodInput = document.createElement('input');
-                paymentMethodInput.type = 'hidden';
-                paymentMethodInput.name = 'payment_method';
-                paymentMethodInput.value = 'maya';
-                form.appendChild(paymentMethodInput);
+                })),
+                total_amount: calculateTotal(),
+                payment_method: 'cod',
+                delivery_info: deliveryInfo
+            }, {
+                headers: {
+                    'Authorization': 'Bearer 2|vKaWb5AMANFxhYK2GdUNWFSscwBJsV1G2g3hnGHI357350da'
+                }
+            });
 
-                // Add delivery information
-                const deliveryInfoInput = document.createElement('input');
-                deliveryInfoInput.type = 'hidden';
-                deliveryInfoInput.name = 'delivery_info';
-                deliveryInfoInput.value = JSON.stringify(deliveryInfo);
-                form.appendChild(deliveryInfoInput);
-                
-                // Add authorization header
-                const authInput = document.createElement('input');
-                authInput.type = 'hidden';
-                authInput.name = 'Authorization';
-                authInput.value = 'Bearer 2|vKaWb5AMANFxhYK2GdUNWFSscwBJsV1G2g3hnGHI357350da';
-                form.appendChild(authInput);
-                
-                // Append to body and submit
-                document.body.appendChild(form);
-                form.submit();
-                
-            } catch (error) {
-                console.error('Error processing payment:', error);
-                alert('Failed to process payment. Please try again.');
-            } finally {
-                setIsProcessingPayment(false);
-            }
-        } else {
-            // Handle COD order
-            try {
-                const response = await axios.post('https://api.sakto.app/api/orders', {
-                    items: cartItems.map(item => ({
-                        id: item.id,
-                        quantity: item.quantity
-                    })),
-                    total_amount: calculateTotal(),
-                    payment_method: 'cod',
-                    delivery_info: deliveryInfo
-                }, {
-                    headers: {
-                        'Authorization': 'Bearer 2|vKaWb5AMANFxhYK2GdUNWFSscwBJsV1G2g3hnGHI357350da'
-                    }
-                });
-
-                alert('Order placed successfully!');
-                setCartItems([]);
-                setActiveTab('order');
-            } catch (error) {
-                console.error('Error placing order:', error);
-                alert('Failed to place order. Please try again.');
-            }
+            alert('Order placed successfully!');
+            setCartItems([]);
+            setActiveTab('order');
+        } catch (error) {
+            console.error('Error placing order:', error);
+            alert('Failed to place order. Please try again.');
         }
     };
 
@@ -324,12 +261,19 @@ export default function WelcomeDelivery({ auth }: PageProps) {
         <>
             <Head title="Food Delivery Services" />
             <div className="min-h-screen bg-gray-100">
+                {/* Mobile App Name */}
+                <div className="sm:hidden flex items-center justify-center p-4 bg-green-600">
+                    <svg className="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="text-xl font-bold text-white">Sakto Delivery</span>
+                </div>
                 {/* Navigation */}
                 <nav className="bg-white shadow-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">
-                                <div className="flex-shrink-0 flex items-center">
+                                <div className="hidden sm:flex flex-shrink-0 items-center">
                                     <ApplicationLogo className="block h-9 w-auto" />
                                 </div>
                                 {/* Desktop Navigation */}
@@ -338,7 +282,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                         onClick={() => setActiveTab('order')}
                                         className={`${
                                             activeTab === 'order'
-                                                ? 'border-indigo-500 text-gray-900'
+                                                ? 'border-green-500 text-gray-900'
                                                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                         } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                                     >
@@ -348,7 +292,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                         onClick={() => setActiveTab('tracking')}
                                         className={`${
                                             activeTab === 'tracking'
-                                                ? 'border-indigo-500 text-gray-900'
+                                                ? 'border-green-500 text-gray-900'
                                                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                         } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                                     >
@@ -358,7 +302,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                         onClick={() => setActiveTab('cart')}
                                         className={`${
                                             activeTab === 'cart'
-                                                ? 'border-indigo-500 text-gray-900'
+                                                ? 'border-green-500 text-gray-900'
                                                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                         } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                                     >
@@ -366,50 +310,37 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex items-center">
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="hidden sm:block text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                    >
-                                        My Account
-                                    </Link>
-                                ) : null}
+                            {/* Search Bar - Visible on both mobile and desktop */}
+                            <div className="flex items-center w-full sm:w-96">
+                                <div className="relative w-full">
+                                    <input
+                                        type="text"
+                                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500 text-sm"
+                                        placeholder="Search for restaurants or cuisines..."
+                                    />
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </nav>
 
                 {/* Main Content */}
-                <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pb-20 sm:pb-6">
+                <div className="max-w-7xl mx-auto py-2 sm:px-6 lg:px-8 pb-20 sm:pb-6">
                     {/* Order Food Section */}
                     {activeTab === 'order' && (
-                        <div className="space-y-6">
-                            {/* Search Bar */}
-                            <div className="bg-white shadow rounded-lg p-6">
-                                <div className="max-w-2xl mx-auto">
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                            placeholder="Search for restaurants or cuisines..."
-                                        />
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+                        <div className="space-y-2">
                             {/* Popular Restaurants */}
                             <div className="bg-white shadow rounded-lg p-4 sm:p-6">
                                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Restaurants</h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                     {loading ? (
                                         <div className="col-span-full text-center py-8">
-                                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+                                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
                                         </div>
                                     ) : restaurants.length === 0 ? (
                                         <div className="col-span-full text-center py-8 text-gray-500">
@@ -429,7 +360,30 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                     />
                                                     <div className="p-4">
                                                         <h3 className="text-lg font-semibold text-gray-900">{restaurant.restaurant_name}</h3>
-                                                        <p className="text-sm text-gray-500">
+                                                        <div className="mt-2 space-y-1">
+                                                            <div className="flex items-center text-sm text-gray-500">
+                                                                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                </svg>
+                                                                {restaurant.contact_number}
+                                                            </div>
+                                                            <div className="flex items-center text-sm text-gray-500">
+                                                                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                                                </svg>
+                                                                <a href={restaurant.website} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-800">
+                                                                    {restaurant.website}
+                                                                </a>
+                                                            </div>
+                                                            <div className="flex items-center text-sm text-gray-500">
+                                                                <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                </svg>
+                                                                {restaurant.address}
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-sm text-gray-500 mt-2">
                                                             {availableOnlineItems.length} items available online
                                                         </p>
                                                         <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -440,7 +394,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                         </div>
                                                         <button 
                                                             onClick={() => handleViewMenu(restaurant)}
-                                                            className="mt-4 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700"
+                                                            className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700"
                                                         >
                                                             View Menu
                                                         </button>
@@ -482,7 +436,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                         <p className="font-medium text-gray-900">₱{item.price}</p>
                                                         <button 
                                                             onClick={() => handleAddToCart(item)}
-                                                            className="mt-1 text-sm bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"
+                                                            className="mt-1 text-sm bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700"
                                                         >
                                                             Add to Cart
                                                         </button>
@@ -568,7 +522,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                         value={couponCode}
                                                         onChange={(e) => setCouponCode(e.target.value)}
                                                         placeholder="Enter coupon code"
-                                                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                         disabled={!!appliedCoupon}
                                                     />
                                                     {appliedCoupon ? (
@@ -582,7 +536,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                         <button
                                                             onClick={handleApplyCoupon}
                                                             disabled={isApplyingCoupon || !couponCode.trim()}
-                                                            className="px-3 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            className="px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
                                                             {isApplyingCoupon ? 'Applying...' : 'Apply'}
                                                         </button>
@@ -617,7 +571,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                             id="name"
                                                             value={deliveryInfo.name}
                                                             onChange={(e) => setDeliveryInfo(prev => ({ ...prev, name: e.target.value }))}
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                             required
                                                         />
                                                     </div>
@@ -630,7 +584,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                             id="phone"
                                                             value={deliveryInfo.phone}
                                                             onChange={(e) => setDeliveryInfo(prev => ({ ...prev, phone: e.target.value }))}
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                             required
                                                         />
                                                     </div>
@@ -643,7 +597,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                             value={deliveryInfo.address}
                                                             onChange={(e) => setDeliveryInfo(prev => ({ ...prev, address: e.target.value }))}
                                                             rows={3}
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                             required
                                                         />
                                                     </div>
@@ -656,7 +610,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                             value={deliveryInfo.notes}
                                                             onChange={(e) => setDeliveryInfo(prev => ({ ...prev, notes: e.target.value }))}
                                                             rows={2}
-                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
                                                             placeholder="Any special instructions for delivery?"
                                                         />
                                                     </div>
@@ -674,25 +628,11 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                             value="cod" 
                                                             checked={paymentMethod === 'cod'}
                                                             onChange={(e) => setPaymentMethod(e.target.value as 'cod')}
-                                                            className="h-4 w-4 text-indigo-600" 
+                                                            className="h-4 w-4 text-green-600" 
                                                         />
                                                         <div>
                                                             <span className="block font-medium text-gray-900">Cash on Delivery</span>
                                                             <span className="block text-sm text-gray-500">Pay when you receive your order</span>
-                                                        </div>
-                                                    </label>
-                                                    <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
-                                                        <input 
-                                                            type="radio" 
-                                                            name="payment" 
-                                                            value="maya" 
-                                                            checked={paymentMethod === 'maya'}
-                                                            onChange={(e) => setPaymentMethod(e.target.value as 'maya')}
-                                                            className="h-4 w-4 text-indigo-600" 
-                                                        />
-                                                        <div>
-                                                            <span className="block font-medium text-gray-900">Pay with Maya</span>
-                                                            <span className="block text-sm text-gray-500">Secure online payment</span>
                                                         </div>
                                                     </label>
                                                 </div>
@@ -700,7 +640,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                             <button 
                                                 onClick={handlePlaceOrder}
                                                 disabled={isProcessingPayment}
-                                                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {isProcessingPayment ? 'Processing...' : 'Place Order'}
                                             </button>
@@ -725,10 +665,10 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                             type="text"
                                             name="tracking-number"
                                             id="tracking-number"
-                                            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-md border-gray-300 sm:text-sm"
+                                            className="focus:ring-green-500 focus:border-green-500 block w-full rounded-md border-gray-300 sm:text-sm"
                                             placeholder="Enter your order number"
                                         />
-                                        <button className="ml-2 sm:ml-3 inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                                        <button className="ml-2 sm:ml-3 inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
                                             Track
                                         </button>
                                     </div>
@@ -745,7 +685,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                             onClick={() => setActiveTab('order')}
                             className={`flex flex-col items-center justify-center flex-1 h-full ${
                                 activeTab === 'order'
-                                    ? 'text-indigo-600'
+                                    ? 'text-green-600'
                                     : 'text-gray-500'
                             }`}
                         >
@@ -758,7 +698,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                             onClick={() => setActiveTab('tracking')}
                             className={`flex flex-col items-center justify-center flex-1 h-full ${
                                 activeTab === 'tracking'
-                                    ? 'text-indigo-600'
+                                    ? 'text-green-600'
                                     : 'text-gray-500'
                             }`}
                         >
@@ -771,7 +711,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                             onClick={() => setActiveTab('cart')}
                             className={`flex flex-col items-center justify-center flex-1 h-full ${
                                 activeTab === 'cart'
-                                    ? 'text-indigo-600'
+                                    ? 'text-green-600'
                                     : 'text-gray-500'
                             }`}
                         >
