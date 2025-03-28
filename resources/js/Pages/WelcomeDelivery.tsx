@@ -182,19 +182,43 @@ export default function WelcomeDelivery({ auth }: PageProps) {
             return;
         }
 
-        // Handle COD order
+        // Transform cart items to match required format
+        const transformedItems = cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit_price: parseFloat(item.price),
+            delivery_fee: parseFloat(item.delivery_fee),
+            subtotal: parseFloat(item.price) * item.quantity,
+            restaurant_name: selectedRestaurant?.restaurant_name || '',
+            restaurant_address: selectedRestaurant?.address || '',
+            restaurant_phone: selectedRestaurant?.contact_number || ''
+        }));
+
+        // Calculate totals
+        const subtotal = calculateSubtotal();
+        const deliveryFee = calculateDeliveryFee();
+        const discount = calculateDiscount();
+        const tax = subtotal * 0.12; // Assuming 12% tax rate
+        const grandTotal = subtotal + deliveryFee + tax - discount;
+
         try {
-            const response = await axios.post('https://api.sakto.app/api/orders', {
-                items: cartItems.map(item => ({
-                    id: item.id,
-                    quantity: item.quantity
-                })),
-                total_amount: calculateTotal(),
-                payment_method: 'cod',
-                delivery_info: deliveryInfo
+            const response = await axios.post(`${window.config.api.url}/food-delivery-orders`, {
+                app_name: "Sakto Delivery",
+                customer_name: deliveryInfo.name,
+                customer_phone: deliveryInfo.phone,
+                customer_address: deliveryInfo.address,
+                items: transformedItems,
+                total_amount: subtotal,
+                delivery_fee: deliveryFee,
+                discount: discount,
+                tax: tax,
+                grand_total: grandTotal,
+                special_instructions: deliveryInfo.notes,
+                order_payment_method: "cash",
+                order_payment_status: "pending"
             }, {
                 headers: {
-                    'Authorization': 'Bearer 2|vKaWb5AMANFxhYK2GdUNWFSscwBJsV1G2g3hnGHI357350da'
+                    'Authorization': `Bearer ${window.config.api.token}`
                 }
             });
 
@@ -514,6 +538,10 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                                 <span className="text-gray-600">Delivery Fee:</span>
                                                 <span className="text-gray-900">₱{calculateDeliveryFee().toFixed(2)}</span>
                                             </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-gray-600">Tax (12%):</span>
+                                                <span className="text-gray-900">₱{(calculateSubtotal() * 0.12).toFixed(2)}</span>
+                                            </div>
                                             {/* Coupon Section */}
                                             <div className="mt-4 pt-4 border-t">
                                                 <div className="flex items-center space-x-2">
@@ -554,7 +582,7 @@ export default function WelcomeDelivery({ auth }: PageProps) {
                                             </div>
                                             <div className="flex justify-between items-center pt-2 border-t">
                                                 <span className="text-lg font-semibold text-gray-900">Total:</span>
-                                                <span className="text-lg font-semibold text-gray-900">₱{calculateFinalTotal().toFixed(2)}</span>
+                                                <span className="text-lg font-semibold text-gray-900">₱{(calculateSubtotal() + calculateDeliveryFee() + (calculateSubtotal() * 0.12) - calculateDiscount()).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div className="space-y-4">
