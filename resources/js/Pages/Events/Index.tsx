@@ -7,7 +7,7 @@ import { Input } from '@/Components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
-import { Calendar, Plus, Search, Trash2, Users } from 'lucide-react';
+import { Calendar, Plus, Search, Trash2, Users, UserPlus, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -203,6 +203,30 @@ export default function Index({ auth, events }: Props) {
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center space-x-2">
+                                                            <Link
+                                                                href={`/events/${event.id}/public-register`}
+                                                                className="inline-flex items-center"
+                                                            >
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                >
+                                                                    <UserPlus className="w-4 h-4 mr-1" />
+                                                                    Self Register
+                                                                </Button>
+                                                            </Link>
+                                                            <Link
+                                                                href={`/events/${event.id}/participants`}
+                                                                className="inline-flex items-center"
+                                                            >
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                >
+                                                                    <Users className="w-4 h-4 mr-1" />
+                                                                    Participants
+                                                                </Button>
+                                                            </Link>
                                                             <Link
                                                                 href={`/events/${event.id}/edit`}
                                                                 className="inline-flex items-center"

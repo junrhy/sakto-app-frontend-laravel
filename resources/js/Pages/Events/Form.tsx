@@ -56,11 +56,48 @@ export default function Form({ auth, event }: Props) {
     });
 
     const [imagePreview, setImagePreview] = useState<string | null>(event?.image || null);
+    
+    // Clear errors when the form is loaded with existing data
+    useEffect(() => {
+        if (event) {
+            // Reset the form with the event data
+            setData({
+                title: event.title,
+                description: event.description,
+                start_date: event.start_date ? (event.start_date.includes('T') ? event.start_date : `${event.start_date}T00:00`) : '',
+                end_date: event.end_date ? (event.end_date.includes('T') ? event.end_date : `${event.end_date}T00:00`) : '',
+                location: event.location,
+                max_participants: event.max_participants,
+                registration_deadline: event.registration_deadline ? (event.registration_deadline.includes('T') ? event.registration_deadline : `${event.registration_deadline}T00:00`) : '',
+                is_public: event.is_public,
+                category: event.category,
+                image: event.image,
+            });
+            setImagePreview(event.image || null);
+        }
+    }, [event]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Create FormData object to handle file uploads
+        const formData = new FormData();
+        
+        // Append all form fields to FormData
+        Object.entries(data).forEach(([key, value]) => {
+            if (key === 'image' && value instanceof File) {
+                formData.append('image', value);
+            } else if (value !== null && value !== undefined) {
+                formData.append(key, value.toString());
+            }
+        });
+
         if (event?.id) {
-            put(`/${event.id}`, {
+            // Use PUT method directly for updates
+            put(`/events/${event.id}`, {
+                ...Object.fromEntries(formData),
+                preserveScroll: true,
+                preserveState: true,
                 onSuccess: () => {
                     toast.success('Event updated successfully');
                     window.location.href = '/events';
@@ -70,7 +107,11 @@ export default function Form({ auth, event }: Props) {
                 },
             });
         } else {
+            // Use POST method for new events
             post('/events', {
+                ...Object.fromEntries(formData),
+                preserveScroll: true,
+                preserveState: true,
                 onSuccess: () => {
                     toast.success('Event created successfully');
                     window.location.href = '/events';

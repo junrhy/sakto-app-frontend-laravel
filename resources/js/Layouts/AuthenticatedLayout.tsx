@@ -29,71 +29,12 @@ const getHeaderColorClass = (url: string): string => {
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
     // Check the entire URL path for specific routes
-    if (url.includes('/retail') || url.includes('/pos-retail') || url.includes('/inventory') || appParam === 'retail') {
-        return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-950 dark:via-blue-900 dark:to-blue-800';
-    }
-    if (url.includes('/pos-restaurant') || url.includes('/fnb') || appParam === 'fnb') {
-        return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-950 dark:via-orange-900 dark:to-orange-800';
-    }
-    if (url.includes('/clinic') || appParam === 'clinic') {
-        return 'from-emerald-600 via-emerald-500 to-emerald-400 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-800';
-    }
-    if (url.includes('/loan') || appParam === 'lending') {
-        return 'from-purple-600 via-purple-500 to-purple-400 dark:from-purple-950 dark:via-purple-900 dark:to-purple-800';
-    }
-    if (url.includes('/rental-item') || appParam === 'rental-item') {
-        return 'from-indigo-600 via-indigo-500 to-indigo-400 dark:from-indigo-950 dark:via-indigo-900 dark:to-indigo-800';
-    }
-    if (url.includes('/rental-property') || url.includes('/real-estate') || appParam === 'real-estate') {
-        return 'from-red-600 via-red-500 to-red-400 dark:from-red-950 dark:via-red-900 dark:to-red-800';
-    }
-    if (url.includes('/transportation') || appParam === 'transportation') {
-        return 'from-amber-600 via-amber-500 to-amber-400 dark:from-amber-950 dark:via-amber-900 dark:to-amber-800';
-    }
-    if (url.includes('/warehousing') || appParam === 'warehousing') {
-        return 'from-teal-600 via-teal-500 to-teal-400 dark:from-teal-950 dark:via-teal-900 dark:to-teal-800';
-    }
-    if (url.includes('/payroll') || appParam === 'payroll') {
-        return 'from-cyan-600 via-cyan-500 to-cyan-400 dark:from-cyan-950 dark:via-cyan-900 dark:to-cyan-800';
-    }
-    if (url.includes('/travel') || url.includes('/flight-search') || appParam === 'travel') {
-        return 'from-pink-600 via-pink-500 to-pink-400 dark:from-pink-950 dark:via-pink-900 dark:to-pink-800';
-    }
-    if (url.includes('/sms') || url.includes('/sms-twilio') || url.includes('/sms-semaphore') || appParam === 'sms') {
-        return 'from-violet-600 via-violet-500 to-violet-400 dark:from-violet-950 dark:via-violet-900 dark:to-violet-800';
-    }
-    if (url.includes('/email') || appParam === 'email') {
-        return 'from-emerald-600 via-emerald-500 to-emerald-400 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-800';
-    }
-    if (url.includes('/contacts') || appParam === 'contacts') {
-        return 'from-slate-600 via-slate-500 to-slate-400 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800';
-    }
-    if (url.includes('/credits') || appParam === 'credits') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
-    }
-    if (url.includes('/family-tree') || appParam === 'family-tree') {
-        return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
-    }
-    if (url.includes('/subscriptions') || appParam === 'subscriptions') {
-        return 'from-indigo-700 via-purple-600 to-indigo-500 dark:from-indigo-950 dark:via-purple-900 dark:to-indigo-800';
-    }
-    if (url.includes('/events') || appParam === 'events') {
-        return 'from-amber-600 via-orange-500 to-amber-400 dark:from-amber-950 dark:via-orange-900 dark:to-amber-800';
-    }
-    if (url.includes('/challenges') || appParam === 'challenges') {
-        return 'from-emerald-600 via-teal-500 to-emerald-400 dark:from-emerald-950 dark:via-teal-900 dark:to-emerald-800';
-    }
-    if (url.includes('/content-creator') || appParam === 'content-creator') {
-        return 'from-pink-600 via-rose-500 to-pink-400 dark:from-pink-950 dark:via-rose-900 dark:to-pink-800';
-    }
-    if (url.includes('/digital-products') || appParam === 'digital-products') {
-        return 'from-blue-600 via-sky-500 to-blue-400 dark:from-blue-950 dark:via-sky-900 dark:to-blue-800';
-    }
-    if (url.includes('/pages') || appParam === 'pages') {
-        return 'from-emerald-600 via-green-500 to-emerald-400 dark:from-emerald-950 dark:via-green-900 dark:to-emerald-800';
-    }
+    // if (url.includes('/retail') || url.includes('/pos-retail') || url.includes('/inventory') || appParam === 'retail') {
+    //     return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-950 dark:via-blue-900 dark:to-blue-800';
+    // }
+ 
     // Default gradient for unmatched routes
-    return 'from-black via-gray-900 to-black dark:from-black dark:via-gray-950 dark:to-black';
+    return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
 };
 
 export default function Authenticated({ children, header, user }: Props) {

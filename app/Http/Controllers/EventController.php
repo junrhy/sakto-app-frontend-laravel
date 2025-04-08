@@ -107,10 +107,10 @@ class EventController extends Controller
             ->post("{$this->apiUrl}/events", $validated);
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to create event'], $response->status());
+            return back()->withErrors(['error' => 'Failed to create event']);
         }
 
-        return $response->json();
+        return Inertia::location('/events');
     }
 
     public function edit($id)
@@ -154,6 +154,9 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
+        // Add client_identifier to the validated data
+        $validated['client_identifier'] = auth()->user()->identifier;
+
         if ($request->hasFile('image')) {
             // Get the old event data to delete previous image if it exists
             $getResponse = Http::withToken($this->apiToken)
@@ -161,8 +164,11 @@ class EventController extends Controller
             
             if ($getResponse->successful()) {
                 $event = $getResponse->json();
-                if (!empty($event['image'])) {
-                    $path = str_replace(Storage::disk('public')->url(''), '', $event['image']);
+                // Extract data from response if it's wrapped in a data property
+                $eventData = isset($event['data']) ? $event['data'] : $event;
+                
+                if (!empty($eventData['image'])) {
+                    $path = str_replace(Storage::disk('public')->url(''), '', $eventData['image']);
                     if (Storage::disk('public')->exists($path)) {
                         Storage::disk('public')->delete($path);
                     }
@@ -177,10 +183,14 @@ class EventController extends Controller
             ->put("{$this->apiUrl}/events/{$id}", $validated);
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to update event'], $response->status());
+            Log::error('Failed to update event', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return back()->withErrors(['error' => 'Failed to update event']);
         }
 
-        return $response->json();
+        return Inertia::location('/events');
     }
 
     public function destroy($id)
@@ -205,10 +215,10 @@ class EventController extends Controller
             ->delete("{$this->apiUrl}/events/{$id}");
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to delete event'], $response->status());
+            return back()->withErrors(['error' => 'Failed to delete event']);
         }
 
-        return response()->json(['message' => 'Event deleted successfully']);
+        return Inertia::location('/events');
     }
 
     public function bulkDestroy(Request $request)
@@ -222,10 +232,10 @@ class EventController extends Controller
             ->post("{$this->apiUrl}/events/bulk-delete", $validated);
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to delete events'], $response->status());
+            return back()->withErrors(['error' => 'Failed to delete events']);
         }
 
-        return response()->json(['message' => 'Events deleted successfully']);
+        return Inertia::location('/events');
     }
 
     public function registerParticipant(Request $request, $id)
@@ -241,22 +251,22 @@ class EventController extends Controller
             ->post("{$this->apiUrl}/events/{$id}/participants", $validated);
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to register participant'], $response->status());
+            return back()->withErrors(['error' => 'Failed to register participant']);
         }
 
-        return $response->json();
+        return Inertia::location("/events/{$id}/participants");
     }
 
-    public function unregisterParticipant($id)
+    public function unregisterParticipant($eventId, $participantId)
     {
         $response = Http::withToken($this->apiToken)
-            ->delete("{$this->apiUrl}/events/participants/{$id}");
+            ->delete("{$this->apiUrl}/events/{$eventId}/participants/{$participantId}");
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to unregister participant'], $response->status());
+            return back()->withErrors(['error' => 'Failed to unregister participant']);
         }
 
-        return response()->json(['message' => 'Participant unregistered successfully']);
+        return Inertia::location("/events/{$eventId}/participants");
     }
 
     public function getParticipants($id)
@@ -265,22 +275,44 @@ class EventController extends Controller
             ->get("{$this->apiUrl}/events/{$id}/participants");
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to fetch participants'], $response->status());
+            return back()->withErrors(['error' => 'Failed to fetch participants']);
         }
 
-        return $response->json();
+        $eventResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/events/{$id}");
+
+        if (!$eventResponse->successful()) {
+            return back()->withErrors(['error' => 'Failed to fetch event']);
+        }
+
+        $participants = $response->json();
+        // If the response is wrapped in a data property, extract it
+        if (isset($participants['data'])) {
+            $participants = $participants['data'];
+        }
+
+        $event = $eventResponse->json();
+        // If the event response is wrapped in a data property, extract it
+        if (isset($event['data'])) {
+            $event = $event['data'];
+        }
+
+        return Inertia::render('Events/Participants', [
+            'event' => $event,
+            'participants' => $participants
+        ]);
     }
 
-    public function checkInParticipant(Request $request, $id)
+    public function checkInParticipant($eventId, $participantId)
     {
         $response = Http::withToken($this->apiToken)
-            ->post("{$this->apiUrl}/events/participants/{$id}/check-in");
+            ->post("{$this->apiUrl}/events/{$eventId}/participants/{$participantId}/check-in");
 
         if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to check in participant'], $response->status());
+            return back()->withErrors(['error' => 'Failed to check in participant']);
         }
 
-        return $response->json();
+        return Inertia::location("/events/{$eventId}/participants");
     }
 
     public function getCalendarEvents()
@@ -381,5 +413,131 @@ class EventController extends Controller
     public function create()
     {
         return Inertia::render('Events/Form');
+    }
+
+    /**
+     * Show the public event registration form.
+     */
+    public function publicRegister($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events/{$id}");
+            
+            if (!$response->successful()) {
+                return redirect()->route('welcome')->withErrors(['error' => 'Event not found']);
+            }
+
+            $event = $response->json();
+            
+            // Fetch participants count
+            $participantsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events/{$id}/participants");
+                
+            if ($participantsResponse->successful()) {
+                $participants = $participantsResponse->json();
+                // If the response is wrapped in a data property, extract it
+                if (isset($participants['data'])) {
+                    $participants = $participants['data'];
+                }
+                
+                // Add participants count to the event data
+                if (isset($event['data'])) {
+                    $event['data']['current_participants'] = count($participants);
+                } else {
+                    $event['current_participants'] = count($participants);
+                }
+            }
+
+            return Inertia::render('Events/PublicRegister', [
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in public event registration', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('welcome')->withErrors(['error' => 'An error occurred while loading the event']);
+        }
+    }
+
+    /**
+     * Handle public event registration.
+     */
+    public function publicRegisterParticipant(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string'
+        ]);
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/events/{$id}/participants", $validated);
+
+            if (!$response->successful()) {
+                return back()->withErrors(['error' => 'Failed to register for the event']);
+            }
+
+            return redirect()->route('events.public-register', $id)
+                ->with('success', 'You have successfully registered for this event!');
+        } catch (\Exception $e) {
+            Log::error('Exception in public event registration', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while registering for the event']);
+        }
+    }
+
+    /**
+     * Show the public event details page.
+     */
+    public function publicShow($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events/{$id}");
+            
+            if (!$response->successful()) {
+                return redirect()->route('welcome')->withErrors(['error' => 'Event not found']);
+            }
+
+            $event = $response->json();
+            
+            // Fetch participants count
+            $participantsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events/{$id}/participants");
+                
+            if ($participantsResponse->successful()) {
+                $participants = $participantsResponse->json();
+                // If the response is wrapped in a data property, extract it
+                if (isset($participants['data'])) {
+                    $participants = $participants['data'];
+                }
+                
+                // Add participants count to the event data
+                if (isset($event['data'])) {
+                    $event['data']['current_participants'] = count($participants);
+                } else {
+                    $event['current_participants'] = count($participants);
+                }
+            }
+
+            return Inertia::render('Events/PublicShow', [
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in public event show', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('welcome')->withErrors(['error' => 'An error occurred while loading the event']);
+        }
     }
 }

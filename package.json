@@ -73,7 +73,7 @@
         "cmdk": "^1.0.4",
         "d3": "^7.9.0",
         "date-fns": "^3.6.0",
-        "framer-motion": "^12.4.7",
+        "framer-motion": "^12.6.3",
         "html2pdf.js": "^0.10.2",
         "lucide-react": "^0.453.0",
         "npm": "^10.9.0",

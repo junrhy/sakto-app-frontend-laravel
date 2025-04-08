@@ -179,6 +179,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/settings', [FamilyTreeController::class, 'getPublicSettings'])->name('family-tree.public-settings');
     });
 
+    // Public Event Registration Routes
+    Route::get('/events/{id}/public-register', [EventController::class, 'publicRegister'])->name('events.public-register');
+    Route::post('/events/{id}/public-register', [EventController::class, 'publicRegisterParticipant'])->name('events.public-register.store');
+    Route::get('/events/{id}/public', [EventController::class, 'publicShow'])->name('events.public-show');
+
     // Maya Webhook Route - exclude from CSRF protection
     Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
         ->name('webhooks.maya')
@@ -535,7 +540,10 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
     // Community Events (subscription required)
     Route::prefix('events')->group(function () {
         // Main resource routes
-        Route::resource('', EventController::class)->except(['create', 'edit', 'show']);
+        Route::get('/', [EventController::class, 'index'])->name('events.index');
+        Route::post('/', [EventController::class, 'store'])->name('events.store');
+        Route::put('/{id}', [EventController::class, 'update'])->name('events.update');
+        Route::delete('/{id}', [EventController::class, 'destroy'])->name('events.destroy');
         
         // Create and edit routes
         Route::get('/create', [EventController::class, 'create'])->name('events.create');
