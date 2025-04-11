@@ -31,23 +31,22 @@ class ChallengeController extends Controller
                 'client_identifier' => $clientIdentifier
             ]);
 
-            // $response = Http::withToken($this->apiToken)    
-            //     ->get("{$this->apiUrl}/challenges", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/challenges", [
+                    'client_identifier' => $clientIdentifier
+                ]);
             
-            // if (!$response->successful()) {
-            //     Log::error('API request failed', [
-            //         'status' => $response->status(),
-            //         'body' => $response->body(),
-            //         'url' => "{$this->apiUrl}/challenges"
-            //     ]);
+            if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => "{$this->apiUrl}/challenges"
+                ]);
                 
-            //     return back()->withErrors(['error' => 'Failed to fetch challenges']);
-            // }
+                return back()->withErrors(['error' => 'Failed to fetch challenges']);
+            }
 
-            // $challenges = $response->json();
-            $challenges = [];
+            $challenges = $response->json();
 
             return Inertia::render('Challenges/Index', [
                 'auth' => [
@@ -81,25 +80,21 @@ class ChallengeController extends Controller
         try {
             $clientIdentifier = auth()->user()->identifier;
             
-            // $response = Http::withToken($this->apiToken)
-            //     ->get("{$this->apiUrl}/challenges", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges", [
+                    'client_identifier' => $clientIdentifier
+                ]);
 
-            // if (!$response->successful()) {
-            //     Log::error('Failed to fetch challenges list', [
-            //         'status' => $response->status(),
-            //         'body' => $response->body()
-            //     ]);
-            //     return response()->json(['error' => 'Failed to fetch challenges'], $response->status());
-            // }
+            if (!$response->successful()) {
+                Log::error('Failed to fetch challenges list', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return response()->json(['error' => 'Failed to fetch challenges'], $response->status());
+            }
 
-            // return response()->json([
-            //     'challenges' => $response->json()
-            // ]);
-            $challenges = [];
             return response()->json([
-                'challenges' => $challenges
+                'challenges' => $response->json()
             ]);
         } catch (\Exception $e) {
             Log::error('Exception in getList', [
@@ -123,8 +118,6 @@ class ChallengeController extends Controller
             'goal_type' => 'required|in:steps,calories,distance,time,weight,other',
             'goal_value' => 'required|numeric',
             'goal_unit' => 'required|string',
-            'participants' => 'required|array',
-            'participants.*' => 'exists:users,id',
             'visibility' => 'required|in:public,private,friends,family,coworkers',
             'rewards' => 'nullable|array',
             'rewards.*.type' => 'required|in:badge,points,achievement',
@@ -132,6 +125,7 @@ class ChallengeController extends Controller
         ]);
 
         $clientIdentifier = auth()->user()->identifier;
+        $validated['status'] = 'active';
         $validated['client_identifier'] = $clientIdentifier;
 
         $response = Http::withToken($this->apiToken)
@@ -142,13 +136,10 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to create challenge'], $response->status());
+            return back()->withErrors(['error' => 'Failed to create challenge']);
         }
 
-        return response()->json([
-            'message' => 'Challenge created successfully',
-            'challenge' => $response->json()
-        ]);
+        return redirect()->route('challenges')->with('success', 'Challenge created successfully');
     }
 
     /**
@@ -164,8 +155,6 @@ class ChallengeController extends Controller
             'goal_type' => 'sometimes|required|in:steps,calories,distance,time,weight,other',
             'goal_value' => 'sometimes|required|numeric',
             'goal_unit' => 'sometimes|required|string',
-            'participants' => 'sometimes|required|array',
-            'participants.*' => 'exists:users,id',
             'visibility' => 'sometimes|required|in:public,private,friends,family,coworkers',
             'rewards' => 'nullable|array',
             'rewards.*.type' => 'required|in:badge,points,achievement',
@@ -180,13 +169,10 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to update challenge'], $response->status());
+            return back()->withErrors(['error' => 'Failed to update challenge']);
         }
 
-        return response()->json([
-            'message' => 'Challenge updated successfully',
-            'challenge' => $response->json()
-        ]);
+        return redirect()->route('challenges')->with('success', 'Challenge updated successfully');
     }
 
     /**
@@ -202,12 +188,10 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to delete challenge'], $response->status());
+            return back()->withErrors(['error' => 'Failed to delete challenge']);
         }
 
-        return response()->json([
-            'message' => 'Challenge deleted successfully'
-        ]);
+        return redirect()->route('challenges')->with('success', 'Challenge deleted successfully');
     }
 
     /**
@@ -221,19 +205,17 @@ class ChallengeController extends Controller
         ]);
 
         $response = Http::withToken($this->apiToken)
-            ->delete("{$this->apiUrl}/challenges/bulk", $validated);
+            ->delete("{$this->apiUrl}/challenges/bulk-delete", $validated);
 
         if (!$response->successful()) {
             Log::error('Failed to bulk delete challenges', [
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to delete challenges'], $response->status());
+            return back()->withErrors(['error' => 'Failed to delete challenges']);
         }
 
-        return response()->json([
-            'message' => 'Challenges deleted successfully'
-        ]);
+        return redirect()->route('challenges')->with('success', 'Challenges deleted successfully');
     }
 
     /**
@@ -241,18 +223,50 @@ class ChallengeController extends Controller
      */
     public function getParticipants($id)
     {
-        $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/challenges/{$id}/participants");
+        try {
+            // Fetch challenge details
+            $challengeResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}");
+                
+            if (!$challengeResponse->successful()) {
+                Log::error('Failed to fetch challenge', [
+                    'status' => $challengeResponse->status(),
+                    'body' => $challengeResponse->body()
+                ]);
+                return back()->withErrors(['error' => 'Failed to fetch challenge']);
+            }
+            
+            $challenge = $challengeResponse->json();
+            
+            // Fetch participants
+            $participantsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}/participants");
 
-        if (!$response->successful()) {
-            Log::error('Failed to fetch participants', [
-                'status' => $response->status(),
-                'body' => $response->body()
+            if (!$participantsResponse->successful()) {
+                Log::error('Failed to fetch participants', [
+                    'status' => $participantsResponse->status(),
+                    'body' => $participantsResponse->body()
+                ]);
+                return back()->withErrors(['error' => 'Failed to fetch participants']);
+            }
+            
+            $participants = $participantsResponse->json();
+            
+            // Filter out users who are already participants
+            $participantIds = collect($participants)->pluck('id')->toArray();
+
+            return Inertia::render('Challenges/Participants', [
+                'challenge' => $challenge,
+                'participants' => $participants
             ]);
-            return response()->json(['error' => 'Failed to fetch participants'], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Exception in getParticipants', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while fetching participants']);
         }
-
-        return response()->json($response->json());
     }
 
     /**
@@ -273,13 +287,10 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to update progress'], $response->status());
+            return back()->withErrors(['error' => 'Failed to update progress']);
         }
 
-        return response()->json([
-            'message' => 'Progress updated successfully',
-            'progress' => $response->json()
-        ]);
+        return back()->with('success', 'Progress updated successfully');
     }
 
     /**
@@ -299,13 +310,10 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to update participation status'], $response->status());
+            return back()->withErrors(['error' => 'Failed to update participation status']);
         }
 
-        return response()->json([
-            'message' => 'Participation status updated successfully',
-            'participant' => $response->json()
-        ]);
+        return back()->with('success', 'Participation status updated successfully');
     }
 
     /**
@@ -321,10 +329,10 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to fetch leaderboard'], $response->status());
+            return back()->withErrors(['error' => 'Failed to fetch leaderboard']);
         }
 
-        return response()->json([
+        return Inertia::render('Challenges/Leaderboard', [
             'leaderboard' => $response->json()
         ]);
     }
@@ -342,11 +350,64 @@ class ChallengeController extends Controller
                 'status' => $response->status(),
                 'body' => $response->body()
             ]);
-            return response()->json(['error' => 'Failed to fetch statistics'], $response->status());
+            return back()->withErrors(['error' => 'Failed to fetch statistics']);
         }
 
-        return response()->json([
+        return Inertia::render('Challenges/Statistics', [
             'statistics' => $response->json()
         ]);
+    }
+
+    /**
+     * Add a participant to a challenge
+     */
+    public function addParticipant(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'zip_code' => 'nullable|string|max:20',
+        ]);
+
+        // Add client identifier
+        $validated['client_identifier'] = auth()->user()->identifier;
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/challenges/{$id}/participants", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to add participant', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return back()->withErrors(['error' => 'Failed to add participant']);
+        }
+
+        return back()->with('success', 'Participant added successfully');
+    }
+
+    /**
+     * Remove a participant from a challenge
+     */
+    public function removeParticipant($id, $participantId)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->delete("{$this->apiUrl}/challenges/{$id}/participants/{$participantId}");
+
+        if (!$response->successful()) {
+            Log::error('Failed to remove participant', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return back()->withErrors(['error' => 'Failed to remove participant']);
+        }
+
+        return back()->with('success', 'Participant removed successfully');
     }
 }

@@ -13,7 +13,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -54,6 +54,7 @@ interface Challenge {
     participants: number[];
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
+    status: 'active' | 'completed' | 'archived';
 }
 
 interface Props {
@@ -283,7 +284,7 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                                     {challenge.visibility}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{challenge.participants.length}</TableCell>
+                                            <TableCell>{challenge.participants?.length || 0}</TableCell>
                                             <TableCell>{format(new Date(challenge.start_date), 'PPP')}</TableCell>
                                             <TableCell>{format(new Date(challenge.end_date), 'PPP')}</TableCell>
                                             <TableCell className="text-right">
@@ -298,9 +299,15 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem asChild>
-                                                            <Link href={route('challenges.show', challenge.id)}>
+                                                            <Link href={route('challenges.leaderboard', challenge.id)}>
                                                                 <Eye className="w-4 h-4 mr-2" />
                                                                 View
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('challenges.participants', challenge.id)}>
+                                                                <Users className="w-4 h-4 mr-2" />
+                                                                Participants
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>

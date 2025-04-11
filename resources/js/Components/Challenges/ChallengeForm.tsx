@@ -23,9 +23,9 @@ interface ChallengeFormData {
     goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'other';
     goal_value: number;
     goal_unit: string;
-    participants: number[];
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
+    status: 'active' | 'completed' | 'archived';
 }
 
 interface Challenge {
@@ -37,9 +37,9 @@ interface Challenge {
     goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'other';
     goal_value: number;
     goal_unit: string;
-    participants: number[];
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
+    status: 'active' | 'completed' | 'archived';
 }
 
 interface Props {
@@ -57,12 +57,11 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
         goal_type: 'steps',
         goal_value: 0,
         goal_unit: '',
-        participants: [],
-        visibility: 'private',
-        rewards: []
+        visibility: 'public',
+        rewards: [],
+        status: 'active'
     });
 
-    const [users, setUsers] = useState<User[]>([]);
     const [newReward, setNewReward] = useState<Reward>({ type: 'badge', value: '' });
 
     useEffect(() => {
@@ -70,28 +69,17 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
             setFormData({
                 title: challenge.title,
                 description: challenge.description,
-                start_date: challenge.start_date.split('T')[0],
-                end_date: challenge.end_date.split('T')[0],
+                start_date: challenge.start_date,
+                end_date: challenge.end_date,
                 goal_type: challenge.goal_type,
                 goal_value: challenge.goal_value,
                 goal_unit: challenge.goal_unit,
-                participants: challenge.participants || [],
                 visibility: challenge.visibility,
-                rewards: challenge.rewards || []
+                rewards: challenge.rewards || [],
+                status: challenge.status
             });
         }
-        // Fetch users for participant selection
-        fetchUsers();
     }, [challenge]);
-
-    const fetchUsers = async (): Promise<void> => {
-        try {
-            const response = await axios.get<User[]>('/api/users');
-            setUsers(response.data);
-        } catch (error) {
-            console.error('Failed to fetch users:', error);
-        }
-    };
 
     const handleSubmit = (e: React.FormEvent): void => {
         e.preventDefault();
@@ -220,26 +208,6 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
                                     required
                                 />
                             </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Participants</label>
-                            <select
-                                multiple
-                                value={formData.participants.map(String)}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    participants: Array.from(e.target.selectedOptions, option => Number(option.value))
-                                })}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                required
-                            >
-                                {users.map(user => (
-                                    <option key={user.id} value={user.id}>
-                                        {user.name}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
 
                         <div>

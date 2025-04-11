@@ -424,6 +424,7 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         Route::get('/', [ChallengeController::class, 'index'])->name('challenges');
         Route::get('/settings', [ChallengeController::class, 'settings'])->name('challenges.settings');
         Route::get('/list', [ChallengeController::class, 'getList'])->name('challenges.list');
+        Route::get('/participants-list', [ChallengeController::class, 'getParticipantsList'])->name('challenges.participants-list');
         Route::post('/', [ChallengeController::class, 'store'])->name('challenges.store');
         Route::put('/{id}', [ChallengeController::class, 'update'])->name('challenges.update');
         Route::delete('/{id}', [ChallengeController::class, 'destroy'])->name('challenges.destroy');
@@ -431,6 +432,8 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         
         // Social features
         Route::get('/{id}/participants', [ChallengeController::class, 'getParticipants'])->name('challenges.participants');
+        Route::post('/{id}/participants', [ChallengeController::class, 'addParticipant'])->name('challenges.add-participant');
+        Route::delete('/{id}/participants/{participantId}', [ChallengeController::class, 'removeParticipant'])->name('challenges.remove-participant');
         Route::post('/{id}/progress', [ChallengeController::class, 'updateProgress'])->name('challenges.progress');
         Route::patch('/{id}/participation', [ChallengeController::class, 'updateParticipationStatus'])->name('challenges.participation');
         Route::get('/{id}/leaderboard', [ChallengeController::class, 'getLeaderboard'])->name('challenges.leaderboard');
