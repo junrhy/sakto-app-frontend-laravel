@@ -167,7 +167,7 @@ return [
         'categories' => ['Family', 'Genealogy', 'Personal'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Events',
