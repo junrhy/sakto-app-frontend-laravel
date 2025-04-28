@@ -24,7 +24,7 @@ interface InertiaProps {
     };
 }
 
-const appName = 'Sakto Business'; // Default fallback
+const appName = 'Sakto Solutions'; // Default fallback
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
