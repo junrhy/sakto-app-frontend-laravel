@@ -243,4 +243,11 @@ class PagesController extends Controller
             return response()->json(['error' => 'An error occurred while fetching pages'], 500);
         }
     }
+
+    public function getPage($slug)
+    {
+        return Inertia::render('Pages/Static', [
+            'slug' => $slug
+        ]);
+    }
 }

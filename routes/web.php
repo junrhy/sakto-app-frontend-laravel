@@ -188,6 +188,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
         ->name('webhooks.maya')
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+    // Pages
+    Route::get('/link/{slug}', [PagesController::class, 'getPage'])->name('pages.static');
 });
 
 // Admin Auth Routes
