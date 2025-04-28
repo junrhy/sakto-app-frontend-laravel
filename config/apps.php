@@ -11,7 +11,7 @@ return [
         'categories' => ['Business', 'Sales', 'Inventory'],
         'comingSoon' => true,
         'pricingType' => 'free',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'F&B',
@@ -23,7 +23,7 @@ return [
         'categories' => ['Food', 'Business', 'Inventory'],
         'comingSoon' => false,
         'pricingType' => 'free',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Clinic',
@@ -35,7 +35,7 @@ return [
         'categories' => ['Medical', 'Healthcare', 'Appointments'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['business-plan']
+        'includedInPlans' => ['business-plan', 'annual-business']
     ],
     [
         'title' => 'Lending',
@@ -47,7 +47,7 @@ return [
         'categories' => ['Finance', 'Business', 'Payments'],
         'comingSoon' => false,
         'pricingType' => 'free',
-        'includedInPlans' => ['pro-plan', 'business-plan']
+        'includedInPlans' => ['pro-plan', 'business-plan', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Rental',
@@ -59,7 +59,7 @@ return [
         'categories' => ['Business', 'Inventory', 'Bookings'],
         'comingSoon' => false,
         'pricingType' => 'free',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Real Estate',
@@ -71,7 +71,7 @@ return [
         'categories' => ['Real Estate', 'Business', 'Bookings'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['business-plan']
+        'includedInPlans' => ['business-plan', 'annual-business']
     ],
     [
         'title' => 'Transportation',
@@ -83,7 +83,7 @@ return [
         'categories' => ['Transportation', 'Business', 'Logistics'],
         'comingSoon' => true,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['business-plan']
+        'includedInPlans' => ['business-plan', 'annual-business']
     ],
     [
         'title' => 'Warehousing',
@@ -95,7 +95,7 @@ return [
         'categories' => ['Logistics', 'Inventory', 'Business'],
         'comingSoon' => true,
         'pricingType' => 'one-time',
-        'includedInPlans' => ['business-plan']
+        'includedInPlans' => ['business-plan', 'annual-business']
     ],
     [
         'title' => 'Payroll',
@@ -107,7 +107,7 @@ return [
         'categories' => ['HR', 'Finance', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'free',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Travel',
@@ -119,7 +119,7 @@ return [
         'categories' => ['Travel', 'Bookings', 'Business'],
         'comingSoon' => true,
         'pricingType' => 'free',
-        'includedInPlans' => ['business-plan']
+        'includedInPlans' => ['business-plan', 'annual-business']
     ],
     [
         'title' => 'SMS',
@@ -131,7 +131,7 @@ return [
         'categories' => ['Communication', 'Marketing', 'Business'],
         'comingSoon' => true,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['pro-plan', 'business-plan']
+        'includedInPlans' => ['pro-plan', 'business-plan', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Email',
@@ -143,7 +143,7 @@ return [
         'categories' => ['Communication', 'Marketing', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['pro-plan', 'business-plan']
+        'includedInPlans' => ['pro-plan', 'business-plan', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Contacts',
@@ -155,7 +155,7 @@ return [
         'categories' => ['Business', 'Communication', 'CRM'],
         'comingSoon' => false,
         'pricingType' => 'free',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Family Tree',
@@ -179,7 +179,7 @@ return [
         'categories' => ['Events', 'Community', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Challenges',
@@ -191,7 +191,7 @@ return [
         'categories' => ['Challenges', 'Community', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Content Creator',
@@ -203,7 +203,7 @@ return [
         'categories' => ['Content', 'Business', 'Marketing'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Digital Products',
@@ -215,7 +215,7 @@ return [
         'categories' => ['Digital', 'Products', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
         'title' => 'Pages',
@@ -227,7 +227,7 @@ return [
         'categories' => ['Digital', 'Products', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ]   
     
 ]; 
