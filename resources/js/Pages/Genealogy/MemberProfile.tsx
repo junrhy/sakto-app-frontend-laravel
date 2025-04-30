@@ -537,7 +537,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                         <div className="space-y-1.5">
                                                             {rel.to_member && (
                                                                 <Link
-                                                                    href={`/family-tree/${clientIdentifier}/member/${rel.to_member.id}`}
+                                                                    href={`/genealogy/${clientIdentifier}/member/${rel.to_member.id}`}
                                                                     className={`text-base font-semibold hover:underline block ${
                                                                         isDarkMode ? 'text-gray-200' : 'text-gray-700'
                                                                     }`}
