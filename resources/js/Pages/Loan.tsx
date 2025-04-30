@@ -35,7 +35,7 @@ interface Loan {
     start_date: string;
     end_date: string;
     status: 'active' | 'paid' | 'defaulted';
-    compounding_frequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
+    frequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
     interest_type: 'fixed' | 'compounding';
     total_interest: string;
     total_balance: string;
@@ -256,7 +256,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
             end_date: '',
             status: 'active',
             interest_type: 'fixed',
-            compounding_frequency: 'monthly',
+            frequency: 'monthly',
             total_interest: '0',
             total_balance: '0',
             paid_amount: '0',
@@ -795,11 +795,9 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                             ({loan.interest_type === 'fixed' ? 'Fixed' : 'Compounding'})
                                                         </span>
                                                     </p>
-                                                    {loan.interest_type === 'compounding' && (
-                                                        <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded-full">
-                                                            {loan.compounding_frequency.charAt(0).toUpperCase() + loan.compounding_frequency.slice(1)}
-                                                        </span>
-                                                    )}
+                                                    <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded-full">
+                                                        {loan.frequency.charAt(0).toUpperCase() + loan.frequency.slice(1)}
+                                                    </span>
                                                 </div>
                                                 {loan.installment_frequency && loan.installment_amount && (
                                                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -1016,7 +1014,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     onValueChange={(value: 'fixed' | 'compounding') => setCurrentLoan({ 
                                         ...currentLoan!, 
                                         interest_type: value,
-                                        compounding_frequency: value === 'fixed' ? 'monthly' : (currentLoan?.compounding_frequency || 'monthly')
+                                        frequency: currentLoan?.frequency || 'monthly'
                                     })}
                                 >
                                     <SelectTrigger className="col-span-3">
@@ -1029,18 +1027,15 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                 </Select>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="compoundingFrequency" className="text-right">
-                                    Compounding Frequency
+                                <Label htmlFor="frequency" className="text-right">
+                                    Frequency <span className="text-red-500">*</span>
                                 </Label>
                                 <Select
-                                    value={currentLoan?.compounding_frequency || ''}
+                                    value={currentLoan?.frequency || 'monthly'}
                                     onValueChange={(value: 'daily' | 'monthly' | 'quarterly' | 'annually') => 
-                                        setCurrentLoan({ ...currentLoan!, compounding_frequency: value })}
-                                    disabled={currentLoan?.interest_type === 'fixed'}
+                                        setCurrentLoan({ ...currentLoan!, frequency: value })}
                                 >
-                                    <SelectTrigger className={`col-span-3 ${
-                                        currentLoan?.interest_type === 'fixed' ? 'opacity-50 cursor-not-allowed' : ''
-                                    }`}>
+                                    <SelectTrigger className="col-span-3">
                                         <SelectValue placeholder="Select frequency" />
                                     </SelectTrigger>
                                     <SelectContent>

@@ -60,7 +60,7 @@ class LoanController extends Controller
             'end_date' => 'required|date|after:start_date',
             'status' => 'required|in:active,paid,defaulted',
             'interest_type' => 'required|in:fixed,compounding',
-            'compounding_frequency' => 'required_if:interest_type,compounding|in:daily,monthly,quarterly,annually',
+            'frequency' => 'required|in:daily,monthly,quarterly,annually',
             'installment_frequency' => 'in:weekly,bi-weekly,monthly,quarterly,annually|nullable',
             'installment_amount' => 'nullable|numeric|min:0'
         ]);
@@ -97,7 +97,7 @@ class LoanController extends Controller
             'end_date' => 'required|date|after:start_date',
             'status' => 'required|in:active,paid,defaulted',
             'interest_type' => 'required|in:fixed,compounding',
-            'compounding_frequency' => 'required_if:interest_type,compounding|in:daily,monthly,quarterly,annually',
+            'frequency' => 'required|in:daily,monthly,quarterly,annually',
             'installment_frequency' => 'in:weekly,bi-weekly,monthly,quarterly,annually|nullable',
             'installment_amount' => 'nullable|numeric|min:0'
         ]);
