@@ -69,7 +69,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
     useEffect(() => {
         const fetchAllMembers = async () => {
             try {
-                const response = await axios.get(`/family-tree/${clientIdentifier}/all-members`);
+                const response = await axios.get(`/genealogy/${clientIdentifier}/all-members`);
                 const members = response.data;
                 
                 // Filter out members that are already shown in Family Connections
@@ -97,7 +97,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
 
         const fetchSettings = async () => {
             try {
-                const response = await axios.get(`/family-tree/${clientIdentifier}/settings`);
+                const response = await axios.get(`/genealogy/${clientIdentifier}/settings`);
                 setOrganizationInfo(response.data.organization_info);
             } catch (error) {
                 console.error('Failed to fetch settings:', error);
@@ -215,7 +215,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
             }
             
             // Send edit request to user's email instead of saving directly
-            await axios.post(`/family-tree/${clientIdentifier}/request-edit`, formData);
+            await axios.post(`/genealogy/${clientIdentifier}/request-edit`, formData);
             
             alert('Edit request has been sent to the account owner for approval.');
             setIsEditModalOpen(false);
@@ -622,7 +622,7 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                         </div>
                                                         <div>
                                                             <Link
-                                                                href={`/family-tree/${clientIdentifier}/member/${familyMember.id}`}
+                                                                href={`/genealogy/${clientIdentifier}/member/${familyMember.id}`}
                                                                 className={`font-medium hover:underline ${
                                                                     isDarkMode ? 'text-gray-200' : 'text-gray-700'
                                                                 }`}

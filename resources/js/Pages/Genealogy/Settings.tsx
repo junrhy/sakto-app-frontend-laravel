@@ -79,7 +79,7 @@ export default function Settings({ settings, auth }: Props) {
         setIsSubmitting(true);
         try {
             console.log('Submitting form data:', JSON.stringify(formData, null, 2));
-            const response = await axios.post('/family-tree/settings', formData);
+            const response = await axios.post('/genealogy/settings', formData);
             console.log('Response data:', response.data);
             toast.success(response.data.message || 'Settings updated successfully');
             

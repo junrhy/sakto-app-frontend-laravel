@@ -61,7 +61,7 @@ export default function EditRequests({ auth }: Props) {
 
     const fetchEditRequests = async () => {
         try {
-            const response = await axios.get('/family-tree/edit-requests/data');
+            const response = await axios.get('/genealogy/edit-requests/data');
             const data = response.data || [];
             setEditRequests(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -75,7 +75,7 @@ export default function EditRequests({ auth }: Props) {
 
     const handleAccept = async (id: number) => {
         try {
-            await axios.post(`/family-tree/edit-requests/${id}/accept`);
+            await axios.post(`/genealogy/edit-requests/${id}/accept`);
             setEditRequests(prev => prev.filter(request => request.id !== id));
         } catch (error) {
             console.error('Error accepting edit request:', error);
@@ -85,7 +85,7 @@ export default function EditRequests({ auth }: Props) {
 
     const handleReject = async (id: number) => {
         try {
-            await axios.post(`/family-tree/edit-requests/${id}/reject`);
+            await axios.post(`/genealogy/edit-requests/${id}/reject`);
             setEditRequests(prev => prev.filter(request => request.id !== id));
         } catch (error) {
             console.error('Error rejecting edit request:', error);
