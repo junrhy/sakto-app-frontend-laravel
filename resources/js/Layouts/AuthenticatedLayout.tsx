@@ -698,6 +698,9 @@ export default function Authenticated({ children, header, user }: Props) {
                                                     <Dropdown.Link href={`/loan?app=${appParam}`}>
                                                         Loans
                                                     </Dropdown.Link>
+                                                    <Dropdown.Link href={`/loan/cbu?app=${appParam}`}>
+                                                        Capital Build Up (CBU)
+                                                    </Dropdown.Link>
                                                     <Dropdown.Link href={`/loan/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>

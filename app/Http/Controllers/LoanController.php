@@ -289,4 +289,307 @@ class LoanController extends Controller
             return redirect()->back()->with('error', 'Failed to load settings');
         }
     }
+
+    // CBU (Capital Build Up) Methods
+    public function getCbuFunds()
+    {
+        try {
+            // Comment out API request code
+            // $clientIdentifier = auth()->user()->identifier;
+            // $response = Http::withToken($this->apiToken)
+            //     ->get("{$this->apiUrl}/lending/cbu?client_identifier={$clientIdentifier}");
+
+            // if (!$response->successful()) {
+            //     throw new \Exception('API request failed: ' . $response->body());
+            // }
+
+            // $cbuFunds = $response->json()['data']['cbu_funds'];
+            // $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+
+            // Dummy data
+            $dummyCbuFunds = [
+                [
+                    'id' => 1,
+                    'member_name' => 'John Doe',
+                    'initial_contribution' => '5000.00',
+                    'current_balance' => '7500.00',
+                    'contribution_frequency' => 'monthly',
+                    'status' => 'active',
+                    'created_at' => '2024-01-01 00:00:00',
+                    'updated_at' => '2024-03-15 00:00:00'
+                ],
+                [
+                    'id' => 2,
+                    'member_name' => 'Jane Smith',
+                    'initial_contribution' => '10000.00',
+                    'current_balance' => '12500.00',
+                    'contribution_frequency' => 'quarterly',
+                    'status' => 'active',
+                    'created_at' => '2024-01-15 00:00:00',
+                    'updated_at' => '2024-03-15 00:00:00'
+                ],
+                [
+                    'id' => 3,
+                    'member_name' => 'Bob Johnson',
+                    'initial_contribution' => '20000.00',
+                    'current_balance' => '22000.00',
+                    'contribution_frequency' => 'annually',
+                    'status' => 'inactive',
+                    'created_at' => '2024-02-01 00:00:00',
+                    'updated_at' => '2024-03-15 00:00:00'
+                ]
+            ];
+
+            $dummyAppCurrency = [
+                'symbol' => '₱',
+                'code' => 'PHP',
+                'name' => 'Philippine Peso'
+            ];
+
+            return Inertia::render('Loan/Cbu', [
+                'cbuFunds' => $dummyCbuFunds,
+                'appCurrency' => $dummyAppCurrency
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching CBU funds: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch CBU funds.'], 500);
+        }
+    }
+
+    public function cbuSettings()
+    {
+        try {
+            $dummySettings = [
+                'data' => [
+                    'min_contribution' => 100,
+                    'max_contribution' => 50000,
+                    'interest_rate' => 2.5,
+                    'withdrawal_fee' => 50,
+                    'allowed_payment_methods' => ['cash', 'bank_transfer', 'check'],
+                    'contribution_frequency' => ['monthly', 'quarterly', 'annually'],
+                    'min_withdrawal_amount' => 1000,
+                    'max_withdrawal_amount' => 50000,
+                    'withdrawal_processing_days' => 3
+                ]
+            ];
+
+            return Inertia::render('Loan/CbuSettings', [
+                'settings' => $dummySettings['data'],
+                'auth' => [
+                    'user' => auth()->user()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load CBU settings');
+        }
+    }
+
+    public function storeCbuFund(Request $request)
+    {
+        $validated = $request->validate([
+            'member_name' => 'required|string',
+            'initial_contribution' => 'required|numeric|min:0',
+            'contribution_frequency' => 'required|in:monthly,quarterly,annually',
+            'payment_method' => 'required|in:cash,bank_transfer,check'
+        ]);
+
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/cbu", [
+                    ...$validated,
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error storing CBU fund: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to store CBU fund.'], 500);
+        }
+    }
+
+    public function updateCbuFund(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'member_name' => 'required|string',
+            'contribution_frequency' => 'required|in:monthly,quarterly,annually',
+            'status' => 'required|in:active,inactive'
+        ]);
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/lending/cbu/{$id}", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error updating CBU fund: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to update CBU fund.'], 500);
+        }
+    }
+
+    public function destroyCbuFund(string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/lending/cbu/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting CBU fund: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to delete CBU fund.'], 500);
+        }
+    }
+
+    public function addCbuContribution(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'payment_date' => 'required|date',
+            'payment_method' => 'required|in:cash,bank_transfer,check',
+            'reference_number' => 'nullable|string'
+        ]);
+
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/cbu/{$id}/contribution", [
+                    ...$validated,
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error adding CBU contribution: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add CBU contribution.'], 500);
+        }
+    }
+
+    public function getCbuContributions(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/contributions?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error getting CBU contributions: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get CBU contributions.'], 500);
+        }
+    }
+
+    public function withdrawCbuFund(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/withdraw?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $cbuFund = $response->json()['data']['cbu_fund'];
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+
+            return Inertia::render('Loan/CbuWithdraw', [
+                'cbuFund' => $cbuFund,
+                'appCurrency' => $jsonAppCurrency
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error getting CBU withdrawal form: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get CBU withdrawal form.'], 500);
+        }
+    }
+
+    public function processCbuWithdrawal(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'withdrawal_date' => 'required|date',
+            'reason' => 'required|string',
+            'payment_method' => 'required|in:cash,bank_transfer,check',
+            'account_details' => 'required_if:payment_method,bank_transfer|string|nullable'
+        ]);
+
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/cbu/{$id}/withdraw", [
+                    ...$validated,
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error processing CBU withdrawal: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to process CBU withdrawal.'], 500);
+        }
+    }
+
+    public function getCbuHistory(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/history?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error getting CBU history: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to get CBU history.'], 500);
+        }
+    }
+
+    public function generateCbuReport()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu/report?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $report = $response->json()['data']['report'];
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+
+            return Inertia::render('Loan/CbuReport', [
+                'report' => $report,
+                'appCurrency' => $jsonAppCurrency
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error generating CBU report: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to generate CBU report.'], 500);
+        }
+    }
 }
