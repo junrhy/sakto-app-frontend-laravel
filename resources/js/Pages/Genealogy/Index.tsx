@@ -414,7 +414,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
     const handleExport = async () => {
         try {
-            const response = await fetch('/family-tree/export', {
+            const response = await fetch('/genealogy/export', {
                 method: 'GET',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
@@ -525,7 +525,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                 throw new Error('CSRF token not found. Please refresh the page and try again.');
             }
 
-            const response = await fetch('/family-tree/import', {
+            const response = await fetch('/genealogy/import', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
