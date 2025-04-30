@@ -10,14 +10,20 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { formatAmount } from '@/lib/utils';
 import axios from 'axios';
+import { FileDown } from 'lucide-react';
+import { Checkbox } from '@/Components/ui/checkbox';
 
 interface CbuFund {
     id: number;
     member_name: string;
     initial_contribution: string;
     current_balance: string;
-    contribution_frequency: 'monthly' | 'quarterly' | 'annually';
+    total_withdrawn: string;
+    interest_earned: string;
     status: 'active' | 'inactive';
+    last_contribution_date: string;
+    date_joined: string;
+    withdrawal_count: number;
     created_at: string;
     updated_at: string;
 }
@@ -36,10 +42,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const [isContributionDialogOpen, setIsContributionDialogOpen] = useState(false);
     const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
     const [selectedFund, setSelectedFund] = useState<CbuFund | null>(null);
+    const [selectedFunds, setSelectedFunds] = useState<number[]>([]);
     const [newFund, setNewFund] = useState({
         member_name: '',
         initial_contribution: '',
-        contribution_frequency: 'monthly',
         payment_method: 'cash'
     });
     const [contribution, setContribution] = useState({
@@ -60,7 +66,6 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         setNewFund({
             member_name: '',
             initial_contribution: '',
-            contribution_frequency: 'monthly',
             payment_method: 'cash'
         });
         setIsAddDialogOpen(true);
@@ -132,6 +137,73 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         }
     };
 
+    const handleToggleStatus = async (fund: CbuFund) => {
+        try {
+            const newStatus = fund.status === 'active' ? 'inactive' : 'active';
+            const response = await axios.put(`/loan/cbu/${fund.id}`, {
+                status: newStatus
+            });
+            if (response.data) {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedFunds.length === cbuFunds.length) {
+            setSelectedFunds([]);
+        } else {
+            setSelectedFunds(cbuFunds.map(fund => fund.id));
+        }
+    };
+
+    const toggleSelect = (id: number) => {
+        if (selectedFunds.includes(id)) {
+            setSelectedFunds(selectedFunds.filter(fundId => fundId !== id));
+        } else {
+            setSelectedFunds([...selectedFunds, id]);
+        }
+    };
+
+    const exportToCSV = () => {
+        const selectedData = cbuFunds.filter(fund => selectedFunds.includes(fund.id));
+        const headers = [
+            'Member Name',
+            'Initial Contribution',
+            'Current Balance',
+            'Total Withdrawn',
+            'Interest Earned',
+            'Status',
+            'Last Contribution Date',
+            'Date Joined',
+            'Withdrawals'
+        ];
+        const csvData = selectedData.map(fund => [
+            fund.member_name,
+            formatAmount(fund.initial_contribution, appCurrency),
+            formatAmount(fund.current_balance, appCurrency),
+            formatAmount(fund.total_withdrawn, appCurrency),
+            formatAmount(fund.interest_earned, appCurrency),
+            fund.status,
+            new Date(fund.last_contribution_date).toLocaleDateString(),
+            new Date(fund.date_joined).toLocaleDateString(),
+            fund.withdrawal_count
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'cbu_funds.csv';
+        link.click();
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -145,63 +217,102 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
             <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                 <Card>
                     <CardHeader>
-                        <CardTitle>CBU Funds</CardTitle>
-                        <CardDescription>Manage your Capital Build Up funds</CardDescription>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <CardTitle>CBU Funds</CardTitle>
+                                <CardDescription>Manage your Capital Build Up funds</CardDescription>
+                            </div>
+                            <div className="flex gap-2">
+                                {selectedFunds.length > 0 && (
+                                    <Button variant="outline" onClick={exportToCSV} className="flex items-center">
+                                        <FileDown className="w-4 h-4 mr-2" />
+                                        Export Selected
+                                    </Button>
+                                )}
+                                <Button onClick={handleAddFund}>Add CBU Fund</Button>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex justify-end mb-4">
-                            <Button onClick={handleAddFund}>Add CBU Fund</Button>
-                        </div>
-
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Member Name</TableHead>
-                                    <TableHead>Initial Contribution</TableHead>
-                                    <TableHead>Current Balance</TableHead>
-                                    <TableHead>Contribution Frequency</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {cbuFunds.map((fund) => (
-                                    <TableRow key={fund.id}>
-                                        <TableCell>{fund.member_name}</TableCell>
-                                        <TableCell>{formatAmount(fund.initial_contribution, appCurrency)}</TableCell>
-                                        <TableCell>{formatAmount(fund.current_balance, appCurrency)}</TableCell>
-                                        <TableCell>{fund.contribution_frequency}</TableCell>
-                                        <TableCell>
-                                            <span className={`px-2 py-1 rounded-full text-xs ${
-                                                fund.status === 'active' 
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                                                    : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                                            }`}>
-                                                {fund.status}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex space-x-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleAddContribution(fund)}
-                                                >
-                                                    Add Contribution
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleWithdraw(fund)}
-                                                >
-                                                    Withdraw
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[50px]">
+                                            <Checkbox
+                                                checked={selectedFunds.length === cbuFunds.length}
+                                                onCheckedChange={toggleSelectAll}
+                                            />
+                                        </TableHead>
+                                        <TableHead>Member Name</TableHead>
+                                        <TableHead>Initial Contribution</TableHead>
+                                        <TableHead>Current Balance</TableHead>
+                                        <TableHead>Total Withdrawn</TableHead>
+                                        <TableHead>Interest Earned</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Last Contribution</TableHead>
+                                        <TableHead>Date Joined</TableHead>
+                                        <TableHead>Withdrawals</TableHead>
+                                        <TableHead>Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {cbuFunds.map((fund) => (
+                                        <TableRow key={fund.id}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    checked={selectedFunds.includes(fund.id)}
+                                                    onCheckedChange={() => toggleSelect(fund.id)}
+                                                />
+                                            </TableCell>
+                                            <TableCell>{fund.member_name}</TableCell>
+                                            <TableCell>{formatAmount(fund.initial_contribution, appCurrency)}</TableCell>
+                                            <TableCell>{formatAmount(fund.current_balance, appCurrency)}</TableCell>
+                                            <TableCell>{formatAmount(fund.total_withdrawn, appCurrency)}</TableCell>
+                                            <TableCell>{formatAmount(fund.interest_earned, appCurrency)}</TableCell>
+                                            <TableCell>
+                                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                                    fund.status === 'active' 
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                                                        : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                                                }`}>
+                                                    {fund.status}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>{new Date(fund.last_contribution_date).toLocaleDateString()}</TableCell>
+                                            <TableCell>{new Date(fund.date_joined).toLocaleDateString()}</TableCell>
+                                            <TableCell>{fund.withdrawal_count}</TableCell>
+                                            <TableCell>
+                                                <div className="flex space-x-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleAddContribution(fund)}
+                                                    >
+                                                        Add Contribution
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleWithdraw(fund)}
+                                                    >
+                                                        Withdraw
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleToggleStatus(fund)}
+                                                        className={fund.status === 'active' ? 'bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:hover:bg-red-700' : 'bg-green-100 hover:bg-green-200 dark:bg-green-800 dark:hover:bg-green-700'}
+                                                    >
+                                                        {fund.status === 'active' ? 'Deactivate' : 'Activate'}
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
@@ -236,24 +347,6 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                     value={newFund.initial_contribution}
                                     onChange={(e) => setNewFund({ ...newFund, initial_contribution: e.target.value })}
                                 />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="frequency" className="text-right">
-                                    Contribution Frequency
-                                </Label>
-                                <Select
-                                    value={newFund.contribution_frequency}
-                                    onValueChange={(value) => setNewFund({ ...newFund, contribution_frequency: value as any })}
-                                >
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select frequency" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="monthly">Monthly</SelectItem>
-                                        <SelectItem value="quarterly">Quarterly</SelectItem>
-                                        <SelectItem value="annually">Annually</SelectItem>
-                                    </SelectContent>
-                                </Select>
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="paymentMethod" className="text-right">
