@@ -844,7 +844,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                 {/* QR Code */}
                                 <div className={`mr-6 p-3 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg flex-shrink-0 shadow-inner`}>
                                     <QRCodeSVG
-                                        value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${member.id}`}
+                                        value={`${window.location.origin}/genealogy/${clientIdentifier}/member/${member.id}`}
                                         size={120}
                                         level="H"
                                         includeMargin={true}
@@ -876,7 +876,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                                 {rootMember?.id === member.id ? 'Current Root' : 'Set as Root'}
                                             </button>
                                             <a
-                                                href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                                href={`/genealogy/${clientIdentifier}/member/${member.id}`}
                                                 className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
                                                     isDarkMode
                                                         ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
@@ -988,7 +988,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                                                 {rootMember?.id === member.id ? 'Current Root' : 'Set as Root'}
                                             </button>
                                             <a
-                                                href={`/family-tree/${clientIdentifier}/member/${member.id}`}
+                                                href={`/genealogy/${clientIdentifier}/member/${member.id}`}
                                                 className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex-1 text-center ${
                                                     isDarkMode
                                                         ? 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
@@ -1071,7 +1071,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                             >
                                 <div className={`mb-4 p-3 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg flex justify-center items-center`}>
                                     <QRCodeSVG
-                                        value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${member.id}`}
+                                        value={`${window.location.origin}/genealogy/${clientIdentifier}/member/${member.id}`}
                                         size={200}
                                         level="H"
                                         includeMargin={true}
@@ -1114,7 +1114,7 @@ export default function FamilyMemberFullView({ familyMembers, clientIdentifier }
                         </div>
                         <div className={`p-4 ${isDarkMode ? 'bg-white' : 'bg-gray-100'} rounded-lg`}>
                             <QRCodeSVG
-                                value={`${window.location.origin}/family-tree/${clientIdentifier}/member/${showQRCode}`}
+                                value={`${window.location.origin}/genealogy/${clientIdentifier}/member/${showQRCode}`}
                                 size={200}
                                 level="H"
                                 includeMargin={true}
