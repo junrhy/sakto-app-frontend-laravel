@@ -245,6 +245,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
     const [billStatus, setBillStatus] = useState<'pending' | 'sent'>('pending');
     const [isDeletePaymentDialogOpen, setIsDeletePaymentDialogOpen] = useState(false);
     const [paymentToDelete, setPaymentToDelete] = useState<DeletePaymentInfo | null>(null);
+    const [showCalculations, setShowCalculations] = useState(false);
 
     const handleAddLoan = () => {
         setCurrentLoan({
@@ -674,6 +675,69 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
         }
     };
 
+    const calculateLoanDetails = (loan: Loan) => {
+        const principal = parseFloat(loan.amount);
+        const interestRate = parseFloat(loan.interest_rate);
+        const startDate = new Date(loan.start_date);
+        const endDate = new Date(loan.end_date);
+        const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        let interestCalculation = '';
+        let calculationExplanation = '';
+        
+        if (loan.interest_type === 'fixed') {
+            const dailyRate = (interestRate / 100) / 365;
+            const monthlyRate = (interestRate / 100) / 12;
+            const quarterlyRate = (interestRate / 100) / 4;
+            const annualRate = interestRate / 100;
+            
+            switch (loan.frequency) {
+                case 'daily':
+                    interestCalculation = `${principal} × ${dailyRate.toFixed(6)} × ${days} = ${loan.total_interest}`;
+                    calculationExplanation = `Where:\n- ${principal} is the principal amount\n- ${dailyRate.toFixed(6)} is the daily interest rate (${interestRate}% ÷ 365)\n- ${days} is the total number of days\n- ${loan.total_interest} is the total interest amount`;
+                    break;
+                case 'monthly':
+                    const months = days / 30.44;
+                    interestCalculation = `${principal} × ${monthlyRate.toFixed(4)} × ${months.toFixed(2)} = ${loan.total_interest}`;
+                    calculationExplanation = `Where:\n- ${principal} is the principal amount\n- ${monthlyRate.toFixed(4)} is the monthly interest rate (${interestRate}% ÷ 12)\n- ${months.toFixed(2)} is the number of months (${days} days ÷ 30.44 days/month)\n- ${loan.total_interest} is the total interest amount`;
+                    break;
+                case 'quarterly':
+                    const quarters = days / 91.32;
+                    interestCalculation = `${principal} × ${quarterlyRate.toFixed(4)} × ${quarters.toFixed(2)} = ${loan.total_interest}`;
+                    calculationExplanation = `Where:\n- ${principal} is the principal amount\n- ${quarterlyRate.toFixed(4)} is the quarterly interest rate (${interestRate}% ÷ 4)\n- ${quarters.toFixed(2)} is the number of quarters (${days} days ÷ 91.32 days/quarter)\n- ${loan.total_interest} is the total interest amount`;
+                    break;
+                case 'annually':
+                    const years = days / 365;
+                    interestCalculation = `${principal} × ${annualRate.toFixed(4)} × ${years.toFixed(2)} = ${loan.total_interest}`;
+                    calculationExplanation = `Where:\n- ${principal} is the principal amount\n- ${annualRate.toFixed(4)} is the annual interest rate (${interestRate}%)\n- ${years.toFixed(2)} is the number of years (${days} days ÷ 365)\n- ${loan.total_interest} is the total interest amount`;
+                    break;
+            }
+        } else {
+            const periodsPerYear = {
+                'daily': 365,
+                'monthly': 12,
+                'quarterly': 4,
+                'annually': 1
+            };
+            const n = periodsPerYear[loan.frequency];
+            const r = (interestRate / 100) / n;
+            const t = days / 365;
+            interestCalculation = `${principal} × (1 + ${r.toFixed(4)})^(${n} × ${t.toFixed(2)}) - ${principal} = ${loan.total_interest}`;
+            calculationExplanation = `Where:\n- ${principal} is the principal amount\n- ${r.toFixed(4)} is the interest rate per period (${interestRate}% ÷ ${n})\n- ${n} is the number of compounding periods per year\n- ${t.toFixed(2)} is the time in years (${days} days ÷ 365)\n- ${loan.total_interest} is the total interest amount`;
+        }
+        
+        return {
+            principal,
+            interestRate,
+            days,
+            interestCalculation,
+            calculationExplanation,
+            totalBalance: parseFloat(loan.total_balance),
+            paidAmount: parseFloat(loan.paid_amount),
+            remainingBalance: parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)
+        };
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -864,6 +928,38 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                         </span>
                                                     </div>
                                                 </div>
+                                                <div className="flex justify-end">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        onClick={() => setShowCalculations(!showCalculations)}
+                                                        className="text-xs"
+                                                    >
+                                                        {showCalculations ? 'Hide Calculations' : 'Show Calculations'}
+                                                    </Button>
+                                                </div>
+                                                {showCalculations && (
+                                                    <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs space-y-1">
+                                                        <div className="font-medium">Calculation Details:</div>
+                                                        <div>Principal: {formatAmount(loan.amount, appCurrency)}</div>
+                                                        <div>Interest Rate: {loan.interest_rate}% {loan.interest_type === 'fixed' ? '(Fixed)' : '(Compounding)'}</div>
+                                                        <div>Frequency: {loan.frequency.charAt(0).toUpperCase() + loan.frequency.slice(1)}</div>
+                                                        <div>Duration: {calculateLoanDetails(loan).days} days</div>
+                                                        <div className="pt-1">
+                                                            <div className="font-medium">Interest Calculation:</div>
+                                                            <div className="font-mono">{calculateLoanDetails(loan).interestCalculation}</div>
+                                                            <div className="mt-1 text-xs whitespace-pre-line text-gray-600 dark:text-gray-400">
+                                                                {calculateLoanDetails(loan).calculationExplanation}
+                                                            </div>
+                                                        </div>
+                                                        {loan.installment_frequency && loan.installment_amount && (
+                                                            <div className="pt-1">
+                                                                <div className="font-medium">Installment Details:</div>
+                                                                <div>{formatAmount(loan.installment_amount, appCurrency)} per {loan.installment_frequency.replace('-', ' ')}</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </TableCell>
                                         <TableCell>
