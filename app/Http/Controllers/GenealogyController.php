@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\FamilyMemberEditRequest;
 
-class FamilyTreeController extends Controller
+class GenealogyController extends Controller
 {
     protected $apiUrl, $apiToken;
 
@@ -41,7 +41,7 @@ class FamilyTreeController extends Controller
             return back()->withErrors(['error' => 'Failed to fetch family members']);
         }
 
-        return Inertia::render('FamilyTree/Index', [
+        return Inertia::render('Genealogy/Index', [
             'familyMembers' => $response->json('data', [])
         ]);
     }
@@ -521,7 +521,7 @@ class FamilyTreeController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             $settings = $this->getSettingsFromApi($clientIdentifier);
 
-            return Inertia::render('FamilyTree/Settings', [
+            return Inertia::render('Genealogy/Settings', [
                 'settings' => $settings
             ]);
         } catch (\Exception $e) {
@@ -707,7 +707,7 @@ class FamilyTreeController extends Controller
      */
     public function editRequests()
     {
-        return Inertia::render('FamilyTree/EditRequests');
+        return Inertia::render('Genealogy/EditRequests');
     }
 
     /**
@@ -724,7 +724,7 @@ class FamilyTreeController extends Controller
             return back()->withErrors(['error' => 'Failed to fetch family members']);
         }
 
-        return Inertia::render('FamilyTree/FullView', [
+        return Inertia::render('Genealogy/FullView', [
             'familyMembers' => $response->json('data', []),
             'clientIdentifier' => $clientIdentifier
         ]);
@@ -767,7 +767,7 @@ class FamilyTreeController extends Controller
             return back()->withErrors(['error' => 'Member not found']);
         }
 
-        return Inertia::render('FamilyTree/MemberProfile', [
+        return Inertia::render('Genealogy/MemberProfile', [
             'member' => $member,
             'clientIdentifier' => $clientIdentifier
         ]);
@@ -787,7 +787,7 @@ class FamilyTreeController extends Controller
             return back()->withErrors(['error' => 'Failed to fetch family members']);
         }
 
-        return Inertia::render('FamilyTree/CircularView', [
+        return Inertia::render('Genealogy/CircularView', [
             'familyMembers' => $response->json('data', []),
             'clientIdentifier' => $clientIdentifier
         ]);
@@ -807,7 +807,7 @@ class FamilyTreeController extends Controller
             return back()->withErrors(['error' => 'Failed to fetch family members']);
         }
 
-        return Inertia::render('FamilyTree/PrintableView', [
+        return Inertia::render('Genealogy/PrintableView', [
             'familyMembers' => $response->json('data', []),
             'clientIdentifier' => $clientIdentifier
         ]);
@@ -827,7 +827,7 @@ class FamilyTreeController extends Controller
             return back()->withErrors(['error' => 'Failed to fetch family members']);
         }
 
-        return Inertia::render('FamilyTree/FamilyMemberFullView', [
+        return Inertia::render('Genealogy/FamilyMemberFullView', [
             'familyMembers' => $response->json('data', []),
             'clientIdentifier' => $clientIdentifier
         ]);

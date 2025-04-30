@@ -50,7 +50,7 @@ type AppTitle =
     | 'SMS'
     | 'Email'
     | 'Contacts'
-    | 'Family Tree'
+    | 'Genealogy'
     | 'Events'
     | 'Challenges'
     | 'ContentCreator'
@@ -72,7 +72,7 @@ const iconMap: Record<AppTitle, JSX.Element> = {
     'SMS': <RxChatBubble />,
     'Email': <RxEnvelopeClosed />,
     'Contacts': <RxIdCard />,
-    'Family Tree': <RxShare1 />,
+    'Genealogy': <RxShare1 />,
     'Events': <RxCalendar />,
     'Challenges': <RxStar />,
     'ContentCreator': <RxPencil1 />,

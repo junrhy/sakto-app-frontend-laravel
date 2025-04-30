@@ -23,7 +23,7 @@ use App\Http\Controllers\SmsSemaphoreController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\CreditsController;
-use App\Http\Controllers\FamilyTreeController;
+use App\Http\Controllers\GenealogyController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\MayaWebhookController;
@@ -167,16 +167,16 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
     });
 
-    // Public Family Tree Routes
-    Route::prefix('family-tree/{clientIdentifier}')->group(function () {
-        Route::get('/full-view', [FamilyTreeController::class, 'fullView'])->name('family-tree.full-view');
-        Route::post('/request-edit', [FamilyTreeController::class, 'requestEdit'])->name('family-tree.request-edit');
-        Route::get('/all-members', [FamilyTreeController::class, 'getAllMembers'])->name('family-tree.all-members');
-        Route::get('/member/{memberId}', [FamilyTreeController::class, 'memberProfile'])->name('family-tree.member-profile');
-        Route::get('/circular', [FamilyTreeController::class, 'circularView'])->name('family-tree.circular');
-        Route::get('/printable', [FamilyTreeController::class, 'printableView'])->name('family-tree.printable');
-        Route::get('/members', [FamilyTreeController::class, 'familyMemberFullView'])->name('family-tree.members');
-        Route::get('/settings', [FamilyTreeController::class, 'getPublicSettings'])->name('family-tree.public-settings');
+    // Public Genealogy Routes
+    Route::prefix('genealogy/{clientIdentifier}')->group(function () {
+        Route::get('/full-view', [GenealogyController::class, 'fullView'])->name('genealogy.full-view');
+        Route::post('/request-edit', [GenealogyController::class, 'requestEdit'])->name('genealogy.request-edit');
+        Route::get('/all-members', [GenealogyController::class, 'getAllMembers'])->name('genealogy.all-members');
+        Route::get('/member/{memberId}', [GenealogyController::class, 'memberProfile'])->name('genealogy.member-profile');
+        Route::get('/circular', [GenealogyController::class, 'circularView'])->name('genealogy.circular');
+        Route::get('/printable', [GenealogyController::class, 'printableView'])->name('genealogy.printable');
+        Route::get('/members', [GenealogyController::class, 'familyMemberFullView'])->name('genealogy.members');
+        Route::get('/settings', [GenealogyController::class, 'getPublicSettings'])->name('genealogy.public-settings');
     });
 
     // Public Event Registration Routes
@@ -519,25 +519,25 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         });
     });
     
-    // Family Tree (subscription required)
-    Route::prefix('family-tree')->group(function () {
-        Route::get('/', [FamilyTreeController::class, 'index'])->name('family-tree');
-        Route::get('/settings', [FamilyTreeController::class, 'settings'])->name('family-tree.settings');
-        Route::post('/settings', [FamilyTreeController::class, 'saveSettings'])->name('family-tree.settings.save');
-        Route::get('/members', [FamilyTreeController::class, 'getFamilyMembers']);
-        Route::get('/widget-stats', [FamilyTreeController::class, 'getWidgetStats'])->name('family-tree.widget-stats');
-        Route::post('/members', [FamilyTreeController::class, 'store']);
-        Route::put('/members/{id}', [FamilyTreeController::class, 'update']);
-        Route::delete('/members/{id}', [FamilyTreeController::class, 'destroy']);
-        Route::post('/relationships', [FamilyTreeController::class, 'addRelationship']);
-        Route::delete('/relationships/{id}', [FamilyTreeController::class, 'removeRelationship']);
-        Route::get('/export', [FamilyTreeController::class, 'export']);
-        Route::post('/import', [FamilyTreeController::class, 'import']);
-        Route::get('/visualization', [FamilyTreeController::class, 'getVisualizationData']);
-        Route::get('/edit-requests', [FamilyTreeController::class, 'editRequests'])->name('family-tree.edit-requests');
-        Route::get('/edit-requests/data', [FamilyTreeController::class, 'getEditRequests'])->name('family-tree.edit-requests.data');
-        Route::post('/edit-requests/{id}/accept', [FamilyTreeController::class, 'acceptEditRequest'])->name('family-tree.edit-requests.accept');
-        Route::post('/edit-requests/{id}/reject', [FamilyTreeController::class, 'rejectEditRequest'])->name('family-tree.edit-requests.reject');
+    // Genealogy (subscription required)
+    Route::prefix('genealogy')->group(function () {
+        Route::get('/', [GenealogyController::class, 'index'])->name('genealogy');
+        Route::get('/settings', [GenealogyController::class, 'settings'])->name('genealogy.settings');
+        Route::post('/settings', [GenealogyController::class, 'saveSettings'])->name('genealogy.settings.save');
+        Route::get('/members', [GenealogyController::class, 'getFamilyMembers']);
+        Route::get('/widget-stats', [GenealogyController::class, 'getWidgetStats'])->name('genealogy.widget-stats');
+        Route::post('/members', [GenealogyController::class, 'store']);
+        Route::put('/members/{id}', [GenealogyController::class, 'update']);
+        Route::delete('/members/{id}', [GenealogyController::class, 'destroy']);
+        Route::post('/relationships', [GenealogyController::class, 'addRelationship']);
+        Route::delete('/relationships/{id}', [GenealogyController::class, 'removeRelationship']);
+        Route::get('/export', [GenealogyController::class, 'export']);
+        Route::post('/import', [GenealogyController::class, 'import']);
+        Route::get('/visualization', [GenealogyController::class, 'getVisualizationData']);
+        Route::get('/edit-requests', [GenealogyController::class, 'editRequests'])->name('genealogy.edit-requests');
+        Route::get('/edit-requests/data', [GenealogyController::class, 'getEditRequests'])->name('genealogy.edit-requests.data');
+        Route::post('/edit-requests/{id}/accept', [GenealogyController::class, 'acceptEditRequest'])->name('genealogy.edit-requests.accept');
+        Route::post('/edit-requests/{id}/reject', [GenealogyController::class, 'rejectEditRequest'])->name('genealogy.edit-requests.reject');
     });
 
     // Warehousing (one-time payment/subscription required)

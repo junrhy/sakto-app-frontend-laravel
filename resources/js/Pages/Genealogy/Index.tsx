@@ -586,9 +586,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Family Tree</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Members</h2>}
         >
-            <Head title="Family Tree" />
+            <Head title="Genealogy" />
 
             <div className={`transition-colors duration-200 ${isDarkMode ? 'dark' : ''}`}>
                 <div className="w-full px-2 sm:px-4 md:px-6">

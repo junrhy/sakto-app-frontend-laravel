@@ -80,7 +80,7 @@ export default function Authenticated({ children, header, user }: Props) {
     const hasSmsAccess = url.includes('sms');
     const hasEmailAccess = url.includes('email');
     const hasContactsAccess = url.includes('contacts');
-    const hasFamilyTreeAccess = url.includes('family-tree');
+    const hasGenealogyAccess = url.includes('genealogy');
     const hasEventsAccess = url.includes('events');
     const hasChallengesAccess = url.includes('challenges');
     const hasContentCreatorAccess = url.includes('content-creator');
@@ -278,14 +278,14 @@ export default function Authenticated({ children, header, user }: Props) {
                             </div>
                         )}
 
-                        {hasFamilyTreeAccess && (
+                        {hasGenealogyAccess && (
                             <div className="border-t border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Family Tree</div>
-                                    <ResponsiveNavLink href={`/family-tree?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                        Family Tree
+                                    <div className="font-medium text-base text-white/90">Genealogy</div>
+                                    <ResponsiveNavLink href={`/genealogy?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Genealogy
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/family-tree/edit-requests?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/genealogy/edit-requests?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Edit Requests
                                     </ResponsiveNavLink>
                                 </div>
@@ -896,7 +896,7 @@ export default function Authenticated({ children, header, user }: Props) {
                                             </Dropdown>
                                         </div>
                                     )}
-                                    {hasFamilyTreeAccess && (
+                                    {hasGenealogyAccess && (
                                         <div className="inline-flex items-center">
                                             <Dropdown>
                                                 <Dropdown.Trigger>
@@ -905,7 +905,7 @@ export default function Authenticated({ children, header, user }: Props) {
                                                             type="button"
                                                             className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                         >
-                                                            <span className="mt-[1px]">Family Tree</span>
+                                                            <span className="mt-[1px]">Genealogy</span>
                                                             <svg
                                                                 className="ml-2 -mr-0.5 h-4 w-4"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -923,25 +923,25 @@ export default function Authenticated({ children, header, user }: Props) {
                                                 </Dropdown.Trigger>
 
                                                 <Dropdown.Content>
-                                                    <Dropdown.Link href={`/family-tree?app=${appParam}`}>
-                                                        My Family Tree
+                                                    <Dropdown.Link href={`/genealogy?app=${appParam}`}>
+                                                        Members
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/edit-requests?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/genealogy/edit-requests?app=${appParam}`}>
                                                         Edit Requests
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/full-view?app=${appParam}`}>
-                                                        Full View
+                                                    <Dropdown.Link href={`/genealogy/${authUser.identifier}/full-view?app=${appParam}`}>
+                                                        Tree View
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/circular?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/genealogy/${authUser.identifier}/circular?app=${appParam}`}>
                                                         Circular View
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/printable?app=${appParam}`}>
-                                                        Printable View
+                                                    <Dropdown.Link href={`/genealogy/${authUser.identifier}/printable?app=${appParam}`}>
+                                                        Lineage View
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/${authUser.identifier}/members?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/genealogy/${authUser.identifier}/members?app=${appParam}`}>
                                                         Members List
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/family-tree/settings?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/genealogy/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>

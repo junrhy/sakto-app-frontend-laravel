@@ -158,8 +158,8 @@ return [
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
-        'title' => 'Family Tree',
-        'route' => '/dashboard?app=family-tree',
+        'title' => 'Genealogy',
+        'route' => '/dashboard?app=genealogy',
         'visible' => false,
         'description' => 'Create and manage family trees with an interactive viewer, relationship mapping, and genealogy tracking features.',
         'price' => 149,
