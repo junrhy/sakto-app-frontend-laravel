@@ -294,73 +294,20 @@ class LoanController extends Controller
     public function getCbuFunds()
     {
         try {
-            // Comment out API request code
-            // $clientIdentifier = auth()->user()->identifier;
-            // $response = Http::withToken($this->apiToken)
-            //     ->get("{$this->apiUrl}/lending/cbu?client_identifier={$clientIdentifier}");
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu?client_identifier={$clientIdentifier}");
 
-            // if (!$response->successful()) {
-            //     throw new \Exception('API request failed: ' . $response->body());
-            // }
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
 
-            // $cbuFunds = $response->json()['data']['cbu_funds'];
-            // $jsonAppCurrency = json_decode(auth()->user()->app_currency);
-
-            // Dummy data
-            $dummyCbuFunds = [
-                [
-                    'id' => 1,
-                    'member_name' => 'John Doe',
-                    'initial_contribution' => '5000.00',
-                    'current_balance' => '7500.00',
-                    'total_withdrawn' => '0.00',
-                    'interest_earned' => '2500.00',
-                    'status' => 'active',
-                    'last_contribution_date' => '2024-03-15',
-                    'date_joined' => '2024-01-01',
-                    'withdrawal_count' => 0,
-                    'created_at' => '2024-01-01 00:00:00',
-                    'updated_at' => '2024-03-15 00:00:00'
-                ],
-                [
-                    'id' => 2,
-                    'member_name' => 'Jane Smith',
-                    'initial_contribution' => '10000.00',
-                    'current_balance' => '12500.00',
-                    'total_withdrawn' => '0.00',
-                    'interest_earned' => '2500.00',
-                    'status' => 'active',
-                    'last_contribution_date' => '2024-03-15',
-                    'date_joined' => '2024-01-15',
-                    'withdrawal_count' => 0,
-                    'created_at' => '2024-01-15 00:00:00',
-                    'updated_at' => '2024-03-15 00:00:00'
-                ],
-                [
-                    'id' => 3,
-                    'member_name' => 'Bob Johnson',
-                    'initial_contribution' => '20000.00',
-                    'current_balance' => '22000.00',
-                    'total_withdrawn' => '5000.00',
-                    'interest_earned' => '2000.00',
-                    'status' => 'inactive',
-                    'last_contribution_date' => '2024-02-01',
-                    'date_joined' => '2024-02-01',
-                    'withdrawal_count' => 1,
-                    'created_at' => '2024-02-01 00:00:00',
-                    'updated_at' => '2024-03-15 00:00:00'
-                ]
-            ];
-
-            $dummyAppCurrency = [
-                'symbol' => '₱',
-                'code' => 'PHP',
-                'name' => 'Philippine Peso'
-            ];
+            $cbuFunds = $response->json()['data']['cbu_funds'];
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Loan/Cbu', [
-                'cbuFunds' => $dummyCbuFunds,
-                'appCurrency' => $dummyAppCurrency
+                'cbuFunds' => $cbuFunds,
+                'appCurrency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching CBU funds: ' . $e->getMessage());
@@ -399,10 +346,11 @@ class LoanController extends Controller
     public function storeCbuFund(Request $request)
     {
         $validated = $request->validate([
-            'member_name' => 'required|string',
-            'initial_contribution' => 'required|numeric|min:0',
-            'contribution_frequency' => 'required|in:monthly,quarterly,annually',
-            'payment_method' => 'required|in:cash,bank_transfer,check'
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'target_amount' => 'required|numeric|min:0',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after:start_date',
         ]);
 
         try {
@@ -427,9 +375,11 @@ class LoanController extends Controller
     public function updateCbuFund(Request $request, string $id)
     {
         $validated = $request->validate([
-            'member_name' => 'required|string',
-            'contribution_frequency' => 'required|in:monthly,quarterly,annually',
-            'status' => 'required|in:active,inactive'
+            'name' => 'string|max:255',
+            'description' => 'nullable|string',
+            'target_amount' => 'numeric|min:0',
+            'start_date' => 'date',
+            'end_date' => 'nullable|date|after:start_date',
         ]);
 
         try {
@@ -467,16 +417,16 @@ class LoanController extends Controller
     public function addCbuContribution(Request $request, string $id)
     {
         $validated = $request->validate([
+            'cbu_fund_id' => 'required',
             'amount' => 'required|numeric|min:0',
-            'payment_date' => 'required|date',
-            'payment_method' => 'required|in:cash,bank_transfer,check',
-            'reference_number' => 'nullable|string'
+            'contribution_date' => 'required|date',
+            'notes' => 'nullable|string',
         ]);
 
         try {
             $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/lending/cbu/{$id}/contribution", [
+                ->post("{$this->apiUrl}/lending/cbu/{$id}/contributions", [
                     ...$validated,
                     'client_identifier' => $clientIdentifier
                 ]);
@@ -497,7 +447,9 @@ class LoanController extends Controller
         try {
             $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/lending/cbu/{$id}/contributions?client_identifier={$clientIdentifier}");
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/contributions", [
+                    'client_identifier' => $clientIdentifier
+                ]);
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -506,7 +458,27 @@ class LoanController extends Controller
             return response()->json($response->json());
         } catch (\Exception $e) {
             Log::error('Error getting CBU contributions: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to get CBU contributions.'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCbuWithdrawals(string $id)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/withdrawals", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error getting CBU withdrawals: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -530,24 +502,23 @@ class LoanController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Error getting CBU withdrawal form: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to get CBU withdrawal form.'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function processCbuWithdrawal(Request $request, string $id)
     {
         $validated = $request->validate([
+            'cbu_fund_id' => 'required',
             'amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
             'withdrawal_date' => 'required|date',
-            'reason' => 'required|string',
-            'payment_method' => 'required|in:cash,bank_transfer,check',
-            'account_details' => 'required_if:payment_method,bank_transfer|string|nullable'
         ]);
 
         try {
             $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/lending/cbu/{$id}/withdraw", [
+                ->post("{$this->apiUrl}/lending/cbu/{$id}/process-withdrawal", [
                     ...$validated,
                     'client_identifier' => $clientIdentifier
                 ]);
@@ -559,7 +530,7 @@ class LoanController extends Controller
             return response()->json($response->json());
         } catch (\Exception $e) {
             Log::error('Error processing CBU withdrawal: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to process CBU withdrawal.'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

@@ -15,15 +15,34 @@ import { Checkbox } from '@/Components/ui/checkbox';
 
 interface CbuFund {
     id: number;
-    member_name: string;
-    initial_contribution: string;
-    current_balance: string;
-    total_withdrawn: string;
-    interest_earned: string;
-    status: 'active' | 'inactive';
-    last_contribution_date: string;
-    date_joined: string;
-    withdrawal_count: number;
+    name: string;
+    description: string | null;
+    target_amount: string;
+    start_date: string;
+    end_date: string | null;
+    total_amount: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface CbuContribution {
+    id: number;
+    cbu_fund_id: number;
+    amount: string;
+    contribution_date: string;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+interface CbuWithdrawal {
+    id: number;
+    cbu_fund_id: number;
+    action: string;
+    amount: string;
+    notes: string | null;
+    date: string;
+    client_identifier: string;
     created_at: string;
     updated_at: string;
 }
@@ -41,32 +60,43 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isContributionDialogOpen, setIsContributionDialogOpen] = useState(false);
     const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isViewContributionsDialogOpen, setIsViewContributionsDialogOpen] = useState(false);
+    const [isViewWithdrawalsDialogOpen, setIsViewWithdrawalsDialogOpen] = useState(false);
     const [selectedFund, setSelectedFund] = useState<CbuFund | null>(null);
     const [selectedFunds, setSelectedFunds] = useState<number[]>([]);
+    const [contributions, setContributions] = useState<CbuContribution[]>([]);
+    const [withdrawals, setWithdrawals] = useState<CbuWithdrawal[]>([]);
+    const [isLoadingContributions, setIsLoadingContributions] = useState(false);
+    const [isLoadingWithdrawals, setIsLoadingWithdrawals] = useState(false);
     const [newFund, setNewFund] = useState({
-        member_name: '',
-        initial_contribution: '',
-        payment_method: 'cash'
+        name: '',
+        description: '',
+        target_amount: '',
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: ''
     });
     const [contribution, setContribution] = useState({
+        cbu_fund_id: '',
         amount: '',
-        payment_date: new Date().toISOString().split('T')[0],
-        payment_method: 'cash',
-        reference_number: ''
+        contribution_date: new Date().toISOString().split('T')[0],
+        notes: ''
     });
     const [withdrawal, setWithdrawal] = useState({
+        cbu_fund_id: '',
         amount: '',
         withdrawal_date: new Date().toISOString().split('T')[0],
-        reason: '',
-        payment_method: 'cash',
-        account_details: ''
+        notes: ''
     });
+    const [editingFund, setEditingFund] = useState<CbuFund | null>(null);
 
     const handleAddFund = () => {
         setNewFund({
-            member_name: '',
-            initial_contribution: '',
-            payment_method: 'cash'
+            name: '',
+            description: '',
+            target_amount: '',
+            start_date: new Date().toISOString().split('T')[0],
+            end_date: ''
         });
         setIsAddDialogOpen(true);
     };
@@ -87,10 +117,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const handleAddContribution = (fund: CbuFund) => {
         setSelectedFund(fund);
         setContribution({
+            cbu_fund_id: fund.id.toString(),
             amount: '',
-            payment_date: new Date().toISOString().split('T')[0],
-            payment_method: 'cash',
-            reference_number: ''
+            contribution_date: new Date().toISOString().split('T')[0],
+            notes: ''
         });
         setIsContributionDialogOpen(true);
     };
@@ -113,11 +143,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const handleWithdraw = (fund: CbuFund) => {
         setSelectedFund(fund);
         setWithdrawal({
+            cbu_fund_id: fund.id.toString(),
             amount: '',
             withdrawal_date: new Date().toISOString().split('T')[0],
-            reason: '',
-            payment_method: 'cash',
-            account_details: ''
+            notes: ''
         });
         setIsWithdrawDialogOpen(true);
     };
@@ -137,17 +166,61 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         }
     };
 
-    const handleToggleStatus = async (fund: CbuFund) => {
+    const handleUpdateFund = (fund: CbuFund) => {
+        setEditingFund(fund);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleViewContributions = async (fund: CbuFund) => {
+        setSelectedFund(fund);
+        setIsLoadingContributions(true);
         try {
-            const newStatus = fund.status === 'active' ? 'inactive' : 'active';
-            const response = await axios.put(`/loan/cbu/${fund.id}`, {
-                status: newStatus
+            const response = await axios.get(`/loan/cbu/${fund.id}/contributions`);
+            if (response.data) {
+                setContributions(response.data.data.cbu_contributions);
+                setIsViewContributionsDialogOpen(true);
+            }
+        } catch (error) {
+            console.error('Error fetching contributions:', error);
+        } finally {
+            setIsLoadingContributions(false);
+        }
+    };
+
+    const handleViewWithdrawals = async (fund: CbuFund) => {
+        setSelectedFund(fund);
+        setIsLoadingWithdrawals(true);
+        try {
+            const response = await axios.get(`/loan/cbu/${fund.id}/withdrawals`);
+            if (response.data) {
+                setWithdrawals(response.data.data.cbu_withdrawals);
+                setIsViewWithdrawalsDialogOpen(true);
+            }
+        } catch (error) {
+            console.error('Error fetching withdrawals:', error);
+        } finally {
+            setIsLoadingWithdrawals(false);
+        }
+    };
+
+    const handleSaveEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingFund) return;
+
+        try {
+            const response = await axios.put(`/loan/cbu/${editingFund.id}`, {
+                name: editingFund.name,
+                description: editingFund.description,
+                target_amount: editingFund.target_amount,
+                start_date: editingFund.start_date,
+                end_date: editingFund.end_date
             });
             if (response.data) {
+                setIsEditDialogOpen(false);
                 window.location.reload();
             }
         } catch (error) {
-            console.error('Error updating status:', error);
+            console.error('Error updating fund:', error);
         }
     };
 
@@ -170,26 +243,24 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const exportToCSV = () => {
         const selectedData = cbuFunds.filter(fund => selectedFunds.includes(fund.id));
         const headers = [
-            'Member Name',
-            'Initial Contribution',
-            'Current Balance',
-            'Total Withdrawn',
-            'Interest Earned',
-            'Status',
-            'Last Contribution Date',
-            'Date Joined',
-            'Withdrawals'
+            'Name',
+            'Description',
+            'Target Amount',
+            'Total Amount',
+            'Start Date',
+            'End Date',
+            'Created At',
+            'Updated At'
         ];
         const csvData = selectedData.map(fund => [
-            fund.member_name,
-            formatAmount(fund.initial_contribution, appCurrency),
-            formatAmount(fund.current_balance, appCurrency),
-            formatAmount(fund.total_withdrawn, appCurrency),
-            formatAmount(fund.interest_earned, appCurrency),
-            fund.status,
-            new Date(fund.last_contribution_date).toLocaleDateString(),
-            new Date(fund.date_joined).toLocaleDateString(),
-            fund.withdrawal_count
+            fund.name || '',
+            fund.description || '',
+            fund.target_amount ? formatAmount(fund.target_amount, appCurrency) : '',
+            fund.total_amount ? formatAmount(fund.total_amount, appCurrency) : '',
+            fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '',
+            fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '',
+            fund.created_at ? new Date(fund.created_at).toLocaleDateString() : '',
+            fund.updated_at ? new Date(fund.updated_at).toLocaleDateString() : ''
         ]);
 
         const csvContent = [
@@ -208,7 +279,7 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Capital Build Up (CBU) Funds
+                    Capital Build Up Funds
                 </h2>
             }
         >
@@ -244,15 +315,12 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </TableHead>
-                                        <TableHead>Member Name</TableHead>
-                                        <TableHead>Initial Contribution</TableHead>
-                                        <TableHead>Current Balance</TableHead>
-                                        <TableHead>Total Withdrawn</TableHead>
-                                        <TableHead>Interest Earned</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Last Contribution</TableHead>
-                                        <TableHead>Date Joined</TableHead>
-                                        <TableHead>Withdrawals</TableHead>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead>Target Amount</TableHead>
+                                        <TableHead>Total Amount</TableHead>
+                                        <TableHead>Start Date</TableHead>
+                                        <TableHead>End Date</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -265,25 +333,28 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                     onCheckedChange={() => toggleSelect(fund.id)}
                                                 />
                                             </TableCell>
-                                            <TableCell>{fund.member_name}</TableCell>
-                                            <TableCell>{formatAmount(fund.initial_contribution, appCurrency)}</TableCell>
-                                            <TableCell>{formatAmount(fund.current_balance, appCurrency)}</TableCell>
-                                            <TableCell>{formatAmount(fund.total_withdrawn, appCurrency)}</TableCell>
-                                            <TableCell>{formatAmount(fund.interest_earned, appCurrency)}</TableCell>
+                                            <TableCell>{fund.name}</TableCell>
+                                            <TableCell>{fund.description || '-'}</TableCell>
+                                            <TableCell>{fund.target_amount ? formatAmount(fund.target_amount, appCurrency) : '-'}</TableCell>
+                                            <TableCell>{fund.total_amount ? formatAmount(fund.total_amount, appCurrency) : '-'}</TableCell>
+                                            <TableCell>{fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '-'}</TableCell>
+                                            <TableCell>{fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                                    fund.status === 'active' 
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                                                        : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                                                }`}>
-                                                    {fund.status}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>{new Date(fund.last_contribution_date).toLocaleDateString()}</TableCell>
-                                            <TableCell>{new Date(fund.date_joined).toLocaleDateString()}</TableCell>
-                                            <TableCell>{fund.withdrawal_count}</TableCell>
-                                            <TableCell>
-                                                <div className="flex space-x-2">
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleViewContributions(fund)}
+                                                    >
+                                                        View Contributions
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleViewWithdrawals(fund)}
+                                                    >
+                                                        View Withdrawals
+                                                    </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -301,10 +372,9 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => handleToggleStatus(fund)}
-                                                        className={fund.status === 'active' ? 'bg-red-100 hover:bg-red-200 dark:bg-red-800 dark:hover:bg-red-700' : 'bg-green-100 hover:bg-green-200 dark:bg-green-800 dark:hover:bg-green-700'}
+                                                        onClick={() => handleUpdateFund(fund)}
                                                     >
-                                                        {fund.status === 'active' ? 'Deactivate' : 'Activate'}
+                                                        Edit
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -317,58 +387,64 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                 </Card>
             </div>
 
-            {/* Add CBU Fund Dialog */}
+            {/* Add Fund Dialog */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add CBU Fund</DialogTitle>
+                        <DialogTitle>Add New CBU Fund</DialogTitle>
+                        <DialogDescription>Create a new Capital Build Up fund</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveFund}>
                         <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="memberName" className="text-right">
-                                    Member Name
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Name</Label>
                                 <Input
-                                    id="memberName"
-                                    className="col-span-3"
-                                    value={newFund.member_name}
-                                    onChange={(e) => setNewFund({ ...newFund, member_name: e.target.value })}
+                                    id="name"
+                                    value={newFund.name}
+                                    onChange={(e) => setNewFund({ ...newFund, name: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="initialContribution" className="text-right">
-                                    Initial Contribution
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
                                 <Input
-                                    id="initialContribution"
+                                    id="description"
+                                    value={newFund.description}
+                                    onChange={(e) => setNewFund({ ...newFund, description: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="target_amount">Target Amount</Label>
+                                <Input
+                                    id="target_amount"
                                     type="number"
-                                    className="col-span-3"
-                                    value={newFund.initial_contribution}
-                                    onChange={(e) => setNewFund({ ...newFund, initial_contribution: e.target.value })}
+                                    value={newFund.target_amount}
+                                    onChange={(e) => setNewFund({ ...newFund, target_amount: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="paymentMethod" className="text-right">
-                                    Payment Method
-                                </Label>
-                                <Select
-                                    value={newFund.payment_method}
-                                    onValueChange={(value) => setNewFund({ ...newFund, payment_method: value as any })}
-                                >
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select payment method" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="cash">Cash</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                        <SelectItem value="check">Check</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="grid gap-2">
+                                <Label htmlFor="start_date">Start Date</Label>
+                                <Input
+                                    id="start_date"
+                                    type="date"
+                                    value={newFund.start_date}
+                                    onChange={(e) => setNewFund({ ...newFund, start_date: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="end_date">End Date (Optional)</Label>
+                                <Input
+                                    id="end_date"
+                                    type="date"
+                                    value={newFund.end_date}
+                                    onChange={(e) => setNewFund({ ...newFund, end_date: e.target.value })}
+                                />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit">Save Fund</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -379,65 +455,41 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Add Contribution</DialogTitle>
+                        <DialogDescription>Add a new contribution to the CBU fund</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSaveContribution}>
                         <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="amount" className="text-right">
-                                    Amount
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="amount">Amount</Label>
                                 <Input
                                     id="amount"
                                     type="number"
-                                    className="col-span-3"
                                     value={contribution.amount}
                                     onChange={(e) => setContribution({ ...contribution, amount: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="paymentDate" className="text-right">
-                                    Payment Date
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="contribution_date">Contribution Date</Label>
                                 <Input
-                                    id="paymentDate"
+                                    id="contribution_date"
                                     type="date"
-                                    className="col-span-3"
-                                    value={contribution.payment_date}
-                                    onChange={(e) => setContribution({ ...contribution, payment_date: e.target.value })}
+                                    value={contribution.contribution_date}
+                                    onChange={(e) => setContribution({ ...contribution, contribution_date: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="paymentMethod" className="text-right">
-                                    Payment Method
-                                </Label>
-                                <Select
-                                    value={contribution.payment_method}
-                                    onValueChange={(value) => setContribution({ ...contribution, payment_method: value as any })}
-                                >
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select payment method" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="cash">Cash</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                        <SelectItem value="check">Check</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="referenceNumber" className="text-right">
-                                    Reference Number
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="notes">Notes</Label>
                                 <Input
-                                    id="referenceNumber"
-                                    className="col-span-3"
-                                    value={contribution.reference_number}
-                                    onChange={(e) => setContribution({ ...contribution, reference_number: e.target.value })}
+                                    id="notes"
+                                    value={contribution.notes}
+                                    onChange={(e) => setContribution({ ...contribution, notes: e.target.value })}
                                 />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit">Save Contribution</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -447,81 +499,196 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
             <Dialog open={isWithdrawDialogOpen} onOpenChange={setIsWithdrawDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Withdraw from CBU Fund</DialogTitle>
+                        <DialogTitle>Process Withdrawal</DialogTitle>
+                        <DialogDescription>Process a withdrawal from the CBU fund</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleProcessWithdrawal}>
                         <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="withdrawalAmount" className="text-right">
-                                    Amount
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="withdrawal_amount">Amount</Label>
                                 <Input
-                                    id="withdrawalAmount"
+                                    id="withdrawal_amount"
                                     type="number"
-                                    className="col-span-3"
                                     value={withdrawal.amount}
                                     onChange={(e) => setWithdrawal({ ...withdrawal, amount: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="withdrawalDate" className="text-right">
-                                    Withdrawal Date
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="withdrawal_date">Withdrawal Date</Label>
                                 <Input
-                                    id="withdrawalDate"
+                                    id="withdrawal_date"
                                     type="date"
-                                    className="col-span-3"
                                     value={withdrawal.withdrawal_date}
                                     onChange={(e) => setWithdrawal({ ...withdrawal, withdrawal_date: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="reason" className="text-right">
-                                    Reason
-                                </Label>
+                            <div className="grid gap-2">
+                                <Label htmlFor="withdrawal_notes">Notes</Label>
                                 <Input
-                                    id="reason"
-                                    className="col-span-3"
-                                    value={withdrawal.reason}
-                                    onChange={(e) => setWithdrawal({ ...withdrawal, reason: e.target.value })}
+                                    id="withdrawal_notes"
+                                    value={withdrawal.notes}
+                                    onChange={(e) => setWithdrawal({ ...withdrawal, notes: e.target.value })}
+                                    required
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="withdrawalPaymentMethod" className="text-right">
-                                    Payment Method
-                                </Label>
-                                <Select
-                                    value={withdrawal.payment_method}
-                                    onValueChange={(value) => setWithdrawal({ ...withdrawal, payment_method: value as any })}
-                                >
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select payment method" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="cash">Cash</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                        <SelectItem value="check">Check</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {withdrawal.payment_method === 'bank_transfer' && (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="accountDetails" className="text-right">
-                                        Account Details
-                                    </Label>
-                                    <Input
-                                        id="accountDetails"
-                                        className="col-span-3"
-                                        value={withdrawal.account_details}
-                                        onChange={(e) => setWithdrawal({ ...withdrawal, account_details: e.target.value })}
-                                    />
-                                </div>
-                            )}
                         </div>
                         <DialogFooter>
                             <Button type="submit">Process Withdrawal</Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Fund Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit CBU Fund</DialogTitle>
+                        <DialogDescription>Modify the Capital Build Up fund details</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSaveEdit}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_name">Name</Label>
+                                <Input
+                                    id="edit_name"
+                                    value={editingFund?.name || ''}
+                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, name: e.target.value } : null)}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_description">Description</Label>
+                                <Input
+                                    id="edit_description"
+                                    value={editingFund?.description || ''}
+                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, description: e.target.value } : null)}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_target_amount">Target Amount</Label>
+                                <Input
+                                    id="edit_target_amount"
+                                    type="number"
+                                    value={editingFund?.target_amount || ''}
+                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, target_amount: e.target.value } : null)}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_start_date">Start Date</Label>
+                                <Input
+                                    id="edit_start_date"
+                                    type="date"
+                                    value={editingFund?.start_date || ''}
+                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, start_date: e.target.value } : null)}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_end_date">End Date (Optional)</Label>
+                                <Input
+                                    id="edit_end_date"
+                                    type="date"
+                                    value={editingFund?.end_date || ''}
+                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, end_date: e.target.value } : null)}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit">Save Changes</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* View Contributions Dialog */}
+            <Dialog open={isViewContributionsDialogOpen} onOpenChange={setIsViewContributionsDialogOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle>Contributions for {selectedFund?.name}</DialogTitle>
+                        <DialogDescription>View all contributions made to this CBU fund</DialogDescription>
+                    </DialogHeader>
+                    <div className="overflow-x-auto">
+                        {isLoadingContributions ? (
+                            <div className="text-center py-4">Loading contributions...</div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Contribution Date</TableHead>
+                                        <TableHead>Notes</TableHead>
+                                        <TableHead>Created At</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {contributions && contributions.length > 0 ? (
+                                        contributions.map((contribution) => (
+                                            <TableRow key={contribution.id}>
+                                                <TableCell>{formatAmount(contribution.amount, appCurrency)}</TableCell>
+                                                <TableCell>{new Date(contribution.contribution_date).toLocaleDateString()}</TableCell>
+                                                <TableCell>{contribution.notes || '-'}</TableCell>
+                                                <TableCell>{new Date(contribution.created_at).toLocaleDateString()}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-4">
+                                                No contributions found
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* View Withdrawals Dialog */}
+            <Dialog open={isViewWithdrawalsDialogOpen} onOpenChange={setIsViewWithdrawalsDialogOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle>Withdrawals for {selectedFund?.name}</DialogTitle>
+                        <DialogDescription>View all withdrawals made from this CBU fund</DialogDescription>
+                    </DialogHeader>
+                    <div className="overflow-x-auto">
+                        {isLoadingWithdrawals ? (
+                            <div className="text-center py-4">Loading withdrawals...</div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Notes</TableHead>
+                                        <TableHead>Created At</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {withdrawals && withdrawals.length > 0 ? (
+                                        withdrawals.map((withdrawal) => (
+                                            <TableRow key={withdrawal.id}>
+                                                <TableCell>{formatAmount(withdrawal.amount, appCurrency)}</TableCell>
+                                                <TableCell>{new Date(withdrawal.date).toLocaleDateString()}</TableCell>
+                                                <TableCell>{withdrawal.notes || '-'}</TableCell>
+                                                <TableCell>{new Date(withdrawal.created_at).toLocaleDateString()}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-4">
+                                                No withdrawals found
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
                 </DialogContent>
             </Dialog>
         </AuthenticatedLayout>

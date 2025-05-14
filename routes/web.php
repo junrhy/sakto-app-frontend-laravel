@@ -293,6 +293,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{id}', [LoanController::class, 'destroyCbuFund'])->name('loan.cbu.destroy');
             Route::post('/{id}/contribution', [LoanController::class, 'addCbuContribution'])->name('loan.cbu.contribution');
             Route::get('/{id}/contributions', [LoanController::class, 'getCbuContributions'])->name('loan.cbu.contributions');
+            Route::get('/{id}/withdrawals', [LoanController::class, 'getCbuWithdrawals'])->name('loan.cbu.withdrawals');
             Route::get('/{id}/withdraw', [LoanController::class, 'withdrawCbuFund'])->name('loan.cbu.withdraw');
             Route::post('/{id}/withdraw', [LoanController::class, 'processCbuWithdrawal'])->name('loan.cbu.withdraw.process');
             Route::get('/{id}/history', [LoanController::class, 'getCbuHistory'])->name('loan.cbu.history');
