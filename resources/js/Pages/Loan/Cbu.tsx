@@ -953,109 +953,180 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
 
             {/* Report Generation Dialog */}
             <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>CBU Report</DialogTitle>
-                        <DialogDescription>
-                            Generate a comprehensive report of CBU funds
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="report_start_date">Start Date</Label>
-                                <Input
-                                    id="report_start_date"
-                                    type="date"
-                                    value={reportDateRange.start_date}
-                                    onChange={(e) => setReportDateRange({
-                                        ...reportDateRange,
-                                        start_date: e.target.value
-                                    })}
-                                    required
-                                />
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+                    <div className="p-6">
+                        <DialogHeader>
+                            <DialogTitle>CBU Report</DialogTitle>
+                            <DialogDescription>
+                                Generate a comprehensive report of CBU funds
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="report_start_date">Start Date</Label>
+                                    <Input
+                                        id="report_start_date"
+                                        type="date"
+                                        value={reportDateRange.start_date}
+                                        onChange={(e) => setReportDateRange({
+                                            ...reportDateRange,
+                                            start_date: e.target.value
+                                        })}
+                                        required
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="report_end_date">End Date</Label>
+                                    <Input
+                                        id="report_end_date"
+                                        type="date"
+                                        value={reportDateRange.end_date}
+                                        onChange={(e) => setReportDateRange({
+                                            ...reportDateRange,
+                                            end_date: e.target.value
+                                        })}
+                                        required
+                                    />
+                                </div>
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="report_end_date">End Date</Label>
-                                <Input
-                                    id="report_end_date"
-                                    type="date"
-                                    value={reportDateRange.end_date}
-                                    onChange={(e) => setReportDateRange({
-                                        ...reportDateRange,
-                                        end_date: e.target.value
-                                    })}
-                                    required
-                                />
-                            </div>
-                        </div>
 
-                        {reportData && (
-                            <>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 border rounded-lg">
-                                        <h3 className="font-semibold mb-2">Summary</h3>
-                                        <div className="space-y-2">
-                                            <p>Total Funds: {reportData.total_funds}</p>
-                                            <p>Active Funds: {reportData.active_funds}</p>
-                                            <p>Total Contributions: {reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-'}</p>
-                                            <p>Total Withdrawals: {reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-'}</p>
+                            {reportData && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 border rounded-lg">
+                                            <h3 className="font-semibold mb-2">Summary</h3>
+                                            <div className="space-y-2">
+                                                <p>Total Funds: {reportData.total_funds}</p>
+                                                <p>Active Funds: {reportData.active_funds}</p>
+                                                <p>Total Contributions: {reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-'}</p>
+                                                <p>Total Withdrawals: {reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 border rounded-lg">
+                                            <h3 className="font-semibold mb-2">Statistics</h3>
+                                            <div className="space-y-2">
+                                                <p>Net Balance: {reportData.total_contributions && reportData.total_withdrawals ? 
+                                                    formatAmount(
+                                                        (parseFloat(reportData.total_contributions) - parseFloat(reportData.total_withdrawals)).toString(),
+                                                        appCurrency
+                                                    ) : '-'}</p>
+                                                <p>Average Contribution: {reportData.total_contributions && reportData.total_funds ? 
+                                                    formatAmount(
+                                                        (parseFloat(reportData.total_contributions) / reportData.total_funds).toString(),
+                                                        appCurrency
+                                                    ) : '-'}</p>
+                                                <p>Contribution Rate: {reportData.total_funds ? 
+                                                    `${((reportData.active_funds / reportData.total_funds) * 100).toFixed(1)}%` : '-'}</p>
+                                                <p>Period: {new Date(reportDateRange.start_date).toLocaleDateString()} - {new Date(reportDateRange.end_date).toLocaleDateString()}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <h3 className="font-semibold mb-2">Recent Activities</h3>
-                                    <div className="overflow-x-auto">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Date</TableHead>
-                                                    <TableHead>Fund</TableHead>
-                                                    <TableHead>Type</TableHead>
-                                                    <TableHead>Amount</TableHead>
-                                                    <TableHead>Notes</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {reportData.recent_activities && reportData.recent_activities.length > 0 ? (
-                                                    reportData.recent_activities.map((activity) => (
-                                                        <TableRow key={activity.id}>
-                                                            <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
-                                                            <TableCell>{activity.fund.name}</TableCell>
-                                                            <TableCell>
-                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                                    activity.action === 'contribution' 
-                                                                        ? 'bg-green-100 text-green-800' 
-                                                                        : 'bg-red-100 text-red-800'
-                                                                }`}>
-                                                                    {activity.action === 'contribution' ? 'Contribution' : 'Withdrawal'}
-                                                                </span>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <span className={activity.action === 'withdrawal' ? 'text-red-600' : 'text-green-600'}>
-                                                                    {activity.action === 'withdrawal' ? '-' : '+'}
-                                                                    {formatAmount(activity.amount, appCurrency)}
-                                                                </span>
-                                                            </TableCell>
-                                                            <TableCell>{activity.notes || '-'}</TableCell>
-                                                        </TableRow>
-                                                    ))
-                                                ) : (
-                                                    <TableRow>
-                                                        <TableCell colSpan={5} className="text-center py-4">
-                                                            No recent activities found
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 border rounded-lg">
+                                            <h3 className="font-semibold mb-2">Activity Distribution</h3>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span>Contributions:</span>
+                                                    <span className="text-green-600">
+                                                        {reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span>Withdrawals:</span>
+                                                    <span className="text-red-600">
+                                                        {reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-'}
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                                    <div 
+                                                        className="bg-green-600 h-2.5 rounded-full" 
+                                                        style={{ 
+                                                            width: reportData.total_contributions && reportData.total_withdrawals ? 
+                                                                `${(parseFloat(reportData.total_contributions) / (parseFloat(reportData.total_contributions) + parseFloat(reportData.total_withdrawals))) * 100}%` : '0%'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 border rounded-lg">
+                                            <h3 className="font-semibold mb-2">Fund Status</h3>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span>Active Funds:</span>
+                                                    <span>{reportData.active_funds}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span>Inactive Funds:</span>
+                                                    <span>{reportData.total_funds - reportData.active_funds}</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                                    <div 
+                                                        className="bg-blue-600 h-2.5 rounded-full" 
+                                                        style={{ 
+                                                            width: reportData.total_funds ? 
+                                                                `${(reportData.active_funds / reportData.total_funds) * 100}%` : '0%'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </>
-                        )}
+
+                                    <div className="mt-4">
+                                        <h3 className="font-semibold mb-2">Recent Activities</h3>
+                                        <div className="overflow-x-auto">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Date</TableHead>
+                                                        <TableHead>Fund</TableHead>
+                                                        <TableHead>Type</TableHead>
+                                                        <TableHead>Amount</TableHead>
+                                                        <TableHead>Notes</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {reportData.recent_activities && reportData.recent_activities.length > 0 ? (
+                                                        reportData.recent_activities.map((activity) => (
+                                                            <TableRow key={activity.id}>
+                                                                <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
+                                                                <TableCell>{activity.fund.name}</TableCell>
+                                                                <TableCell>
+                                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                        activity.action === 'contribution' 
+                                                                            ? 'bg-green-100 text-green-800' 
+                                                                            : 'bg-red-100 text-red-800'
+                                                                    }`}>
+                                                                        {activity.action === 'contribution' ? 'Contribution' : 'Withdrawal'}
+                                                                    </span>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <span className={activity.action === 'withdrawal' ? 'text-red-600' : 'text-green-600'}>
+                                                                        {activity.action === 'withdrawal' ? '-' : '+'}
+                                                                        {formatAmount(activity.amount, appCurrency)}
+                                                                    </span>
+                                                                </TableCell>
+                                                                <TableCell>{activity.notes || '-'}</TableCell>
+                                                            </TableRow>
+                                                        ))
+                                                    ) : (
+                                                        <TableRow>
+                                                            <TableCell colSpan={5} className="text-center py-4">
+                                                                No recent activities found
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="sticky bottom-0 bg-background border-t p-6">
                         <Button
                             variant="outline"
                             onClick={() => {
