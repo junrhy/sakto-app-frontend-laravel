@@ -10,7 +10,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { formatAmount } from '@/lib/utils';
 import axios from 'axios';
-import { FileDown, MoreHorizontal, Search, Trash2 } from 'lucide-react';
+import { FileDown, MoreHorizontal, Search, Trash2, History, FileText } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 
 interface CbuFund {
@@ -47,6 +47,47 @@ interface CbuWithdrawal {
     updated_at: string;
 }
 
+interface CbuHistory {
+    id: number;
+    type: 'contribution' | 'withdrawal';
+    amount: string;
+    date: string;
+    notes: string | null;
+    created_at: string;
+}
+
+interface CbuReport {
+    total_funds: number;
+    total_contributions: string;
+    total_withdrawals: string;
+    active_funds: number;
+    recent_activities: Array<{
+        id: number;
+        cbu_fund_id: number;
+        action: 'contribution' | 'withdrawal';
+        amount: string;
+        notes: string | null;
+        date: string;
+        client_identifier: string;
+        created_at: string;
+        updated_at: string;
+        fund: {
+            id: number;
+            name: string;
+            description: string;
+            target_amount: string;
+            total_amount: string;
+            frequency: string;
+            start_date: string;
+            end_date: string | null;
+            status: string;
+            client_identifier: string;
+            created_at: string;
+            updated_at: string;
+        };
+    }>;
+}
+
 interface Props {
     cbuFunds: CbuFund[];
     appCurrency: {
@@ -64,6 +105,8 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const [isViewContributionsDialogOpen, setIsViewContributionsDialogOpen] = useState(false);
     const [isViewWithdrawalsDialogOpen, setIsViewWithdrawalsDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [selectedFund, setSelectedFund] = useState<CbuFund | null>(null);
     const [selectedFunds, setSelectedFunds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -92,6 +135,14 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     });
     const [editingFund, setEditingFund] = useState<CbuFund | null>(null);
     const [fundToDelete, setFundToDelete] = useState<CbuFund | null>(null);
+    const [fundHistory, setFundHistory] = useState<CbuHistory[]>([]);
+    const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+    const [reportDateRange, setReportDateRange] = useState({
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date().toISOString().split('T')[0]
+    });
+    const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+    const [reportData, setReportData] = useState<CbuReport | null>(null);
 
     const handleAddFund = () => {
         setNewFund({
@@ -295,6 +346,79 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         link.click();
     };
 
+    const handleViewHistory = async (fund: CbuFund) => {
+        setSelectedFund(fund);
+        setIsLoadingHistory(true);
+        try {
+            const [contributionsResponse, withdrawalsResponse] = await Promise.all([
+                axios.get(`/loan/cbu/${fund.id}/contributions`),
+                axios.get(`/loan/cbu/${fund.id}/withdrawals`)
+            ]);
+
+            const contributions = contributionsResponse.data.data.cbu_contributions.map((c: CbuContribution) => ({
+                id: c.id,
+                type: 'contribution' as const,
+                amount: c.amount,
+                date: c.contribution_date,
+                notes: c.notes,
+                created_at: c.created_at
+            }));
+
+            const withdrawals = withdrawalsResponse.data.data.cbu_withdrawals.map((w: CbuWithdrawal) => ({
+                id: w.id,
+                type: 'withdrawal' as const,
+                amount: w.amount,
+                date: w.date,
+                notes: w.notes,
+                created_at: w.created_at
+            }));
+
+            const combinedHistory = [...contributions, ...withdrawals].sort((a, b) => 
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+            setFundHistory(combinedHistory);
+            setIsHistoryDialogOpen(true);
+        } catch (error) {
+            console.error('Error fetching fund history:', error);
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    };
+
+    const handleGenerateReport = async () => {
+        setIsGeneratingReport(true);
+        try {
+            const response = await axios.get('/loan/cbu/report', {
+                params: reportDateRange,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (response.data && response.data.data) {
+                setReportData(response.data.data);
+            } else {
+                console.error('Invalid response format:', response.data);
+                alert('Failed to generate report. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error generating report:', error);
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 401) {
+                    // Session expired
+                    window.location.reload();
+                } else {
+                    // Other error
+                    alert('Failed to generate report. Please try again.');
+                }
+            }
+        } finally {
+            setIsGeneratingReport(false);
+        }
+    };
+
     const filteredFunds = cbuFunds.filter(fund => 
         fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (fund.description && fund.description.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -319,6 +443,14 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                 <CardDescription>Manage your Capital Build Up funds</CardDescription>
                             </div>
                             <div className="flex gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => setIsReportDialogOpen(true)}
+                                    className="flex items-center gap-2"
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Generate Report
+                                </Button>
                                 {selectedFunds.length > 0 && (
                                     <Button variant="outline" onClick={exportToCSV} className="flex items-center">
                                         <FileDown className="w-4 h-4 mr-2" />
@@ -396,26 +528,22 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                         case 'delete':
                                                             confirmDelete(fund);
                                                             break;
+                                                        case 'history':
+                                                            handleViewHistory(fund);
+                                                            break;
                                                     }
                                                 }}>
                                                     <SelectTrigger className="w-[180px]">
-                                                        <div className="flex items-center gap-2">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                            <span>Actions</span>
-                                                        </div>
+                                                        <span>Actions</span>
                                                     </SelectTrigger>
                                                     <SelectContent>
+                                                        <SelectItem value="history">View History</SelectItem>
                                                         <SelectItem value="view_contributions">View Contributions</SelectItem>
                                                         <SelectItem value="view_withdrawals">View Withdrawals</SelectItem>
                                                         <SelectItem value="add_contribution">Add Contribution</SelectItem>
                                                         <SelectItem value="withdraw">Withdraw</SelectItem>
                                                         <SelectItem value="edit">Edit Fund</SelectItem>
-                                                        <SelectItem value="delete" className="text-red-600">
-                                                            <div className="flex items-center gap-2">
-                                                                <Trash2 className="h-4 w-4" />
-                                                                <span>Delete Fund</span>
-                                                            </div>
-                                                        </SelectItem>
+                                                        <SelectItem value="delete" className="text-red-600">Delete Fund</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </TableCell>
@@ -759,6 +887,189 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                             onClick={handleDeleteFund}
                         >
                             Delete Fund
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* History Dialog */}
+            <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle>Transaction History - {selectedFund?.name}</DialogTitle>
+                        <DialogDescription>View all transactions for this CBU fund</DialogDescription>
+                    </DialogHeader>
+                    <div className="overflow-x-auto">
+                        {isLoadingHistory ? (
+                            <div className="text-center py-4">Loading history...</div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Notes</TableHead>
+                                        <TableHead>Created At</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {fundHistory.length > 0 ? (
+                                        fundHistory.map((item) => (
+                                            <TableRow key={`${item.type}-${item.id}`}>
+                                                <TableCell>
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                        item.type === 'contribution' 
+                                                            ? 'bg-green-100 text-green-800' 
+                                                            : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {item.type === 'contribution' ? 'Contribution' : 'Withdrawal'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={item.type === 'withdrawal' ? 'text-red-600' : 'text-green-600'}>
+                                                        {item.type === 'withdrawal' ? '-' : '+'}
+                                                        {formatAmount(item.amount, appCurrency)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                                                <TableCell>{item.notes || '-'}</TableCell>
+                                                <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-4">
+                                                No transaction history found
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Report Generation Dialog */}
+            <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+                <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                        <DialogTitle>CBU Report</DialogTitle>
+                        <DialogDescription>
+                            Generate a comprehensive report of CBU funds
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="report_start_date">Start Date</Label>
+                                <Input
+                                    id="report_start_date"
+                                    type="date"
+                                    value={reportDateRange.start_date}
+                                    onChange={(e) => setReportDateRange({
+                                        ...reportDateRange,
+                                        start_date: e.target.value
+                                    })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="report_end_date">End Date</Label>
+                                <Input
+                                    id="report_end_date"
+                                    type="date"
+                                    value={reportDateRange.end_date}
+                                    onChange={(e) => setReportDateRange({
+                                        ...reportDateRange,
+                                        end_date: e.target.value
+                                    })}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {reportData && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 border rounded-lg">
+                                        <h3 className="font-semibold mb-2">Summary</h3>
+                                        <div className="space-y-2">
+                                            <p>Total Funds: {reportData.total_funds}</p>
+                                            <p>Active Funds: {reportData.active_funds}</p>
+                                            <p>Total Contributions: {reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-'}</p>
+                                            <p>Total Withdrawals: {reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-semibold mb-2">Recent Activities</h3>
+                                    <div className="overflow-x-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead>Fund</TableHead>
+                                                    <TableHead>Type</TableHead>
+                                                    <TableHead>Amount</TableHead>
+                                                    <TableHead>Notes</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {reportData.recent_activities && reportData.recent_activities.length > 0 ? (
+                                                    reportData.recent_activities.map((activity) => (
+                                                        <TableRow key={activity.id}>
+                                                            <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
+                                                            <TableCell>{activity.fund.name}</TableCell>
+                                                            <TableCell>
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                    activity.action === 'contribution' 
+                                                                        ? 'bg-green-100 text-green-800' 
+                                                                        : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                    {activity.action === 'contribution' ? 'Contribution' : 'Withdrawal'}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <span className={activity.action === 'withdrawal' ? 'text-red-600' : 'text-green-600'}>
+                                                                    {activity.action === 'withdrawal' ? '-' : '+'}
+                                                                    {formatAmount(activity.amount, appCurrency)}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell>{activity.notes || '-'}</TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={5} className="text-center py-4">
+                                                            No recent activities found
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setIsReportDialogOpen(false);
+                                setReportData(null);
+                            }}
+                        >
+                            Close
+                        </Button>
+                        <Button
+                            onClick={handleGenerateReport}
+                            disabled={isGeneratingReport}
+                        >
+                            {isGeneratingReport ? 'Generating...' : 'Generate Report'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

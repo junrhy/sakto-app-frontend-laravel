@@ -539,7 +539,9 @@ class LoanController extends Controller
         try {
             $clientIdentifier = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/lending/cbu/{$id}/history?client_identifier={$clientIdentifier}");
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/history", [
+                    'client_identifier' => $clientIdentifier
+                ]);
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
@@ -552,23 +554,26 @@ class LoanController extends Controller
         }
     }
 
-    public function generateCbuReport()
+    public function generateCbuReport(Request $request)
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/lending/cbu/report?client_identifier={$clientIdentifier}");
+                ->get("{$this->apiUrl}/lending/cbu/report", [
+                    'client_identifier' => $clientIdentifier,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ]);
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            $report = $response->json()['data']['report'];
-            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
-
-            return Inertia::render('Loan/CbuReport', [
-                'report' => $report,
-                'appCurrency' => $jsonAppCurrency
+            return response()->json([
+                'data' => $response->json()
             ]);
         } catch (\Exception $e) {
             Log::error('Error generating CBU report: ' . $e->getMessage());
