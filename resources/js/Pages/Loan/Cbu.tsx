@@ -10,7 +10,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { formatAmount } from '@/lib/utils';
 import axios from 'axios';
-import { FileDown } from 'lucide-react';
+import { FileDown, MoreHorizontal, Search, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 
 interface CbuFund {
@@ -63,8 +63,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isViewContributionsDialogOpen, setIsViewContributionsDialogOpen] = useState(false);
     const [isViewWithdrawalsDialogOpen, setIsViewWithdrawalsDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedFund, setSelectedFund] = useState<CbuFund | null>(null);
     const [selectedFunds, setSelectedFunds] = useState<number[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [contributions, setContributions] = useState<CbuContribution[]>([]);
     const [withdrawals, setWithdrawals] = useState<CbuWithdrawal[]>([]);
     const [isLoadingContributions, setIsLoadingContributions] = useState(false);
@@ -89,6 +91,7 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         notes: ''
     });
     const [editingFund, setEditingFund] = useState<CbuFund | null>(null);
+    const [fundToDelete, setFundToDelete] = useState<CbuFund | null>(null);
 
     const handleAddFund = () => {
         setNewFund({
@@ -224,6 +227,23 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         }
     };
 
+    const handleDeleteFund = async () => {
+        if (!fundToDelete) return;
+
+        try {
+            await axios.delete(`/loan/cbu/${fundToDelete.id}`);
+            setIsDeleteDialogOpen(false);
+            window.location.reload();
+        } catch (error) {
+            console.error('Error deleting fund:', error);
+        }
+    };
+
+    const confirmDelete = (fund: CbuFund) => {
+        setFundToDelete(fund);
+        setIsDeleteDialogOpen(true);
+    };
+
     const toggleSelectAll = () => {
         if (selectedFunds.length === cbuFunds.length) {
             setSelectedFunds([]);
@@ -275,6 +295,11 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         link.click();
     };
 
+    const filteredFunds = cbuFunds.filter(fund => 
+        fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (fund.description && fund.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
     return (
         <AuthenticatedLayout
             header={
@@ -305,13 +330,24 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                         </div>
                     </CardHeader>
                     <CardContent>
+                        <div className="mb-4">
+                            <div className="relative">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search by name or description..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-8"
+                                />
+                            </div>
+                        </div>
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[50px]">
                                             <Checkbox
-                                                checked={selectedFunds.length === cbuFunds.length}
+                                                checked={selectedFunds.length === filteredFunds.length}
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </TableHead>
@@ -325,7 +361,7 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {cbuFunds.map((fund) => (
+                                    {filteredFunds.map((fund) => (
                                         <TableRow key={fund.id}>
                                             <TableCell>
                                                 <Checkbox
@@ -340,43 +376,48 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                             <TableCell>{fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>{fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleViewContributions(fund)}
-                                                    >
-                                                        View Contributions
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleViewWithdrawals(fund)}
-                                                    >
-                                                        View Withdrawals
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleAddContribution(fund)}
-                                                    >
-                                                        Add Contribution
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleWithdraw(fund)}
-                                                    >
-                                                        Withdraw
-                                                    </Button>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleUpdateFund(fund)}
-                                                    >
-                                                        Edit
-                                                    </Button>
-                                                </div>
+                                                <Select onValueChange={(value) => {
+                                                    switch (value) {
+                                                        case 'view_contributions':
+                                                            handleViewContributions(fund);
+                                                            break;
+                                                        case 'view_withdrawals':
+                                                            handleViewWithdrawals(fund);
+                                                            break;
+                                                        case 'add_contribution':
+                                                            handleAddContribution(fund);
+                                                            break;
+                                                        case 'withdraw':
+                                                            handleWithdraw(fund);
+                                                            break;
+                                                        case 'edit':
+                                                            handleUpdateFund(fund);
+                                                            break;
+                                                        case 'delete':
+                                                            confirmDelete(fund);
+                                                            break;
+                                                    }
+                                                }}>
+                                                    <SelectTrigger className="w-[180px]">
+                                                        <div className="flex items-center gap-2">
+                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <span>Actions</span>
+                                                        </div>
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="view_contributions">View Contributions</SelectItem>
+                                                        <SelectItem value="view_withdrawals">View Withdrawals</SelectItem>
+                                                        <SelectItem value="add_contribution">Add Contribution</SelectItem>
+                                                        <SelectItem value="withdraw">Withdraw</SelectItem>
+                                                        <SelectItem value="edit">Edit Fund</SelectItem>
+                                                        <SelectItem value="delete" className="text-red-600">
+                                                            <div className="flex items-center gap-2">
+                                                                <Trash2 className="h-4 w-4" />
+                                                                <span>Delete Fund</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -689,6 +730,37 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                             </Table>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete CBU Fund</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete the fund "{fundToDelete?.name}"? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p className="text-sm text-gray-500">
+                            This will permanently delete the fund and all associated contributions and withdrawals.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsDeleteDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteFund}
+                        >
+                            Delete Fund
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </AuthenticatedLayout>
