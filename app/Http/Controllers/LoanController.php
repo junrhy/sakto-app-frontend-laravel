@@ -554,30 +554,86 @@ class LoanController extends Controller
         }
     }
 
-    public function generateCbuReport(Request $request)
+    public function getCbuDividends(string $id)
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date');
-
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/lending/cbu/report", [
-                    'client_identifier' => $clientIdentifier,
-                    'start_date' => $startDate,
-                    'end_date' => $endDate
+                ->get("{$this->apiUrl}/lending/cbu/{$id}/dividends?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error fetching CBU dividends: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch CBU dividends.'], 500);
+        }
+    }
+
+    public function addCbuDividend(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'cbu_fund_id' => 'required',
+            'amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
+            'dividend_date' => 'required|date',
+        ]);
+
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/cbu/{$id}/dividend", [
+                    ...$validated,
+                    'client_identifier' => $clientIdentifier
                 ]);
 
             if (!$response->successful()) {
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error adding CBU dividend: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function generateCbuReport(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending/cbu/report", [
+                    'client_identifier' => $clientIdentifier,
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date']
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $reportData = $response->json();
+            
+            // Add dividend-related statistics to the report
+            $reportData['total_dividends'] = $reportData['total_dividends'] ?? '0';
+            $reportData['dividend_rate'] = $reportData['total_funds'] > 0 
+                ? (($reportData['total_dividends'] / $reportData['total_contributions']) * 100) 
+                : 0;
+
             return response()->json([
-                'data' => $response->json()
+                'data' => $reportData
             ]);
         } catch (\Exception $e) {
             Log::error('Error generating CBU report: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to generate CBU report.'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
