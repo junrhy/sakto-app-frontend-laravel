@@ -110,6 +110,8 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     const [selectedFund, setSelectedFund] = useState<CbuFund | null>(null);
     const [selectedFunds, setSelectedFunds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [contributions, setContributions] = useState<CbuContribution[]>([]);
     const [withdrawals, setWithdrawals] = useState<CbuWithdrawal[]>([]);
     const [isLoadingContributions, setIsLoadingContributions] = useState(false);
@@ -424,6 +426,20 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         (fund.description && fund.description.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
+    const totalPages = Math.ceil(filteredFunds.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentFunds = filteredFunds.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (value: string) => {
+        setItemsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -493,7 +509,7 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredFunds.map((fund) => (
+                                    {currentFunds.map((fund) => (
                                         <TableRow key={fund.id}>
                                             <TableCell>
                                                 <Checkbox
@@ -551,6 +567,59 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                     ))}
                                 </TableBody>
                             </Table>
+                        </div>
+                        <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">Items per page:</span>
+                                <Select
+                                    value={itemsPerPage.toString()}
+                                    onValueChange={handleItemsPerPageChange}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="5">5</SelectItem>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="20">20</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <span className="text-sm text-gray-600">
+                                    Showing {startIndex + 1}-{Math.min(endIndex, filteredFunds.length)} of {filteredFunds.length} items
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    Previous
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                        <Button
+                                            key={page}
+                                            variant={currentPage === page ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(page)}
+                                            className="w-8 h-8 p-0"
+                                        >
+                                            {page}
+                                        </Button>
+                                    ))}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Next
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
