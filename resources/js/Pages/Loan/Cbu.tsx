@@ -10,8 +10,10 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { formatAmount } from '@/lib/utils';
 import axios from 'axios';
-import { FileDown, MoreHorizontal, Search, Trash2, History, FileText } from 'lucide-react';
+import { FileDown, MoreHorizontal, Search, Trash2, History, FileText, Mail } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { Textarea } from '@/Components/ui/textarea';
+import { toast } from 'sonner';
 
 interface CbuFund {
     id: number;
@@ -171,6 +173,12 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
     });
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [reportData, setReportData] = useState<CbuReport | null>(null);
+    const [isSendReportDialogOpen, setIsSendReportDialogOpen] = useState(false);
+    const [isSendingReport, setIsSendingReport] = useState(false);
+    const [reportEmailData, setReportEmailData] = useState({
+        email: '',
+        message: ''
+    });
 
     const handleAddFund = () => {
         setNewFund({
@@ -566,6 +574,27 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         link.click();
     };
 
+    const handleSendFundReport = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedFund) return;
+
+        setIsSendingReport(true);
+        try {
+            const response = await axios.post(`/loan/cbu/${selectedFund.id}/send-report`, reportEmailData);
+            
+            if (response.data) {
+                toast.success('Fund report sent successfully');
+                setIsSendReportDialogOpen(false);
+                setReportEmailData({ email: '', message: '' });
+            }
+        } catch (error) {
+            console.error('Error sending fund report:', error);
+            toast.error('Failed to send fund report. Please try again.');
+        } finally {
+            setIsSendingReport(false);
+        }
+    };
+
     const filteredFunds = cbuFunds.filter(fund => 
         fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (fund.description && fund.description.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -702,6 +731,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                         case 'history':
                                                             handleViewHistory(fund);
                                                             break;
+                                                        case 'send_report':
+                                                            setSelectedFund(fund);
+                                                            setIsSendReportDialogOpen(true);
+                                                            break;
                                                     }
                                                 }}>
                                                     <SelectTrigger className="w-[180px]">
@@ -716,6 +749,7 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                         <SelectItem value="add_dividend">Add Dividend</SelectItem>
                                                         <SelectItem value="withdraw">Withdraw</SelectItem>
                                                         <SelectItem value="edit">Edit Fund</SelectItem>
+                                                        <SelectItem value="send_report">Send Report</SelectItem>
                                                         <SelectItem value="delete" className="text-red-600">Delete Fund</SelectItem>
                                                     </SelectContent>
                                                 </Select>
@@ -1534,6 +1568,55 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                             {isGeneratingReport ? 'Generating...' : 'Generate Report'}
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Send Fund Report Dialog */}
+            <Dialog open={isSendReportDialogOpen} onOpenChange={setIsSendReportDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Send Fund Report</DialogTitle>
+                        <DialogDescription>
+                            Send a detailed report of {selectedFund?.name} to the fund owner
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSendFundReport}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="report_email">Recipient Email</Label>
+                                <Input
+                                    id="report_email"
+                                    type="email"
+                                    value={reportEmailData.email}
+                                    onChange={(e) => setReportEmailData({ ...reportEmailData, email: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="report_message">Message (Optional)</Label>
+                                <Textarea
+                                    id="report_message"
+                                    value={reportEmailData.message}
+                                    onChange={(e) => setReportEmailData({ ...reportEmailData, message: e.target.value })}
+                                    placeholder="Add a personal message to the email..."
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsSendReportDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isSendingReport}
+                            >
+                                {isSendingReport ? 'Sending...' : 'Send Report'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
         </AuthenticatedLayout>

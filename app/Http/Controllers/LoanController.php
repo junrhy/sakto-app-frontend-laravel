@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class LoanController extends Controller
 {
@@ -635,6 +636,43 @@ class LoanController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Error generating CBU report: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function sendFundReportEmail(Request $request, string $id)
+    {
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'message' => 'nullable|string'
+            ]);
+
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/lending/cbu/{$id}/send-report", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $reportData = $response->json()['data'];
+
+            // Send email using Laravel's mail facade
+            Mail::send('emails.cbu-fund-report', $reportData, function($message) use ($validated, $reportData) {
+                $message->to($validated['email'])
+                    ->subject("CBU Fund Report - {$reportData['fund']['name']}")
+                    ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            return response()->json([
+                'message' => 'Fund report sent successfully',
+                'data' => $reportData
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error sending fund report email: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
