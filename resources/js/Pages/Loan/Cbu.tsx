@@ -508,6 +508,64 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         }
     };
 
+    const exportReportToCSV = () => {
+        if (!reportData) return;
+
+        // Prepare headers
+        const headers = [
+            'Report Period',
+            'Total Funds',
+            'Active Funds',
+            'Total Contributions',
+            'Total Withdrawals',
+            'Total Dividends',
+            'Net Balance',
+            'Average Contribution',
+            'Average Dividend',
+            'Contribution Rate'
+        ];
+
+        // Calculate values
+        const netBalance = reportData.total_contributions && reportData.total_withdrawals ? 
+            (parseFloat(reportData.total_contributions) + parseFloat(reportData.total_dividends || '0') - parseFloat(reportData.total_withdrawals)).toString() : '0';
+        
+        const avgContribution = reportData.total_contributions && reportData.total_funds ? 
+            (parseFloat(reportData.total_contributions) / reportData.total_funds).toString() : '0';
+        
+        const avgDividend = reportData.total_dividends && reportData.total_funds ? 
+            (parseFloat(reportData.total_dividends) / reportData.total_funds).toString() : '0';
+        
+        const contributionRate = reportData.total_funds ? 
+            ((reportData.active_funds / reportData.total_funds) * 100).toFixed(1) + '%' : '0%';
+
+        // Prepare data row
+        const data = [
+            `${new Date(reportDateRange.start_date).toLocaleDateString()} - ${new Date(reportDateRange.end_date).toLocaleDateString()}`,
+            reportData.total_funds.toString(),
+            reportData.active_funds.toString(),
+            reportData.total_contributions ? formatAmount(reportData.total_contributions, appCurrency) : '-',
+            reportData.total_withdrawals ? formatAmount(reportData.total_withdrawals, appCurrency) : '-',
+            reportData.total_dividends ? formatAmount(reportData.total_dividends, appCurrency) : '-',
+            formatAmount(netBalance, appCurrency),
+            formatAmount(avgContribution, appCurrency),
+            formatAmount(avgDividend, appCurrency),
+            contributionRate
+        ];
+
+        // Create CSV content
+        const csvContent = [
+            headers.join(','),
+            data.map(cell => `"${cell}"`).join(',')
+        ].join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `cbu_report_${reportDateRange.start_date}_to_${reportDateRange.end_date}.csv`;
+        link.click();
+    };
+
     const filteredFunds = cbuFunds.filter(fund => 
         fund.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (fund.description && fund.description.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -1296,6 +1354,16 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
 
                             {reportData && (
                                 <>
+                                    <div className="flex justify-end mb-4">
+                                        <Button
+                                            variant="outline"
+                                            onClick={exportReportToCSV}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <FileDown className="w-4 h-4" />
+                                            Export Report
+                                        </Button>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-4 border rounded-lg">
                                             <h3 className="font-semibold mb-2">Summary</h3>
