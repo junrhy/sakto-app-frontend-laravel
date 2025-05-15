@@ -351,6 +351,7 @@ class LoanController extends Controller
             'target_amount' => 'required|numeric|min:0',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
+            'value_per_share' => 'required|numeric|min:0',
         ]);
 
         try {
@@ -380,6 +381,7 @@ class LoanController extends Controller
             'target_amount' => 'numeric|min:0',
             'start_date' => 'date',
             'end_date' => 'nullable|date|after:start_date',
+            'value_per_share' => 'numeric|min:0',
         ]);
 
         try {

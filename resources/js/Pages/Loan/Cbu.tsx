@@ -21,6 +21,8 @@ interface CbuFund {
     start_date: string;
     end_date: string | null;
     total_amount: string;
+    value_per_share: string;
+    number_of_shares: number;
     created_at: string;
     updated_at: string;
 }
@@ -136,7 +138,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
         description: '',
         target_amount: '',
         start_date: new Date().toISOString().split('T')[0],
-        end_date: ''
+        end_date: '',
+        value_per_share: '',
+        total_amount: '0',
+        number_of_shares: 0
     });
     const [contribution, setContribution] = useState({
         cbu_fund_id: '',
@@ -173,7 +178,10 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
             description: '',
             target_amount: '',
             start_date: new Date().toISOString().split('T')[0],
-            end_date: ''
+            end_date: '',
+            value_per_share: '',
+            total_amount: '0',
+            number_of_shares: 0
         });
         setIsAddDialogOpen(true);
     };
@@ -332,7 +340,9 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                 description: editingFund.description,
                 target_amount: editingFund.target_amount,
                 start_date: editingFund.start_date,
-                end_date: editingFund.end_date
+                end_date: editingFund.end_date,
+                value_per_share: editingFund.value_per_share,
+                number_of_shares: editingFund.number_of_shares
             });
             if (response.data) {
                 setIsEditDialogOpen(false);
@@ -383,6 +393,8 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
             'Description',
             'Target Amount',
             'Total Amount',
+            'Value Per Share',
+            'Number of Shares',
             'Start Date',
             'End Date',
             'Created At',
@@ -393,6 +405,8 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
             fund.description || '',
             fund.target_amount ? formatAmount(fund.target_amount, appCurrency) : '',
             fund.total_amount ? formatAmount(fund.total_amount, appCurrency) : '',
+            fund.value_per_share ? formatAmount(fund.value_per_share, appCurrency) : '',
+            fund.number_of_shares || '0',
             fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '',
             fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '',
             fund.created_at ? new Date(fund.created_at).toLocaleDateString() : '',
@@ -576,6 +590,8 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                         <TableHead>Description</TableHead>
                                         <TableHead>Target Amount</TableHead>
                                         <TableHead>Total Amount</TableHead>
+                                        <TableHead>Value Per Share</TableHead>
+                                        <TableHead>Number of Shares</TableHead>
                                         <TableHead>Start Date</TableHead>
                                         <TableHead>End Date</TableHead>
                                         <TableHead>Actions</TableHead>
@@ -594,6 +610,8 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                             <TableCell>{fund.description || '-'}</TableCell>
                                             <TableCell>{fund.target_amount ? formatAmount(fund.target_amount, appCurrency) : '-'}</TableCell>
                                             <TableCell>{fund.total_amount ? formatAmount(fund.total_amount, appCurrency) : '-'}</TableCell>
+                                            <TableCell>{fund.value_per_share ? formatAmount(fund.value_per_share, appCurrency) : '-'}</TableCell>
+                                            <TableCell>{fund.number_of_shares || '0'}</TableCell>
                                             <TableCell>{fund.start_date ? new Date(fund.start_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>{fund.end_date ? new Date(fund.end_date).toLocaleDateString() : '-'}</TableCell>
                                             <TableCell>
@@ -740,6 +758,28 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                     value={newFund.target_amount}
                                     onChange={(e) => setNewFund({ ...newFund, target_amount: e.target.value })}
                                     required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="value_per_share">Value Per Share</Label>
+                                <Input
+                                    id="value_per_share"
+                                    type="number"
+                                    min="0"
+                                    value={newFund.value_per_share}
+                                    onChange={(e) => setNewFund({ ...newFund, value_per_share: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="number_of_shares">Number of Shares (Calculated)</Label>
+                                <Input
+                                    id="number_of_shares"
+                                    type="number"
+                                    min="0"
+                                    value={newFund.total_amount && newFund.value_per_share ? 
+                                        Math.ceil(parseFloat(newFund.total_amount) / parseFloat(newFund.value_per_share)) : 0}
+                                    disabled
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -939,6 +979,28 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                     value={editingFund?.target_amount || ''}
                                     onChange={(e) => setEditingFund(editingFund ? { ...editingFund, target_amount: e.target.value } : null)}
                                     required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_value_per_share">Value Per Share</Label>
+                                <Input
+                                    id="edit_value_per_share"
+                                    type="number"
+                                    min="0"
+                                    value={editingFund?.value_per_share || ''}
+                                    onChange={(e) => setEditingFund(editingFund ? { ...editingFund, value_per_share: e.target.value } : null)}
+                                    required
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit_number_of_shares">Number of Shares (Calculated)</Label>
+                                <Input
+                                    id="edit_number_of_shares"
+                                    type="number"
+                                    min="0"
+                                    value={editingFund?.total_amount && editingFund?.value_per_share ? 
+                                        Math.ceil(parseFloat(editingFund.total_amount) / parseFloat(editingFund.value_per_share)) : 0}
+                                    disabled
                                 />
                             </div>
                             <div className="grid gap-2">
