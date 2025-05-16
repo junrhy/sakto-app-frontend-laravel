@@ -300,6 +300,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/withdraw', [LoanController::class, 'processCbuWithdrawal'])->name('loan.cbu.withdraw.process');
             Route::get('/{id}/history', [LoanController::class, 'getCbuHistory'])->name('loan.cbu.history');
             Route::get('/report', [LoanController::class, 'generateCbuReport'])->name('loan.cbu.report');
+            Route::post('/{id}/send-report', [LoanController::class, 'sendFundReportEmail'])->name('loan.cbu.send-report');
         });
     });
     

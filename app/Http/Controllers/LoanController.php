@@ -659,9 +659,19 @@ class LoanController extends Controller
             }
 
             $reportData = $response->json()['data'];
+            $message = $validated['message'] ?? '';
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
 
             // Send email using Laravel's mail facade
-            Mail::send('emails.cbu-fund-report', $reportData, function($message) use ($validated, $reportData) {
+            Mail::send('emails.cbu-fund-report', [
+                'fund' => $reportData['fund'],
+                'statistics' => $reportData['statistics'],
+                'recentContributions' => $reportData['recentContributions'] ?? [],
+                'recentWithdrawals' => $reportData['recentWithdrawals'] ?? [],
+                'recentDividends' => $reportData['recentDividends'] ?? [],
+                'message' => $message,
+                'appCurrency' => $jsonAppCurrency
+            ], function($message) use ($validated, $reportData) {
                 $message->to($validated['email'])
                     ->subject("CBU Fund Report - {$reportData['fund']['name']}")
                     ->from(config('mail.from.address'), config('mail.from.name'));
