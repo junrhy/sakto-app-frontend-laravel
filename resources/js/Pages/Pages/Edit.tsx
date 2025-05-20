@@ -8,14 +8,21 @@ import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Switch } from '@/Components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { toast } from 'sonner';
 
 interface Props {
     page: Page;
 }
 
+interface ValidationErrors {
+    [key: string]: string;
+}
+
 export default function Edit({ page }: Props) {
-    const { data, setData, post, processing, errors } = useForm<PageFormData>({
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+
+    const { data, setData, put, processing, errors } = useForm<PageFormData>({
         title: page.title,
         slug: page.slug,
         content: page.content,
@@ -28,22 +35,109 @@ export default function Edit({ page }: Props) {
         featured_image: null,
     });
 
+    const validateForm = (): boolean => {
+        const errors: ValidationErrors = {};
+
+        // Title validation
+        if (!data.title.trim()) {
+            errors.title = 'Title is required';
+        } else if (data.title.length < 3) {
+            errors.title = 'Title must be at least 3 characters long';
+        }
+
+        // Slug validation
+        if (!data.slug.trim()) {
+            errors.slug = 'Slug is required';
+        } else if (!/^[a-z0-9-]+$/.test(data.slug)) {
+            errors.slug = 'Slug can only contain lowercase letters, numbers, and hyphens';
+        }
+
+        // Content validation
+        if (!data.content.trim()) {
+            errors.content = 'Content is required';
+        } else if (data.content.length < 10) {
+            errors.content = 'Content must be at least 10 characters long';
+        }
+
+        // Meta description validation
+        if (data.meta_description && data.meta_description.length > 160) {
+            errors.meta_description = 'Meta description must not exceed 160 characters';
+        }
+
+        // Meta keywords validation
+        if (data.meta_keywords) {
+            const keywords = data.meta_keywords.split(',').map(k => k.trim());
+            if (keywords.some(k => k.length === 0)) {
+                errors.meta_keywords = 'Invalid keyword format. Use comma-separated values';
+            }
+        }
+
+        // Template validation
+        if (data.template && !/^[a-zA-Z0-9-_]+$/.test(data.template)) {
+            errors.template = 'Template name can only contain letters, numbers, hyphens, and underscores';
+        }
+
+        // Featured image validation
+        if (data.featured_image) {
+            const file = data.featured_image as File;
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (!validTypes.includes(file.type)) {
+                errors.featured_image = 'Image must be JPEG, PNG, GIF, or WebP';
+            } else if (file.size > maxSize) {
+                errors.featured_image = 'Image size must not exceed 5MB';
+            }
+        }
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('pages.update', page.id), {
+        
+        if (!validateForm()) {
+            toast.error('Please fix the validation errors');
+            return;
+        }
+
+        put(route('pages.update', page.id), {
             onSuccess: () => {
                 toast.success('Page updated successfully');
+                setValidationErrors({});
             },
-            onError: () => {
+            onError: (errors) => {
                 toast.error('Failed to update page');
+                setValidationErrors(errors as ValidationErrors);
             },
         });
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setData('featured_image', e.target.files[0]);
+            const file = e.target.files[0];
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (!validTypes.includes(file.type)) {
+                toast.error('Image must be JPEG, PNG, GIF, or WebP');
+                setValidationErrors(prev => ({ ...prev, featured_image: 'Image must be JPEG, PNG, GIF, or WebP' }));
+                return;
+            }
+            if (file.size > maxSize) {
+                toast.error('Image size must not exceed 5MB');
+                setValidationErrors(prev => ({ ...prev, featured_image: 'Image size must not exceed 5MB' }));
+                return;
+            }
+
+            setData('featured_image', file);
+            setValidationErrors(prev => ({ ...prev, featured_image: '' }));
         }
+    };
+
+    const getErrorMessage = (field: keyof PageFormData): string | undefined => {
+        return validationErrors[field] || errors[field];
     };
 
     return (
@@ -63,11 +157,14 @@ export default function Edit({ page }: Props) {
                                     <Input
                                         id="title"
                                         value={data.title}
-                                        onChange={e => setData('title', e.target.value)}
+                                        onChange={e => {
+                                            setData('title', e.target.value);
+                                            setValidationErrors(prev => ({ ...prev, title: '' }));
+                                        }}
                                         required
                                     />
-                                    {errors.title && (
-                                        <p className="text-sm text-red-600">{errors.title}</p>
+                                    {getErrorMessage('title') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('title')}</p>
                                     )}
                                 </div>
 
@@ -76,11 +173,15 @@ export default function Edit({ page }: Props) {
                                     <Input
                                         id="slug"
                                         value={data.slug}
-                                        onChange={e => setData('slug', e.target.value)}
+                                        onChange={e => {
+                                            const newSlug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                                            setData('slug', newSlug);
+                                            setValidationErrors(prev => ({ ...prev, slug: '' }));
+                                        }}
                                         required
                                     />
-                                    {errors.slug && (
-                                        <p className="text-sm text-red-600">{errors.slug}</p>
+                                    {getErrorMessage('slug') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('slug')}</p>
                                     )}
                                 </div>
 
@@ -89,12 +190,15 @@ export default function Edit({ page }: Props) {
                                     <Textarea
                                         id="content"
                                         value={data.content}
-                                        onChange={e => setData('content', e.target.value)}
+                                        onChange={e => {
+                                            setData('content', e.target.value);
+                                            setValidationErrors(prev => ({ ...prev, content: '' }));
+                                        }}
                                         required
                                         rows={10}
                                     />
-                                    {errors.content && (
-                                        <p className="text-sm text-red-600">{errors.content}</p>
+                                    {getErrorMessage('content') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('content')}</p>
                                     )}
                                 </div>
 
@@ -103,11 +207,14 @@ export default function Edit({ page }: Props) {
                                     <Textarea
                                         id="meta_description"
                                         value={data.meta_description}
-                                        onChange={e => setData('meta_description', e.target.value)}
+                                        onChange={e => {
+                                            setData('meta_description', e.target.value);
+                                            setValidationErrors(prev => ({ ...prev, meta_description: '' }));
+                                        }}
                                         rows={3}
                                     />
-                                    {errors.meta_description && (
-                                        <p className="text-sm text-red-600">{errors.meta_description}</p>
+                                    {getErrorMessage('meta_description') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('meta_description')}</p>
                                     )}
                                 </div>
 
@@ -116,22 +223,37 @@ export default function Edit({ page }: Props) {
                                     <Input
                                         id="meta_keywords"
                                         value={data.meta_keywords}
-                                        onChange={e => setData('meta_keywords', e.target.value)}
+                                        onChange={e => {
+                                            setData('meta_keywords', e.target.value);
+                                            setValidationErrors(prev => ({ ...prev, meta_keywords: '' }));
+                                        }}
+                                        placeholder="keyword1, keyword2, keyword3"
                                     />
-                                    {errors.meta_keywords && (
-                                        <p className="text-sm text-red-600">{errors.meta_keywords}</p>
+                                    {getErrorMessage('meta_keywords') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('meta_keywords')}</p>
                                     )}
                                 </div>
 
                                 <div>
                                     <Label htmlFor="template">Template</Label>
-                                    <Input
-                                        id="template"
+                                    <Select
                                         value={data.template}
-                                        onChange={e => setData('template', e.target.value)}
-                                    />
-                                    {errors.template && (
-                                        <p className="text-sm text-red-600">{errors.template}</p>
+                                        onValueChange={(value) => {
+                                            setData('template', value);
+                                            setValidationErrors(prev => ({ ...prev, template: '' }));
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a template" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="default">Default Template</SelectItem>
+                                            <SelectItem value="full-width">Full Width Template</SelectItem>
+                                            <SelectItem value="sidebar">Sidebar Template</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {getErrorMessage('template') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('template')}</p>
                                     )}
                                 </div>
 
@@ -140,11 +262,14 @@ export default function Edit({ page }: Props) {
                                     <Textarea
                                         id="custom_css"
                                         value={data.custom_css}
-                                        onChange={e => setData('custom_css', e.target.value)}
+                                        onChange={e => {
+                                            setData('custom_css', e.target.value);
+                                            setValidationErrors(prev => ({ ...prev, custom_css: '' }));
+                                        }}
                                         rows={5}
                                     />
-                                    {errors.custom_css && (
-                                        <p className="text-sm text-red-600">{errors.custom_css}</p>
+                                    {getErrorMessage('custom_css') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('custom_css')}</p>
                                     )}
                                 </div>
 
@@ -153,11 +278,14 @@ export default function Edit({ page }: Props) {
                                     <Textarea
                                         id="custom_js"
                                         value={data.custom_js}
-                                        onChange={e => setData('custom_js', e.target.value)}
+                                        onChange={e => {
+                                            setData('custom_js', e.target.value);
+                                            setValidationErrors(prev => ({ ...prev, custom_js: '' }));
+                                        }}
                                         rows={5}
                                     />
-                                    {errors.custom_js && (
-                                        <p className="text-sm text-red-600">{errors.custom_js}</p>
+                                    {getErrorMessage('custom_js') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('custom_js')}</p>
                                     )}
                                 </div>
 
@@ -175,11 +303,11 @@ export default function Edit({ page }: Props) {
                                     <Input
                                         id="featured_image"
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
                                         onChange={handleImageChange}
                                     />
-                                    {errors.featured_image && (
-                                        <p className="text-sm text-red-600">{errors.featured_image}</p>
+                                    {getErrorMessage('featured_image') && (
+                                        <p className="text-sm text-red-600 mt-1">{getErrorMessage('featured_image')}</p>
                                     )}
                                 </div>
 

@@ -23,8 +23,28 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 
+interface PaginatedResponse {
+    current_page: number;
+    data: Page[];
+    first_page_url: string;
+    from: number | null;
+    last_page: number;
+    last_page_url: string;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number | null;
+    total: number;
+}
+
 interface Props {
-    pages: Page[];
+    pages: PaginatedResponse;
 }
 
 export default function Index({ pages }: Props) {
@@ -32,14 +52,14 @@ export default function Index({ pages }: Props) {
     const [selectedPages, setSelectedPages] = useState<number[]>([]);
 
     const filteredPages = useMemo(() => {
-        if (!search.trim()) return pages;
+        if (!search.trim()) return pages.data;
         const searchLower = search.toLowerCase();
-        return pages.filter(page => 
+        return pages.data.filter(page => 
             page.title.toLowerCase().includes(searchLower) ||
             page.slug.toLowerCase().includes(searchLower) ||
             page.content.toLowerCase().includes(searchLower)
         );
-    }, [pages, search]);
+    }, [pages.data, search]);
 
     const toggleSelectAll = () => {
         if (selectedPages.length === filteredPages.length) {
@@ -58,7 +78,7 @@ export default function Index({ pages }: Props) {
     };
 
     const exportToCSV = () => {
-        const selectedData = pages.filter(page => selectedPages.includes(page.id));
+        const selectedData = pages.data.filter(page => selectedPages.includes(page.id));
         const headers = ['Title', 'Slug', 'Status', 'Last Updated'];
         const csvData = selectedData.map(page => [
             page.title,
@@ -134,7 +154,7 @@ export default function Index({ pages }: Props) {
                                     <TableRow>
                                         <TableHead className="w-[50px]">
                                             <Checkbox
-                                                checked={selectedPages.length === filteredPages.length}
+                                                checked={selectedPages.length === filteredPages.length && filteredPages.length > 0}
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </TableHead>
@@ -146,57 +166,78 @@ export default function Index({ pages }: Props) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredPages.map((page) => (
-                                        <TableRow key={page.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedPages.includes(page.id)}
-                                                    onCheckedChange={() => toggleSelect(page.id)}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-medium">{page.title}</TableCell>
-                                            <TableCell>{page.slug}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={page.is_published ? "default" : "secondary"}>
-                                                    {page.is_published ? 'Published' : 'Draft'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>{format(new Date(page.updated_at), 'PPP')}</TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                                            <span className="sr-only">Open menu</span>
-                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                            </svg>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('pages.show', page.id)}>
-                                                                <Eye className="w-4 h-4 mr-2" />
-                                                                View
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('pages.edit', page.id)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
-                                                                Edit
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className="text-red-600"
-                                                            onClick={() => handleDelete(page.id)}
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                    {filteredPages.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-4">
+                                                No pages found
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        filteredPages.map((page) => (
+                                            <TableRow key={page.id}>
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={selectedPages.includes(page.id)}
+                                                        onCheckedChange={() => toggleSelect(page.id)}
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="font-medium">{page.title}</TableCell>
+                                                <TableCell>
+                                                    {page.is_published ? (
+                                                        <a 
+                                                            href={route('pages.static', page.slug)} 
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                        >
+                                                            {page.slug}
+                                                        </a>
+                                                    ) : (
+                                                        page.slug
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={page.is_published ? "default" : "secondary"}>
+                                                        {page.is_published ? 'Published' : 'Draft'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>{format(new Date(page.updated_at), 'PPP')}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                <span className="sr-only">Open menu</span>
+                                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                                </svg>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('pages.show', page.id)}>
+                                                                    <Eye className="w-4 h-4 mr-2" />
+                                                                    View
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('pages.edit', page.id)}>
+                                                                    <Edit className="w-4 h-4 mr-2" />
+                                                                    Edit
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className="text-red-600"
+                                                                onClick={() => handleDelete(page.id)}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>

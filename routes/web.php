@@ -191,6 +191,7 @@ Route::group(['middleware' => ['web']], function () {
 
     // Pages
     Route::get('/link/{slug}', [PagesController::class, 'getPage'])->name('pages.static');
+    Route::get('/api/pages/{slug}', [PagesController::class, 'getPageBySlug'])->name('api.pages.get-by-slug');
 });
 
 // Admin Auth Routes

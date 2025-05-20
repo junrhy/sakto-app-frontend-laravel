@@ -28,23 +28,22 @@ class PagesController extends Controller
                 'client_identifier' => $clientIdentifier
             ]);
 
-            // $response = Http::withToken($this->apiToken)    
-            //     ->get("{$this->apiUrl}/pages", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/pages", [
+                    'client_identifier' => $clientIdentifier
+                ]);
             
-            // if (!$response->successful()) {
-            //     Log::error('API request failed', [
-            //         'status' => $response->status(),
-            //         'body' => $response->body(),
-            //         'url' => "{$this->apiUrl}/pages"
-            //     ]);
+            if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => "{$this->apiUrl}/pages"
+                ]);
                 
-            //     return back()->withErrors(['error' => 'Failed to fetch pages']);
-            // }
+                return back()->withErrors(['error' => 'Failed to fetch pages']);
+            }
 
-            // $pages = $response->json();
-            $pages = [];
+            $pages = $response->json();
 
             return Inertia::render('Pages/Index', [
                 'pages' => $pages
@@ -71,7 +70,7 @@ class PagesController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug',
+            'slug' => 'required|string|max:255',
             'content' => 'required|string',
             'meta_description' => 'nullable|string|max:255',
             'meta_keywords' => 'nullable|string|max:255',
@@ -134,7 +133,7 @@ class PagesController extends Controller
     {
         $rules = [
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:pages,slug,' . $id,
+            'slug' => 'required|string|max:255',
             'content' => 'required|string',
             'meta_description' => 'nullable|string|max:255',
             'meta_keywords' => 'nullable|string|max:255',
@@ -168,6 +167,9 @@ class PagesController extends Controller
             $path = $request->file('featured_image')->store('page_images', 'public');
             $validated['featured_image'] = Storage::disk('public')->url($path);
         }
+
+        $clientIdentifier = auth()->user()->identifier;
+        $validated['client_identifier'] = $clientIdentifier;
 
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/pages/{$id}", $validated);
@@ -246,8 +248,28 @@ class PagesController extends Controller
 
     public function getPage($slug)
     {
-        return Inertia::render('Pages/Static', [
+        return Inertia::render('Pages/Public', [
             'slug' => $slug
         ]);
+    }
+
+    public function getPageBySlug($slug)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/pages/slug/{$slug}");
+            
+            if (!$response->successful()) {
+                return response()->json(['error' => 'Page not found'], 404);
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getPageBySlug', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'An error occurred while fetching the page'], 500);
+        }
     }
 }
