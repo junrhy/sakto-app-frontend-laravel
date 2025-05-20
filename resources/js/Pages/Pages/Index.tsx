@@ -185,7 +185,7 @@ export default function Index({ pages }: Props) {
                                                 <TableCell>
                                                     {page.is_published ? (
                                                         <a 
-                                                            href={route('pages.static', page.slug)} 
+                                                            href={route('pages.public', page.slug)} 
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"

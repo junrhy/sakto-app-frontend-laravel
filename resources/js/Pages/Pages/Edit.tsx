@@ -10,6 +10,7 @@ import { Switch } from '@/Components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { toast } from 'sonner';
+import RichTextEditor from '@/Components/RichTextEditor';
 
 interface Props {
     page: Page;
@@ -21,6 +22,7 @@ interface ValidationErrors {
 
 export default function Edit({ page }: Props) {
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+    const [localContent, setLocalContent] = useState(page.content);
 
     const { data, setData, put, processing, errors } = useForm<PageFormData>({
         title: page.title,
@@ -34,6 +36,12 @@ export default function Edit({ page }: Props) {
         custom_js: page.custom_js || '',
         featured_image: null,
     });
+
+    const handleContentChange = (content: string) => {
+        setLocalContent(content);
+        setData('content', content);
+        setValidationErrors(prev => ({ ...prev, content: '' }));
+    };
 
     const validateForm = (): boolean => {
         const errors: ValidationErrors = {};
@@ -111,6 +119,8 @@ export default function Edit({ page }: Props) {
                 toast.error('Failed to update page');
                 setValidationErrors(errors as ValidationErrors);
             },
+            preserveScroll: true,
+            preserveState: true,
         });
     };
 
@@ -187,15 +197,10 @@ export default function Edit({ page }: Props) {
 
                                 <div>
                                     <Label htmlFor="content">Content</Label>
-                                    <Textarea
-                                        id="content"
-                                        value={data.content}
-                                        onChange={e => {
-                                            setData('content', e.target.value);
-                                            setValidationErrors(prev => ({ ...prev, content: '' }));
-                                        }}
-                                        required
-                                        rows={10}
+                                    <RichTextEditor
+                                        content={localContent}
+                                        onChange={handleContentChange}
+                                        placeholder="Write your page content here..."
                                     />
                                     {getErrorMessage('content') && (
                                         <p className="text-sm text-red-600 mt-1">{getErrorMessage('content')}</p>

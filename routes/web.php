@@ -190,7 +190,7 @@ Route::group(['middleware' => ['web']], function () {
         ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
     // Pages
-    Route::get('/link/{slug}', [PagesController::class, 'getPage'])->name('pages.static');
+    Route::get('/link/{slug}', [PagesController::class, 'getPage'])->name('pages.public');
     Route::get('/api/pages/{slug}', [PagesController::class, 'getPageBySlug'])->name('api.pages.get-by-slug');
 });
 
