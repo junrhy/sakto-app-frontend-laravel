@@ -272,4 +272,55 @@ class PagesController extends Controller
             return response()->json(['error' => 'An error occurred while fetching the page'], 500);
         }
     }
+
+    public function duplicate($id)
+    {
+        try {
+            // Get the original page
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/pages/{$id}");
+            
+            if (!$response->successful()) {
+                return redirect()->route('pages.index')
+                    ->with('error', 'Page not found');
+            }
+
+            $page = $response->json();
+            
+            // Create a new page with duplicated data
+            $duplicatedPage = [
+                'title' => $page['title'] . ' (Copy)',
+                'slug' => $page['slug'] . '-copy',
+                'content' => $page['content'],
+                'meta_description' => $page['meta_description'],
+                'meta_keywords' => $page['meta_keywords'],
+                'is_published' => false, // Set to draft by default
+                'template' => $page['template'],
+                'custom_css' => $page['custom_css'],
+                'custom_js' => $page['custom_js'],
+                'featured_image' => $page['featured_image'],
+                'client_identifier' => auth()->user()->identifier
+            ];
+
+            // Create the new page
+            $createResponse = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/pages", $duplicatedPage);
+
+            if (!$createResponse->successful()) {
+                return redirect()->route('pages.index')
+                    ->with('error', 'Failed to duplicate page');
+            }
+
+            return redirect()->route('pages.index')
+                ->with('message', 'Page duplicated successfully');
+        } catch (\Exception $e) {
+            Log::error('Exception in duplicate page', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('pages.index')
+                ->with('error', 'An error occurred while duplicating the page');
+        }
+    }
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, Head } from '@inertiajs/react';
 import { Page } from '@/types/pages';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 interface PublicProps {
     slug: string;
@@ -16,7 +17,7 @@ const Public: React.FC<PublicProps> = ({ slug }) => {
         const fetchPage = async () => {
             try {
                 const response = await axios.get(`/api/pages/${slug}`);
-                console.log(response.data);
+                console.log('Page data:', response.data);
                 setPage(response.data);
                 setLoading(false);
             } catch (err) {
@@ -27,6 +28,21 @@ const Public: React.FC<PublicProps> = ({ slug }) => {
 
         fetchPage();
     }, [slug]);
+
+    // Add effect to handle custom JS execution
+    useEffect(() => {
+        if (page?.custom_js) {
+            try {
+                // Create and execute the script
+                const script = document.createElement('script');
+                script.textContent = page.custom_js;
+                document.body.appendChild(script);
+                script.remove(); // Clean up after execution
+            } catch (error) {
+                console.error('Error executing custom JS:', error);
+            }
+        }
+    }, [page]);
 
     if (loading) {
         return (
@@ -52,7 +68,7 @@ const Public: React.FC<PublicProps> = ({ slug }) => {
         switch (page.template) {
             case 'full-width':
                 return (
-                    <div className="min-h-screen bg-white">
+                    <div className="min-h-screen bg-white" id={`page-container-${page.id}`}>
                         <div className="w-full px-0 py-12">
                             {page.featured_image && (
                                 <div className="mb-8">
@@ -144,12 +160,51 @@ const Public: React.FC<PublicProps> = ({ slug }) => {
                     <meta property="og:image" content={page.featured_image} />
                 )}
             </Head>
-            {renderContent()}
             {page.custom_css && (
-                <style>{page.custom_css}</style>
+                <style>
+                    {DOMPurify.sanitize(page.custom_css)}
+                </style>
             )}
+            <style>
+                {`
+                    .prose a {
+                        color: #2563eb;
+                        text-decoration: underline;
+                        font-weight: 500;
+                        transition: color 0.2s ease;
+                    }
+                    .prose a:hover {
+                        color: #1d4ed8;
+                    }
+                    .prose ul {
+                        list-style-type: disc;
+                        padding-left: 1.5em;
+                        margin-top: 1em;
+                        margin-bottom: 1em;
+                    }
+                    .prose ol {
+                        list-style-type: decimal;
+                        padding-left: 1.5em;
+                        margin-top: 1em;
+                        margin-bottom: 1em;
+                    }
+                    .prose li {
+                        margin-top: 0.5em;
+                        margin-bottom: 0.5em;
+                    }
+                `}
+            </style>
+            {renderContent()}
             {page.custom_js && (
-                <script dangerouslySetInnerHTML={{ __html: page.custom_js }} />
+                <script
+                    id={`page-js-${page.id}`}
+                    dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(page.custom_js, {
+                            ADD_TAGS: ['script'],
+                            ADD_ATTR: ['onload', 'onerror']
+                        })
+                    }}
+                />
             )}
         </>
     );

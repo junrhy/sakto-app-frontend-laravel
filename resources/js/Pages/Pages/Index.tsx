@@ -14,7 +14,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Copy } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -223,6 +223,12 @@ export default function Index({ pages }: Props) {
                                                                 <Link href={route('pages.edit', page.id)}>
                                                                     <Edit className="w-4 h-4 mr-2" />
                                                                     Edit
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('pages.duplicate', page.id)}>
+                                                                    <Copy className="w-4 h-4 mr-2" />
+                                                                    Duplicate
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem
