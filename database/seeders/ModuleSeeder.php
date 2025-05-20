@@ -28,6 +28,10 @@ class ModuleSeeder extends Seeder
             ['id' => 11, 'name' => 'Email', 'identifier' => 'email'],
             ['id' => 12, 'name' => 'Contacts', 'identifier' => 'contacts'],
             ['id' => 13, 'name' => 'Genealogy', 'identifier' => 'genealogy'],
+            ['id' => 14, 'name' => 'Pages', 'identifier' => 'pages'],
+            ['id' => 15, 'name' => 'Challenges', 'identifier' => 'challenges'],
+            ['id' => 16, 'name' => 'Content Creator', 'identifier' => 'content-creator'],
+            ['id' => 17, 'name' => 'Digital Products', 'identifier' => 'digital-products'],
         ];
 
         foreach ($modules as $module) {
