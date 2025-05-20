@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
-import type { FamilyMember, FamilyTreeProps } from '@/types/family-tree';
+import type { FamilyMember, FamilyTreeProps } from '@/types/genealogy';
 import CircularFamilyTreeVisualization from '@/Components/CircularFamilyTreeVisualization';
 import { FaMoon, FaSun, FaTimes } from 'react-icons/fa';
 

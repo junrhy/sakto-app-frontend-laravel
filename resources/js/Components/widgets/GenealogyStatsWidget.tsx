@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import type { FamilyMember } from '@/types/family-tree';
+import type { FamilyMember } from '@/types/genealogy';
 import axios from 'axios';
 
-interface FamilyTreeStatsWidgetProps {
+interface GenealogyStatsWidgetProps {
     isDarkMode?: boolean;
     className?: string;
 }
 
-export default function FamilyTreeStatsWidget({
+export default function GenealogyStatsWidget({
     isDarkMode = false,
     className = ''
-}: FamilyTreeStatsWidgetProps) {
+}: GenealogyStatsWidgetProps) {
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchFamilyStats = async () => {
+        const fetchGenealogyStats = async () => {
             try {
-                const response = await axios.get('/family-tree/widget-stats');
+                const response = await axios.get('/genealogy/widget-stats');
                 setFamilyMembers(response.data);
                 setError(null);
             } catch (err) {
-                console.error('Failed to fetch family tree stats:', err);
-                setError('Failed to load family statistics');
+                console.error('Failed to fetch genealogy stats:', err);
+                setError('Failed to load genealogy statistics');
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchFamilyStats();
+        fetchGenealogyStats();
         // Refresh every 5 minutes
-        const interval = setInterval(fetchFamilyStats, 300000);
+        const interval = setInterval(fetchGenealogyStats, 300000);
 
         return () => clearInterval(interval);
     }, []);

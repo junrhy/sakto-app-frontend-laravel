@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import type { FamilyMember, FamilyRelationship } from '@/types/family-tree';
+import type { FamilyMember, FamilyRelationship } from '@/types/genealogy';
 import { FaMoon, FaSun, FaMars, FaVenus, FaUserCircle, FaChevronLeft, FaEllipsisV, FaHeart, FaComment, FaShare, FaMapMarkerAlt, FaBirthdayCake, FaUserFriends, FaCamera, FaSearch } from 'react-icons/fa';
 import axios from 'axios';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";

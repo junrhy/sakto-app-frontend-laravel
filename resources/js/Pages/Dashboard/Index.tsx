@@ -49,7 +49,7 @@ interface Props {
 }
 
 // Add this type definition near the top with other interfaces
-type AppType = 'retail' | 'fnb' | 'family-tree' | 'contacts' | 'email' | 'lending' | 'payroll' | 'rental-item' | 'sms' | null;
+type AppType = 'retail' | 'fnb' | 'genealogy' | 'contacts' | 'email' | 'lending' | 'payroll' | 'rental-item' | 'sms' | null;
 
 export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
     const url = usePage().url;
@@ -88,8 +88,8 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         if (type === 'fnb') {
             return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'] as WidgetTypeImport[];
         }
-        if (type === 'family-tree') {
-            return ['family_tree_stats'] as unknown as WidgetTypeImport[];
+        if (type === 'genealogy') {
+            return ['genealogy_stats'] as unknown as WidgetTypeImport[];
         }
         if (type === 'contacts') {
             return ['contacts'] as unknown as WidgetTypeImport[];
@@ -510,7 +510,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                                     : type === "fnb_tables" ? "F&B Tables" 
                                                     : type === "fnb_kitchen" ? "F&B Kitchen" 
                                                     : type === "fnb_reservations" ? "F&B Reservations"
-                                                    : type === "family_tree_stats" ? "Family Tree Stats"
+                                                    : type === "genealogy_stats" ? "Genealogy Stats"
                                                     : (type as string).replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase())}
                                                 </SelectItem>
                                             ))}
@@ -733,8 +733,8 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                                                     if (appParam === 'fnb') {
                                                         return ['fnb_tables', 'fnb_kitchen', 'fnb_reservations'].includes(widget.type);
                                                     }
-                                                    if (appParam === 'family-tree') {
-                                                        return ['family_tree_stats'].includes(widget.type);
+                                                    if (appParam === 'genealogy') {
+                                                        return ['genealogy_stats'].includes(widget.type);
                                                     }
                                                     if (appParam === 'contacts') {
                                                         return ['contacts'].includes(widget.type);

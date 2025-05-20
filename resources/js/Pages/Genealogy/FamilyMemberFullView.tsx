@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
-import type { FamilyMember, FamilyTreeProps, FamilyRelationship } from '@/types/family-tree';
+import type { FamilyMember, FamilyTreeProps, FamilyRelationship } from '@/types/genealogy';
 import { FaMoon, FaSun, FaSearch, FaMars, FaVenus, FaChevronDown, FaLink, FaCheck, FaQrcode, FaList, FaThLarge, FaFileDownload } from 'react-icons/fa';
 import { QRCodeSVG } from 'qrcode.react';
 

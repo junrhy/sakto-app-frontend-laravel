@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import Tree from 'react-d3-tree';
-import type { FamilyMember } from '@/types/family-tree';
+import type { FamilyMember } from '@/types/genealogy';
 import { FaSearch, FaSearchMinus, FaSearchPlus, FaRedo, FaShare, FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight, FaChevronDown } from 'react-icons/fa';
 import { router } from '@inertiajs/react';
 

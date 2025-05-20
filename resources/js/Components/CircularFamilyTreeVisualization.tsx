@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import type { FamilyMember } from '@/types/family-tree';
+import type { FamilyMember } from '@/types/genealogy';
 
 // First, install d3 types:
 // npm install --save-dev @types/d3

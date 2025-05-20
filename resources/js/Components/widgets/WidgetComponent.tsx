@@ -7,7 +7,7 @@ import { RetailOrdersWidget } from "./RetailOrdersWidget";
 import { FnbTablesWidget } from "./FnbTablesWidget";
 import { FnbKitchenWidget } from "./FnbKitchenWidget";
 import { FnbReservationsWidget } from "./FnbReservationsWidget";
-import FamilyTreeStatsWidget from "./FamilyTreeStatsWidget";
+import GenealogyStatsWidget from "./GenealogyStatsWidget";
 import { ContactsWidget } from "./ContactsWidget";
 import { EmailsSentWidget } from "./EmailsSentWidget";
 import { LoanStatsWidget } from "./LoanStatsWidget";
@@ -146,7 +146,7 @@ export function WidgetComponent({
                 {(widget.type as string) === "fnb_tables" && <FnbTablesWidget />}
                 {(widget.type as string) === "fnb_kitchen" && <FnbKitchenWidget />}
                 {(widget.type as string) === "fnb_reservations" && <FnbReservationsWidget />}
-                {(widget.type as string) === "family_tree_stats" && <FamilyTreeStatsWidget />}
+                {(widget.type as string) === "genealogy_stats" && <GenealogyStatsWidget />}
                 {(widget.type as string) === "contacts" && <ContactsWidget />}
                 {(widget.type as string) === "emails_sent" && <EmailsSentWidget />}
                 {(widget.type as string) === "loan_stats" && <LoanStatsWidget />}

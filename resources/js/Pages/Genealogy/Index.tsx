@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/family-tree';
+import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/genealogy';
 import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaSitemap, FaUsers, FaChartPie, FaFileAlt } from 'react-icons/fa';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 
@@ -620,14 +620,14 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     Import
                                 </button>
                                 <a
-                                    href={`/family-tree/${auth.user.identifier}/full-view`}
+                                    href={`/genealogy/${auth.user.identifier}/full-view`}
                                     className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
                                     target="_blank"
                                 >
                                     <FaSitemap />
                                 </a>
                                 <a
-                                    href={`/family-tree/${auth.user.identifier}/circular`}
+                                    href={`/genealogy/${auth.user.identifier}/circular`}
                                     className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
                                     target="_blank"
                                     title="Circular View"
@@ -635,7 +635,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <FaChartPie />
                                 </a>
                                 <a
-                                    href={`/family-tree/${auth.user.identifier}/printable`}
+                                    href={`/genealogy/${auth.user.identifier}/printable`}
                                     className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
                                     target="_blank"
                                     title="Printable View"
@@ -643,7 +643,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <FaFileAlt />
                                 </a>
                                 <a
-                                    href={`/family-tree/${auth.user.identifier}/members`}
+                                    href={`/genealogy/${auth.user.identifier}/members`}
                                     className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
                                     target="_blank"
                                     title="View Members Directory"
