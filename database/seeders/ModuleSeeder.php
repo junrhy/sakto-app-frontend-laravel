@@ -35,7 +35,16 @@ class ModuleSeeder extends Seeder
         ];
 
         foreach ($modules as $module) {
-            if (!Module::where('identifier', $module['identifier'])->exists()) {
+            $existingModule = Module::where('id', $module['id'])->first();
+            
+            if ($existingModule) {
+                // Update existing module
+                $existingModule->update([
+                    'name' => $module['name'],
+                    'identifier' => $module['identifier']
+                ]);
+            } else {
+                // Create new module
                 Module::create($module);
             }
         }
