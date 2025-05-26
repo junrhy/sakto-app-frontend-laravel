@@ -18,7 +18,7 @@ import {
     RxPencil1,
     RxMobile,
     RxFile,
-    RxStar
+    RxStar,
 } from 'react-icons/rx';
 
 export interface App {
@@ -55,7 +55,8 @@ type AppTitle =
     | 'Challenges'
     | 'ContentCreator'
     | 'DigitalProducts'
-    | 'Pages';
+    | 'Pages'
+    | 'HealthInsurance';
 
 // Map of app titles to their respective icons
 const iconMap: Record<AppTitle, JSX.Element> = {
@@ -77,7 +78,8 @@ const iconMap: Record<AppTitle, JSX.Element> = {
     'Challenges': <RxStar />,
     'ContentCreator': <RxPencil1 />,
     'DigitalProducts': <RxMobile />,
-    'Pages': <RxFile />
+    'Pages': <RxFile />,
+    'HealthInsurance': <RxFile />
 };
 
 // Function to get apps from backend

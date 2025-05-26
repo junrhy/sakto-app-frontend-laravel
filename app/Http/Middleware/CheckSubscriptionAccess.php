@@ -79,7 +79,8 @@ class CheckSubscriptionAccess
             'challenges' => 'Challenges',
             'content-creator' => 'Content Creator',
             'digital-products' => 'Digital Products',
-            'pages' => 'Pages'
+            'pages' => 'Pages',
+            'health-insurance' => 'Health Insurance'
         ];
 
         // Check route prefix
@@ -111,7 +112,8 @@ class CheckSubscriptionAccess
                 'challenges' => 'Challenges',
                 'content-creator' => 'Content Creator',
                 'digital-products' => 'Digital Products',
-                'pages' => 'Pages'
+                'pages' => 'Pages',
+                'health-insurance' => 'Health Insurance'
             ];
 
             return $appParamToNameMap[$appParam] ?? null;

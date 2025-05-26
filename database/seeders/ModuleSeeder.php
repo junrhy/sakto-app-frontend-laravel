@@ -32,6 +32,7 @@ class ModuleSeeder extends Seeder
             ['id' => 15, 'name' => 'Challenges', 'identifier' => 'challenges'],
             ['id' => 16, 'name' => 'Content Creator', 'identifier' => 'content-creator'],
             ['id' => 17, 'name' => 'Digital Products', 'identifier' => 'digital-products'],
+            ['id' => 18, 'name' => 'Health Insurance', 'identifier' => 'health-insurance'],
         ];
 
         foreach ($modules as $module) {

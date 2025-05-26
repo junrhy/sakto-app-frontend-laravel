@@ -34,6 +34,7 @@ use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\ContentCreatorController;
 use App\Http\Controllers\DigitalProductController;
 use App\Http\Controllers\PagesController;
+use App\Http\Controllers\HealthInsuranceController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -399,6 +400,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/inventory/{id}/history', [InventoryController::class, 'getInventoryHistory']);
     Route::get('/inventory/{sku}/barcode', [InventoryController::class, 'generateBarcode']);
     Route::get('/inventory/products-overview', [InventoryController::class, 'getProductsOverview']);
+
+    // Health Insurance Routes
+    Route::prefix('health-insurance')->group(function () {
+        Route::get('/', [HealthInsuranceController::class, 'index'])->name('health-insurance');
+        
+        // Member Management
+        Route::post('/members', [HealthInsuranceController::class, 'storeMember'])->name('health-insurance.members.store');
+        Route::put('/members/{id}', [HealthInsuranceController::class, 'updateMember'])->name('health-insurance.members.update');
+        
+        // Contributions
+        Route::post('/contributions/{memberId}', [HealthInsuranceController::class, 'recordContribution'])->name('health-insurance.contributions.store');
+        Route::get('/contributions/{memberId}', [HealthInsuranceController::class, 'getMemberContributions'])->name('health-insurance.contributions.index');
+        
+        // Claims
+        Route::post('/claims/{memberId}', [HealthInsuranceController::class, 'submitClaim'])->name('health-insurance.claims.store');
+        Route::patch('/claims/{claimId}/status', [HealthInsuranceController::class, 'updateClaimStatus'])->name('health-insurance.claims.update-status');
+        Route::get('/claims/{memberId}', [HealthInsuranceController::class, 'getMemberClaims'])->name('health-insurance.claims.index');
+        
+        // Reports
+        Route::post('/reports', [HealthInsuranceController::class, 'generateReport'])->name('health-insurance.reports.generate');
+    });
 });
 
 // Routes that require subscription

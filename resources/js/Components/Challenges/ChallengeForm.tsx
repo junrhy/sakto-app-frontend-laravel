@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Dialog } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/Components/ui/dialog";
+import { Button } from "@/Components/ui/button";
 
 interface User {
     id: number;
@@ -104,191 +111,170 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
     };
 
     return (
-        <Dialog
-            open={true}
-            onClose={onClose}
-            className="fixed inset-0 z-10 overflow-y-auto"
-        >
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="fixed inset-0 bg-black opacity-30" />
+        <Dialog open={true} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>
+                        {challenge ? 'Edit Challenge' : 'Create New Challenge'}
+                    </DialogTitle>
+                </DialogHeader>
 
-                <div className="relative bg-white rounded-lg max-w-2xl w-full mx-4 p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <Dialog.Title className="text-lg font-medium">
-                            {challenge ? 'Edit Challenge' : 'Create New Challenge'}
-                        </Dialog.Title>
-                        <button
-                            onClick={onClose}
-                            className="text-gray-400 hover:text-gray-500"
-                        >
-                            <XMarkIcon className="h-6 w-6" />
-                        </button>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                        <input
+                            type="text"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            required
+                        />
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            rows={3}
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Title</label>
+                            <label className="block text-sm font-medium text-gray-700">Start Date</label>
                             <input
-                                type="text"
-                                value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                type="date"
+                                value={formData.start_date}
+                                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             />
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            <label className="block text-sm font-medium text-gray-700">End Date</label>
+                            <input
+                                type="date"
+                                value={formData.end_date}
+                                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                rows={3}
                                 required
                             />
                         </div>
+                    </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Start Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.start_date}
-                                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">End Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.end_date}
-                                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Goal Type</label>
-                                <select
-                                    value={formData.goal_type}
-                                    onChange={(e) => setFormData({ ...formData, goal_type: e.target.value as ChallengeFormData['goal_type'] })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                >
-                                    <option value="steps">Steps</option>
-                                    <option value="calories">Calories</option>
-                                    <option value="distance">Distance</option>
-                                    <option value="time">Time</option>
-                                    <option value="weight">Weight</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Goal Value</label>
-                                <input
-                                    type="number"
-                                    value={formData.goal_value}
-                                    onChange={(e) => setFormData({ ...formData, goal_value: Number(e.target.value) })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Goal Unit</label>
-                                <input
-                                    type="text"
-                                    value={formData.goal_unit}
-                                    onChange={(e) => setFormData({ ...formData, goal_unit: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                        </div>
-
+                    <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Visibility</label>
+                            <label className="block text-sm font-medium text-gray-700">Goal Type</label>
                             <select
-                                value={formData.visibility}
-                                onChange={(e) => setFormData({ ...formData, visibility: e.target.value as ChallengeFormData['visibility'] })}
+                                value={formData.goal_type}
+                                onChange={(e) => setFormData({ ...formData, goal_type: e.target.value as ChallengeFormData['goal_type'] })}
                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 required
                             >
-                                <option value="public">Public</option>
-                                <option value="private">Private</option>
-                                <option value="friends">Friends</option>
-                                <option value="family">Family</option>
-                                <option value="coworkers">Coworkers</option>
+                                <option value="steps">Steps</option>
+                                <option value="calories">Calories</option>
+                                <option value="distance">Distance</option>
+                                <option value="time">Time</option>
+                                <option value="weight">Weight</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Rewards</label>
-                            <div className="mt-1 flex space-x-2">
-                                <select
-                                    value={newReward.type}
-                                    onChange={(e) => setNewReward({ ...newReward, type: e.target.value as Reward['type'] })}
-                                    className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                >
-                                    <option value="badge">Badge</option>
-                                    <option value="points">Points</option>
-                                    <option value="achievement">Achievement</option>
-                                </select>
-                                <input
-                                    type="text"
-                                    value={newReward.value}
-                                    onChange={(e) => setNewReward({ ...newReward, value: e.target.value })}
-                                    placeholder="Reward value"
-                                    className="block w-2/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleAddReward}
-                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                            <div className="mt-2 space-y-2">
-                                {formData.rewards.map((reward, index) => (
-                                    <div key={index} className="flex items-center justify-between">
-                                        <span className="text-sm">
-                                            {reward.type}: {reward.value}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveReward(index)}
-                                            className="text-red-600 hover:text-red-800"
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
+                            <label className="block text-sm font-medium text-gray-700">Goal Value</label>
+                            <input
+                                type="number"
+                                value={formData.goal_value}
+                                onChange={(e) => setFormData({ ...formData, goal_value: Number(e.target.value) })}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Goal Unit</label>
+                            <input
+                                type="text"
+                                value={formData.goal_unit}
+                                onChange={(e) => setFormData({ ...formData, goal_unit: e.target.value })}
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                required
+                            />
+                        </div>
+                    </div>
 
-                        <div className="mt-6 flex justify-end space-x-3">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Visibility</label>
+                        <select
+                            value={formData.visibility}
+                            onChange={(e) => setFormData({ ...formData, visibility: e.target.value as ChallengeFormData['visibility'] })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            required
+                        >
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
+                            <option value="friends">Friends</option>
+                            <option value="family">Family</option>
+                            <option value="coworkers">Coworkers</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Rewards</label>
+                        <div className="mt-1 flex space-x-2">
+                            <select
+                                value={newReward.type}
+                                onChange={(e) => setNewReward({ ...newReward, type: e.target.value as Reward['type'] })}
+                                className="block w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                                <option value="badge">Badge</option>
+                                <option value="points">Points</option>
+                                <option value="achievement">Achievement</option>
+                            </select>
+                            <input
+                                type="text"
+                                value={newReward.value}
+                                onChange={(e) => setNewReward({ ...newReward, value: e.target.value })}
+                                placeholder="Reward value"
+                                className="block w-2/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            />
                             <button
                                 type="button"
-                                onClick={onClose}
-                                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                onClick={handleAddReward}
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                {challenge ? 'Update Challenge' : 'Create Challenge'}
+                                Add
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
+                        <div className="mt-2 space-y-2">
+                            {formData.rewards.map((reward, index) => (
+                                <div key={index} className="flex items-center justify-between">
+                                    <span className="text-sm">
+                                        {reward.type}: {reward.value}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveReward(index)}
+                                        className="text-red-600 hover:text-red-800"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </form>
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>
+                        Cancel
+                    </Button>
+                    <Button type="submit" form="challenge-form">
+                        {challenge ? 'Update Challenge' : 'Create Challenge'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
     );
 } 

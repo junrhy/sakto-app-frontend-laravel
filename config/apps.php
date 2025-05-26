@@ -228,6 +228,18 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
-    ]   
+    ],
+    [
+        'title' => 'Health Insurance',
+        'route' => '/dashboard?app=health-insurance',
+        'visible' => true,
+        'description' => 'Manage and track health insurance, including members, contributions, and claims.',
+        'price' => 149,
+        'rating' => 4.0,
+        'categories' => ['Health', 'Insurance', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
+    ]
     
 ]; 
