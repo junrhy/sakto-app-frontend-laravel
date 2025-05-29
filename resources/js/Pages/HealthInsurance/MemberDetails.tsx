@@ -3,6 +3,10 @@ import { PageProps } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
+import { useRef } from 'react';
+import { usePDF } from 'react-to-pdf';
+import { Button } from '@/Components/ui/button';
+import { Download } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -64,6 +68,15 @@ interface Props extends PageProps {
 }
 
 export default function MemberDetails({ member, contributions, claims, upcomingContributions, pastDueContributions, appCurrency }: Props) {
+    const { toPDF, targetRef } = usePDF({
+        filename: `member-details-${member.name}.pdf`,
+        page: {
+            margin: 20, // Add 20px margin on all sides
+            format: 'a4',
+            orientation: 'portrait'
+        }
+    });
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'active':
@@ -87,7 +100,17 @@ export default function MemberDetails({ member, contributions, claims, upcomingC
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="space-y-8">
+                    <div className="flex justify-end mb-4">
+                        <Button 
+                            onClick={() => toPDF()} 
+                            className="flex items-center gap-2"
+                            variant="outline"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export to PDF
+                        </Button>
+                    </div>
+                    <div className="space-y-8" ref={targetRef}>
                         {/* Member Information Card */}
                         <Card className="shadow-lg">
                             <CardHeader className="bg-gray-50 border-b">
