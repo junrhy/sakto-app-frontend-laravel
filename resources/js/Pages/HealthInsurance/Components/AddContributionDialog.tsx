@@ -23,10 +23,19 @@ import {
     PopoverTrigger,
 } from '@/Components/ui/popover';
 import React from 'react';
+import { format } from 'date-fns';
 
 interface Member {
     id: string;
     name: string;
+    date_of_birth: string;
+    gender: string;
+    contact_number: string;
+    address: string;
+    membership_start_date: string;
+    contribution_amount: number;
+    contribution_frequency: string;
+    status: string;
 }
 
 interface Contribution {
@@ -47,13 +56,14 @@ interface Props {
         symbol: string;
     };
     onContributionAdded: (contribution: Contribution) => void;
+    selectedMember?: Member | null;
 }
 
-export default function AddContributionDialog({ open, onOpenChange, members, appCurrency, onContributionAdded }: Props) {
+export default function AddContributionDialog({ open, onOpenChange, members, appCurrency, onContributionAdded, selectedMember }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        member_id: '',
-        amount: '',
-        payment_date: '',
+        member_id: selectedMember?.id || '',
+        amount: selectedMember?.contribution_amount?.toString() || '',
+        payment_date: format(new Date(), 'yyyy-MM-dd'),
         payment_method: '',
         reference_number: '',
     });
@@ -64,14 +74,21 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
     );
 
     const [openMemberPopover, setOpenMemberPopover] = useState(false);
-    const selectedMember = members.find((member) => member.id === data.member_id);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('health-insurance.contributions.store', { memberId: data.member_id }), {
             onSuccess: () => {
-                reset();
                 onOpenChange(false);
+                reset();
+                onContributionAdded({
+                    id: '', // This will be set by the backend
+                    member_id: data.member_id,
+                    amount: Number(data.amount),
+                    payment_date: data.payment_date,
+                    payment_method: data.payment_method,
+                    reference_number: data.reference_number
+                });
             },
         });
     };
@@ -120,6 +137,7 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
                                                     key={member.id}
                                                     onClick={() => {
                                                         setData('member_id', member.id);
+                                                        setData('amount', member.contribution_amount?.toString() || '');
                                                         setOpenMemberPopover(false);
                                                         setSearchQuery(''); // Clear search after selection
                                                     }}
@@ -143,9 +161,11 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
                         <Input
                             id="amount"
                             type="number"
+                            step="0.01"
                             value={data.amount}
                             onChange={(e) => setData('amount', e.target.value)}
-                            placeholder={`Enter amount in ${appCurrency.code}`}
+                            placeholder="Enter amount"
+                            className={errors.amount ? "border-red-500" : ""}
                         />
                         {errors.amount && (
                             <p className="text-sm text-red-500">{errors.amount}</p>

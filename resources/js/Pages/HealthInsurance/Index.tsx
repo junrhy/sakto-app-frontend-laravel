@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import MembersList from './Components/MembersList';
 import ContributionsList from './Components/ContributionsList';
 import ClaimsList from './Components/ClaimsList';
+import MissingContributionsList from './Components/MissingContributionsList';
 import { Button } from '@/Components/ui/button';
 import { Plus } from 'lucide-react';
 import AddMemberDialog from './Components/AddMemberDialog';
@@ -123,6 +124,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                     <TabsTrigger value="members">Members</TabsTrigger>
                                     <TabsTrigger value="contributions">Contributions</TabsTrigger>
                                     <TabsTrigger value="claims">Claims</TabsTrigger>
+                                    <TabsTrigger value="missing">Missing Contributions</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="members">
                                     <MembersList 
@@ -143,6 +145,14 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                         claims={claims}
                                         members={members}
                                         appCurrency={appCurrency}
+                                    />
+                                </TabsContent>
+                                <TabsContent value="missing">
+                                    <MissingContributionsList 
+                                        members={members}
+                                        contributions={contributions}
+                                        appCurrency={appCurrency}
+                                        onContributionAdded={handleAddContribution}
                                     />
                                 </TabsContent>
                             </Tabs>
