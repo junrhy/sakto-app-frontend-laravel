@@ -44,13 +44,17 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
 
     useEffect(() => {
         if (member) {
+            // Format dates if they exist
+            const formattedDob = member.date_of_birth ? new Date(member.date_of_birth).toISOString().split('T')[0] : '';
+            const formattedStartDate = member.membership_start_date ? new Date(member.membership_start_date).toISOString().split('T')[0] : '';
+            
             setData({
                 name: member.name,
-                date_of_birth: member.date_of_birth,
+                date_of_birth: formattedDob,
                 gender: member.gender,
                 contact_number: member.contact_number,
                 address: member.address,
-                membership_start_date: member.membership_start_date,
+                membership_start_date: formattedStartDate,
                 contribution_amount: member.contribution_amount,
                 contribution_frequency: member.contribution_frequency,
                 status: member.status,
@@ -157,6 +161,10 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                     title: "Success",
                     description: "Member updated successfully",
                 });
+                // Add delay before reloading to show toast
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500); // 1.5 seconds delay
             },
             onError: (errors) => {
                 setFieldErrors(errors);

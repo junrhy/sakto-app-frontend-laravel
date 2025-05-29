@@ -1179,7 +1179,7 @@ export default function Authenticated({ children, header, user }: Props) {
 
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/health-insurance?app=${appParam}`}>
-                                                        Health Insurance
+                                                        Members
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>

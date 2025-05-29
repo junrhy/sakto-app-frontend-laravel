@@ -21,6 +21,8 @@ class HealthInsuranceController extends Controller
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
+            
+            // Fetch health insurance data
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/health-insurance?client_identifier={$clientIdentifier}");
 

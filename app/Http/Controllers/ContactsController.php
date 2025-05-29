@@ -394,6 +394,7 @@ class ContactsController extends Controller
                     'first_name' => $contact['first_name'],
                     'middle_name' => $contact['middle_name'],
                     'last_name' => $contact['last_name'],
+                    'date_of_birth' => $contact['date_of_birth'],
                     'email' => $contact['email'],
                     'call_number' => $contact['call_number'],
                     'sms_number' => $contact['sms_number'],
