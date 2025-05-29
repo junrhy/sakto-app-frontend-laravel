@@ -8,12 +8,15 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2, Search } from 'lucide-react';
-import { format } from 'date-fns';
+import { Edit, Trash2, Search, Calendar } from 'lucide-react';
+import { format, startOfYear, endOfYear } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import EditContributionDialog from './EditContributionDialog';
 import { Input } from '@/Components/ui/input';
+import { Calendar as DatePicker } from '@/Components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface Member {
     id: string;
@@ -44,6 +47,8 @@ export default function ContributionsList({ contributions, members, appCurrency 
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [startDate, setStartDate] = useState<Date>(startOfYear(new Date()));
+    const [endDate, setEndDate] = useState<Date>(endOfYear(new Date()));
 
     const handleSort = (field: keyof Contribution) => {
         if (field === sortField) {
@@ -110,18 +115,24 @@ export default function ContributionsList({ contributions, members, appCurrency 
         const memberName = getMemberName(contribution.member_id)?.toLowerCase() || '';
         const paymentMethod = contribution.payment_method?.toLowerCase() || '';
         const referenceNumber = contribution.reference_number?.toLowerCase() || '';
+        const paymentDate = new Date(contribution.payment_date);
         
-        return (
+        const matchesSearch = (
             memberName.includes(searchLower) ||
             paymentMethod.includes(searchLower) ||
             referenceNumber.includes(searchLower)
         );
+
+        const matchesDateRange = (!startDate || paymentDate >= startDate) && 
+                                (!endDate || paymentDate <= endDate);
+
+        return matchesSearch && matchesDateRange;
     });
 
     return (
         <div className="space-y-4">
-            <div className="mb-4">
-                <div className="relative">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="relative flex-1">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search contributions..."
@@ -129,6 +140,70 @@ export default function ContributionsList({ contributions, members, appCurrency 
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-8"
                     />
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex items-center gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[240px] justify-start text-left font-normal",
+                                        !startDate && "text-muted-foreground",
+                                        startDate && "border-primary bg-primary/5"
+                                    )}
+                                >
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {startDate ? format(startDate, "PPP") : "Start date"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <DatePicker
+                                    mode="single"
+                                    selected={startDate}
+                                    onSelect={(date) => date && setStartDate(date)}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <span className="text-muted-foreground font-medium">to</span>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[240px] justify-start text-left font-normal",
+                                        !endDate && "text-muted-foreground",
+                                        endDate && "border-primary bg-primary/5"
+                                    )}
+                                >
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {endDate ? format(endDate, "PPP") : "End date"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <DatePicker
+                                    mode="single"
+                                    selected={endDate}
+                                    onSelect={(date) => date && setEndDate(date)}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                    {(startDate || endDate) && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setStartDate(startOfYear(new Date()));
+                                setEndDate(endOfYear(new Date()));
+                            }}
+                            className="text-muted-foreground hover:text-foreground"
+                        >
+                            Reset to current year
+                        </Button>
+                    )}
                 </div>
             </div>
             <div className="rounded-md border">

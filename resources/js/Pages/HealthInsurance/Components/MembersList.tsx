@@ -219,7 +219,9 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
                             </TableCell>
                             <TableCell>
-                                {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
+                                <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500' : ''}>
+                                    {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
+                                </span>
                             </TableCell>
                             <TableCell>
                                 <Badge className={getStatusColor(member.status)}>
@@ -299,7 +301,9 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                             {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
                                         </TableCell>
                                         <TableCell>
-                                            {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
+                                            <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500' : ''}>
+                                                {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge className={getStatusColor(member.status)}>

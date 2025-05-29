@@ -230,7 +230,7 @@ return [
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business']
     ],
     [
-        'title' => 'Health Insurance',
+        'title' => 'Healthcare',
         'route' => '/dashboard?app=health-insurance',
         'visible' => true,
         'description' => 'Manage and track health insurance, including members, contributions, and claims.',

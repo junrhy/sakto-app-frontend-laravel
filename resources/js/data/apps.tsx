@@ -56,7 +56,7 @@ type AppTitle =
     | 'Content Creator'
     | 'Digital Products'
     | 'Pages'
-    | 'Health Insurance';
+    | 'Healthcare';
 
 // Map of app titles to their respective icons
 const iconMap: Record<AppTitle, JSX.Element> = {
@@ -79,7 +79,7 @@ const iconMap: Record<AppTitle, JSX.Element> = {
     'Content Creator': <RxPencil1 />,
     'Digital Products': <RxMobile />,
     'Pages': <RxFile />,
-    'Health Insurance': <RxHeart />
+    'Healthcare': <RxHeart />
 };
 
 // Function to get apps from backend

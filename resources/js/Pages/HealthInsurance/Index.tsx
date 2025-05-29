@@ -164,44 +164,53 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Healthcare Insurance</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Healthcare</h2>}
         >
-            <Head title="Healthcare Insurance" />
+            <Head title="Healthcare" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <Card>
-                        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <CardTitle>Healthcare Insurance Management</CardTitle>
-                            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                                <Button onClick={() => setIsAddMemberOpen(true)} className="flex-1 sm:flex-none">
+            <div className="py-6">
+                <div className="max-w-[90rem] mx-auto sm:px-6 lg:px-8">
+                    <Card className="shadow-lg border-0">
+                        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50/50 border-b">
+                            <CardTitle className="text-2xl font-bold text-gray-900">Healthcare Management</CardTitle>
+                            <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+                                <Button 
+                                    onClick={() => setIsAddMemberOpen(true)} 
+                                    className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 transition-colors"
+                                >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Member
                                 </Button>
-                                <Button onClick={() => setIsAddContributionOpen(true)} className="flex-1 sm:flex-none">
+                                <Button 
+                                    onClick={() => setIsAddContributionOpen(true)} 
+                                    className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 transition-colors"
+                                >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Record Contribution
                                 </Button>
-                                <Button onClick={() => setIsSubmitClaimOpen(true)} className="flex-1 sm:flex-none">
+                                <Button 
+                                    onClick={() => setIsSubmitClaimOpen(true)} 
+                                    className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 transition-colors"
+                                >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Submit Claim
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-6">
                             <Tabs 
                                 value={activeTab} 
                                 onValueChange={handleTabChange}
                                 className="w-full"
                             >
-                                <div className="overflow-x-auto">
-                                    <TabsList className="w-full sm:w-auto">
-                                        <TabsTrigger value="members">Members</TabsTrigger>
-                                        <TabsTrigger value="contributions">Contributions</TabsTrigger>
-                                        <TabsTrigger value="claims">Claims</TabsTrigger>
-                                        <TabsTrigger value="missing">Missing Contributions</TabsTrigger>
-                                        <TabsTrigger value="upcoming">Upcoming Contributions</TabsTrigger>
-                                        <TabsTrigger value="group-contributions">Group Contributions</TabsTrigger>
+                                <div className="overflow-x-auto mb-6">
+                                    <TabsList className="w-full sm:w-auto bg-gray-100 p-1 rounded-lg">
+                                        <TabsTrigger value="members" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Members</TabsTrigger>
+                                        <TabsTrigger value="contributions" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Contributions</TabsTrigger>
+                                        <TabsTrigger value="claims" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Claims</TabsTrigger>
+                                        <TabsTrigger value="missing" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Missing Contributions</TabsTrigger>
+                                        <TabsTrigger value="upcoming" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Upcoming Contributions</TabsTrigger>
+                                        <TabsTrigger value="group-contributions" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Group Contributions</TabsTrigger>
                                     </TabsList>
                                 </div>
                                 <TabsContent value="members">
