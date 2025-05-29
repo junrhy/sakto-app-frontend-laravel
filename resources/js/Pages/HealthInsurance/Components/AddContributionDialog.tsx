@@ -17,6 +17,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/Components/ui/select';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import React from 'react';
 
 interface Member {
     id: string;
@@ -52,6 +58,14 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
         reference_number: '',
     });
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const filteredMembers = members.filter(member => 
+        member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const [openMemberPopover, setOpenMemberPopover] = useState(false);
+    const selectedMember = members.find((member) => member.id === data.member_id);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('health-insurance.contributions.store', { memberId: data.member_id }), {
@@ -71,21 +85,54 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <Label htmlFor="member_id">Member</Label>
-                        <Select
-                            value={data.member_id}
-                            onValueChange={(value) => setData('member_id', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select member" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {members.map((member) => (
-                                    <SelectItem key={member.id} value={member.id}>
-                                        {member.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Popover open={openMemberPopover} onOpenChange={setOpenMemberPopover}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openMemberPopover}
+                                    className="w-full justify-between"
+                                    onClick={() => setOpenMemberPopover((open) => !open)}
+                                >
+                                    {selectedMember ? selectedMember.name : 'Select member'}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent 
+                                className="p-0 w-[var(--radix-popover-trigger-width)] z-50"
+                                sideOffset={4}
+                            >
+                                <div className="p-2">
+                                    <Input
+                                        placeholder="Search member..."
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                        }}
+                                        className="mb-2"
+                                    />
+                                    <div className="max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                                        {filteredMembers.length === 0 ? (
+                                            <div className="p-2 text-sm text-muted-foreground">No members found</div>
+                                        ) : (
+                                            filteredMembers.map((member) => (
+                                                <div
+                                                    key={member.id}
+                                                    onClick={() => {
+                                                        setData('member_id', member.id);
+                                                        setOpenMemberPopover(false);
+                                                        setSearchQuery(''); // Clear search after selection
+                                                    }}
+                                                    className="p-2 hover:bg-accent cursor-pointer rounded-sm"
+                                                >
+                                                    {member.name}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                         {errors.member_id && (
                             <p className="text-sm text-red-500">{errors.member_id}</p>
                         )}

@@ -4,6 +4,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useToast } from '@/Components/ui/use-toast';
 
 interface Props {
     open: boolean;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: Props) {
+    const { toast } = useToast();
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         date_of_birth: '',
@@ -21,6 +23,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
         membership_start_date: '',
         contribution_amount: '',
         contribution_frequency: '',
+        status: 'active',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -29,6 +32,17 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
             onSuccess: () => {
                 reset();
                 onOpenChange(false);
+                toast({
+                    title: "Success",
+                    description: "Member added successfully",
+                });
+            },
+            onError: () => {
+                toast({
+                    title: "Error",
+                    description: "Failed to add member",
+                    variant: "destructive",
+                });
             },
         });
     };
@@ -159,6 +173,25 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
                         </Select>
                         {errors.contribution_frequency && (
                             <p className="text-sm text-red-500">{errors.contribution_frequency}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="status">Status</Label>
+                        <Select
+                            value={data.status}
+                            onValueChange={(value) => setData('status', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.status && (
+                            <p className="text-sm text-red-500">{errors.status}</p>
                         )}
                     </div>
 

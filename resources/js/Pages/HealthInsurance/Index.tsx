@@ -44,7 +44,6 @@ interface Claim {
     hospital_name: string;
     diagnosis: string;
     status: string;
-    documentation: string[];
 }
 
 interface Props extends PageProps {

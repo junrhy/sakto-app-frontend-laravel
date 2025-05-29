@@ -5,6 +5,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { ThemeProvider } from '@/Components/ThemeProvider';
+import { Toaster } from '@/Components/ui/toaster';
 import type { User } from '@/types/index';
 import { PageProps } from '@/types';
 
@@ -41,6 +42,7 @@ createInertiaApp({
         const app = (
             <ThemeProvider defaultTheme={userTheme} storageKey="sakto-theme">
                 <App {...props} />
+                <Toaster />
             </ThemeProvider>
         );
 

@@ -72,10 +72,10 @@ class HealthInsuranceController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return response()->json($response->json());
+            return back()->with('success', 'Member added successfully');
         } catch (\Exception $e) {
             Log::error('Error storing member: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to store member.'], 500);
+            return back()->with('error', 'Failed to store member.');
         }
     }
 
@@ -126,23 +126,21 @@ class HealthInsuranceController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return response()->json($response->json());
+            return back()->with('success', 'Contribution recorded successfully');
         } catch (\Exception $e) {
             Log::error('Error recording contribution: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to record contribution.'], 500);
+            return back()->with('error', 'Failed to record contribution.');
         }
     }
 
     public function submitClaim(Request $request, string $memberId)
     {
         $validated = $request->validate([
-            'claim_type' => 'required|in:hospitalization,outpatient,medication',
+            'claim_type' => 'required|in:hospitalization,outpatient,dental,optical,prescription',
             'amount' => 'required|numeric|min:0',
             'date_of_service' => 'required|date',
             'hospital_name' => 'required|string',
-            'diagnosis' => 'required|string',
-            'documentation' => 'required|array',
-            'documentation.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'
+            'diagnosis' => 'required|string'
         ]);
 
         try {
@@ -154,10 +152,10 @@ class HealthInsuranceController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return response()->json($response->json());
+            return back()->with('success', 'Claim submitted successfully');
         } catch (\Exception $e) {
             Log::error('Error submitting claim: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to submit claim.'], 500);
+            return back()->with('error', 'Failed to submit claim.');
         }
     }
 

@@ -19,7 +19,7 @@ interface Member {
 interface Contribution {
     id: string;
     member_id: string;
-    amount: number;
+    amount: number | string;
     payment_date: string;
     payment_method: string;
     reference_number: string;
@@ -107,7 +107,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 {getMemberName(contribution.member_id)}
                             </TableCell>
                             <TableCell>
-                                {appCurrency.symbol}{contribution.amount.toFixed(2)}
+                                {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
                             </TableCell>
                             <TableCell className="capitalize">
                                 {contribution.payment_method.replace('_', ' ')}

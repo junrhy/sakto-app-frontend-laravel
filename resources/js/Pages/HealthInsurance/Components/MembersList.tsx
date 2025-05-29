@@ -121,7 +121,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
                             </TableCell>
                             <TableCell>
-                                {appCurrency.symbol}{member.contribution_amount.toFixed(2)}
+                                {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
                             </TableCell>
                             <TableCell className="capitalize">
                                 {member.contribution_frequency}

@@ -21,12 +21,11 @@ interface Claim {
     id: string;
     member_id: string;
     claim_type: string;
-    amount: number;
+    amount: number | string;
     date_of_service: string;
     hospital_name: string;
     diagnosis: string;
     status: string;
-    documentation: string[];
 }
 
 interface Props {
@@ -133,7 +132,7 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 {claim.claim_type}
                             </TableCell>
                             <TableCell>
-                                {appCurrency.symbol}{claim.amount.toFixed(2)}
+                                {appCurrency.symbol}{Number(claim.amount).toFixed(2)}
                             </TableCell>
                             <TableCell>
                                 {claim.hospital_name}
