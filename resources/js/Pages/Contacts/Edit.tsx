@@ -24,6 +24,7 @@ interface Contact {
     middle_name?: string;
     last_name: string;
     gender: 'male' | 'female' | 'other';
+    date_of_birth?: string;
     fathers_name?: string;
     mothers_maiden_name?: string;
     email: string;
@@ -53,6 +54,7 @@ interface FormData {
     middle_name: string;
     last_name: string;
     gender: 'male' | 'female' | 'other';
+    date_of_birth: string;
     fathers_name: string;
     mothers_maiden_name: string;
     email: string;
@@ -89,6 +91,7 @@ export default function Edit({ auth, contact }: Props) {
         middle_name: contact.middle_name || '',
         last_name: contact.last_name || '',
         gender: contact.gender || 'male',
+        date_of_birth: contact.date_of_birth || '',
         fathers_name: contact.fathers_name || '',
         mothers_maiden_name: contact.mothers_maiden_name || '',
         email: contact.email || '',
@@ -295,7 +298,21 @@ export default function Edit({ auth, contact }: Props) {
                                             )}
                                         </div>
 
-                                        <div className="space-y-2 col-span-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="date_of_birth" className="text-gray-700 dark:text-gray-300">Date of Birth</Label>
+                                            <Input
+                                                id="date_of_birth"
+                                                type="date"
+                                                value={data.date_of_birth}
+                                                onChange={e => setData('date_of_birth', e.target.value)}
+                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                            />
+                                            {errors.date_of_birth && (
+                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.date_of_birth}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
                                             <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
                                             <Input
                                                 id="email"

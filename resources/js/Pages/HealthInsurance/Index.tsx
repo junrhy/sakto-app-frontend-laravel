@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -60,6 +60,7 @@ interface Props extends PageProps {
 }
 
 export default function HealthInsurance({ auth, initialMembers, initialContributions, initialClaims, appCurrency }: Props) {
+    const { url } = usePage();
     const [members, setMembers] = useState<Member[]>(initialMembers);
     const [contributions, setContributions] = useState<Contribution[]>(initialContributions);
     const [claims, setClaims] = useState<Claim[]>(initialClaims);
@@ -68,6 +69,21 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
     const [isSubmitClaimOpen, setIsSubmitClaimOpen] = useState(false);
     const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [activeTab, setActiveTab] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('tab') || 'members';
+    });
+
+    const handleTabChange = (value: string) => {
+        if (value !== activeTab) {
+            setActiveTab(value);
+            router.get(
+                window.location.pathname,
+                { tab: value },
+                { preserveState: true, preserveScroll: true, replace: true }
+            );
+        }
+    };
 
     const handleAddMember = (newMember: Member) => {
         setMembers([...members, newMember]);
@@ -120,7 +136,11 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <Tabs defaultValue="members" className="w-full">
+                            <Tabs 
+                                value={activeTab} 
+                                onValueChange={handleTabChange}
+                                className="w-full"
+                            >
                                 <TabsList>
                                     <TabsTrigger value="members">Members</TabsTrigger>
                                     <TabsTrigger value="contributions">Contributions</TabsTrigger>

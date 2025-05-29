@@ -47,6 +47,7 @@ interface Contact {
     middle_name?: string;
     last_name: string;
     gender: 'male' | 'female' | 'other';
+    date_of_birth?: string;  // Add date_of_birth field
     fathers_name?: string;
     mothers_maiden_name?: string;
     email: string;
@@ -70,6 +71,17 @@ interface Props {
     auth: { user: any };
     contacts: Contact[];
 }
+
+const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+};
 
 export default function Index({ auth, contacts }: Props) {
     const [search, setSearch] = useState('');
@@ -507,6 +519,7 @@ export default function Index({ auth, contacts }: Props) {
                                 <div>
                                     <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Personal Information</h4>
                                     <div className="space-y-3">
+                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Date of Birth:</span> {formatDate(selectedContact.date_of_birth)}</p>
                                         <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Father's Name:</span> {selectedContact.fathers_name || '-'}</p>
                                         <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Mother's Maiden Name:</span> {selectedContact.mothers_maiden_name || '-'}</p>
                                         <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Address:</span> {selectedContact.address || '-'}</p>
