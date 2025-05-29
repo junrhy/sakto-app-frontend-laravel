@@ -27,6 +27,7 @@ interface Member {
     contribution_amount: number;
     contribution_frequency: string;
     status: string;
+    group: string;
     total_contribution: number;
     total_claims_amount: number;
     net_balance: number;
@@ -53,6 +54,7 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
         contribution_amount: member?.contribution_amount || '',
         contribution_frequency: member?.contribution_frequency || '',
         status: member?.status || 'active',
+        group: member?.group || '',
     });
 
     useEffect(() => {
@@ -71,6 +73,7 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                 contribution_amount: member.contribution_amount,
                 contribution_frequency: member.contribution_frequency,
                 status: member.status,
+                group: member.group,
             });
         }
         // Clear errors when dialog opens/closes
@@ -146,6 +149,8 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
         } else if (!['active', 'inactive'].includes(data.status)) {
             newErrors.status = 'Invalid status';
         }
+
+        // Group validation - removed required validation since it's optional
 
         setFieldErrors(newErrors);
         return newErrors;
@@ -341,6 +346,21 @@ export default function EditMemberDialog({ open, onOpenChange, member, onMemberU
                         </Select>
                         {fieldErrors.status && (
                             <p className="text-sm text-red-500 mt-1">{fieldErrors.status}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="group">Group</Label>
+                        <Input
+                            id="group"
+                            type="text"
+                            value={data.group}
+                            onChange={(e) => setData('group', e.target.value)}
+                            placeholder="Enter group name"
+                            className={fieldErrors.group ? "border-red-500" : ""}
+                        />
+                        {fieldErrors.group && (
+                            <p className="text-sm text-red-500 mt-1">{fieldErrors.group}</p>
                         )}
                     </div>
 

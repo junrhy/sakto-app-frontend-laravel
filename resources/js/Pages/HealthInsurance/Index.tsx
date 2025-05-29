@@ -9,6 +9,7 @@ import ContributionsList from './Components/ContributionsList';
 import ClaimsList from './Components/ClaimsList';
 import MissingContributionsList from './Components/MissingContributionsList';
 import UpcomingContributionsList from './Components/UpcomingContributionsList';
+import GroupContributionsList from './Components/GroupContributionsList';
 import { Button } from '@/Components/ui/button';
 import { Plus } from 'lucide-react';
 import AddMemberDialog from './Components/AddMemberDialog';
@@ -27,6 +28,7 @@ interface Member {
     contribution_amount: number;
     contribution_frequency: string;
     status: string;
+    group: string;
     total_contribution: number;
     total_claims_amount: number;
     net_balance: number;
@@ -199,6 +201,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                         <TabsTrigger value="claims">Claims</TabsTrigger>
                                         <TabsTrigger value="missing">Missing Contributions</TabsTrigger>
                                         <TabsTrigger value="upcoming">Upcoming Contributions</TabsTrigger>
+                                        <TabsTrigger value="group-contributions">Group Contributions</TabsTrigger>
                                     </TabsList>
                                 </div>
                                 <TabsContent value="members">
@@ -234,6 +237,12 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                     <UpcomingContributionsList 
                                         members={members}
                                         contributions={contributions}
+                                        appCurrency={appCurrency}
+                                    />
+                                </TabsContent>
+                                <TabsContent value="group-contributions">
+                                    <GroupContributionsList 
+                                        members={members}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>

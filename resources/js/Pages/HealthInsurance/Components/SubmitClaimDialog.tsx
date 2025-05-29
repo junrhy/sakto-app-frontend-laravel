@@ -170,7 +170,7 @@ export default function SubmitClaimDialog({ open, onOpenChange, members, appCurr
                             type="number"
                             value={data.amount}
                             onChange={(e) => setData('amount', e.target.value)}
-                            placeholder={`Enter amount in ${appCurrency.code}`}
+                            placeholder={`Enter amount`}
                         />
                         {errors.amount && (
                             <p className="text-sm text-red-500">{errors.amount}</p>

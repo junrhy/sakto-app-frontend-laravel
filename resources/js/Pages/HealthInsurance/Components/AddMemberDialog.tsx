@@ -44,6 +44,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
         contribution_amount: '',
         contribution_frequency: '',
         status: 'active',
+        group: '',
     });
 
     useEffect(() => {
@@ -299,6 +300,20 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
                         </Select>
                         {errors.status && (
                             <p className="text-sm text-red-500">{errors.status}</p>
+                        )}
+                    </div>
+
+                    <div>
+                        <Label htmlFor="group">Group</Label>
+                        <Input
+                            id="group"
+                            type="text"
+                            value={data.group}
+                            onChange={(e) => setData('group', e.target.value)}
+                            placeholder="Enter group name"
+                        />
+                        {errors.group && (
+                            <p className="text-sm text-red-500">{errors.group}</p>
                         )}
                     </div>
 

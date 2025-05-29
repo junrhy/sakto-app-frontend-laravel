@@ -59,7 +59,8 @@ class HealthInsuranceController extends Controller
             'membership_start_date' => 'required|date',
             'contribution_amount' => 'required|numeric|min:0',
             'contribution_frequency' => 'required|in:monthly,quarterly,annually',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
+            'group' => 'nullable|string'
         ]);
 
         try {
@@ -92,7 +93,8 @@ class HealthInsuranceController extends Controller
             'membership_start_date' => 'required|date',
             'contribution_amount' => 'required|numeric|min:0',
             'contribution_frequency' => 'required|in:monthly,quarterly,annually',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
+            'group' => 'nullable|string'
         ]);
 
         try {
