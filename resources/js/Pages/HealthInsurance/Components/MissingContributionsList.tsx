@@ -81,6 +81,9 @@ export default function MissingContributionsList({ members, contributions, appCu
         return expectedDates.filter(expectedDate => {
             const hasContribution = memberContributions.some(contribution => {
                 const contributionDate = new Date(contribution.payment_date);
+                if (member.contribution_frequency === 'annually') {
+                    return contributionDate.getFullYear() === expectedDate.getFullYear();
+                }
                 return (
                     contributionDate.getMonth() === expectedDate.getMonth() &&
                     contributionDate.getFullYear() === expectedDate.getFullYear()
@@ -229,29 +232,20 @@ export default function MissingContributionsList({ members, contributions, appCu
                                             return (
                                                 <TableCell 
                                                     key={month.toISOString()}
-                                                    className={`text-center ${hasContribution ? 'text-red-600 font-medium' : 'text-green-600'} ${isBeforeStart ? 'bg-gray-50' : ''}`}
+                                                    className={`text-center ${hasContribution ? 'bg-red-100' : 'bg-green-100'} ${isBeforeStart ? 'bg-gray-50' : ''}`}
                                                 >
                                                     {!isBeforeStart && (
                                                         <>
                                                             {hasContribution ? (
                                                                 <div className="space-y-1">
-                                                                    <div className="text-red-600">
-                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
-                                                                    </div>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() => handleAddContribution(member)}
-                                                                    >
-                                                                        <Plus className="h-4 w-4" />
-                                                                    </Button>
+                                                                    <div></div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="space-y-1">
-                                                                    <div>
+                                                                    <div className="text-green-600">✓</div>
+                                                                    <div className="text-xs text-gray-600">
                                                                         {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
                                                                     </div>
-                                                                    <div className="text-green-600">✓</div>
                                                                 </div>
                                                             )}
                                                         </>
@@ -301,29 +295,20 @@ export default function MissingContributionsList({ members, contributions, appCu
                                             return (
                                                 <TableCell 
                                                     key={year}
-                                                    className={`text-center ${hasContribution ? 'text-red-600 font-medium' : 'text-green-600'} ${isBeforeStart ? 'bg-gray-50' : ''}`}
+                                                    className={`text-center ${hasContribution ? 'bg-red-100' : 'bg-green-100'} ${isBeforeStart ? 'bg-gray-50' : ''}`}
                                                 >
                                                     {!isBeforeStart && (
                                                         <>
                                                             {hasContribution ? (
                                                                 <div className="space-y-1">
-                                                                    <div className="text-red-600">
-                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
-                                                                    </div>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() => handleAddContribution(member)}
-                                                                    >
-                                                                        <Plus className="h-4 w-4" />
-                                                                    </Button>
+                                                                    <div></div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="space-y-1">
-                                                                    <div>
+                                                                    <div className="text-green-600">✓</div>
+                                                                    <div className="text-xs text-gray-600">
                                                                         {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
                                                                     </div>
-                                                                    <div className="text-green-600">✓</div>
                                                                 </div>
                                                             )}
                                                         </>
