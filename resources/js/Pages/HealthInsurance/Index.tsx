@@ -118,18 +118,18 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
+                        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <CardTitle>Health Insurance Management</CardTitle>
-                            <div className="flex gap-2">
-                                <Button onClick={() => setIsAddMemberOpen(true)}>
+                            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                <Button onClick={() => setIsAddMemberOpen(true)} className="flex-1 sm:flex-none">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Member
                                 </Button>
-                                <Button onClick={() => setIsAddContributionOpen(true)}>
+                                <Button onClick={() => setIsAddContributionOpen(true)} className="flex-1 sm:flex-none">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Record Contribution
                                 </Button>
-                                <Button onClick={() => setIsSubmitClaimOpen(true)}>
+                                <Button onClick={() => setIsSubmitClaimOpen(true)} className="flex-1 sm:flex-none">
                                     <Plus className="w-4 h-4 mr-2" />
                                     Submit Claim
                                 </Button>
@@ -141,13 +141,15 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                 onValueChange={handleTabChange}
                                 className="w-full"
                             >
-                                <TabsList>
-                                    <TabsTrigger value="members">Members</TabsTrigger>
-                                    <TabsTrigger value="contributions">Contributions</TabsTrigger>
-                                    <TabsTrigger value="claims">Claims</TabsTrigger>
-                                    <TabsTrigger value="missing">Missing Contributions</TabsTrigger>
-                                    <TabsTrigger value="upcoming">Upcoming Contributions</TabsTrigger>
-                                </TabsList>
+                                <div className="overflow-x-auto">
+                                    <TabsList className="w-full sm:w-auto">
+                                        <TabsTrigger value="members">Members</TabsTrigger>
+                                        <TabsTrigger value="contributions">Contributions</TabsTrigger>
+                                        <TabsTrigger value="claims">Claims</TabsTrigger>
+                                        <TabsTrigger value="missing">Missing Contributions</TabsTrigger>
+                                        <TabsTrigger value="upcoming">Upcoming Contributions</TabsTrigger>
+                                    </TabsList>
+                                </div>
                                 <TabsContent value="members">
                                     <MembersList 
                                         members={members} 
