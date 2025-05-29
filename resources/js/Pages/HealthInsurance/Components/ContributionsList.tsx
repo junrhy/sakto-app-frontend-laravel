@@ -59,6 +59,9 @@ export default function ContributionsList({ contributions, members, appCurrency 
             router.delete(`/health-insurance/contributions/${memberId}/${contributionId}`, {
                 onSuccess: () => {
                     toast.success('Contribution deleted successfully');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 },
                 onError: () => {
                     toast.error('Failed to delete contribution');

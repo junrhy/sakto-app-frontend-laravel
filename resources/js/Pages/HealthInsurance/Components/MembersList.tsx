@@ -56,6 +56,10 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
             router.delete(`/health-insurance/members/${memberId}`, {
                 onSuccess: () => {
                     toast.success('Member deleted successfully');
+                    // Add delay before reloading to show toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500); // 1.5 seconds delay
                 },
                 onError: () => {
                     toast.error('Failed to delete member');

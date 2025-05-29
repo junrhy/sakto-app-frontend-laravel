@@ -61,6 +61,9 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
             router.delete(`/health-insurance/claims/${memberId}/${claimId}`, {
                 onSuccess: () => {
                     toast.success('Claim deleted successfully');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 },
                 onError: () => {
                     toast.error('Failed to delete claim');
