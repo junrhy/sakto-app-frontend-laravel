@@ -9,11 +9,12 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import EditClaimDialog from './EditClaimDialog';
+import { Input } from '@/Components/ui/input';
 
 interface Member {
     id: string;
@@ -44,6 +45,7 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
     const [sortField, setSortField] = useState<keyof Claim>('date_of_service');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleSort = (field: keyof Claim) => {
         if (field === sortField) {
@@ -74,6 +76,11 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
         }
     };
 
+    const getMemberName = (memberId: string) => {
+        const member = members.find(m => m.id === memberId);
+        return member ? member.name : 'Unknown Member';
+    };
+
     const sortedClaims = [...claims].sort((a, b) => {
         const aValue = a[sortField];
         const bValue = b[sortField];
@@ -91,10 +98,18 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
         return 0;
     });
 
-    const getMemberName = (memberId: string) => {
-        const member = members.find(m => m.id === memberId);
-        return member ? member.name : 'Unknown Member';
-    };
+    const filteredClaims = sortedClaims.filter(claim => {
+        const searchLower = searchQuery.toLowerCase();
+        const memberName = getMemberName(claim.member_id).toLowerCase();
+        
+        return (
+            memberName.includes(searchLower) ||
+            claim.claim_type.toLowerCase().includes(searchLower) ||
+            claim.hospital_name.toLowerCase().includes(searchLower) ||
+            claim.diagnosis.toLowerCase().includes(searchLower) ||
+            claim.status.toLowerCase().includes(searchLower)
+        );
+    });
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
@@ -111,6 +126,17 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
 
     return (
         <>
+            <div className="mb-4">
+                <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search claims..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8"
+                    />
+                </div>
+            </div>
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -145,7 +171,7 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedClaims.map((claim) => (
+                        {filteredClaims.map((claim) => (
                             <TableRow key={claim.id}>
                                 <TableCell>
                                     {format(new Date(claim.date_of_service), 'MMM d, yyyy')}

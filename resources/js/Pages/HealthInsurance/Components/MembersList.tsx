@@ -9,10 +9,11 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
+import { Input } from '@/Components/ui/input';
 
 interface Member {
     id: string;
@@ -39,6 +40,7 @@ interface Props {
 export default function MembersList({ members, onMemberSelect, appCurrency }: Props) {
     const [sortField, setSortField] = useState<keyof Member>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleSort = (field: keyof Member) => {
         if (field === sortField) {
@@ -79,6 +81,18 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
         return 0;
     });
 
+    const filteredMembers = sortedMembers.filter(member => {
+        const searchLower = searchQuery.toLowerCase();
+        
+        return (
+            member.name.toLowerCase().includes(searchLower) ||
+            member.contribution_frequency.toLowerCase().includes(searchLower) ||
+            member.status.toLowerCase().includes(searchLower) ||
+            member.contact_number.toLowerCase().includes(searchLower) ||
+            member.address.toLowerCase().includes(searchLower)
+        );
+    });
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'active':
@@ -91,84 +105,97 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
     };
 
     return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('name')}
-                        >
-                            Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('membership_start_date')}
-                        >
-                            Start Date {sortField === 'membership_start_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('contribution_amount')}
-                        >
-                            Contribution {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('contribution_frequency')}
-                        >
-                            Frequency {sortField === 'contribution_frequency' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('status')}
-                        >
-                            Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {sortedMembers.map((member) => (
-                        <TableRow key={member.id}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>
-                                {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
-                            </TableCell>
-                            <TableCell>
-                                {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
-                            </TableCell>
-                            <TableCell className="capitalize">
-                                {member.contribution_frequency}
-                            </TableCell>
-                            <TableCell>
-                                <Badge className={getStatusColor(member.status)}>
-                                    {member.status}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => onMemberSelect(member)}
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-red-500 hover:text-red-700"
-                                        onClick={() => handleDelete(member.id)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </TableCell>
+        <div className="space-y-4">
+            <div className="mb-4">
+                <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search members..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8"
+                    />
+                </div>
+            </div>
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('name')}
+                            >
+                                Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('membership_start_date')}
+                            >
+                                Start Date {sortField === 'membership_start_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('contribution_amount')}
+                            >
+                                Contribution {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('contribution_frequency')}
+                            >
+                                Frequency {sortField === 'contribution_frequency' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('status')}
+                            >
+                                Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead>Actions</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredMembers.map((member) => (
+                            <TableRow key={member.id}>
+                                <TableCell className="font-medium">{member.name}</TableCell>
+                                <TableCell>
+                                    {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                                </TableCell>
+                                <TableCell>
+                                    {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                                </TableCell>
+                                <TableCell className="capitalize">
+                                    {member.contribution_frequency}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge className={getStatusColor(member.status)}>
+                                        {member.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => onMemberSelect(member)}
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-red-500 hover:text-red-700"
+                                            onClick={() => handleDelete(member.id)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 } 

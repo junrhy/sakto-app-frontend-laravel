@@ -8,11 +8,12 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import EditContributionDialog from './EditContributionDialog';
+import { Input } from '@/Components/ui/input';
 
 interface Member {
     id: string;
@@ -42,6 +43,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleSort = (field: keyof Contribution) => {
         if (field === sortField) {
@@ -78,6 +80,11 @@ export default function ContributionsList({ contributions, members, appCurrency 
         // This will be handled by the page refresh after the API call
     };
 
+    const getMemberName = (memberId: string) => {
+        const member = members.find(m => m.id === memberId);
+        return member ? member.name : 'Unknown Member';
+    };
+
     const sortedContributions = [...contributions].sort((a, b) => {
         const aValue = a[sortField];
         const bValue = b[sortField];
@@ -95,80 +102,101 @@ export default function ContributionsList({ contributions, members, appCurrency 
         return 0;
     });
 
-    const getMemberName = (memberId: string) => {
-        const member = members.find(m => m.id === memberId);
-        return member ? member.name : 'Unknown Member';
-    };
+    const filteredContributions = sortedContributions.filter(contribution => {
+        const searchLower = searchQuery.toLowerCase();
+        const memberName = getMemberName(contribution.member_id)?.toLowerCase() || '';
+        const paymentMethod = contribution.payment_method?.toLowerCase() || '';
+        const referenceNumber = contribution.reference_number?.toLowerCase() || '';
+        
+        return (
+            memberName.includes(searchLower) ||
+            paymentMethod.includes(searchLower) ||
+            referenceNumber.includes(searchLower)
+        );
+    });
 
     return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('payment_date')}
-                        >
-                            Payment Date {sortField === 'payment_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead>Member</TableHead>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('amount')}
-                        >
-                            Amount {sortField === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead 
-                            className="cursor-pointer"
-                            onClick={() => handleSort('payment_method')}
-                        >
-                            Payment Method {sortField === 'payment_method' && (sortDirection === 'asc' ? '↑' : '↓')}
-                        </TableHead>
-                        <TableHead>Reference Number</TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {sortedContributions.map((contribution) => (
-                        <TableRow key={contribution.id}>
-                            <TableCell>
-                                {format(new Date(contribution.payment_date), 'MMM d, yyyy')}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                                {getMemberName(contribution.member_id)}
-                            </TableCell>
-                            <TableCell>
-                                {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
-                            </TableCell>
-                            <TableCell className="capitalize">
-                                {contribution.payment_method.replace('_', ' ')}
-                            </TableCell>
-                            <TableCell>
-                                {contribution.reference_number}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleEdit(contribution)}
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-red-500 hover:text-red-700"
-                                        onClick={() => handleDelete(contribution.member_id, contribution.id)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </TableCell>
+        <div className="space-y-4">
+            <div className="mb-4">
+                <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search contributions..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8"
+                    />
+                </div>
+            </div>
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('payment_date')}
+                            >
+                                Payment Date {sortField === 'payment_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead>Member</TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('amount')}
+                            >
+                                Amount {sortField === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('payment_method')}
+                            >
+                                Payment Method {sortField === 'payment_method' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead>Reference Number</TableHead>
+                            <TableHead>Actions</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredContributions.map((contribution) => (
+                            <TableRow key={contribution.id}>
+                                <TableCell>
+                                    {format(new Date(contribution.payment_date), 'MMM d, yyyy')}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {getMemberName(contribution.member_id)}
+                                </TableCell>
+                                <TableCell>
+                                    {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
+                                </TableCell>
+                                <TableCell className="capitalize">
+                                    {contribution.payment_method.replace('_', ' ')}
+                                </TableCell>
+                                <TableCell>
+                                    {contribution.reference_number}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleEdit(contribution)}
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-red-500 hover:text-red-700"
+                                            onClick={() => handleDelete(contribution.member_id, contribution.id)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
 
             <EditContributionDialog
                 open={isEditDialogOpen}
