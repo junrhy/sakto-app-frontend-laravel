@@ -1,0 +1,309 @@
+import { Head } from '@inertiajs/react';
+import { PageProps } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { format } from 'date-fns';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+
+interface Member {
+    id: string;
+    name: string;
+    date_of_birth: string;
+    gender: string;
+    contact_number: string;
+    address: string;
+    membership_start_date: string;
+    contribution_amount: number;
+    contribution_frequency: string;
+    status: string;
+}
+
+interface Contribution {
+    id: string;
+    member_id: string;
+    amount: number;
+    payment_date: string;
+    payment_method: string;
+    reference_number: string;
+}
+
+interface Claim {
+    id: string;
+    member_id: string;
+    claim_type: string;
+    amount: number;
+    date_of_service: string;
+    hospital_name: string;
+    diagnosis: string;
+    status: string;
+}
+
+interface Props extends PageProps {
+    member: Member;
+    contributions: Contribution[];
+    claims: Claim[];
+    upcomingContributions: {
+        due_date: string;
+        amount: number;
+    }[];
+    pastDueContributions: {
+        due_date: string;
+        amount: number;
+    }[];
+    appCurrency: {
+        code: string;
+        symbol: string;
+    };
+}
+
+export default function MemberDetails({ member, contributions, claims, upcomingContributions, pastDueContributions, appCurrency }: Props) {
+    const getStatusColor = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'active':
+                return 'bg-green-500';
+            case 'inactive':
+                return 'bg-red-500';
+            default:
+                return 'bg-gray-500';
+        }
+    };
+
+    return (
+        <>
+            <Head title={`Member Details - ${member.name}`} />
+
+            <div className="py-12">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div className="space-y-6">
+                        {/* Member Information Card */}
+                        <Card>
+                            <CardHeader>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle>Member Information</CardTitle>
+                                    <Badge className={getStatusColor(member.status)}>
+                                        {member.status}
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Name</p>
+                                        <p className="mt-1">{member.name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Date of Birth</p>
+                                        <p className="mt-1">{format(new Date(member.date_of_birth), 'MMM d, yyyy')}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Gender</p>
+                                        <p className="mt-1 capitalize">{member.gender}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Contact Number</p>
+                                        <p className="mt-1">{member.contact_number}</p>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <p className="text-sm font-medium text-gray-500">Address</p>
+                                        <p className="mt-1">{member.address}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Membership Start Date</p>
+                                        <p className="mt-1">{format(new Date(member.membership_start_date), 'MMM d, yyyy')}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Contribution Details</p>
+                                        <p className="mt-1">
+                                            {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)} / {member.contribution_frequency}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Total Amount Due Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Total Amount Due</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Past Due Amount</p>
+                                        <p className="mt-1 text-lg font-semibold">
+                                            {appCurrency.symbol}
+                                            {Number(pastDueContributions.reduce((total, contribution) => total + Number(contribution.amount), 0)).toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Next Due Amount</p>
+                                        <p className="mt-1 text-lg font-semibold">
+                                            {appCurrency.symbol}
+                                            {upcomingContributions.length > 0 ? Number(upcomingContributions[0].amount).toFixed(2) : '0.00'}
+                                        </p>
+                                        {upcomingContributions.length > 0 && (
+                                            <p className="text-sm text-gray-500">
+                                                Due: {format(new Date(upcomingContributions[0].due_date), 'MMM d, yyyy')}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="col-span-2 pt-4 border-t">
+                                        <p className="text-sm font-medium text-gray-500">Total Amount Due</p>
+                                        <p className="mt-1 text-xl font-bold text-red-600">
+                                            {appCurrency.symbol}
+                                            {Number(
+                                                pastDueContributions.reduce((total, contribution) => total + Number(contribution.amount), 0) +
+                                                (upcomingContributions.length > 0 ? Number(upcomingContributions[0].amount) : 0)
+                                            ).toFixed(2)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Contributions Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Contributions</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Payment Method</TableHead>
+                                            <TableHead>Reference Number</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {contributions.map((contribution) => (
+                                            <TableRow key={contribution.id}>
+                                                <TableCell>
+                                                    {format(new Date(contribution.payment_date), 'MMM d, yyyy')}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="capitalize">
+                                                    {contribution.payment_method}
+                                                </TableCell>
+                                                <TableCell>{contribution.reference_number}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+
+                        {/* Claims Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date of Service</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Hospital</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {claims.map((claim) => (
+                                            <TableRow key={claim.id}>
+                                                <TableCell>
+                                                    {format(new Date(claim.date_of_service), 'MMM d, yyyy')}
+                                                </TableCell>
+                                                <TableCell className="capitalize">
+                                                    {claim.claim_type}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {appCurrency.symbol}{Number(claim.amount).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell>{claim.hospital_name}</TableCell>
+                                                <TableCell>
+                                                    <Badge className={getStatusColor(claim.status)}>
+                                                        {claim.status}
+                                                    </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+
+                        {/* Upcoming Due Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Upcoming Due Contributions</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Due Date</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {upcomingContributions.map((contribution, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    {format(new Date(contribution.due_date), 'MMM d, yyyy')}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+
+                        {/* Past Due Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Past Due Contributions</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Due Date</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {pastDueContributions.map((contribution, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>
+                                                    {format(new Date(contribution.due_date), 'MMM d, yyyy')}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+} 

@@ -193,6 +193,9 @@ Route::group(['middleware' => ['web']], function () {
     // Pages
     Route::get('/link/{slug}', [PagesController::class, 'getPage'])->name('pages.public');
     Route::get('/api/pages/{slug}', [PagesController::class, 'getPageBySlug'])->name('api.pages.get-by-slug');
+
+    // Health Insurance Public Routes
+    Route::get('/health-insurance/members/{id}/public', [HealthInsuranceController::class, 'showMember'])->name('health-insurance.members.show.public');
 });
 
 // Admin Auth Routes
@@ -405,7 +408,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('health-insurance')->group(function () {
         Route::get('/', [HealthInsuranceController::class, 'index'])->name('health-insurance');
         
-        // Member Management
+        // Member routes
+        Route::get('/members/{id}', [HealthInsuranceController::class, 'showMember'])->name('health-insurance.members.show');
         Route::post('/members', [HealthInsuranceController::class, 'storeMember'])->name('health-insurance.members.store');
         Route::put('/members/{id}', [HealthInsuranceController::class, 'updateMember'])->name('health-insurance.members.update');
         Route::delete('/members/{id}', [HealthInsuranceController::class, 'deleteMember'])->name('health-insurance.members.delete');

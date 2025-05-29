@@ -9,7 +9,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2, Search } from 'lucide-react';
+import { Edit, Trash2, Search, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -174,6 +174,13 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => window.open(`/health-insurance/members/${member.id}/public`, '_blank')}
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"

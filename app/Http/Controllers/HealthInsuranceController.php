@@ -347,4 +347,62 @@ class HealthInsuranceController extends Controller
             return back()->with('error', 'Failed to update claim.');
         }
     }
+
+    public function showMember($id)
+    {
+        $clientIdentifier = auth()->user()->identifier;
+        
+        // Get member details
+        $memberResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/health-insurance/members/{$id}?client_identifier={$clientIdentifier}");
+
+        if (!$memberResponse->successful()) {
+            return redirect()->route('health-insurance')->with('error', 'Failed to fetch member details');
+        }
+        
+        $responseData = $memberResponse->json()['data'];
+        $member = $responseData['member'];
+
+        // Convert contribution_amount to float
+        $member['contribution_amount'] = (float) $member['contribution_amount'];
+        
+        // Get member's contributions
+        $contributionsResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/health-insurance/contributions/{$id}?client_identifier={$clientIdentifier}");
+        
+        $contributions = $contributionsResponse->successful() ? $contributionsResponse->json()['data'] ?? [] : [];
+        
+        // Convert contribution amounts to float
+        $contributions = array_map(function($contribution) {
+            $contribution['amount'] = (float) $contribution['amount'];
+            return $contribution;
+        }, $contributions);
+        
+        // Get member's claims
+        $claimsResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/health-insurance/claims/{$id}?client_identifier={$clientIdentifier}");
+        
+        $claims = $claimsResponse->successful() ? $claimsResponse->json()['data'] ?? [] : [];
+        
+        // Convert claim amounts to float
+        $claims = array_map(function($claim) {
+            $claim['amount'] = (float) $claim['amount'];
+            return $claim;
+        }, $claims);
+
+        // Calculate upcoming and past due contributions
+        $upcomingContributions = $responseData['upcoming_contributions'];
+        $pastDueContributions = $responseData['past_due_contributions'];
+
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+
+        return Inertia::render('HealthInsurance/MemberDetails', [
+            'member' => $member,
+            'contributions' => $contributions,
+            'claims' => $claims,
+            'upcomingContributions' => $upcomingContributions,
+            'pastDueContributions' => $pastDueContributions,
+            'appCurrency' => $jsonAppCurrency
+        ]);
+    }
 }
