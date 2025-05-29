@@ -12,6 +12,7 @@ import { Plus } from 'lucide-react';
 import AddMemberDialog from './Components/AddMemberDialog';
 import AddContributionDialog from './Components/AddContributionDialog';
 import SubmitClaimDialog from './Components/SubmitClaimDialog';
+import EditMemberDialog from './Components/EditMemberDialog';
 
 interface Member {
     id: string;
@@ -63,6 +64,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
     const [isSubmitClaimOpen, setIsSubmitClaimOpen] = useState(false);
+    const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
     const handleAddMember = (newMember: Member) => {
@@ -75,6 +77,17 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
 
     const handleSubmitClaim = (newClaim: Claim) => {
         setClaims([...claims, newClaim]);
+    };
+
+    const handleMemberSelect = (member: Member) => {
+        setSelectedMember(member);
+        setIsEditMemberOpen(true);
+    };
+
+    const handleMemberUpdate = (updatedMember: Member) => {
+        setMembers(members.map(member => 
+            member.id === updatedMember.id ? updatedMember : member
+        ));
     };
 
     return (
@@ -114,7 +127,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                 <TabsContent value="members">
                                     <MembersList 
                                         members={members} 
-                                        onMemberSelect={setSelectedMember}
+                                        onMemberSelect={handleMemberSelect}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
@@ -158,6 +171,13 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                 members={members}
                 appCurrency={appCurrency}
                 onClaimSubmitted={handleSubmitClaim}
+            />
+
+            <EditMemberDialog
+                open={isEditMemberOpen}
+                onOpenChange={setIsEditMemberOpen}
+                member={selectedMember}
+                onMemberUpdated={handleMemberUpdate}
             />
         </AuthenticatedLayout>
     );

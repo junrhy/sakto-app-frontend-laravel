@@ -10,6 +10,9 @@ import {
 import { Button } from '@/Components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
+import EditContributionDialog from './EditContributionDialog';
 
 interface Member {
     id: string;
@@ -37,6 +40,8 @@ interface Props {
 export default function ContributionsList({ contributions, members, appCurrency }: Props) {
     const [sortField, setSortField] = useState<keyof Contribution>('payment_date');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
 
     const handleSort = (field: keyof Contribution) => {
         if (field === sortField) {
@@ -45,6 +50,32 @@ export default function ContributionsList({ contributions, members, appCurrency 
             setSortField(field);
             setSortDirection('asc');
         }
+    };
+
+    const handleDelete = (memberId: string, contributionId: string) => {
+        if (window.confirm('Are you sure you want to delete this contribution? This action cannot be undone.')) {
+            router.delete(`/health-insurance/contributions/${memberId}/${contributionId}`, {
+                onSuccess: () => {
+                    toast.success('Contribution deleted successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to delete contribution');
+                }
+            });
+        }
+    };
+
+    const handleEdit = (contribution: Contribution) => {
+        setSelectedContribution(contribution);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleContributionUpdate = (updatedContribution: Contribution) => {
+        const updatedContributions = contributions.map(contribution =>
+            contribution.id === updatedContribution.id ? updatedContribution : contribution
+        );
+        // Update the parent component's state if needed
+        // This will be handled by the page refresh after the API call
     };
 
     const sortedContributions = [...contributions].sort((a, b) => {
@@ -120,6 +151,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                     <Button
                                         variant="ghost"
                                         size="icon"
+                                        onClick={() => handleEdit(contribution)}
                                     >
                                         <Edit className="h-4 w-4" />
                                     </Button>
@@ -127,6 +159,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                         variant="ghost"
                                         size="icon"
                                         className="text-red-500 hover:text-red-700"
+                                        onClick={() => handleDelete(contribution.member_id, contribution.id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -136,6 +169,14 @@ export default function ContributionsList({ contributions, members, appCurrency 
                     ))}
                 </TableBody>
             </Table>
+
+            <EditContributionDialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                contribution={selectedContribution}
+                appCurrency={appCurrency}
+                onContributionUpdated={handleContributionUpdate}
+            />
         </div>
     );
 } 

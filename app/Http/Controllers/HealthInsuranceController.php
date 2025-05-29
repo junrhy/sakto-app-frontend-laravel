@@ -94,6 +94,7 @@ class HealthInsuranceController extends Controller
         ]);
 
         try {
+            $validated['client_identifier'] = auth()->user()->identifier;
             $response = Http::withToken($this->apiToken)
                 ->put("{$this->apiUrl}/health-insurance/members/{$id}", $validated);
 
@@ -101,10 +102,10 @@ class HealthInsuranceController extends Controller
                 throw new \Exception('API request failed: ' . $response->body());
             }
 
-            return response()->json($response->json());
+            return back()->with('success', 'Member updated successfully');
         } catch (\Exception $e) {
             Log::error('Error updating member: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to update member.'], 500);
+            return back()->with('error', 'Failed to update member.');
         }
     }
 
@@ -130,6 +131,31 @@ class HealthInsuranceController extends Controller
         } catch (\Exception $e) {
             Log::error('Error recording contribution: ' . $e->getMessage());
             return back()->with('error', 'Failed to record contribution.');
+        }
+    }
+
+    public function updateContribution(Request $request, string $memberId, string $contributionId)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'payment_date' => 'required|date',
+            'payment_method' => 'required|string',
+            'reference_number' => 'nullable|string'
+        ]);
+
+        try {
+            $validated['client_identifier'] = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/health-insurance/contributions/{$memberId}/{$contributionId}", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return back()->with('success', 'Contribution updated successfully');
+        } catch (\Exception $e) {
+            Log::error('Error updating contribution: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update contribution.');
         }
     }
 
@@ -241,6 +267,84 @@ class HealthInsuranceController extends Controller
         } catch (\Exception $e) {
             Log::error('Error generating report: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to generate report.'], 500);
+        }
+    }
+
+    public function deleteMember(string $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/health-insurance/members/{$id}");
+
+            if ($response->successful()) {
+                return redirect()->back()->with('success', 'Member deleted successfully');
+            }
+
+            throw new \Exception($response->json()['message'] ?? 'Failed to delete member');
+        } catch (\Exception $e) {
+            Log::error('Error deleting member: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete member: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteContribution(string $memberId, string $contributionId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/health-insurance/contributions/{$memberId}/{$contributionId}");
+
+            if ($response->successful()) {
+                return redirect()->back()->with('success', 'Contribution deleted successfully');
+            }
+
+            throw new \Exception($response->json()['message'] ?? 'Failed to delete contribution');
+        } catch (\Exception $e) {
+            Log::error('Error deleting contribution: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete contribution: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteClaim(string $memberId, string $claimId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/health-insurance/claims/{$memberId}/{$claimId}");
+
+            if ($response->successful()) {
+                return redirect()->back()->with('success', 'Claim deleted successfully');
+            }
+
+            throw new \Exception($response->json()['message'] ?? 'Failed to delete claim');
+        } catch (\Exception $e) {
+            Log::error('Error deleting claim: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to delete claim: ' . $e->getMessage());
+        }
+    }
+
+    public function updateClaim(Request $request, string $memberId, string $claimId)
+    {
+        try {
+            $validated = $request->validate([
+                'claim_type' => 'required|in:hospitalization,outpatient,dental,optical',
+                'amount' => 'required|numeric|min:0',
+                'date_of_service' => 'required|date',
+                'hospital_name' => 'required|string',
+                'diagnosis' => 'required|string',
+                'status' => 'required|in:pending,approved,rejected'
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/health-insurance/claims/{$memberId}/{$claimId}", $validated);
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            return back()->with('success', 'Claim updated successfully');
+        } catch (\Exception $e) {
+            Log::error('Error updating claim: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update claim.');
         }
     }
 }

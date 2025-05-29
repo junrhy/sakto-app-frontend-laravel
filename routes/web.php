@@ -408,18 +408,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Member Management
         Route::post('/members', [HealthInsuranceController::class, 'storeMember'])->name('health-insurance.members.store');
         Route::put('/members/{id}', [HealthInsuranceController::class, 'updateMember'])->name('health-insurance.members.update');
+        Route::delete('/members/{id}', [HealthInsuranceController::class, 'deleteMember'])->name('health-insurance.members.delete');
         
         // Contributions
         Route::post('/contributions/{memberId}', [HealthInsuranceController::class, 'recordContribution'])->name('health-insurance.contributions.store');
+        Route::put('/contributions/{memberId}/{contributionId}', [HealthInsuranceController::class, 'updateContribution'])->name('health-insurance.contributions.update');
         Route::get('/contributions/{memberId}', [HealthInsuranceController::class, 'getMemberContributions'])->name('health-insurance.contributions.index');
+        Route::delete('/contributions/{memberId}/{contributionId}', [HealthInsuranceController::class, 'deleteContribution'])->name('health-insurance.contributions.delete');
         
         // Claims
         Route::post('/claims/{memberId}', [HealthInsuranceController::class, 'submitClaim'])->name('health-insurance.claims.store');
-        Route::patch('/claims/{claimId}/status', [HealthInsuranceController::class, 'updateClaimStatus'])->name('health-insurance.claims.update-status');
-        Route::get('/claims/{memberId}', [HealthInsuranceController::class, 'getMemberClaims'])->name('health-insurance.claims.index');
+        Route::put('/claims/{memberId}/{claimId}', [HealthInsuranceController::class, 'updateClaim'])->name('health-insurance.claims.update');
+        Route::delete('/claims/{memberId}/{claimId}', [HealthInsuranceController::class, 'deleteClaim'])->name('health-insurance.claims.delete');
+        Route::patch('/claims/{claimId}/status', [HealthInsuranceController::class, 'updateClaimStatus'])->name('health-insurance.claims.status');
+        Route::get('/claims/{memberId}', [HealthInsuranceController::class, 'getMemberClaims'])->name('health-insurance.claims.member');
+        Route::get('/contributions/{memberId}', [HealthInsuranceController::class, 'getMemberContributions'])->name('health-insurance.contributions.member');
         
         // Reports
-        Route::post('/reports', [HealthInsuranceController::class, 'generateReport'])->name('health-insurance.reports.generate');
+        Route::post('/report', [HealthInsuranceController::class, 'generateReport'])->name('health-insurance.report');
     });
 });
 

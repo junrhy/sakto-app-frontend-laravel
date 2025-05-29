@@ -11,6 +11,8 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 
 interface Member {
     id: string;
@@ -44,6 +46,19 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
         } else {
             setSortField(field);
             setSortDirection('asc');
+        }
+    };
+
+    const handleDelete = (memberId: string) => {
+        if (window.confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+            router.delete(`/health-insurance/members/${memberId}`, {
+                onSuccess: () => {
+                    toast.success('Member deleted successfully');
+                },
+                onError: () => {
+                    toast.error('Failed to delete member');
+                }
+            });
         }
     };
 
@@ -144,6 +159,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                         variant="ghost"
                                         size="icon"
                                         className="text-red-500 hover:text-red-700"
+                                        onClick={() => handleDelete(member.id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
