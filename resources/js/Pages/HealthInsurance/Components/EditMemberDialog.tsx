@@ -7,6 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/Components/ui/use-toast';
 import { useEffect, useState } from 'react';
 
+interface Contribution {
+    id: string;
+    member_id: string;
+    amount: number;
+    payment_date: string;
+    payment_method: string;
+    reference_number: string;
+}
+
 interface Member {
     id: string;
     name: string;
@@ -18,13 +27,17 @@ interface Member {
     contribution_amount: number;
     contribution_frequency: string;
     status: string;
+    total_contribution: number;
+    total_claims_amount: number;
+    net_balance: number;
+    contributions: Contribution[];
 }
 
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    member: Member | null;
-    onMemberUpdated: (member: Member) => void;
+    member: (Member & { contributions: Contribution[] }) | null;
+    onMemberUpdated: (member: Member & { contributions: Contribution[] }) => void;
 }
 
 export default function EditMemberDialog({ open, onOpenChange, member, onMemberUpdated }: Props) {

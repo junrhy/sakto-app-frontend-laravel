@@ -15,6 +15,15 @@ import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
 
+interface Contribution {
+    id: string;
+    member_id: string;
+    amount: number;
+    payment_date: string;
+    payment_method: string;
+    reference_number: string;
+}
+
 interface Member {
     id: string;
     name: string;
@@ -26,11 +35,19 @@ interface Member {
     contribution_amount: number;
     contribution_frequency: string;
     status: string;
+    total_contribution: number;
+    total_claims_amount: number;
+    net_balance: number;
+    contributions: Contribution[];
 }
 
 interface Props {
-    members: Member[];
-    onMemberSelect: (member: Member) => void;
+    members: (Member & {
+        contributions: Contribution[];
+    })[];
+    onMemberSelect: (member: Member & {
+        contributions: Contribution[];
+    }) => void;
     appCurrency: {
         code: string;
         symbol: string;
@@ -71,6 +88,12 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
     const sortedMembers = [...members].sort((a, b) => {
         const aValue = a[sortField];
         const bValue = b[sortField];
+
+        if (sortField === 'net_balance') {
+            const aNetBalance = a.total_contribution - a.total_claims_amount;
+            const bNetBalance = b.total_contribution - b.total_claims_amount;
+            return sortDirection === 'asc' ? aNetBalance - bNetBalance : bNetBalance - aNetBalance;
+        }
 
         if (typeof aValue === 'string' && typeof bValue === 'string') {
             return sortDirection === 'asc'
@@ -141,13 +164,31 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 className="cursor-pointer"
                                 onClick={() => handleSort('contribution_amount')}
                             >
-                                Contribution {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                Premium {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
                             </TableHead>
                             <TableHead 
                                 className="cursor-pointer"
                                 onClick={() => handleSort('contribution_frequency')}
                             >
                                 Frequency {sortField === 'contribution_frequency' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('total_contribution')}
+                            >
+                                Total Contribution {sortField === 'total_contribution' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('total_claims_amount')}
+                            >
+                                Total Claims {sortField === 'total_claims_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer"
+                                onClick={() => handleSort('net_balance')}
+                            >
+                                Net Balance {sortField === 'net_balance' && (sortDirection === 'asc' ? '↑' : '↓')}
                             </TableHead>
                             <TableHead 
                                 className="cursor-pointer"
@@ -170,6 +211,15 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 </TableCell>
                                 <TableCell className="capitalize">
                                     {member.contribution_frequency}
+                                </TableCell>
+                                <TableCell>
+                                    {appCurrency.symbol}{Number(member.total_contribution).toFixed(2)}
+                                </TableCell>
+                                <TableCell>
+                                    {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
+                                </TableCell>
+                                <TableCell>
+                                    {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
                                 </TableCell>
                                 <TableCell>
                                     <Badge className={getStatusColor(member.status)}>

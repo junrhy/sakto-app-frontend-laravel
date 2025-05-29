@@ -27,6 +27,10 @@ interface Member {
     contribution_amount: number;
     contribution_frequency: string;
     status: string;
+    total_contribution: number;
+    total_claims_amount: number;
+    net_balance: number;
+    contributions: Contribution[];
 }
 
 interface Contribution {
@@ -50,7 +54,9 @@ interface Claim {
 }
 
 interface Props extends PageProps {
-    initialMembers: Member[];
+    initialMembers: (Member & {
+        contributions: Contribution[];
+    })[];
     initialContributions: Contribution[];
     initialClaims: Claim[];
     appCurrency: {
@@ -61,14 +67,24 @@ interface Props extends PageProps {
 
 export default function HealthInsurance({ auth, initialMembers, initialContributions, initialClaims, appCurrency }: Props) {
     const { url } = usePage();
-    const [members, setMembers] = useState<Member[]>(initialMembers);
+    const [members, setMembers] = useState<Member[]>(initialMembers.map(member => ({
+        ...member,
+        total_contribution: member.contributions.reduce((sum, contribution) => sum + Number(contribution.amount), 0),
+        total_claims_amount: initialClaims
+            .filter(claim => claim.member_id === member.id)
+            .reduce((sum, claim) => sum + Number(claim.amount), 0),
+        net_balance: member.contributions.reduce((sum, contribution) => sum + Number(contribution.amount), 0) -
+            initialClaims
+                .filter(claim => claim.member_id === member.id)
+                .reduce((sum, claim) => sum + Number(claim.amount), 0)
+    })));
     const [contributions, setContributions] = useState<Contribution[]>(initialContributions);
     const [claims, setClaims] = useState<Claim[]>(initialClaims);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
     const [isSubmitClaimOpen, setIsSubmitClaimOpen] = useState(false);
     const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
-    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [selectedMember, setSelectedMember] = useState<(Member & { contributions: Contribution[] }) | null>(null);
     const [activeTab, setActiveTab] = useState(() => {
         const params = new URLSearchParams(window.location.search);
         return params.get('tab') || 'members';
@@ -85,16 +101,48 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
         }
     };
 
-    const handleAddMember = (newMember: Member) => {
-        setMembers([...members, newMember]);
+    const handleAddMember = (newMember: Member & { contributions: Contribution[] }) => {
+        setMembers([...members, {
+            ...newMember,
+            total_contribution: newMember.contributions.reduce((sum, contribution) => sum + Number(contribution.amount), 0),
+            total_claims_amount: initialClaims
+                .filter(claim => claim.member_id === newMember.id)
+                .reduce((sum, claim) => sum + Number(claim.amount), 0),
+            net_balance: newMember.contributions.reduce((sum, contribution) => sum + Number(contribution.amount), 0) -
+                initialClaims
+                    .filter(claim => claim.member_id === newMember.id)
+                    .reduce((sum, claim) => sum + Number(claim.amount), 0)
+        }]);
     };
 
     const handleAddContribution = (newContribution: Contribution) => {
         setContributions([...contributions, newContribution]);
+        // Update the member's total contribution
+        setMembers(members.map(member => {
+            if (member.id === newContribution.member_id) {
+                return {
+                    ...member,
+                    total_contribution: member.total_contribution + Number(newContribution.amount)
+                };
+            }
+            return member;
+        }));
     };
 
     const handleSubmitClaim = (newClaim: Claim) => {
         setClaims([...claims, newClaim]);
+        // Update the member's total claims amount and net balance
+        setMembers(members.map(member => {
+            if (member.id === newClaim.member_id) {
+                const newTotalClaimsAmount = member.total_claims_amount + Number(newClaim.amount);
+                return {
+                    ...member,
+                    total_claims_amount: newTotalClaimsAmount,
+                    net_balance: member.total_contribution - newTotalClaimsAmount
+                };
+            }
+            return member;
+        }));
     };
 
     const handleMemberSelect = (member: Member) => {
@@ -102,24 +150,27 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
         setIsEditMemberOpen(true);
     };
 
-    const handleMemberUpdate = (updatedMember: Member) => {
+    const handleMemberUpdate = (updatedMember: Member & { contributions: Contribution[] }) => {
         setMembers(members.map(member => 
-            member.id === updatedMember.id ? updatedMember : member
+            member.id === updatedMember.id ? {
+                ...updatedMember,
+                total_contribution: updatedMember.contributions.reduce((sum, contribution) => sum + Number(contribution.amount), 0)
+            } : member
         ));
     };
 
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Health Insurance</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Healthcare Insurance</h2>}
         >
-            <Head title="Health Insurance" />
+            <Head title="Healthcare Insurance" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <Card>
                         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <CardTitle>Health Insurance Management</CardTitle>
+                            <CardTitle>Healthcare Insurance Management</CardTitle>
                             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                                 <Button onClick={() => setIsAddMemberOpen(true)} className="flex-1 sm:flex-none">
                                     <Plus className="w-4 h-4 mr-2" />
