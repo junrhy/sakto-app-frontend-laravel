@@ -41,36 +41,55 @@ export default function GroupContributionsList({ members, appCurrency }: Props) 
         }))
         .sort((a, b) => b.total_contribution - a.total_contribution);
 
+    // Calculate totals across all groups
+    const grandTotal = sortedGroups.reduce((acc, group) => ({
+        total_contribution: acc.total_contribution + group.total_contribution,
+        total_claims: acc.total_claims + group.total_claims,
+        net_balance: acc.net_balance + group.net_balance
+    }), { total_contribution: 0, total_claims: 0, net_balance: 0 });
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Group Financial Summary</CardTitle>
+        <Card className="shadow-lg">
+            <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl font-semibold text-gray-800">Group Financial Summary</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Group Name</TableHead>
-                            <TableHead className="text-right">Total Contributions</TableHead>
-                            <TableHead className="text-right">Total Claims</TableHead>
-                            <TableHead className="text-right">Net Balance</TableHead>
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold text-gray-700">Group Name</TableHead>
+                            <TableHead className="font-semibold text-gray-700 text-right">Total Contributions</TableHead>
+                            <TableHead className="font-semibold text-gray-700 text-right">Total Claims</TableHead>
+                            <TableHead className="font-semibold text-gray-700 text-right">Net Balance</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sortedGroups.map(({ group, total_contribution, total_claims, net_balance }) => (
-                            <TableRow key={group}>
-                                <TableCell className="font-medium">{group}</TableCell>
-                                <TableCell className="text-right">
+                            <TableRow key={group} className="hover:bg-gray-50">
+                                <TableCell className="font-medium text-gray-800">{group}</TableCell>
+                                <TableCell className="text-right font-medium">
                                     {appCurrency.symbol}{total_contribution.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-right font-medium">
                                     {appCurrency.symbol}{total_claims.toLocaleString()}
                                 </TableCell>
-                                <TableCell className={`text-right ${net_balance < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                <TableCell className={`text-right font-medium ${net_balance < 0 ? 'text-red-600' : 'text-green-600'}`}>
                                     {appCurrency.symbol}{net_balance.toLocaleString()}
                                 </TableCell>
                             </TableRow>
                         ))}
+                        <TableRow className="bg-gray-50 hover:bg-gray-100">
+                            <TableCell className="font-bold text-gray-900">Total</TableCell>
+                            <TableCell className="text-right font-bold text-gray-900">
+                                {appCurrency.symbol}{grandTotal.total_contribution.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-gray-900">
+                                {appCurrency.symbol}{grandTotal.total_claims.toLocaleString()}
+                            </TableCell>
+                            <TableCell className={`text-right font-bold ${grandTotal.net_balance < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {appCurrency.symbol}{grandTotal.net_balance.toLocaleString()}
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </CardContent>
