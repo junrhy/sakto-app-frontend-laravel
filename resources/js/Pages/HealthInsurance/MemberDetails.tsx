@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { useRef } from 'react';
 import { usePDF } from 'react-to-pdf';
 import { Button } from '@/Components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, Copy } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -77,6 +77,10 @@ export default function MemberDetails({ member, contributions, claims, upcomingC
         }
     });
 
+    const copyLink = () => {
+        navigator.clipboard.writeText(window.location.href);
+    };
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'active':
@@ -100,7 +104,15 @@ export default function MemberDetails({ member, contributions, claims, upcomingC
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="flex justify-end mb-4">
+                    <div className="flex justify-end gap-2 mb-4">
+                        <Button 
+                            onClick={copyLink}
+                            className="flex items-center gap-2"
+                            variant="outline"
+                        >
+                            <Copy className="w-4 h-4" />
+                            Copy Link
+                        </Button>
                         <Button 
                             onClick={() => toPDF()} 
                             className="flex items-center gap-2"
