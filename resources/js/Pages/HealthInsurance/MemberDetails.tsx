@@ -7,6 +7,7 @@ import { useRef } from 'react';
 import { usePDF } from 'react-to-pdf';
 import { Button } from '@/Components/ui/button';
 import { Download, Copy } from 'lucide-react';
+import { useToast } from '@/Components/ui/use-toast';
 import {
     Table,
     TableBody,
@@ -77,8 +78,15 @@ export default function MemberDetails({ member, contributions, claims, upcomingC
         }
     });
 
+    const { toast } = useToast();
+
     const copyLink = () => {
         navigator.clipboard.writeText(window.location.href);
+        toast({
+            title: "Link copied!",
+            description: "The member details link has been copied to your clipboard.",
+            duration: 3000,
+        });
     };
 
     const getStatusColor = (status: string) => {
