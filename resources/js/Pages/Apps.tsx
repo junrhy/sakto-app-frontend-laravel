@@ -44,9 +44,6 @@ interface Props extends PageProps {
             credits: number;
             is_admin: boolean;
             project_identifier: string;
-            project: {
-                identifier: string;
-            };
             theme: 'light' | 'dark' | 'system';
             theme_color: string;
         };
@@ -84,7 +81,6 @@ export default function Apps() {
 
         const fetchCredits = async () => {
             try {
-                console.log(auth.user.identifier);
                 if (auth.user.identifier) {
                     const response = await fetch(`/credits/${auth.user.identifier}/balance`);
                     if (response.ok) {
@@ -324,7 +320,7 @@ export default function Apps() {
                                             <DropdownMenuItem>
                                                 <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink 
-                                                    href={route('logout', { project: auth.user.project.identifier })} 
+                                                    href={route('logout', { project: auth.user.project_identifier })} 
                                                     method="post" 
                                                     as="button"
                                                     className="w-full text-left"

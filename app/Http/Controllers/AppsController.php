@@ -19,6 +19,11 @@ class AppsController extends Controller
                     'email' => auth()->user()->email,
                     'identifier' => auth()->user()->identifier,
                     'app_currency' => $appCurrency,
+                    'credits' => auth()->user()->credits,
+                    'is_admin' => auth()->user()->is_admin,
+                    'project_identifier' => auth()->user()->project_identifier,
+                    'theme' => auth()->user()->theme,
+                    'theme_color' => auth()->user()->theme_color,
                 ]
             ],
             'apps' => config('apps')
