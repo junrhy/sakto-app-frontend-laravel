@@ -52,7 +52,7 @@ Route::group(['middleware' => ['web']], function () {
         
         // Check for shop, delivery, or jobs in host or path
         if (stripos($host, 'shop') !== false || stripos($path, 'shop') !== false) {
-            return Inertia::render('WelcomeShop', [
+            return Inertia::render('Landing/Shop', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -62,7 +62,7 @@ Route::group(['middleware' => ['web']], function () {
                 ]
             ]);
         } elseif (stripos($host, 'delivery') !== false || stripos($path, 'delivery') !== false) {
-            return Inertia::render('WelcomeDelivery', [
+            return Inertia::render('Landing/Delivery', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -72,7 +72,7 @@ Route::group(['middleware' => ['web']], function () {
                 ]
             ]);
         } elseif (stripos($host, 'jobs') !== false || stripos($path, 'jobs') !== false) {
-            return Inertia::render('WelcomeJobs', [
+            return Inertia::render('Landing/Jobs', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -84,7 +84,7 @@ Route::group(['middleware' => ['web']], function () {
         }
         
         // Default welcome page
-        return Inertia::render('Welcome', [
+        return Inertia::render('Landing/Default', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -94,7 +94,7 @@ Route::group(['middleware' => ['web']], function () {
 
     // Specific routes for shop, delivery, and jobs
     Route::get('/shop', function () {
-        return Inertia::render('WelcomeShop', [
+        return Inertia::render('Landing/Shop', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -106,7 +106,7 @@ Route::group(['middleware' => ['web']], function () {
     })->name('shop');
 
     Route::get('/delivery', function () {
-        return Inertia::render('WelcomeDelivery', [
+        return Inertia::render('Landing/Delivery', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -118,7 +118,7 @@ Route::group(['middleware' => ['web']], function () {
     })->name('delivery');
 
     Route::get('/jobs', function () {
-        return Inertia::render('WelcomeJobs', [
+        return Inertia::render('Landing/Jobs', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,

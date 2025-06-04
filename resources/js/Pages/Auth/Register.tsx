@@ -11,13 +11,18 @@ interface Props {
     // Remove projects prop since it's no longer needed
 }
 
+const ALLOWED_PROJECTS = ['trial', 'community', 'logistics', 'medical', 'enterprise'] as const;
+
 export default function Register({}: Props) {
+    const urlProject = new URLSearchParams(window.location.search).get('project');
+    const validProject: typeof ALLOWED_PROJECTS[number] = ALLOWED_PROJECTS.includes(urlProject as any) ? urlProject as typeof ALLOWED_PROJECTS[number] : 'trial';
+
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
-        project_identifier: 'trial', // Set default value to 'trial'
+        project_identifier: validProject,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -36,14 +41,17 @@ export default function Register({}: Props) {
                 {/* Left side - Registration Form */}
                 <div className="w-full md:w-1/2 flex flex-col">
                     {/* Logo Section */}
-                    <div className="p-8">
-                        <Link href="/">
-                            <img 
-                                src="/images/tetris.png" 
-                                alt="Logo" 
-                                className="h-12 w-auto"
-                            />
-                        </Link>
+                    <div className="p-8 flex items-center gap-4">
+                        <img 
+                            src="/images/tetris.png" 
+                            alt="Logo" 
+                            className="h-12 w-auto"
+                        />
+                        {validProject !== 'trial' && (
+                            <span className="text-xl font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-1.5 rounded-lg">
+                                {validProject.charAt(0).toUpperCase() + validProject.slice(1)}
+                            </span>
+                        )}
                     </div>
 
                     {/* Form Section */}

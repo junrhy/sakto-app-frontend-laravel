@@ -38,18 +38,16 @@ export default function Login({
                 <div className="w-full md:w-1/2 flex flex-col">
                     {/* Logo Section */}
                     <div className="p-8">
-                        <Link href="/">
-                            <img 
-                                src="/images/tetris.png"
-                                className="h-12 w-auto block dark:hidden"
-                                alt="Logo"
-                            />
-                            <img 
-                                src="/images/tetris-white.png"
-                                className="h-12 w-auto hidden dark:block"
-                                alt="Logo"
-                            />
-                        </Link>
+                        <img 
+                            src="/images/tetris.png"
+                            className="h-12 w-auto block dark:hidden"
+                            alt="Logo"
+                        />
+                        <img 
+                            src="/images/tetris-white.png"
+                            className="h-12 w-auto hidden dark:block"
+                            alt="Logo"
+                        />
                     </div>
 
                     {/* Form Section */}

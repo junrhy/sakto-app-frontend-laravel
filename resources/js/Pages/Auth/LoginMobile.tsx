@@ -38,18 +38,16 @@ export default function LoginMobile({
             <div className="min-h-screen bg-white dark:bg-gray-900 px-4 py-8">
                 {/* Logo Section */}
                 <div className="mb-8 flex justify-center">
-                    <Link href="/">
-                        <img 
-                            src="/images/tetris.png"
-                            className="h-10 w-auto block dark:hidden"
-                            alt="Logo"
-                        />
-                        <img 
-                            src="/images/tetris-white.png"
-                            className="h-10 w-auto hidden dark:block"
-                            alt="Logo"
-                        />
-                    </Link>
+                    <img 
+                        src="/images/tetris.png"
+                        className="h-10 w-auto block dark:hidden"
+                        alt="Logo"
+                    />
+                    <img 
+                        src="/images/tetris-white.png"
+                        className="h-10 w-auto hidden dark:block"
+                        alt="Logo"
+                    />
                 </div>
 
                 <div className="w-full max-w-sm mx-auto">
