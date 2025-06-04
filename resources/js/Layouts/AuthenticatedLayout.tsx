@@ -15,10 +15,18 @@ interface DashboardType {
     name: string;
 }
 
+interface Module {
+    identifier: string;
+}
+
 interface Props {
     children: React.ReactNode;
     header?: React.ReactNode;
-    user?: any;
+    auth?: {
+        user: any;
+        project: any;
+        modules: any;
+    };
 }
 
 const formatNumber = (num: number | undefined | null) => {
@@ -27,23 +35,18 @@ const formatNumber = (num: number | undefined | null) => {
 
 const getHeaderColorClass = (url: string): string => {
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
-
-    // Check the entire URL path for specific routes
-    // if (url.includes('/retail') || url.includes('/pos-retail') || url.includes('/inventory') || appParam === 'retail') {
-    //     return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-950 dark:via-blue-900 dark:to-blue-800';
-    // }
  
     // Default gradient for unmatched routes
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
 };
 
-export default function Authenticated({ children, header, user }: Props) {
+export default function Authenticated({ children, header, auth }: Props) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [credits, setCredits] = useState<number>(0);
 
     const { url } = usePage();
     const pageProps = usePage<{ auth: { user: any } }>().props;
-    const authUser = user || pageProps.auth.user;
+    const authUser = auth?.user || pageProps.auth.user;
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -65,31 +68,28 @@ export default function Authenticated({ children, header, user }: Props) {
 
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
-    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
+    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions') && !url.includes('dashboard');
 
-    const hasRetailAccess = url.includes('retail');
-    const hasFnbAccess = url.includes('fnb');
-    const hasWarehousingAccess = url.includes('warehousing');
-    const hasTransportationAccess = url.includes('transportation');
-    const hasRentalItemAccess = url.includes('rental-item');
-    const hasRentalPropertyAccess = url.includes('real-estate');
-    const hasClinicalAccess = url.includes('clinic');
-    const hasLendingAccess = url.includes('lending');
-    const hasPayrollAccess = url.includes('payroll');
-    const hasTravelAccess = url.includes('travel');
-    const hasSmsAccess = url.includes('sms');
-    const hasEmailAccess = url.includes('email');
-    const hasContactsAccess = url.includes('contacts');
-    const hasGenealogyAccess = url.includes('genealogy');
-    const hasEventsAccess = url.includes('events');
-    const hasChallengesAccess = url.includes('challenges');
-    const hasContentCreatorAccess = url.includes('content-creator');
-    const hasDigitalProductsAccess = url.includes('digital-products');
-    const hasPagesAccess = url.includes('pages');
-    const hasHealthInsuranceAccess = url.includes('health-insurance');
-    // const hasClinicAccess = user.project?.modules?.some(
-    //     module => module.identifier === 'clinic'
-    // );
+    const hasRetailAccess = (auth?.modules?.includes('retail') && appParam === 'retail') ?? false;
+    const hasFnbAccess = (auth?.modules?.includes('fnb') && appParam === 'fnb') ?? false;
+    const hasWarehousingAccess = (auth?.modules?.includes('warehousing') && appParam === 'warehousing') ?? false;
+    const hasTransportationAccess = (auth?.modules?.includes('transportation') && appParam === 'transportation') ?? false;
+    const hasRentalItemAccess = (auth?.modules?.includes('rental-items') && appParam === 'rental-items') ?? false;
+    const hasRentalPropertyAccess = (auth?.modules?.includes('rental-properties') && appParam === 'rental-properties') ?? false;
+    const hasClinicalAccess = (auth?.modules?.includes('clinical') && appParam === 'clinical') ?? false;
+    const hasLendingAccess = (auth?.modules?.includes('lending') && appParam === 'lending') ?? false;
+    const hasPayrollAccess = (auth?.modules?.includes('payroll') && appParam === 'payroll') ?? false;
+    const hasTravelAccess = (auth?.modules?.includes('travel') && appParam === 'travel') ?? false;
+    const hasSmsAccess = (auth?.modules?.includes('sms') && appParam === 'sms') ?? false;
+    const hasEmailAccess = (auth?.modules?.includes('email') && appParam === 'email') ?? false;
+    const hasContactsAccess = (auth?.modules?.includes('contacts') && appParam === 'contacts') ?? false;
+    const hasGenealogyAccess = (auth?.modules?.includes('genealogy') && appParam === 'genealogy') ?? false;
+    const hasEventsAccess = (auth?.modules?.includes('events') && appParam === 'events') ?? false;
+    const hasChallengesAccess = (auth?.modules?.includes('challenges') && appParam === 'challenges') ?? false;
+    const hasContentCreatorAccess = (auth?.modules?.includes('content-creator') && appParam === 'content-creator') ?? false;
+    const hasDigitalProductsAccess = (auth?.modules?.includes('digital-products') && appParam === 'digital-products') ?? false;
+    const hasPagesAccess = (auth?.modules?.includes('pages') && appParam === 'pages') ?? false;
+    const hasHealthInsuranceAccess = (auth?.modules?.includes('health-insurance') && appParam === 'health-insurance') ?? false;
 
     const [hideNav, setHideNav] = useState(() => {
         // Get stored preference from localStorage, default to false

@@ -32,6 +32,7 @@ import { Widget, Widget as WidgetImport, WidgetType as WidgetTypeImport } from '
 import { useForm, router } from '@inertiajs/react';
 import { Input } from "@/Components/ui/input";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided, DroppableStateSnapshot, DraggableStateSnapshot } from 'react-beautiful-dnd';
+import { PageProps } from '@/types';
 
 interface DashboardType {
     id: number;
@@ -43,7 +44,7 @@ interface DashboardType {
     app: AppType;
 }
 
-interface Props {
+interface Props extends PageProps {
     dashboards: DashboardType[];
     currentDashboard: DashboardType;
 }
@@ -51,7 +52,7 @@ interface Props {
 // Add this type definition near the top with other interfaces
 type AppType = 'retail' | 'fnb' | 'genealogy' | 'contacts' | 'email' | 'lending' | 'payroll' | 'rental-item' | 'sms' | null;
 
-export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard }: Props) {
+export default function Dashboard({ dashboards: initialDashboards, currentDashboard: initialCurrentDashboard, auth }: Props) {
     const url = usePage().url;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app') as AppType;
 
@@ -233,7 +234,6 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
         }
     };
 
-    // Add this function near your other utility functions
     const wouldHideWidgets = (newColumnCount: number) => {
         // Check if widgets array exists and has items
         if (!widgets || widgets.length === 0) {
@@ -440,6 +440,7 @@ export default function Dashboard({ dashboards: initialDashboards, currentDashbo
                     {currentDashboard.name}
                 </h2>
             }
+            auth={auth}
         >
             <Head title='Dashboard' />
             
