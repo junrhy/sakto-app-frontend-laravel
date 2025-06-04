@@ -44,6 +44,9 @@ interface Props extends PageProps {
             credits: number;
             is_admin: boolean;
             project_identifier: string;
+            project: {
+                identifier: string;
+            };
             theme: 'light' | 'dark' | 'system';
             theme_color: string;
         };
@@ -321,7 +324,7 @@ export default function Apps() {
                                             <DropdownMenuItem>
                                                 <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink 
-                                                    href={route('logout')} 
+                                                    href={route('logout', { project: auth.user.project.identifier })} 
                                                     method="post" 
                                                     as="button"
                                                     className="w-full text-left"

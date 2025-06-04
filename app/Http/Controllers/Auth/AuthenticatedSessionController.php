@@ -47,6 +47,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        $project = $request->input('project') !== 'trial' ? $request->input('project') : '/';
+        return redirect()->route($project);
     }
 }

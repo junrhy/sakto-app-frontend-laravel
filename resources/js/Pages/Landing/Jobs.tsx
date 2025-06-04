@@ -77,13 +77,13 @@ export default function Jobs({ auth }: PageProps) {
                                 ) : (
                                     <>
                                         <Link
-                                            href={route('login', { project: 'trial' })}
+                                            href={route('login', { project: 'jobs' })}
                                             className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                                         >
                                             Log in
                                         </Link>
                                         <Link
-                                            href={route('register', { project: 'trial' })}
+                                            href={route('register', { project: 'jobs' })}
                                             className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                         >
                                             Register

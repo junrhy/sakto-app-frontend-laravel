@@ -59,20 +59,11 @@ class ProjectSeeder extends Seeder
             if (!$existingProject) {
                 Project::create($project);
             } else {
-                // Get current enabled modules
-                $currentModules = json_decode($existingProject->enabledModules, true) ?? [];
-                
-                // Filter out modules that don't exist in $enabledModules
-                $currentModules = array_intersect($currentModules, $enabledModules);
-                
-                // Merge with new modules, removing duplicates and reindexing
-                $updatedModules = array_values(array_unique(array_merge($currentModules, $enabledModules)));
-                
                 // Update the project with new modules
                 $existingProject->update([
                     'name' => $project['name'],
                     'identifier' => $project['identifier'],
-                    'enabledModules' => json_encode($updatedModules)
+                    'enabledModules' => $project['enabledModules']
                 ]);
             }
         }

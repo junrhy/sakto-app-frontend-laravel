@@ -1256,7 +1256,7 @@ export default function Authenticated({ children, header, auth }: Props) {
                                             <Dropdown.Link href={route('help')}>
                                                 Help
                                             </Dropdown.Link>
-                                            <Dropdown.Link href={route('logout')} method="post" as="button">
+                                            <Dropdown.Link href={route('logout', { project: auth?.project?.identifier || 'trial' })} method="post" as="button">
                                                 Logout
                                             </Dropdown.Link>
                                         </Dropdown.Content>

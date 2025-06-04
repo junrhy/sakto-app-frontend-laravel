@@ -19,6 +19,7 @@ interface Props {
             theme?: 'light' | 'dark' | 'system';
             project: {
                 enabledModules: string[];
+                identifier: string;
             };
         };
     };
@@ -217,7 +218,7 @@ export default function Home({ auth }: Props) {
                                                 <DropdownMenuItem>
                                                     <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
                                                     <InertiaLink 
-                                                        href={route('logout')} 
+                                                        href={route('logout', { project: auth.user.project.identifier })} 
                                                         method="post" 
                                                         as="button"
                                                         className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"

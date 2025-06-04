@@ -47,7 +47,7 @@ use Illuminate\Support\Facades\Auth;
 // Public routes
 Route::group(['middleware' => ['web']], function () {
     // Welcome and Policy Routes
-    Route::get('/', [LandingController::class, 'index'])->name('landing');
+    Route::get('/landing', [LandingController::class, 'index'])->name('landing');
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
