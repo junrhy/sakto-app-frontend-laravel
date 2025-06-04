@@ -26,20 +26,35 @@ class ProjectSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'name' => 'Basic',
-                'identifier' => 'basic',
-                'enabledModules' => json_encode(array_values(['family-tree', 'email', 'sms', 'contacts'])),
+                'name' => 'Community',
+                'identifier' => 'community',
+                'enabledModules' => json_encode(array_values(['genealogy', 'email', 'sms', 'contacts', 'pages', 'challenges', 'content-creator', 'digital-products', 'healthcare'])),
             ],
             [
                 'id' => 3,
-                'name' => 'Premium',
-                'identifier' => 'premium',
-                'enabledModules' => json_encode(array_values(['fnb', 'rental-items', 'rental-properties', 'clinical', 'lending', 'payroll', 'contacts', 'email', 'sms', 'family-tree'])),
+                'name' => 'Logistics',
+                'identifier' => 'logistics',
+                'enabledModules' => json_encode(array_values(['payroll', 'contacts', 'email', 'sms', 'warehousing', 'transportation'])),
             ],
+            [
+                'id' => 4,
+                'name' => 'Medical',
+                'identifier' => 'medical',
+                'enabledModules' => json_encode(array_values(['clinical', 'payroll', 'contacts', 'email', 'sms'])),
+            ],
+            [
+                'id' => 5,
+                'name' => 'Enterprise',
+                'identifier' => 'enterprise',
+                'enabledModules' => json_encode(array_values($enabledModules)),
+            ],
+            
         ];
 
         foreach ($projects as $project) {
-            $existingProject = Project::where('identifier', $project['identifier'])->first();
+            $existingProject = Project::where('identifier', $project['identifier'])
+                ->orWhere('id', $project['id'])
+                ->first();
 
             if (!$existingProject) {
                 Project::create($project);
@@ -47,11 +62,16 @@ class ProjectSeeder extends Seeder
                 // Get current enabled modules
                 $currentModules = json_decode($existingProject->enabledModules, true) ?? [];
                 
+                // Filter out modules that don't exist in $enabledModules
+                $currentModules = array_intersect($currentModules, $enabledModules);
+                
                 // Merge with new modules, removing duplicates and reindexing
                 $updatedModules = array_values(array_unique(array_merge($currentModules, $enabledModules)));
                 
                 // Update the project with new modules
                 $existingProject->update([
+                    'name' => $project['name'],
+                    'identifier' => $project['identifier'],
                     'enabledModules' => json_encode($updatedModules)
                 ]);
             }

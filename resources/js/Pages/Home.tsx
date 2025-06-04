@@ -17,6 +17,9 @@ interface Props {
             credits?: number;
             identifier?: string;
             theme?: 'light' | 'dark' | 'system';
+            project: {
+                enabledModules: string[];
+            };
         };
     };
 }
@@ -255,6 +258,14 @@ export default function Home({ auth }: Props) {
                 <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[180px]'} landscape:pt-[140px] md:pt-[220px] overflow-y-auto mb-4`}>
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                         {apps.filter(app => {
+                            // Convert app title to match module name format (lowercase and hyphenated)
+                            const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
+                            
+                            // Only show apps that are in enabledModules
+                            if (!auth.user.project.enabledModules.includes(normalizedAppTitle)) {
+                                return false;
+                            }
+                            
                             // Show app if it's marked as visible
                             if (app.visible) return true;
                             
