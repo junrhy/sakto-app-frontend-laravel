@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps } from '@/types/index';
@@ -63,7 +64,7 @@ export default function Index({ auth, settings }: SettingsPageProps) {
 
   return (
     <AdminLayout
-      user={auth.user}
+      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Application Settings"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Application Settings</h2>}
     >

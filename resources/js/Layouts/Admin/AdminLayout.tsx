@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, ReactNode, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { PageProps } from '@/types/index';
+import { PageProps, User, Project } from '@/types/index';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
@@ -8,22 +8,23 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Toaster } from 'sonner';
 
 interface AdminLayoutProps {
-  user: {
-    name: string;
-    email: string;
-    is_admin?: boolean;
+  auth?: {
+    user?: User;
+    project?: Project;
+    modules?: string[];
   };
   header?: ReactNode;
   title?: string;
 }
 
 export default function AdminLayout({
-  user,
+  auth,
   header,
   children,
   title = 'Admin Dashboard',
 }: PropsWithChildren<AdminLayoutProps>) {
   const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+  const user = auth?.user;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -90,7 +91,6 @@ export default function AdminLayout({
                 >
                   Settings
                 </NavLink>
-                {/* Add more admin navigation links here */}
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function AdminLayout({
                         type="button"
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white/90 hover:text-white focus:outline-none transition ease-in-out duration-150"
                       >
-                        {user.name}
+                        {user?.name}
 
                         <svg
                           className="ml-2 -mr-0.5 h-4 w-4"
@@ -189,13 +189,12 @@ export default function AdminLayout({
             >
               Settings
             </ResponsiveNavLink>
-            {/* Add more responsive admin navigation links here */}
           </div>
 
           <div className="pt-4 pb-1 border-t border-gray-700">
             <div className="px-4">
-              <div className="font-medium text-base text-white">{user.name}</div>
-              <div className="font-medium text-sm text-white/70">{user.email}</div>
+              <div className="font-medium text-base text-white">{user?.name}</div>
+              <div className="font-medium text-sm text-white/70">{user?.email}</div>
             </div>
 
             <div className="mt-3 space-y-1">

@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import { Head } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { PageProps } from '@/types/index';
@@ -5,7 +6,7 @@ import { PageProps } from '@/types/index';
 export default function Dashboard({ auth }: PageProps) {
   return (
     <AdminLayout
-      user={auth.user}
+      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Admin Dashboard"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Admin Dashboard</h2>}
     >

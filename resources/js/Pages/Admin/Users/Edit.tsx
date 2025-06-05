@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
@@ -9,7 +10,6 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { PageProps } from '@/types/index';
 import { Link } from '@inertiajs/react';
-import { User } from '@/types/models';
 
 interface Props {
   auth: PageProps['auth'];
@@ -32,7 +32,7 @@ export default function Edit({ auth, user }: Props) {
 
   return (
     <AdminLayout
-      user={auth.user}
+      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Edit User"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit User</h2>}
     >

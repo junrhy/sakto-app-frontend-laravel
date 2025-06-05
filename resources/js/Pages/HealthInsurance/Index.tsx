@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import { useState, useEffect } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -56,6 +57,11 @@ interface Claim {
 }
 
 interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+    };
     initialMembers: (Member & {
         contributions: Contribution[];
     })[];
@@ -163,7 +169,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Healthcare</h2>}
         >
             <Head title="Healthcare" />

@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -75,7 +76,7 @@ export default function Calendar({ auth }: PageProps) {
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={auth}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Events Calendar</h2>}
         >
             <Head title="Events Calendar" />

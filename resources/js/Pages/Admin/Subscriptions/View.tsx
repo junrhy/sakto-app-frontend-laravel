@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
@@ -63,7 +64,7 @@ export default function View({ auth, subscription }: Props) {
 
   return (
     <AdminLayout
-      user={auth.user}
+      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Subscription Details"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription Details</h2>}
     >

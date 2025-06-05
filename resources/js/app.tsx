@@ -9,7 +9,7 @@ import { Toaster } from '@/Components/ui/toaster';
 import type { User } from '@/types/index';
 import { PageProps } from '@/types';
 
-interface InertiaUser extends User {
+interface InertiaUser extends Omit<User, 'theme'> {
     theme?: 'light' | 'dark' | 'system';
 }
 

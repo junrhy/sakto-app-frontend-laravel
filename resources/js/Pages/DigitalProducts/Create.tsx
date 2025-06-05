@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React, { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -14,6 +15,11 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+    };
     client_identifier: string;
 }
 
@@ -59,7 +65,7 @@ export default function Create({ auth, client_identifier }: Props) {
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Create Digital Product</h2>}
         >
             <Head title="Create Digital Product" />

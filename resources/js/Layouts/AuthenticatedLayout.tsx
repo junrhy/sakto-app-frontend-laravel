@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from '@/Components/ui/button';
 import { CreditCardIcon, SparklesIcon } from 'lucide-react';
-import { PageProps } from '@/types';
+import { PageProps, User, Project } from '@/types/index';
 
 interface DashboardType {
     id: number;
@@ -22,10 +22,11 @@ interface Module {
 interface Props {
     children: React.ReactNode;
     header?: React.ReactNode;
+    user?: User;
     auth?: {
-        user: any;
-        project: any;
-        modules: any;
+        user?: User;
+        project?: Project;
+        modules?: string[];
     };
 }
 
@@ -40,13 +41,13 @@ const getHeaderColorClass = (url: string): string => {
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
 };
 
-export default function Authenticated({ children, header, auth }: Props) {
+export default function Authenticated({ children, header, user, auth }: Props) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [credits, setCredits] = useState<number>(0);
 
     const { url } = usePage();
     const pageProps = usePage<{ auth: { user: any } }>().props;
-    const authUser = auth?.user || pageProps.auth.user;
+    const authUser = user || pageProps.auth.user;
 
     useEffect(() => {
         const fetchCredits = async () => {

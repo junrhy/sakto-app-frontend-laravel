@@ -1,7 +1,7 @@
+import { User, Project } from '@/types/index';
 import React, { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
-import { User } from '@/types/models';
 import Modal from '@/Components/Modal';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -85,7 +85,7 @@ export default function Index({ auth, users, filters }: Props) {
 
   return (
     <AdminLayout
-      user={auth.user}
+      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Manage Users"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Manage Users</h2>}
     >

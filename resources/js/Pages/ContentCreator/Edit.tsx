@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React, { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { Content } from '@/types/content';
@@ -16,6 +17,11 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { FormEvent } from 'react';
 
 interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+    };
     content: Content;
 }
 
@@ -49,7 +55,7 @@ export default function Edit({ auth, content }: Props) {
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit Content</h2>}
         >
             <Head title="Edit Content" />

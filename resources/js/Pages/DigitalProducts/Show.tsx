@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -22,13 +23,18 @@ interface DigitalProduct {
 }
 
 interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+    };
     product: DigitalProduct;
 }
 
 export default function Show({ auth, product }: Props) {
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Digital Product Details</h2>}
         >
             <Head title={`${product.name} - Digital Product`} />

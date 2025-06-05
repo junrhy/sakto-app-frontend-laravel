@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -21,6 +22,11 @@ interface Settings {
 }
 
 interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+    };
     settings: Settings;
 }
 
@@ -42,7 +48,7 @@ export default function Settings({ auth, settings }: Props) {
 
     return (
         <AuthenticatedLayout
-            user={auth.user}
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Digital Products Settings</h2>}
         >
             <Head title="Digital Products Settings" />

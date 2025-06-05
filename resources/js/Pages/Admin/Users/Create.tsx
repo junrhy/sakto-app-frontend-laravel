@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
@@ -30,7 +31,7 @@ export default function Create({ auth }: Props) {
 
   return (
     <AdminLayout
-      user={auth.user}
+      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Create User"
       header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Create User</h2>}
     >
