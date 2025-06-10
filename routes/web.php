@@ -52,6 +52,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
     Route::get('/community', [LandingController::class, 'community'])->name('community');
+    Route::get('/community/member/{id}', [LandingController::class, 'communityMember'])->name('community.member');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
 
     Route::get('/', function (Request $request) {

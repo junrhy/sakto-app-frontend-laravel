@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Inertia\Inertia;
+use App\Models\User;
 
 class LandingController extends Controller
 {
@@ -96,11 +97,33 @@ class LandingController extends Controller
 
     public function community()
     {
-        return Inertia::render('Landing/Community', [
+        $communityUsers = User::where('project_identifier', 'community')
+            ->select('id', 'name', 'email', 'created_at')
+            ->latest()
+            ->get();
+
+        return Inertia::render('Landing/Community/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
+            'communityUsers' => $communityUsers,
+        ]);
+    }
+
+    public function communityMember($id)
+    {
+        $member = User::where('project_identifier', 'community')
+            ->where('id', $id)
+            ->select('id', 'name', 'email', 'contact_number', 'created_at')
+            ->firstOrFail();
+
+        return Inertia::render('Landing/Community/Member', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'member' => $member,
         ]);
     }
 

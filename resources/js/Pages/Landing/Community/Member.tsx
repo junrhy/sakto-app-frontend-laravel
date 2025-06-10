@@ -1,0 +1,349 @@
+import { Head, Link } from '@inertiajs/react';
+import ApplicationLogo from '@/Components/ApplicationLogo';
+
+interface PageProps {
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+        } | null;
+    };
+    member: {
+        id: number;
+        name: string;
+        email: string;
+        contact_number: string | null;
+        created_at: string;
+    };
+}
+
+export default function Member({ auth, member }: PageProps) {
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Head title={`${member.name} - Sakto Community`} />
+
+            {/* Profile Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="flex flex-col items-center text-center">
+                        <h1 className="text-4xl font-bold text-white">{member.name}</h1>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {/* Contact Information Sidebar */}
+                    <div className="md:col-span-1">
+                        <div className="bg-white rounded-xl shadow-sm p-6 sticky top-4">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-6">Contact Information</h2>
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="text-sm text-gray-500 mb-1">Email</p>
+                                    <p className="text-gray-900 font-medium">{member.email}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 mb-1">Contact Number</p>
+                                    <p className="text-gray-900 font-medium">{member.contact_number || 'Not provided'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="md:col-span-3">
+                        {/* About Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
+                            <p className="text-gray-600">
+                                Welcome to {member.name}'s page.
+                            </p>
+                        </div>
+
+                        {/* Member Search Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-3">Search Member ID by Name</h2>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        First Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="firstName"
+                                        placeholder="Enter first name..."
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Last Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="lastName"
+                                        placeholder="Enter last name..."
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <button className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    Search Member ID
+                                </button>
+                            </div>
+                            <p className="mt-2 text-sm text-gray-500">Enter the member's first and last name to find their ID.</p>
+                        </div>
+
+                        {/* Records Search Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Records</h2>
+                            
+                            <div className="space-y-6">
+                                {/* Lending Records Search */}
+                                <div>
+                                    <h3 className="text-md font-medium text-gray-900 mb-3">Lending Records</h3>
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Member ID to view lending records..."
+                                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            View Records
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Healthcare Records Search */}
+                                <div>
+                                    <h3 className="text-md font-medium text-gray-900 mb-3">Healthcare Records</h3>
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Member ID to view healthcare records..."
+                                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            View Records
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Mortuary Records Search */}
+                                <div>
+                                    <h3 className="text-md font-medium text-gray-900 mb-3">Mortuary Records</h3>
+                                    <div className="flex gap-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Member ID to view mortuary records..."
+                                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            View Records
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Community Digital Products Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Digital Products</h2>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Digital Product Card 1 */}
+                                <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Community App</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">Free</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">Access community features, updates, and connect with members on the go.</p>
+                                    <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                        Download
+                                    </button>
+                                </div>
+
+                                {/* Digital Product Card 2 */}
+                                <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Member Portal</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">Premium</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">Exclusive access to premium features and advanced community tools.</p>
+                                    <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                        Subscribe
+                                    </button>
+                                </div>
+
+                                {/* Digital Product Card 3 */}
+                                <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Resource Library</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">Member Only</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">Access to community resources, guides, and educational materials.</p>
+                                    <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                        Access
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Community Links Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Links</h2>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="flex-1">
+                                        <h3 className="font-medium text-gray-900">Community Forum</h3>
+                                        <p className="text-sm text-gray-500">Join discussions with other members</p>
+                                    </div>
+                                </a>
+                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="flex-1">
+                                        <h3 className="font-medium text-gray-900">Resource Library</h3>
+                                        <p className="text-sm text-gray-500">Access community resources and guides</p>
+                                    </div>
+                                </a>
+                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="flex-1">
+                                        <h3 className="font-medium text-gray-900">Events Calendar</h3>
+                                        <p className="text-sm text-gray-500">View upcoming community events</p>
+                                    </div>
+                                </a>
+                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="flex-1">
+                                        <h3 className="font-medium text-gray-900">Member Directory</h3>
+                                        <p className="text-sm text-gray-500">Connect with other community members</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Community Challenges Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Challenges</h2>
+                            <div className="space-y-6">
+                                <div className="border border-gray-200 rounded-lg p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Monthly Fitness Challenge</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">Active</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">Join our monthly fitness challenge and track your progress with the community.</p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">45</span> participants
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">15</span> days left
+                                            </div>
+                                        </div>
+                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Join Challenge
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="border border-gray-200 rounded-lg p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Healthy Eating Week</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">Upcoming</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">A week-long challenge focused on maintaining a balanced and nutritious diet.</p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">28</span> participants
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">Starts in 5 days</span>
+                                            </div>
+                                        </div>
+                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Register Interest
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Community Events Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Events</h2>
+                            <div className="space-y-6">
+                                <div className="border border-gray-200 rounded-lg p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Annual Community Gathering</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">Upcoming</span>
+                                    </div>
+                                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>December 15, 2024 • 2:00 PM</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">Join us for our annual community gathering featuring workshops, networking, and celebration of our achievements.</p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">120</span> registered
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">50</span> spots left
+                                            </div>
+                                        </div>
+                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Register Now
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="border border-gray-200 rounded-lg p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900">Financial Literacy Workshop</h3>
+                                        <span className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">New</span>
+                                    </div>
+                                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>January 20, 2025 • 10:00 AM</span>
+                                    </div>
+                                    <p className="text-gray-600 mb-4">Learn essential financial management skills and strategies for better money management.</p>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">45</span> registered
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                <span className="font-medium text-gray-900">25</span> spots left
+                                            </div>
+                                        </div>
+                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Register Now
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <footer className="mt-12">
+                <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+                    <p className="text-center text-base text-gray-400">
+                        &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
+                    </p>
+                </div>
+            </footer>
+        </div>
+    );
+} 
