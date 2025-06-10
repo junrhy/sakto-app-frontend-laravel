@@ -1,5 +1,5 @@
 import { User, Project } from '@/types/index';
-import React from 'react';
+import React, { FormEvent } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import InputLabel from '@/Components/InputLabel';
@@ -10,24 +10,33 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import { PageProps } from '@/types/index';
 import { Link } from '@inertiajs/react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
 
 interface Props {
   auth: PageProps['auth'];
   user: User;
+  projects: Array<{
+    id: number;
+    name: string;
+    identifier: string;
+  }>;
 }
 
-export default function Edit({ auth, user }: Props) {
-  const form = useForm({
+export default function Edit({ auth, user, projects }: Props) {
+  const { data, setData, put, processing, errors } = useForm({
     name: user.name,
     email: user.email,
     password: '',
     contact_number: user.contact_number || '',
     is_admin: user.is_admin,
+    project_identifier: user.project_identifier,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const submit = (e: FormEvent) => {
     e.preventDefault();
-    form.put(route('admin.users.update', user.id));
+    put(route('admin.users.update', user.id));
   };
 
   return (
@@ -42,87 +51,113 @@ export default function Edit({ auth, user }: Props) {
         <div className="max-w-3xl mx-auto sm:px-6 lg:px-8">
           <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div className="p-6 text-gray-900">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-6">
-                  <InputLabel htmlFor="name" value="Name" />
-                  <TextInput
-                    id="name"
-                    type="text"
-                    className="mt-1 block w-full"
-                    value={form.data.name}
-                    onChange={(e) => form.setData('name', e.target.value)}
-                    required
-                    autoFocus
-                  />
-                  <InputError message={form.errors.name} className="mt-2" />
-                </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Edit User</CardTitle>
+                  <CardDescription>Update user information.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={submit} className="space-y-6">
+                    <div>
+                      <InputLabel htmlFor="name" value="Name" />
+                      <TextInput
+                        id="name"
+                        type="text"
+                        name="name"
+                        value={data.name}
+                        className="mt-1 block w-full"
+                        autoComplete="name"
+                        isFocused={true}
+                        onChange={(e) => setData('name', e.target.value)}
+                        required
+                      />
+                      <InputError message={errors.name} className="mt-2" />
+                    </div>
 
-                <div className="mb-6">
-                  <InputLabel htmlFor="email" value="Email" />
-                  <TextInput
-                    id="email"
-                    type="email"
-                    className="mt-1 block w-full"
-                    value={form.data.email}
-                    onChange={(e) => form.setData('email', e.target.value)}
-                    required
-                  />
-                  <InputError message={form.errors.email} className="mt-2" />
-                </div>
+                    <div>
+                      <InputLabel htmlFor="email" value="Email" />
+                      <TextInput
+                        id="email"
+                        type="email"
+                        name="email"
+                        value={data.email}
+                        className="mt-1 block w-full"
+                        autoComplete="username"
+                        onChange={(e) => setData('email', e.target.value)}
+                        required
+                      />
+                      <InputError message={errors.email} className="mt-2" />
+                    </div>
 
-                <div className="mb-6">
-                  <InputLabel htmlFor="password" value="Password (Leave blank to keep current password)" />
-                  <TextInput
-                    id="password"
-                    type="password"
-                    className="mt-1 block w-full"
-                    value={form.data.password}
-                    onChange={(e) => form.setData('password', e.target.value)}
-                  />
-                  <InputError message={form.errors.password} className="mt-2" />
-                </div>
+                    <div>
+                      <InputLabel htmlFor="password" value="Password (leave blank to keep current)" />
+                      <TextInput
+                        id="password"
+                        type="password"
+                        name="password"
+                        value={data.password}
+                        className="mt-1 block w-full"
+                        autoComplete="new-password"
+                        onChange={(e) => setData('password', e.target.value)}
+                      />
+                      <InputError message={errors.password} className="mt-2" />
+                    </div>
 
-                <div className="mb-6">
-                  <InputLabel htmlFor="contact_number" value="Contact Number (Optional)" />
-                  <TextInput
-                    id="contact_number"
-                    type="text"
-                    className="mt-1 block w-full"
-                    value={form.data.contact_number}
-                    onChange={(e) => form.setData('contact_number', e.target.value)}
-                  />
-                  <InputError message={form.errors.contact_number} className="mt-2" />
-                </div>
+                    <div>
+                      <InputLabel htmlFor="contact_number" value="Contact Number" />
+                      <TextInput
+                        id="contact_number"
+                        type="text"
+                        name="contact_number"
+                        value={data.contact_number}
+                        className="mt-1 block w-full"
+                        onChange={(e) => setData('contact_number', e.target.value)}
+                      />
+                      <InputError message={errors.contact_number} className="mt-2" />
+                    </div>
 
-                <div className="mb-6">
-                  <div className="flex items-center">
-                    <Checkbox
-                      id="is_admin"
-                      checked={form.data.is_admin}
-                      onChange={(e) => form.setData('is_admin', e.target.checked)}
-                      disabled={user.id === auth.user.id}
-                    />
-                    <InputLabel htmlFor="is_admin" value="Admin User" className="ml-2" />
-                  </div>
-                  {user.id === auth.user.id && (
-                    <p className="text-sm text-gray-500 mt-1">You cannot change your own admin status.</p>
-                  )}
-                  <InputError message={form.errors.is_admin} className="mt-2" />
-                </div>
+                    <div>
+                      <InputLabel htmlFor="project_identifier" value="Project" />
+                      <Select
+                        value={data.project_identifier}
+                        onValueChange={(value) => setData('project_identifier', value)}
+                        required
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a project" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.identifier}>
+                              {project.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <InputError message={errors.project_identifier} className="mt-2" />
+                    </div>
 
-                <div className="flex items-center justify-end mt-6">
-                  <Link
-                    href={route('admin.users.index')}
-                    className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Cancel
-                  </Link>
+                    <div className="flex items-center gap-4">
+                      <Checkbox
+                        id="is_admin"
+                        name="is_admin"
+                        checked={data.is_admin}
+                        onChange={(e) => setData('is_admin', e.target.checked)}
+                      />
+                      <InputLabel htmlFor="is_admin" value="Admin User" />
+                    </div>
 
-                  <PrimaryButton className="ml-4" disabled={form.processing}>
-                    Update User
-                  </PrimaryButton>
-                </div>
-              </form>
+                    <div className="flex items-center justify-end gap-4">
+                      <Button variant="outline" type="button" onClick={() => window.history.back()}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={processing}>
+                        Update User
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

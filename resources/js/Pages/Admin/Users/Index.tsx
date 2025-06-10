@@ -33,16 +33,23 @@ interface Props {
   filters: {
     search: string;
     admin_filter: string;
+    project_filter: string;
   };
+  projects: Array<{
+    id: number;
+    name: string;
+    identifier: string;
+  }>;
 }
 
-export default function Index({ auth, users, filters }: Props) {
+export default function Index({ auth, users, filters, projects }: Props) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const searchForm = useForm({
     search: filters.search,
     admin_filter: filters.admin_filter,
+    project_filter: filters.project_filter,
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -55,6 +62,7 @@ export default function Index({ auth, users, filters }: Props) {
   const resetFilters = () => {
     searchForm.setData('search', '');
     searchForm.setData('admin_filter', 'all');
+    searchForm.setData('project_filter', 'all');
     searchForm.get(route('admin.users.index'), {
       preserveState: true,
     });
@@ -134,6 +142,23 @@ export default function Index({ auth, users, filters }: Props) {
                   <option value="regular">Regular Users</option>
                 </select>
               </div>
+
+              <div className="w-full md:w-48">
+                <InputLabel htmlFor="project_filter" value="Project" />
+                <select
+                  id="project_filter"
+                  className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                  value={searchForm.data.project_filter}
+                  onChange={(e) => searchForm.setData('project_filter', e.target.value)}
+                >
+                  <option value="all">All Projects</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.identifier}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               
               <div className="flex items-end gap-2">
                 <PrimaryButton className="mt-1">Search</PrimaryButton>
@@ -154,6 +179,9 @@ export default function Index({ auth, users, filters }: Props) {
                     Email
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Project
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -167,7 +195,7 @@ export default function Index({ auth, users, filters }: Props) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.data.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                       No users found
                     </td>
                   </tr>
@@ -179,6 +207,9 @@ export default function Index({ auth, users, filters }: Props) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{user.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{user.project_identifier}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_admin ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>

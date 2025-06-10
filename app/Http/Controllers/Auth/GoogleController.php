@@ -93,7 +93,7 @@ class GoogleController extends Controller
             ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'sms'],
             ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'email'],
             ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'contacts'],
-            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'family-tree'],
+            ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'genealogy'],
         ];
 
         foreach ($dashboards as $dashboard) {

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use App\Models\Project;
 
 class UserAdminController extends Controller
 {
@@ -32,17 +33,26 @@ class UserAdminController extends Controller
             $isAdmin = $request->admin_filter === 'admin';
             $query->where('is_admin', $isAdmin);
         }
+
+        // Filter by project
+        if ($request->has('project_filter') && $request->project_filter !== 'all') {
+            $query->where('project_identifier', $request->project_filter);
+        }
         
         $users = $query->orderBy('created_at', 'desc')
                       ->paginate(10)
                       ->withQueryString();
+
+        $projects = Project::select('id', 'name', 'identifier')->get();
         
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
             'filters' => [
                 'search' => $request->search ?? '',
                 'admin_filter' => $request->admin_filter ?? 'all',
+                'project_filter' => $request->project_filter ?? 'all',
             ],
+            'projects' => $projects,
         ]);
     }
     
@@ -51,7 +61,11 @@ class UserAdminController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Users/Create');
+        $projects = Project::select('id', 'name', 'identifier')->get();
+        
+        return Inertia::render('Admin/Users/Create', [
+            'projects' => $projects,
+        ]);
     }
     
     /**
@@ -65,6 +79,7 @@ class UserAdminController extends Controller
             'password' => 'required|string|min:8',
             'contact_number' => 'nullable|string|max:20',
             'is_admin' => 'boolean',
+            'project_identifier' => 'required|string|max:255',
         ]);
         
         $validated['password'] = Hash::make($validated['password']);
@@ -81,9 +96,11 @@ class UserAdminController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
+        $projects = Project::select('id', 'name', 'identifier')->get();
         
         return Inertia::render('Admin/Users/Edit', [
             'user' => $user,
+            'projects' => $projects,
         ]);
     }
     
@@ -100,6 +117,7 @@ class UserAdminController extends Controller
             'password' => 'nullable|string|min:8',
             'contact_number' => 'nullable|string|max:20',
             'is_admin' => 'boolean',
+            'project_identifier' => 'required|string|max:255',
         ]);
         
         if (isset($validated['password']) && $validated['password']) {
