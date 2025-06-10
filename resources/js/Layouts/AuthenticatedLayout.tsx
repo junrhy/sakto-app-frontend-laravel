@@ -7,7 +7,7 @@ import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from '@/Components/ui/button';
-import { CreditCardIcon, SparklesIcon } from 'lucide-react';
+import { CreditCardIcon, SparklesIcon, AlertCircle } from 'lucide-react';
 import { PageProps, User, Project } from '@/types/index';
 
 interface DashboardType {
@@ -41,6 +41,32 @@ const getHeaderColorClass = (url: string): string => {
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
 };
 
+const requiresSubscription = (appParam: string | null): boolean => {
+    console.log('Current appParam:', appParam);
+    if (!appParam) return false;
+    
+    // Match the middleware's subscription-required apps
+    const subscriptionApps = [
+        'clinic',
+        'real-estate',
+        'transportation',
+        'warehousing',
+        'sms',
+        'email',
+        'genealogy',
+        'events',
+        'challenges',
+        'content-creator',
+        'digital-products',
+        'pages',
+        'health-insurance'
+    ];
+    
+    const requires = subscriptionApps.includes(appParam);
+    console.log('Requires subscription:', requires);
+    return requires;
+};
+
 export default function Authenticated({ children, header, user, auth }: Props) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [credits, setCredits] = useState<number>(0);
@@ -48,6 +74,9 @@ export default function Authenticated({ children, header, user, auth }: Props) {
     const { url } = usePage();
     const pageProps = usePage<{ auth: { user: any } }>().props;
     const authUser = user || pageProps.auth.user;
+    const appParam = new URLSearchParams(url.split('?')[1]).get('app');
+    console.log('URL:', url);
+    console.log('Extracted appParam:', appParam);
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -66,8 +95,6 @@ export default function Authenticated({ children, header, user, auth }: Props) {
 
         fetchCredits();
     }, [authUser.identifier]);
-
-    const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
     const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions') && !url.includes('dashboard');
 
@@ -104,6 +131,23 @@ export default function Authenticated({ children, header, user, auth }: Props) {
     return (
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
+                {/* Subscription Notification Banner */}
+                {requiresSubscription(appParam) && (
+                    <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-rose-900 dark:via-rose-800 dark:to-rose-700 z-50 text-center text-white text-sm py-2">
+                        <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
+                            <span className="font-medium">This feature requires a subscription plan for premium access!</span>
+                            <Button 
+                                variant="link" 
+                                size="sm" 
+                                className="text-white underline p-0 h-auto"
+                                onClick={() => window.location.href = route('subscriptions.index')}
+                            >
+                                View Plans
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Mobile Navigation */}
                 <div
                     className={
@@ -369,7 +413,7 @@ export default function Authenticated({ children, header, user, auth }: Props) {
                     />
                 )}
 
-                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url)} sticky top-0 z-50 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
+                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
@@ -1186,82 +1230,6 @@ export default function Authenticated({ children, header, user, auth }: Props) {
                                             </Dropdown>
                                         </div>
                                     )}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4">
-                                <div className="hidden sm:flex items-center gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: authUser.identifier })}
-                                        className="text-white bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20"
-                                    >
-                                        <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
-                                        onClick={() => window.location.href = route('credits.buy')}
-                                    >
-                                        <CreditCardIcon className="w-4 h-4" />
-                                        Buy Credits
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
-                                        onClick={() => window.location.href = route('subscriptions.index')}
-                                    >
-                                        <SparklesIcon className="w-4 h-4" />
-                                        Subscriptions
-                                    </Button>
-                                </div>
-                                {/* Mobile Credits Button */}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="sm:hidden text-white hover:text-blue-100 hover:bg-white/10"
-                                    onClick={() => window.location.href = route('credits.buy')}
-                                >
-                                    <CreditCardIcon className="w-5 h-5" />
-                                </Button>
-
-                                <div className="relative inline-block">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
-                                                >
-                                                    {authUser.name}
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        </Dropdown.Trigger>
-
-                                        <Dropdown.Content>
-                                            <Dropdown.Link href={route('help')}>
-                                                Help
-                                            </Dropdown.Link>
-                                            <Dropdown.Link href={route('logout', { project: auth?.project?.identifier || 'trial' })} method="post" as="button">
-                                                Logout
-                                            </Dropdown.Link>
-                                        </Dropdown.Content>
-                                    </Dropdown>
                                 </div>
                             </div>
                         </div>
