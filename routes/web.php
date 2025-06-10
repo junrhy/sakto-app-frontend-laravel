@@ -605,6 +605,16 @@ Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
         Route::get('/{id}/toggle-admin', [App\Http\Controllers\Admin\UserAdminController::class, 'toggleAdminStatus'])->name('admin.users.toggle-admin');
     });
     
+    // Admin Project Management
+    Route::prefix('admin/projects')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\ProjectController::class, 'index'])->name('admin.projects.index');
+        Route::get('/create', [App\Http\Controllers\Admin\ProjectController::class, 'create'])->name('admin.projects.create');
+        Route::post('/', [App\Http\Controllers\Admin\ProjectController::class, 'store'])->name('admin.projects.store');
+        Route::get('/{id}/edit', [App\Http\Controllers\Admin\ProjectController::class, 'edit'])->name('admin.projects.edit');
+        Route::put('/{id}', [App\Http\Controllers\Admin\ProjectController::class, 'update'])->name('admin.projects.update');
+        Route::delete('/{id}', [App\Http\Controllers\Admin\ProjectController::class, 'destroy'])->name('admin.projects.destroy');
+    });
+    
     // Admin Settings
     Route::prefix('admin/settings')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('admin.settings.index');
