@@ -42,12 +42,18 @@ class ProjectController extends Controller
             ->with('success', 'Project created successfully.');
     }
 
-    public function edit(Project $project)
+    public function edit($id)
     {
+        $project = Project::findOrFail($id);
         $modules = Module::select('id', 'name', 'identifier')->get();
         
         return Inertia::render('Admin/Projects/Edit', [
-            'project' => $project,
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'identifier' => $project->identifier,
+                'enabledModules' => $project->enabledModules,
+            ],
             'modules' => $modules
         ]);
     }
@@ -66,8 +72,10 @@ class ProjectController extends Controller
             ->with('success', 'Project updated successfully.');
     }
 
-    public function destroy(Project $project)
+    public function destroy($id)
     {
+        $project = Project::findOrFail($id);
+
         if ($project->users()->count() > 0) {
             return redirect()->route('admin.projects.index')
                 ->with('error', 'Cannot delete project with associated users. Please remove all users first.');

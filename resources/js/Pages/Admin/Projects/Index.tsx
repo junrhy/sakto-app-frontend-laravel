@@ -1,5 +1,5 @@
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { Project } from '@/types/index.d';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -9,6 +9,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/Components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
 
 interface Props {
   projects: {
@@ -18,6 +28,19 @@ interface Props {
 }
 
 export default function Index({ projects }: Props) {
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
+  const handleDelete = (project: Project) => {
+    setProjectToDelete(project);
+  };
+
+  const confirmDelete = () => {
+    if (projectToDelete) {
+      router.delete(route('admin.projects.destroy', projectToDelete.id));
+      setProjectToDelete(null);
+    }
+  };
+
   return (
     <AdminLayout
       title="Projects"
@@ -125,16 +148,14 @@ export default function Index({ projects }: Props) {
                             >
                               Edit
                             </Link>
-                            <Link
-                              href={route('admin.projects.destroy', project.id)}
-                              method="delete"
-                              as="button"
+                            <button
+                              onClick={() => handleDelete(project)}
                               className={`${project.users_count > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
                               disabled={project.users_count > 0}
                               title={project.users_count > 0 ? 'Cannot delete project with users' : 'Delete project'}
                             >
                               Delete
-                            </Link>
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -146,6 +167,24 @@ export default function Index({ projects }: Props) {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={!!projectToDelete} onOpenChange={() => setProjectToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the project
+              {projectToDelete && ` "${projectToDelete.name}"`}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 } 

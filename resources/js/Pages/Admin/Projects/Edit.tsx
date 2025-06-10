@@ -26,7 +26,7 @@ export default function Edit({ project, modules }: Props) {
   const { data, setData, put, processing, errors } = useForm({
     name: project.name,
     identifier: project.identifier,
-    enabledModules: project.enabledModules,
+    enabledModules: Array.isArray(project.enabledModules) ? project.enabledModules : [],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
