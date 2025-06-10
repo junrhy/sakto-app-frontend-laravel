@@ -603,6 +603,7 @@ Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
         Route::put('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'update'])->name('admin.users.update');
         Route::delete('/{id}', [App\Http\Controllers\Admin\UserAdminController::class, 'destroy'])->name('admin.users.destroy');
         Route::get('/{id}/toggle-admin', [App\Http\Controllers\Admin\UserAdminController::class, 'toggleAdminStatus'])->name('admin.users.toggle-admin');
+        Route::get('/{id}/resend-verification', [App\Http\Controllers\Admin\UserAdminController::class, 'resendVerification'])->name('admin.users.resend-verification');
     });
     
     // Admin Project Management

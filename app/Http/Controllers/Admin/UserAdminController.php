@@ -157,18 +157,25 @@ class UserAdminController extends Controller
     public function toggleAdminStatus($id)
     {
         $user = User::findOrFail($id);
+        $user->is_admin = !$user->is_admin;
+        $user->save();
+
+        return redirect()->back()->with('success', 'Admin status updated successfully.');
+    }
+
+    /**
+     * Resend email verification for a user.
+     */
+    public function resendVerification($id)
+    {
+        $user = User::findOrFail($id);
         
-        // Prevent removing admin status from yourself
-        if (auth()->id() === $user->id) {
-            return redirect()->route('admin.users.index')
-                             ->with('error', 'You cannot change your own admin status.');
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->back()->with('error', 'User email is already verified.');
         }
-        
-        $user->update([
-            'is_admin' => !$user->is_admin,
-        ]);
-        
-        return redirect()->route('admin.users.index')
-                         ->with('success', 'User admin status updated successfully.');
+
+        $user->sendEmailVerificationNotification();
+
+        return redirect()->back()->with('success', 'Verification email has been resent.');
     }
 } 

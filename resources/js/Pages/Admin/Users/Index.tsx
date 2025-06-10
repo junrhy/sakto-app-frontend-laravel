@@ -13,22 +13,29 @@ import DangerButton from '@/Components/DangerButton';
 import Pagination from '@/Components/Pagination';
 import { PageProps } from '@/types/index';
 import { formatDistance } from 'date-fns';
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
+import { ChevronDownIcon, PencilIcon, TrashIcon, ShieldCheckIcon, ShieldExclamationIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   auth: PageProps['auth'];
   users: {
-    data: User[];
-    links: any[];
-    meta: {
-      current_page: number;
-      from: number;
-      last_page: number;
-      links: any[];
-      path: string;
-      per_page: number;
-      to: number;
-      total: number;
-    };
+    data: Array<{
+      id: number;
+      name: string;
+      email: string;
+      project_identifier: string;
+      is_admin: boolean;
+      email_verified_at: string | null;
+      created_at: string;
+      identifier: string;
+      google_id: string | null;
+      contact_number: string | null;
+      referrer: string | null;
+      theme: string | null;
+      theme_color: string | null;
+    }>;
+    links: any;
   };
   filters: {
     search: string;
@@ -42,9 +49,13 @@ interface Props {
   }>;
 }
 
-export default function Index({ auth, users, filters, projects }: Props) {
+export default function Index({ auth, users, filters, projects }: Props & PageProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [showIdentifier, setShowIdentifier] = useState(false);
+  const [showEmailVerified, setShowEmailVerified] = useState(false);
+  const [showHiddenFields, setShowHiddenFields] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const searchForm = useForm({
     search: filters.search,
@@ -91,200 +102,347 @@ export default function Index({ auth, users, filters, projects }: Props) {
     router.get(route('admin.users.toggle-admin', user.id));
   };
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(text);
+      setTimeout(() => setCopiedId(null), 2000); // Reset after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  const toggleHiddenFields = () => {
+    setShowHiddenFields(!showHiddenFields);
+  };
+
   return (
-    <AdminLayout
-      auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-      title="Manage Users"
-      header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Manage Users</h2>}
-    >
-      <Head title="Manage Users" />
-
-      <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-        <div className="p-6 text-gray-900">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <h3 className="text-lg font-medium mb-4 md:mb-0">User Management</h3>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href={route('admin.users.create')}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
-              >
-                Create New User
-              </Link>
-            </div>
-          </div>
-
-          {/* Search and Filter */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <InputLabel htmlFor="search" value="Search" />
-                <TextInput
-                  id="search"
-                  type="text"
-                  className="mt-1 block w-full"
-                  placeholder="Search by name or email"
-                  value={searchForm.data.search}
-                  onChange={(e) => searchForm.setData('search', e.target.value)}
-                />
-              </div>
-              
-              <div className="w-full md:w-48">
-                <InputLabel htmlFor="admin_filter" value="Admin Status" />
-                <select
-                  id="admin_filter"
-                  className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                  value={searchForm.data.admin_filter}
-                  onChange={(e) => searchForm.setData('admin_filter', e.target.value)}
-                >
-                  <option value="all">All Users</option>
-                  <option value="admin">Admins Only</option>
-                  <option value="regular">Regular Users</option>
-                </select>
+    <AdminLayout>
+      <div className="py-12">
+        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div className="p-6 text-gray-900">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <h3 className="text-lg font-medium mb-4 md:mb-0">User Management</h3>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={toggleHiddenFields}
+                    className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                  >
+                    {showHiddenFields ? 'Hide Fields' : 'Show Fields'}
+                  </button>
+                  <Link
+                    href={route('admin.users.create')}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                  >
+                    Create New User
+                  </Link>
+                </div>
               </div>
 
-              <div className="w-full md:w-48">
-                <InputLabel htmlFor="project_filter" value="Project" />
-                <select
-                  id="project_filter"
-                  className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                  value={searchForm.data.project_filter}
-                  onChange={(e) => searchForm.setData('project_filter', e.target.value)}
-                >
-                  <option value="all">All Projects</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.identifier}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="flex items-end gap-2">
-                <PrimaryButton className="mt-1">Search</PrimaryButton>
-                <SecondaryButton type="button" className="mt-1" onClick={resetFilters}>Reset</SecondaryButton>
-              </div>
-            </form>
-          </div>
+              {/* Search and Filter */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <InputLabel htmlFor="search" value="Search" />
+                    <TextInput
+                      id="search"
+                      type="text"
+                      className="mt-1 block w-full"
+                      placeholder="Search by name or email"
+                      value={searchForm.data.search}
+                      onChange={(e) => searchForm.setData('search', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="w-full md:w-48">
+                    <InputLabel htmlFor="admin_filter" value="Admin Status" />
+                    <select
+                      id="admin_filter"
+                      className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                      value={searchForm.data.admin_filter}
+                      onChange={(e) => searchForm.setData('admin_filter', e.target.value)}
+                    >
+                      <option value="all">All Users</option>
+                      <option value="admin">Admins Only</option>
+                      <option value="regular">Regular Users</option>
+                    </select>
+                  </div>
 
-          {/* Users Table */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Project
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Registered
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.data.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      No users found
-                    </td>
-                  </tr>
-                ) : (
-                  users.data.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{user.project_identifier}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_admin ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
-                          {user.is_admin ? 'Admin' : 'User'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.created_at ? formatDistance(new Date(user.created_at), new Date(), { addSuffix: true }) : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <Link
-                            href={route('admin.users.edit', user.id)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Edit
-                          </Link>
-                          
-                          <button
-                            onClick={() => toggleAdminStatus(user)}
-                            className={`${user.is_admin ? 'text-orange-600 hover:text-orange-900' : 'text-blue-600 hover:text-blue-900'}`}
-                            disabled={user.id === auth.user.id}
-                          >
-                            {user.is_admin ? 'Remove Admin' : 'Make Admin'}
-                          </button>
-                          
-                          {user.id !== auth.user.id && (
-                            <button
-                              onClick={() => openDeleteModal(user)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                  <div className="w-full md:w-48">
+                    <InputLabel htmlFor="project_filter" value="Project" />
+                    <select
+                      id="project_filter"
+                      className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                      value={searchForm.data.project_filter}
+                      onChange={(e) => searchForm.setData('project_filter', e.target.value)}
+                    >
+                      <option value="all">All Projects</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.identifier}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-end gap-2">
+                    <PrimaryButton className="mt-1">Search</PrimaryButton>
+                    <SecondaryButton type="button" className="mt-1" onClick={resetFilters}>Reset</SecondaryButton>
+                  </div>
+                </form>
+              </div>
+
+              {/* Users Table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                        Name
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                        Email
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                        Project
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                        Status
+                      </th>
+                      {showHiddenFields && (
+                        <>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Identifier
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Email Verified
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Google Login
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Contact
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Referrer
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Theme
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                            Theme Color
+                          </th>
+                        </>
+                      )}
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                        Registered
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+                        Actions
+                      </th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="mt-6">
-            <Pagination links={users.links} />
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.data.length === 0 ? (
+                      <tr>
+                        <td colSpan={showHiddenFields ? 10 : 8} className="px-6 py-4 text-center text-gray-500">
+                          No users found
+                        </td>
+                      </tr>
+                    ) : (
+                      users.data.map((user) => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex items-center">
+                              <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="text-sm text-gray-900">{user.email}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="text-sm text-gray-900">{user.project_identifier}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_admin ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                              {user.is_admin ? 'Admin' : 'User'}
+                            </span>
+                          </td>
+                          {showHiddenFields && (
+                            <>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm text-gray-500">{user.identifier}</div>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(user.identifier);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-500"
+                                    title="Copy identifier"
+                                  >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm text-gray-500">
+                                    {user.email_verified_at ? formatDistance(new Date(user.email_verified_at), new Date(), { addSuffix: true }) : 'Not verified'}
+                                  </div>
+                                  {!user.email_verified_at && (
+                                    <button
+                                      onClick={() => router.get(route('admin.users.resend-verification', user.id))}
+                                      className="text-blue-600 hover:text-blue-900 text-sm"
+                                      title="Resend verification email"
+                                    >
+                                      Resend
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.google_id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                                  {user.google_id ? 'Yes' : 'No'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <div className="text-sm text-gray-500">{user.contact_number || 'N/A'}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <div className="text-sm text-gray-500">{user.referrer || 'N/A'}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <div className="text-sm text-gray-500">{user.theme || 'Default'}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm text-gray-500">{user.theme_color || 'Default'}</div>
+                                  {user.theme_color && (
+                                    <div 
+                                      className="w-4 h-4 rounded-full border border-gray-300" 
+                                      style={{ backgroundColor: user.theme_color }}
+                                    />
+                                  )}
+                                </div>
+                              </td>
+                            </>
+                          )}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.created_at ? formatDistance(new Date(user.created_at), new Date(), { addSuffix: true }) : 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <Menu as="div" className="relative inline-block text-left">
+                              <div>
+                                <Menu.Button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                  Actions
+                                  <ChevronDownIcon className="w-5 h-5 ml-2 -mr-1" aria-hidden="true" />
+                                </Menu.Button>
+                              </div>
+                              <Transition
+                                as={Fragment}
+                                enter="transition ease-out duration-100"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                              >
+                                <Menu.Items className="absolute right-0 z-10 w-56 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                  <div className="py-1">
+                                    <Menu.Item>
+                                      {({ active }) => (
+                                        <Link
+                                          href={route('admin.users.edit', user.id)}
+                                          className={`${
+                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                          } group flex items-center px-4 py-2 text-sm`}
+                                        >
+                                          <PencilIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                          Edit
+                                        </Link>
+                                      )}
+                                    </Menu.Item>
+
+                                    <Menu.Item>
+                                      {({ active }) => (
+                                        <button
+                                          onClick={() => router.get(route('admin.users.toggle-admin', user.id))}
+                                          className={`${
+                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                          } group flex items-center w-full px-4 py-2 text-sm`}
+                                        >
+                                          {user.is_admin ? (
+                                            <>
+                                              <ShieldExclamationIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                              Remove Admin
+                                            </>
+                                          ) : (
+                                            <>
+                                              <ShieldCheckIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                              Make Admin
+                                            </>
+                                          )}
+                                        </button>
+                                      )}
+                                    </Menu.Item>
+
+                                    {!user.email_verified_at && (
+                                      <Menu.Item>
+                                        {({ active }) => (
+                                          <button
+                                            onClick={() => router.get(route('admin.users.resend-verification', user.id))}
+                                            className={`${
+                                              active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                            } group flex items-center w-full px-4 py-2 text-sm`}
+                                          >
+                                            <EnvelopeIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                            Resend Verification
+                                          </button>
+                                        )}
+                                      </Menu.Item>
+                                    )}
+
+                                    <Menu.Item>
+                                      {({ active }) => (
+                                        <button
+                                          onClick={() => {
+                                            if (confirm('Are you sure you want to delete this user?')) {
+                                              router.delete(route('admin.users.destroy', user.id));
+                                            }
+                                          }}
+                                          className={`${
+                                            active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                          } group flex items-center w-full px-4 py-2 text-sm`}
+                                        >
+                                          <TrashIcon className="w-5 h-5 mr-3 text-red-400" aria-hidden="true" />
+                                          Delete
+                                        </button>
+                                      )}
+                                    </Menu.Item>
+                                  </div>
+                                </Menu.Items>
+                              </Transition>
+                            </Menu>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="mt-4">
+                {/* Add your pagination component here */}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-        <form onSubmit={handleDeleteSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900">
-            Are you sure you want to delete this user?
-          </h2>
-          
-          <p className="mt-1 text-sm text-gray-600">
-            This action cannot be undone. All data associated with this user will be permanently deleted.
-          </p>
-          
-          {userToDelete && (
-            <div className="mt-4 bg-gray-50 p-4 rounded-md">
-              <p><strong>Name:</strong> {userToDelete.name}</p>
-              <p><strong>Email:</strong> {userToDelete.email}</p>
-            </div>
-          )}
-          
-          <div className="mt-6 flex justify-end">
-            <SecondaryButton onClick={() => setShowDeleteModal(false)}>Cancel</SecondaryButton>
-            <DangerButton className="ml-3" disabled={!userToDelete}>
-              Delete User
-            </DangerButton>
-          </div>
-        </form>
-      </Modal>
     </AdminLayout>
   );
-} 
+}
