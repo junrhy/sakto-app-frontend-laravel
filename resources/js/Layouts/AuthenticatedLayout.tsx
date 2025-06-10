@@ -42,7 +42,6 @@ const getHeaderColorClass = (url: string): string => {
 };
 
 const requiresSubscription = (appParam: string | null): boolean => {
-    console.log('Current appParam:', appParam);
     if (!appParam) return false;
     
     // Match the middleware's subscription-required apps
@@ -63,7 +62,6 @@ const requiresSubscription = (appParam: string | null): boolean => {
     ];
     
     const requires = subscriptionApps.includes(appParam);
-    console.log('Requires subscription:', requires);
     return requires;
 };
 
@@ -75,8 +73,6 @@ export default function Authenticated({ children, header, user, auth }: Props) {
     const pageProps = usePage<{ auth: { user: any } }>().props;
     const authUser = user || pageProps.auth.user;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
-    console.log('URL:', url);
-    console.log('Extracted appParam:', appParam);
 
     useEffect(() => {
         const fetchCredits = async () => {
