@@ -46,9 +46,14 @@ class SubscriptionController extends Controller
         // Get payment methods (reusing from CreditsController)
         $paymentMethods = [
             [
+                'id' => 'cash',
+                'name' => 'Cash Payment',
+                'description' => 'Pay in cash at our office',
+            ],
+            [
                 'id' => 'credit_card',
                 'name' => 'Credit Card',
-                'description' => 'Secure online payment via credit card',
+                'description' => 'Secure online payment via credit card (Coming soon)',
             ],
         ];
         
@@ -81,7 +86,12 @@ class SubscriptionController extends Controller
         $clientIdentifier = $user->identifier;
         $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
         
-        // Generate a unique reference number
+        // Handle cash payment differently
+        if ($validated['payment_method'] === 'cash') {
+            return $this->handleCashPayment($user, $plan, $validated);
+        }
+        
+        // Generate a unique reference number for credit card payment
         $referenceNumber = $this->mayaPaymentService->generateReferenceNumber();
         
         try {
@@ -163,6 +173,61 @@ class SubscriptionController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Subscription process failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'exception' => $e
+            ]);
+            
+            return redirect()->back()->with('error', 'An error occurred while processing your subscription. Please try again later.');
+        }
+    }
+    
+    /**
+     * Handle cash payment for subscription.
+     */
+    protected function handleCashPayment($user, $plan, $validated)
+    {
+        try {
+            // Generate a unique reference number for the cash payment
+            $referenceNumber = 'CASH-' . strtoupper(uniqid());
+            
+            // Create a pending subscription
+            $subscription = new UserSubscription([
+                'user_identifier' => $user->identifier,
+                'subscription_plan_id' => $plan->id,
+                'start_date' => now(),
+                'end_date' => now()->addDays($plan->duration_in_days),
+                'status' => 'pending', // Set as pending until payment is confirmed
+                'payment_method' => 'cash',
+                'payment_transaction_id' => $referenceNumber,
+                'amount_paid' => $plan->price,
+                'auto_renew' => $validated['auto_renew'] ?? false,
+            ]);
+            
+            $subscription->save();
+            
+            // Log the cash payment request
+            Log::info('Cash payment subscription created', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'reference' => $referenceNumber,
+                'amount' => $plan->price,
+            ]);
+            
+            // Return success response with payment instructions
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'pending',
+                'message' => 'Your subscription request has been received. Please visit our office to complete the payment.',
+                'subscription' => $subscription,
+                'payment_instructions' => [
+                    'amount' => $plan->price,
+                    'reference_number' => $referenceNumber,
+                    'business_hours' => 'Monday to Friday, 9:00 AM - 5:00 PM',
+                ],
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Cash payment subscription failed: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'exception' => $e

@@ -81,6 +81,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annually'>('monthly');
     const [highlightedApp, setHighlightedApp] = useState<string | null>(null);
     const [networkError, setNetworkError] = useState(false);
+    const [showPaymentSteps, setShowPaymentSteps] = useState(false);
 
     // Check URL parameters for plan to highlight
     useEffect(() => {
@@ -161,19 +162,20 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
         setIsSubmitting(true);
         setNetworkError(false);
 
-        // Show a loading message
-        toast.loading('Connecting to payment gateway...', {
-            id: 'payment-loading',
-            duration: 10000 // 10 seconds
-        });
-
         try {
             // Store form data in session storage for fallback
             sessionStorage.setItem('subscription_plan_id', selectedPlan.id.toString());
             sessionStorage.setItem('subscription_payment_method', paymentMethod);
             sessionStorage.setItem('subscription_auto_renew', autoRenew ? '1' : '0');
             
-            // Create a hidden form and submit it directly - this is now our primary method
+            if (paymentMethod === 'cash') {
+                // Show payment steps dialog for cash payments
+                setShowPaymentSteps(true);
+                setIsSubmitting(false);
+                return;
+            }
+            
+            // Create a hidden form and submit it directly
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = route('subscriptions.subscribe');
@@ -210,12 +212,25 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
             // Append to body and submit
             document.body.appendChild(form);
             
+            // Show appropriate loading message based on payment method
+            if (paymentMethod === 'cash') {
+                toast.loading('Processing your subscription request...', {
+                    id: 'payment-loading',
+                    duration: 5000 // 5 seconds
+                });
+            } else {
+                toast.loading('Connecting to payment gateway...', {
+                    id: 'payment-loading',
+                    duration: 10000 // 10 seconds
+                });
+            }
+            
             // Set a timeout to dismiss the loading toast if the form submission takes too long
             setTimeout(() => {
                 toast.dismiss('payment-loading');
                 setIsSubmitting(false);
                 setNetworkError(true);
-            }, 10000); // 10 seconds timeout
+            }, paymentMethod === 'cash' ? 5000 : 10000);
             
             // Submit the form
             form.submit();
@@ -230,6 +245,46 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
             setIsSubmitting(false);
             setNetworkError(true);
         }
+    };
+
+    const handleConfirmCashPayment = () => {
+        // Create and submit the form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = route('subscriptions.subscribe');
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+        
+        // Add form data
+        const planIdInput = document.createElement('input');
+        planIdInput.type = 'hidden';
+        planIdInput.name = 'plan_id';
+        planIdInput.value = selectedPlan?.id.toString() || '';
+        form.appendChild(planIdInput);
+        
+        const paymentMethodInput = document.createElement('input');
+        paymentMethodInput.type = 'hidden';
+        paymentMethodInput.name = 'payment_method';
+        paymentMethodInput.value = paymentMethod;
+        form.appendChild(paymentMethodInput);
+        
+        const autoRenewInput = document.createElement('input');
+        autoRenewInput.type = 'hidden';
+        autoRenewInput.name = 'auto_renew';
+        autoRenewInput.value = autoRenew ? '1' : '0';
+        form.appendChild(autoRenewInput);
+        
+        // Append to body and submit
+        document.body.appendChild(form);
+        form.submit();
     };
 
     const openCancelDialog = (subscriptionId: string) => {
@@ -458,7 +513,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     <div>
                                                         <h4 className="font-medium mb-2">Payment Information</h4>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                            You'll be redirected to Maya's secure payment page to complete your payment after clicking "Subscribe Now".
+                                                            After selecting your plan, you'll need to visit our office to complete the payment in cash.
+                                                            Our staff will assist you with the payment process and activate your subscription.
                                                         </p>
                                                     </div>
                                                     
@@ -479,9 +535,9 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                 <SparklesIcon className="h-5 w-5 text-blue-500" />
                                                             </div>
                                                             <div>
-                                                                <h5 className="text-sm font-medium text-blue-700 dark:text-blue-300">Secure Payment</h5>
+                                                                <h5 className="text-sm font-medium text-blue-700 dark:text-blue-300">Secure Payment Process</h5>
                                                                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                                    Your payment will be securely processed by Maya Business, a leading payment provider in the Philippines.
+                                                                    Your payment will be processed securely at our office. Our staff will provide you with an official receipt upon payment.
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -511,9 +567,34 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     
                                                     <div className="mt-4 pt-4 border-t dark:border-gray-700">
                                                         <h4 className="font-medium mb-2">Payment Method</h4>
-                                                        <div className="text-sm space-y-1">
-                                                            <p><span className="font-medium">Credit/Debit Card via Maya</span></p>
-                                                            <p>Secure online payment via Maya Business</p>
+                                                        <div className="space-y-3">
+                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                                                                <input 
+                                                                    type="radio" 
+                                                                    name="payment_method" 
+                                                                    value="cash" 
+                                                                    checked={paymentMethod === 'cash'}
+                                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                                    className="h-4 w-4 text-green-600" 
+                                                                />
+                                                                <div>
+                                                                    <span className="block font-medium text-gray-900">Cash Payment</span>
+                                                                    <span className="block text-sm text-gray-500">Pay in cash at our office</span>
+                                                                </div>
+                                                            </label>
+                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50">
+                                                                <input 
+                                                                    type="radio" 
+                                                                    name="payment_method" 
+                                                                    value="credit_card" 
+                                                                    disabled
+                                                                    className="h-4 w-4 text-gray-400" 
+                                                                />
+                                                                <div>
+                                                                    <span className="block font-medium text-gray-900">Credit/Debit Card via Maya</span>
+                                                                    <span className="block text-sm text-gray-500">Coming soon</span>
+                                                                </div>
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -641,6 +722,68 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                         </Button>
                         <Button variant="destructive" onClick={handleCancelSubscription}>
                             Cancel Subscription
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Payment Steps Dialog */}
+            <Dialog open={showPaymentSteps} onOpenChange={setShowPaymentSteps}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Complete Your Cash Payment</DialogTitle>
+                        <DialogDescription>
+                            Follow these steps to complete your subscription payment
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="py-4">
+                        <ol className="space-y-4">
+                            <li className="flex items-start">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-medium mr-3 flex-shrink-0">1</span>
+                                <div>
+                                    <p className="font-medium">Visit Our Office</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Come to our office during business hours (Monday to Friday, 9:00 AM - 5:00 PM)
+                                    </p>
+                                </div>
+                            </li>
+                            <li className="flex items-start">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-medium mr-3 flex-shrink-0">2</span>
+                                <div>
+                                    <p className="font-medium">Present Your Details</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Show your subscription details to our staff
+                                    </p>
+                                </div>
+                            </li>
+                            <li className="flex items-start">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-medium mr-3 flex-shrink-0">3</span>
+                                <div>
+                                    <p className="font-medium">Make Payment</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Pay the amount of ₱{Number(selectedPlan?.price).toFixed(2)} in cash
+                                    </p>
+                                </div>
+                            </li>
+                            <li className="flex items-start">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-medium mr-3 flex-shrink-0">4</span>
+                                <div>
+                                    <p className="font-medium">Get Access</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Receive your receipt and get immediate access to your subscription
+                                    </p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowPaymentSteps(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirmCashPayment}>
+                            Confirm & Submit
                         </Button>
                     </DialogFooter>
                 </DialogContent>

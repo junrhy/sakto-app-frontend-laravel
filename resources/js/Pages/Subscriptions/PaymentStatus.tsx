@@ -11,7 +11,7 @@ interface Props {
             name: string;
         };
     };
-    status: 'success' | 'failure' | 'cancelled';
+    status: 'success' | 'failure' | 'cancelled' | 'pending';
     message: string;
     subscription?: {
         plan: {
@@ -20,9 +20,14 @@ interface Props {
         };
         end_date: string;
     };
+    payment_instructions?: {
+        amount: number;
+        reference_number: string;
+        business_hours: string;
+    };
 }
 
-export default function PaymentStatus({ auth, status, message, subscription }: Props) {
+export default function PaymentStatus({ auth, status, message, subscription, payment_instructions }: Props) {
     useEffect(() => {
         // Scroll to top when component mounts
         window.scrollTo(0, 0);
@@ -47,20 +52,24 @@ export default function PaymentStatus({ auth, status, message, subscription }: P
                     <Card className="overflow-hidden">
                         <CardHeader className={`text-white ${
                             status === 'success' ? 'bg-green-600' : 
-                            status === 'failure' ? 'bg-red-600' : 'bg-orange-500'
+                            status === 'failure' ? 'bg-red-600' : 
+                            status === 'pending' ? 'bg-blue-600' : 'bg-orange-500'
                         }`}>
                             <div className="flex items-center justify-center mb-4">
                                 {status === 'success' ? (
                                     <CheckCircleIcon className="h-16 w-16 text-white" />
                                 ) : status === 'failure' ? (
                                     <XCircleIcon className="h-16 w-16 text-white" />
+                                ) : status === 'pending' ? (
+                                    <ExclamationTriangleIcon className="h-16 w-16 text-white" />
                                 ) : (
                                     <ExclamationTriangleIcon className="h-16 w-16 text-white" />
                                 )}
                             </div>
                             <CardTitle className="text-center text-2xl">
                                 {status === 'success' ? 'Payment Successful' : 
-                                 status === 'failure' ? 'Payment Failed' : 'Payment Cancelled'}
+                                 status === 'failure' ? 'Payment Failed' : 
+                                 status === 'pending' ? 'Payment Pending' : 'Payment Cancelled'}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6">
@@ -79,6 +88,31 @@ export default function PaymentStatus({ auth, status, message, subscription }: P
                                         <div className="flex justify-between">
                                             <span className="text-gray-500 dark:text-gray-400">Valid Until:</span>
                                             <span className="font-medium">{formatDate(subscription.end_date)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {status === 'pending' && payment_instructions && (
+                                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+                                    <h3 className="font-medium text-lg mb-2">Payment Instructions</h3>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500 dark:text-gray-400">Amount to Pay:</span>
+                                            <span className="font-medium">₱{Number(payment_instructions.amount).toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500 dark:text-gray-400">Reference Number:</span>
+                                            <span className="font-medium">{payment_instructions.reference_number}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500 dark:text-gray-400">Business Hours:</span>
+                                            <span className="font-medium">{payment_instructions.business_hours}</span>
+                                        </div>
+                                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                                            <p className="text-sm text-blue-700 dark:text-blue-300">
+                                                Please bring this reference number when you visit our office. Our staff will assist you with the payment process.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -107,7 +141,8 @@ export default function PaymentStatus({ auth, status, message, subscription }: P
                         <CardFooter className="flex justify-center gap-4 p-6 bg-gray-50 dark:bg-gray-800">
                             <Button asChild>
                                 <Link href={route('subscriptions.index')}>
-                                    {status === 'success' ? 'View Subscription' : 'Try Again'}
+                                    {status === 'success' ? 'View Subscription' : 
+                                     status === 'pending' ? 'Back to Plans' : 'Try Again'}
                                 </Link>
                             </Button>
                             {(status === 'failure' || status === 'cancelled') && (
