@@ -113,10 +113,10 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
         }
     }, [plans]);
 
-    // Set payment method to credit_card when a plan is selected
+    // Set payment method to cash when a plan is selected
     useEffect(() => {
         if (selectedPlan) {
-            setPaymentMethod('credit_card');
+            setPaymentMethod('cash');
         }
     }, [selectedPlan]);
 
@@ -586,7 +586,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                 <input 
                                                                     type="radio" 
                                                                     name="payment_method" 
-                                                                    value="credit_card" 
+                                                                    value="maya" 
                                                                     disabled
                                                                     className="h-4 w-4 text-gray-400" 
                                                                 />
