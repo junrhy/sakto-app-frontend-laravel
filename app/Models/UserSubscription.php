@@ -35,6 +35,8 @@ class UserSubscription extends Model
         'maya_payment_token_id',
         'next_billing_date',
         'billing_cycle',
+        'stripe_session_id',
+        'stripe_subscription_id',
     ];
 
     /**
@@ -129,6 +131,14 @@ class UserSubscription extends Model
     public function hasMayaSubscription(): bool
     {
         return !empty($this->maya_subscription_id);
+    }
+
+    /**
+     * Check if the subscription has a Stripe subscription ID
+     */
+    public function hasStripeSubscription()
+    {
+        return !empty($this->stripe_subscription_id);
     }
 
     /**

@@ -288,11 +288,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Subscription Management
     Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
     Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
-    Route::post('/subscriptions/{identifier}/cancel', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
+    Route::post('/subscriptions/cancel/{identifier}', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
     Route::get('/subscriptions/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
     Route::get('/subscriptions/payment/success', [SubscriptionController::class, 'paymentSuccess'])->name('subscriptions.payment.success');
     Route::get('/subscriptions/payment/failure', [SubscriptionController::class, 'paymentFailure'])->name('subscriptions.payment.failure');
     Route::get('/subscriptions/payment/cancel', [SubscriptionController::class, 'paymentCancel'])->name('subscriptions.payment.cancel');
+    
+    // Stripe payment routes
+    Route::get('/subscriptions/stripe/success', [SubscriptionController::class, 'stripeSuccess'])->name('subscriptions.stripe.success');
+    Route::get('/subscriptions/stripe/cancel', [SubscriptionController::class, 'stripeCancel'])->name('subscriptions.stripe.cancel');
+    Route::post('/subscriptions/stripe/webhook', [SubscriptionController::class, 'stripeWebhook'])->name('subscriptions.stripe.webhook');
     
     // Credits
     Route::prefix('credits')->group(function () {

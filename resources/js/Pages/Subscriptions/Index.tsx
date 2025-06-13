@@ -595,6 +595,19 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     <span className="block text-sm text-gray-500">Coming soon</span>
                                                                 </div>
                                                             </label>
+                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50">
+                                                                <input 
+                                                                    type="radio" 
+                                                                    name="payment_method" 
+                                                                    value="stripe" 
+                                                                    disabled
+                                                                    className="h-4 w-4 text-gray-400" 
+                                                                />
+                                                                <div>
+                                                                    <span className="block font-medium text-gray-900">Credit/Debit Card via Stripe</span>
+                                                                    <span className="block text-sm text-gray-500">Coming soon</span>
+                                                                </div>
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>

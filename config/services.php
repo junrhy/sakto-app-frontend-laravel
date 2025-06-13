@@ -14,6 +14,13 @@ return [
     |
     */
 
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
@@ -53,12 +60,22 @@ return [
     ],
 
     'maya' => [
-        'public_key' => env('MAYA_PUBLIC_KEY'),
         'secret_key' => env('MAYA_SECRET_KEY'),
+        'public_key' => env('MAYA_PUBLIC_KEY'),
+        'webhook_secret' => env('MAYA_WEBHOOK_SECRET'),
+        'environment' => env('MAYA_ENVIRONMENT', 'sandbox'),
         'base_url' => env('MAYA_BASE_URL', 'https://pg-sandbox.paymaya.com'),
         'webhook_success_url' => env('MAYA_WEBHOOK_SUCCESS_URL', config('app.url') . '/subscriptions/payment/success'),
         'webhook_failure_url' => env('MAYA_WEBHOOK_FAILURE_URL', config('app.url') . '/subscriptions/payment/failure'),
         'webhook_cancel_url' => env('MAYA_WEBHOOK_CANCEL_URL', config('app.url') . '/subscriptions/payment/cancel'),
         'webhook_url' => env('MAYA_WEBHOOK_URL', config('app.url') . '/webhooks/maya'),
     ],
+
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'environment' => env('STRIPE_ENVIRONMENT', 'sandbox'),
+    ],
+
 ];

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
 use App\Services\MayaPaymentService;
+use App\Services\StripePaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -16,12 +17,14 @@ class SubscriptionController extends Controller
 {
     protected $apiUrl, $apiToken;
     protected $mayaPaymentService;
+    protected $stripePaymentService;
 
-    public function __construct(MayaPaymentService $mayaPaymentService)
+    public function __construct(MayaPaymentService $mayaPaymentService, StripePaymentService $stripePaymentService)
     {
         $this->apiUrl = config('api.url');
         $this->apiToken = config('api.token');
         $this->mayaPaymentService = $mayaPaymentService;
+        $this->stripePaymentService = $stripePaymentService;
     }
 
     /**
@@ -54,6 +57,11 @@ class SubscriptionController extends Controller
                 'id' => 'maya',
                 'name' => 'Credit/Debit Card via Maya',
                 'description' => 'Secure online payment via Maya payment gateway (Coming soon)',
+            ],
+            [
+                'id' => 'stripe',
+                'name' => 'Credit/Debit Card via Stripe',
+                'description' => 'Secure online payment via Stripe payment gateway (Coming soon)',
             ],
         ];
         
@@ -92,6 +100,8 @@ class SubscriptionController extends Controller
                 return $this->handleCashPayment($user, $plan, $validated);
             case 'maya':
                 return $this->handleMayaPayment($user, $plan, $validated);
+            case 'stripe':
+                return $this->handleStripePayment($user, $plan, $validated);
             default:
                 return redirect()->back()->with('error', 'Invalid payment method selected.');
         }
@@ -245,6 +255,308 @@ class SubscriptionController extends Controller
             ]);
             
             return redirect()->back()->with('error', 'An error occurred while processing your subscription. Please try again later.');
+        }
+    }
+    
+    /**
+     * Handle Stripe payment for subscription.
+     */
+    protected function handleStripePayment($user, $plan, $validated)
+    {
+        try {
+            // Generate a unique reference number for Stripe payment
+            $referenceNumber = $this->stripePaymentService->generateReferenceNumber();
+            
+            // Prepare checkout data
+            $checkoutData = [
+                'amount' => $plan->price,
+                'reference_number' => $referenceNumber,
+                'plan_name' => $plan->name,
+                'plan_slug' => $plan->slug,
+                'plan_description' => $plan->description,
+                'plan_id' => $plan->id,
+                'user_identifier' => $user->identifier,
+                'user_name' => $user->name,
+                'user_lastname' => $user->lastname ?? '',
+                'user_email' => $user->email,
+                'user_phone' => $user->phone ?? '',
+                'auto_renew' => $validated['auto_renew'] ?? false,
+            ];
+            
+            // Create checkout or subscription based on auto_renew setting
+            if ($validated['auto_renew'] ?? false) {
+                $checkoutResult = $this->stripePaymentService->createSubscription($checkoutData);
+            } else {
+                $checkoutResult = $this->stripePaymentService->createCheckout($checkoutData);
+            }
+            
+            if (!$checkoutResult['success']) {
+                return redirect()->back()->with('error', $checkoutResult['message']);
+            }
+            
+            // Create a pending subscription
+            $subscription = new UserSubscription([
+                'user_identifier' => $user->identifier,
+                'subscription_plan_id' => $plan->id,
+                'start_date' => now(),
+                'end_date' => now()->addDays($plan->duration_in_days),
+                'status' => 'pending',
+                'payment_method' => 'stripe',
+                'payment_transaction_id' => $referenceNumber,
+                'amount_paid' => $plan->price,
+                'auto_renew' => $validated['auto_renew'] ?? false,
+                'stripe_session_id' => $checkoutResult['session_id'] ?? null,
+                'stripe_subscription_id' => $checkoutResult['subscription_id'] ?? null,
+            ]);
+            
+            $subscription->save();
+            
+            // Redirect to Stripe checkout page
+            try {
+                if (empty($checkoutResult['checkout_url'])) {
+                    Log::error('Stripe checkout URL is empty', [
+                        'checkout_result' => $checkoutResult,
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id
+                    ]);
+                    return redirect()->back()->with('error', 'Payment gateway error: Invalid checkout URL. Please try again later.');
+                }
+                
+                Log::info('Redirecting to Stripe checkout', [
+                    'checkout_url' => $checkoutResult['checkout_url'],
+                    'reference' => $referenceNumber,
+                    'is_subscription' => isset($checkoutResult['subscription_id']),
+                ]);
+                
+                return redirect($checkoutResult['checkout_url']);
+            } catch (\Exception $e) {
+                Log::error('Failed to redirect to Stripe checkout: ' . $e->getMessage(), [
+                    'checkout_result' => $checkoutResult,
+                    'exception' => $e
+                ]);
+                
+                $subscription->status = 'failed';
+                $subscription->save();
+                
+                return redirect()->back()->with('error', 'Failed to connect to payment gateway. Please try again later.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Stripe payment subscription failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'exception' => $e
+            ]);
+            
+            return redirect()->back()->with('error', 'An error occurred while processing your subscription. Please try again later.');
+        }
+    }
+    
+    /**
+     * Handle successful payment from Stripe.
+     */
+    public function stripeSuccess(Request $request)
+    {
+        $sessionId = $request->query('session_id');
+        
+        if (!$sessionId) {
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'Invalid session ID. Please contact support if you believe this is an error.',
+            ]);
+        }
+        
+        try {
+            $session = \Stripe\Checkout\Session::retrieve($sessionId);
+            $referenceNumber = $session->metadata->reference_number;
+            
+            // Find the pending subscription
+            $subscription = UserSubscription::where('payment_transaction_id', $referenceNumber)
+                ->where('status', 'pending')
+                ->with('plan')
+                ->first();
+            
+            if (!$subscription) {
+                return Inertia::render('Subscriptions/PaymentStatus', [
+                    'status' => 'failure',
+                    'message' => 'Subscription not found. Please contact support if you believe this is an error.',
+                ]);
+            }
+            
+            // Check if user already has an active subscription
+            $activeSubscription = UserSubscription::where('user_identifier', $subscription->user_identifier)
+                ->where('status', 'active')
+                ->where('end_date', '>', now())
+                ->where('id', '!=', $subscription->id)
+                ->first();
+            
+            if ($activeSubscription) {
+                // Cancel the current subscription
+                $activeSubscription->cancel('Upgraded to a new plan');
+            }
+            
+            // Update subscription to active
+            $subscription->status = 'active';
+            $subscription->save();
+            
+            // Add credits to user's account based on the plan
+            try {
+                Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/credits/add", [
+                        'client_identifier' => $subscription->user_identifier,
+                        'amount' => $subscription->plan->credits_per_month,
+                        'source' => 'subscription',
+                        'reference_id' => $subscription->identifier,
+                    ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to add subscription credits: ' . $e->getMessage());
+            }
+            
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'success',
+                'message' => 'Your payment was successful and your subscription is now active.',
+                'subscription' => $subscription,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Stripe success handling failed: ' . $e->getMessage(), [
+                'session_id' => $sessionId,
+                'exception' => $e
+            ]);
+            
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'failure',
+                'message' => 'An error occurred while processing your payment. Please contact support.',
+            ]);
+        }
+    }
+
+    /**
+     * Handle cancelled payment from Stripe.
+     */
+    public function stripeCancel(Request $request)
+    {
+        $sessionId = $request->query('session_id');
+        
+        if ($sessionId) {
+            try {
+                $session = \Stripe\Checkout\Session::retrieve($sessionId);
+                $referenceNumber = $session->metadata->reference_number;
+                
+                // Find the pending subscription
+                $subscription = UserSubscription::where('payment_transaction_id', $referenceNumber)
+                    ->where('status', 'pending')
+                    ->first();
+                
+                if ($subscription) {
+                    // Update subscription to cancelled
+                    $subscription->status = 'cancelled';
+                    $subscription->save();
+                }
+            } catch (\Exception $e) {
+                Log::error('Stripe cancel handling failed: ' . $e->getMessage(), [
+                    'session_id' => $sessionId,
+                    'exception' => $e
+                ]);
+            }
+        }
+        
+        return Inertia::render('Subscriptions/PaymentStatus', [
+            'status' => 'cancelled',
+            'message' => 'You cancelled the payment process. You can try again whenever you\'re ready.',
+        ]);
+    }
+
+    /**
+     * Handle Stripe webhook events.
+     */
+    public function stripeWebhook(Request $request)
+    {
+        $payload = $request->getContent();
+        $signature = $request->header('Stripe-Signature');
+        
+        $event = $this->stripePaymentService->verifyWebhookSignature($payload, $signature);
+        
+        if (!$event) {
+            return response()->json(['error' => 'Invalid signature'], 400);
+        }
+        
+        try {
+            switch ($event->type) {
+                case 'checkout.session.completed':
+                    $session = $event->data->object;
+                    $referenceNumber = $session->metadata->reference_number;
+                    
+                    $subscription = UserSubscription::where('payment_transaction_id', $referenceNumber)
+                        ->where('status', 'pending')
+                        ->first();
+                    
+                    if ($subscription) {
+                        $subscription->status = 'active';
+                        $subscription->save();
+                        
+                        // Add credits to user's account
+                        Http::withToken($this->apiToken)
+                            ->post("{$this->apiUrl}/credits/add", [
+                                'client_identifier' => $subscription->user_identifier,
+                                'amount' => $subscription->plan->credits_per_month,
+                                'source' => 'subscription',
+                                'reference_id' => $subscription->identifier,
+                            ]);
+                    }
+                    break;
+                    
+                case 'invoice.payment_succeeded':
+                    $invoice = $event->data->object;
+                    if ($invoice->subscription) {
+                        $stripeSubscription = \Stripe\Subscription::retrieve($invoice->subscription);
+                        $referenceNumber = $stripeSubscription->metadata->reference_number;
+                        
+                        $subscription = UserSubscription::where('payment_transaction_id', $referenceNumber)
+                            ->where('status', 'active')
+                            ->first();
+                        
+                        if ($subscription) {
+                            // Extend subscription end date
+                            $subscription->end_date = now()->addDays($subscription->plan->duration_in_days);
+                            $subscription->save();
+                            
+                            // Add credits for the new period
+                            Http::withToken($this->apiToken)
+                                ->post("{$this->apiUrl}/credits/add", [
+                                    'client_identifier' => $subscription->user_identifier,
+                                    'amount' => $subscription->plan->credits_per_month,
+                                    'source' => 'subscription_renewal',
+                                    'reference_id' => $subscription->identifier,
+                                ]);
+                        }
+                    }
+                    break;
+                    
+                case 'invoice.payment_failed':
+                    $invoice = $event->data->object;
+                    if ($invoice->subscription) {
+                        $stripeSubscription = \Stripe\Subscription::retrieve($invoice->subscription);
+                        $referenceNumber = $stripeSubscription->metadata->reference_number;
+                        
+                        $subscription = UserSubscription::where('payment_transaction_id', $referenceNumber)
+                            ->where('status', 'active')
+                            ->first();
+                        
+                        if ($subscription) {
+                            $subscription->status = 'failed';
+                            $subscription->save();
+                        }
+                    }
+                    break;
+            }
+            
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            Log::error('Stripe webhook handling failed: ' . $e->getMessage(), [
+                'event_type' => $event->type,
+                'exception' => $e
+            ]);
+            
+            return response()->json(['error' => 'Webhook handling failed'], 500);
         }
     }
     
