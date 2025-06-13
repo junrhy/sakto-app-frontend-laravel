@@ -83,25 +83,12 @@ export default function Welcome({
                     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="text-center">
                             <h1 className="text-4xl tracking-tight font-extrabold text-transparent bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text dark:text-gray-100 sm:text-5xl md:text-6xl">
-                                <span className="block">All Your Apps</span>
-                                <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:text-indigo-400">In One Powerful Platform</span>
+                                <span className="block">Choose Your Solution</span>
+                                <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent dark:text-indigo-400">Tailored for Your Industry</span>
                             </h1>
                             <p className="mt-3 max-w-md mx-auto text-base text-gray-600 dark:text-gray-300 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                Start with our essential tools and unlock premium features as your needs evolve. Access a comprehensive suite of productivity applications in one unified platform.
+                                Select from our specialized platforms designed for Community, Logistics, Medical, and Enterprise sectors. Each solution comes with industry-specific features and tools to meet your unique needs.
                             </p>
-                            {!auth.user && (
-                                <div className="mt-8 flex justify-center space-x-4">
-                                    <Link
-                                        href={route('register', { project: 'trial' })}
-                                        className="group relative inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 md:py-4 md:text-lg md:px-10 transform transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/25"
-                                    >
-                                        <span>Get Started Free</span>
-                                        <svg className="ml-2 -mr-1 w-5 h-5 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                        </svg>
-                                    </Link>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </section>
@@ -196,6 +183,89 @@ export default function Welcome({
                     </div>
                 </section>
 
+                {/* Projects Overview Section */}
+                <section className="py-20 bg-gradient-to-b from-white to-indigo-50/30 dark:from-gray-900 dark:to-gray-950">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <h2 className="text-base font-semibold leading-7 text-indigo-600 dark:text-indigo-400">
+                                Industry Solutions
+                            </h2>
+                            <p className="mt-2 text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text text-transparent dark:text-gray-100 sm:text-4xl">
+                                Specialized Platforms for Every Sector
+                            </p>
+                            <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
+                                Each platform is crafted with industry-specific features and workflows to help you achieve your goals faster
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+                            {[
+                                {
+                                    title: 'Community',
+                                    description: 'Build and manage vibrant communities with our comprehensive suite of engagement tools, event management, and member communication features.',
+                                    icon: (
+                                        <svg className="h-8 w-8 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                                        </svg>
+                                    ),
+                                },
+                                {
+                                    title: 'Logistics',
+                                    description: 'Optimize your supply chain with advanced tracking, route optimization, fleet management, and real-time delivery monitoring solutions.',
+                                    icon: (
+                                        <svg className="h-8 w-8 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                                        </svg>
+                                    ),
+                                },
+                                {
+                                    title: 'Medical',
+                                    description: 'Enhance healthcare delivery with secure patient management, telemedicine, appointment scheduling, and medical record management.',
+                                    icon: (
+                                        <svg className="h-8 w-8 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+                                        </svg>
+                                    ),
+                                },
+                                {
+                                    title: 'Enterprise',
+                                    description: 'Scale your business with enterprise-grade solutions featuring advanced security, custom workflows, and comprehensive analytics.',
+                                    icon: (
+                                        <svg className="h-8 w-8 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                                        </svg>
+                                    ),
+                                },
+                            ].map((project) => (
+                                <div key={project.title} className="relative group">
+                                    <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-10 dark:group-hover:opacity-30 transition duration-200"></div>
+                                    <div className="relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg hover:shadow-indigo-500/10 transition duration-200">
+                                        <div className="inline-flex items-center justify-center rounded-lg bg-gradient-to-br from-indigo-50 to-white dark:bg-gray-900 p-2 mb-4 shadow-sm">
+                                            {project.icon}
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                                            {project.title}
+                                        </h3>
+                                        <p className="text-gray-600 dark:text-gray-300 mb-4">
+                                            {project.description}
+                                        </p>
+                                        {!auth.user && (
+                                            <button
+                                                onClick={() => window.location.href = route('register', { project: project.title.toLowerCase() })}
+                                                className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 rounded-md transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25"
+                                            >
+                                                Get Started
+                                                <svg className="ml-2 -mr-1 w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
                 {/* Social Proof Section */}
                 <section className="relative py-20 bg-white dark:bg-gray-900">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-50/20 to-transparent dark:via-indigo-500/5"></div>
@@ -254,19 +324,27 @@ export default function Welcome({
                         <div className="backdrop-blur-sm bg-white/5 rounded-2xl p-8 md:p-12">
                             <div className="text-center">
                                 <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl drop-shadow-md">
-                                    Ready to boost your productivity?
+                                    Ready to Transform Your Industry?
                                 </h2>
                                 <p className="mt-4 text-lg leading-6 text-indigo-100">
-                                    Join thousands of satisfied users today.
+                                    Choose your specialized platform and start your journey today
                                 </p>
                                 {!auth.user && (
-                                    <div className="mt-8">
-                                        <Link
-                                            href={route('register', { project: 'trial' })}
-                                            className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-indigo-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-white/90 dark:hover:bg-white md:py-4 md:text-lg md:px-10 transition-all duration-200"
-                                        >
-                                            Get Started Now
-                                        </Link>
+                                    <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                        {[
+                                            { name: 'Community', color: 'from-pink-500 to-rose-500' },
+                                            { name: 'Logistics', color: 'from-cyan-500 to-blue-500' },
+                                            { name: 'Medical', color: 'from-emerald-500 to-teal-500' },
+                                            { name: 'Enterprise', color: 'from-orange-500 to-amber-500' },
+                                        ].map((project) => (
+                                            <button
+                                                key={project.name}
+                                                onClick={() => window.location.href = route('register', { project: project.name.toLowerCase() })}
+                                                className={`inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-r ${project.color} hover:opacity-90 transition-all duration-200 hover:shadow-lg hover:shadow-${project.color.split('-')[1]}-500/25`}
+                                            >
+                                                {project.name}
+                                            </button>
+                                        ))}
                                     </div>
                                 )}
                             </div>
