@@ -21,6 +21,7 @@ interface Props {
 export default function View({ auth, subscription }: Props) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
+  const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
 
   const cancelForm = useForm({
     cancellation_reason: '',
@@ -28,6 +29,10 @@ export default function View({ auth, subscription }: Props) {
 
   const creditsForm = useForm({
     amount: '',
+    note: '',
+  });
+
+  const markAsPaidForm = useForm({
     note: '',
   });
 
@@ -42,6 +47,13 @@ export default function View({ auth, subscription }: Props) {
     e.preventDefault();
     creditsForm.post(route('admin.subscriptions.add-credits', subscription.id), {
       onSuccess: () => setShowAddCreditsModal(false),
+    });
+  };
+
+  const handleMarkAsPaidSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    markAsPaidForm.post(route('admin.subscriptions.mark-as-paid', subscription.id), {
+      onSuccess: () => setShowMarkAsPaidModal(false),
     });
   };
 
@@ -90,6 +102,11 @@ export default function View({ auth, subscription }: Props) {
                     <DangerButton onClick={() => setShowCancelModal(true)}>
                       Cancel Subscription
                     </DangerButton>
+                  )}
+                  {subscription.status === 'pending' && subscription.payment_method === 'cash' && (
+                    <PrimaryButton onClick={() => setShowMarkAsPaidModal(true)}>
+                      Mark as Paid
+                    </PrimaryButton>
                   )}
                   <PrimaryButton onClick={() => setShowAddCreditsModal(true)}>
                     Add Credits
@@ -284,6 +301,38 @@ export default function View({ auth, subscription }: Props) {
             </SecondaryButton>
             <PrimaryButton type="submit" disabled={creditsForm.processing}>
               Add Credits
+            </PrimaryButton>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Mark as Paid Modal */}
+      <Modal show={showMarkAsPaidModal} onClose={() => setShowMarkAsPaidModal(false)}>
+        <form onSubmit={handleMarkAsPaidSubmit} className="p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Mark Payment as Paid</h2>
+          
+          <p className="mb-4 text-sm text-gray-600">
+            Are you sure you want to mark this cash payment as paid? This will activate the subscription.
+          </p>
+          
+          <div className="mb-4">
+            <InputLabel htmlFor="note" value="Note (Optional)" />
+            <TextArea
+              id="note"
+              className="mt-1 block w-full"
+              value={markAsPaidForm.data.note}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => markAsPaidForm.setData('note', e.target.value)}
+              placeholder="Add any notes about the payment"
+            />
+            <InputError message={markAsPaidForm.errors.note} className="mt-2" />
+          </div>
+          
+          <div className="flex justify-end mt-6">
+            <SecondaryButton onClick={() => setShowMarkAsPaidModal(false)} className="mr-2">
+              Cancel
+            </SecondaryButton>
+            <PrimaryButton type="submit" disabled={markAsPaidForm.processing}>
+              Confirm Payment
             </PrimaryButton>
           </div>
         </form>

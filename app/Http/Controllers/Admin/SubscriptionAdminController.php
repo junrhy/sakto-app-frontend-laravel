@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionAdminController extends Controller
 {
@@ -183,6 +184,70 @@ class SubscriptionAdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('admin.subscriptions.view', $id)->with('error', 'Failed to add credits: ' . $e->getMessage());
         }
+    }
+    
+    /**
+     * Mark a cash payment as paid and activate the subscription.
+     */
+    public function markAsPaid(Request $request, $id)
+    {
+        $subscription = UserSubscription::with('plan')->findOrFail($id);
+        
+        // Validate that this is a pending cash payment
+        if ($subscription->status !== 'pending' || $subscription->payment_method !== 'cash') {
+            return redirect()->route('admin.subscriptions.view', $id)
+                ->with('error', 'This subscription cannot be marked as paid. Only pending cash payments can be marked as paid.');
+        }
+        
+        $validated = $request->validate([
+            'note' => 'nullable|string|max:255',
+        ]);
+        
+        // Check if user already has an active subscription
+        $activeSubscription = UserSubscription::where('user_identifier', $subscription->user_identifier)
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->where('id', '!=', $subscription->id)
+            ->first();
+        
+        if ($activeSubscription) {
+            // Cancel the current subscription
+            $activeSubscription->cancel('Upgraded to a new plan');
+        }
+        
+        // Update subscription to active
+        $subscription->status = 'active';
+        $subscription->save();
+        
+        // Add credits to user's account based on the plan
+        $apiUrl = config('api.url');
+        $apiToken = config('api.token');
+        
+        try {
+            $response = Http::withToken($apiToken)
+                ->post("{$apiUrl}/credits/add", [
+                    'client_identifier' => $subscription->user_identifier,
+                    'amount' => $subscription->plan->credits_per_month,
+                    'source' => 'subscription',
+                    'reference_id' => $subscription->identifier,
+                    'note' => $validated['note'] ?? 'Cash payment confirmed by administrator',
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to add subscription credits after marking cash payment as paid', [
+                    'subscription_id' => $subscription->id,
+                    'response' => $response->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to add subscription credits after marking cash payment as paid: ' . $e->getMessage(), [
+                'subscription_id' => $subscription->id,
+                'exception' => $e,
+            ]);
+        }
+        
+        return redirect()->route('admin.subscriptions.view', $id)
+            ->with('success', 'Payment marked as paid and subscription activated successfully');
     }
     
     /**

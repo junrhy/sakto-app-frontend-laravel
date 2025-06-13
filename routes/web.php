@@ -641,6 +641,7 @@ Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
         Route::get('/{id}', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'viewSubscription'])->name('admin.subscriptions.view');
         Route::post('/{id}/cancel', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'cancelSubscription'])->name('admin.subscriptions.cancel');
         Route::post('/{id}/add-credits', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'addCredits'])->name('admin.subscriptions.add-credits');
+        Route::post('/{id}/mark-as-paid', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'markAsPaid'])->name('admin.subscriptions.mark-as-paid');
         Route::post('/run-renewal', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'runRenewalCommand'])->name('admin.subscriptions.run-renewal');
     });
 });
