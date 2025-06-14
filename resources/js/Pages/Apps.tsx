@@ -47,6 +47,7 @@ interface Props extends PageProps {
             theme: 'light' | 'dark' | 'system';
             theme_color: string;
         };
+        modules?: string[];
     };
     [key: string]: any;
 }
@@ -181,24 +182,24 @@ export default function Apps() {
         return showAllCategories ? allCategories : allCategories.slice(0, 5);
     }, [allCategories, showAllCategories]);
 
-    // Filter apps based on search query and selected category
+    // Filter apps based on search query, selected category, and enabled modules
     const filteredApps = useMemo(() => {
         return apps.filter(app => {
             const matchesSearch = app.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 app.description.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = !selectedCategory || app.categories.includes(selectedCategory);
-            return matchesSearch && matchesCategory;
+            const matchesEnabledModules = !auth.modules || auth.modules.includes(app.title.toLowerCase());
+            return matchesSearch && matchesCategory && matchesEnabledModules;
         });
-    }, [searchQuery, selectedCategory, apps]);
+    }, [searchQuery, selectedCategory, apps, auth.modules]);
 
     // Group apps by their status (free, paid, coming soon)
     const groupedApps = useMemo(() => {
-        const freeApps = filteredApps.filter(app => app.pricingType === 'free' && !app.comingSoon);
-        const paidApps = filteredApps.filter(app => (app.pricingType === 'one-time' || app.pricingType === 'subscription') && !app.comingSoon);
-        const comingSoonApps = filteredApps.filter(app => app.comingSoon);
+        const paidApps = filteredApps.filter(app => !app.comingSoon);
+        const comingSoonApps = filteredApps.filter(app => app.comingSoon && (!auth.modules || auth.modules.includes(app.title.toLowerCase())));
         
-        return { freeApps, paidApps, comingSoonApps };
-    }, [filteredApps]);
+        return { paidApps, comingSoonApps };
+    }, [filteredApps, auth.modules]);
 
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
@@ -391,54 +392,12 @@ export default function Apps() {
 
                                 {/* Apps List */}
                                 <div className="space-y-4">
-                                    {/* Free Apps */}
-                                    {groupedApps.freeApps.length > 0 && (
-                                        <div>
-                                            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
-                                                <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Free</span>
-                                                Free Apps
-                                            </h2>
-                                            <div className="space-y-3">
-                                                {groupedApps.freeApps.map((app) => (
-                                                    <Card 
-                                                        key={app.title} 
-                                                        className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
-                                                        onClick={() => setSelectedApp(app)}
-                                                    >
-                                                        <CardHeader className="p-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
-                                                                    <div className="text-xl dark:text-slate-300">
-                                                                        {app.icon}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                        {!isAppIncludedInCurrentPlan(app) && app.includedInPlans && app.includedInPlans.length > 0 && (
-                                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
-                                                                                Available on {app.includedInPlans[0].replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                                            </Badge>
-                                                                        )}
-                                                                    </div>
-                                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
-                                                                        {app.description}
-                                                                    </CardDescription>
-                                                                </div>
-                                                            </div>
-                                                        </CardHeader>
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
                                     {/* Paid Apps */}
                                     {groupedApps.paidApps.length > 0 && (
                                         <div>
                                             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
-                                                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Paid</span>
-                                                Paid Apps
+                                                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Available</span>
+                                                Available Apps
                                             </h2>
                                             <div className="space-y-3">
                                                 {groupedApps.paidApps.map((app) => (
@@ -526,10 +485,6 @@ export default function Apps() {
                                             </div>
                                             <div>
                                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{selectedApp.title}</h2>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-yellow-500">⭐</span>
-                                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{selectedApp.rating}</span>
-                                                </div>
                                             </div>
                                         </div>
 
@@ -552,71 +507,6 @@ export default function Apps() {
                                                 ))}
                                             </div>
                                         </div>
-
-                                        {selectedApp.includedInPlans && selectedApp.includedInPlans.length > 0 && (
-                                            <div>
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Available Plans</h3>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {selectedApp.includedInPlans.map((plan) => (
-                                                        <Badge 
-                                                            key={plan} 
-                                                            variant="outline" 
-                                                            className={`${
-                                                                subscription && subscription.plan.slug === plan
-                                                                ? "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-700"
-                                                                : "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
-                                                            }`}
-                                                        >
-                                                            {plan.replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                            {subscription && subscription.plan.slug === plan && (
-                                                                <span className="ml-1">✓</span>
-                                                            )}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                        {selectedApp.pricingType === 'free' 
-                                                            ? 'Free'
-                                                            : selectedApp.pricingType === 'subscription' 
-                                                                ? 'Subscription Only'
-                                                                : formatPrice(selectedApp.price)
-                                                        }
-                                                    </span>
-                                                    {selectedApp.pricingType !== 'free' && (
-                                                        <span className="text-sm text-gray-500 dark:text-gray-400 block">
-                                                            {selectedApp.pricingType === 'subscription' ? 'Available on subscription plans' : 'One-time payment'}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <Button 
-                                                    variant={selectedApp.visible ? "default" : "outline"}
-                                                    className={selectedApp.visible 
-                                                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
-                                                        : "border-slate-200 dark:border-slate-700"
-                                                    }
-                                                    onClick={() => {
-                                                        if (selectedApp.visible) {
-                                                            window.location.href = `${selectedApp.route}`;
-                                                        } else if (selectedApp.includedInPlans && selectedApp.includedInPlans.length > 0) {
-                                                            window.location.href = route('subscriptions.index', { 
-                                                                highlight_plan: selectedApp.includedInPlans[0],
-                                                                app: selectedApp.title
-                                                            });
-                                                        } else {
-                                                            window.location.href = route('subscriptions.index');
-                                                        }
-                                                    }}
-                                                >
-                                                    {selectedApp.visible ? "Open App" : "Subscribe Now"}
-                                                </Button>
-                                            </div>
-                                        </div>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center text-center py-8">
@@ -627,21 +517,16 @@ export default function Apps() {
                                         <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
                                             Browse through our collection of powerful apps. Select an app from the list to view detailed information, features, and subscription options.
                                         </p>
-                                        <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
-                                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
-                                                <div className="text-2xl mb-2">🎯</div>
-                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Free Apps</h4>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">Access basic features at no cost</p>
-                                            </div>
+                                        <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
                                             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
                                                 <div className="text-2xl mb-2">⚡</div>
-                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Pro Apps</h4>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">Enhanced features for professionals</p>
+                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Subscription Apps</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Access through subscription plans</p>
                                             </div>
                                             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
-                                                <div className="text-2xl mb-2">🏢</div>
-                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Business Apps</h4>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">Complete solutions for enterprises</p>
+                                                <div className="text-2xl mb-2">💳</div>
+                                                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Pay As You Go</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">Pay only for what you use</p>
                                             </div>
                                         </div>
                                     </div>

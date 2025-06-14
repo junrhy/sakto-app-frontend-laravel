@@ -13,6 +13,14 @@ interface Props {
 
 const ALLOWED_PROJECTS = ['trial', 'community', 'logistics', 'medical', 'enterprise'] as const;
 
+const PROJECT_IMAGES = {
+    trial: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    community: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    medical: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    logistics: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+    enterprise: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
+} as const;
+
 export default function Register({}: Props) {
     const urlProject = new URLSearchParams(window.location.search).get('project');
     const validProject: typeof ALLOWED_PROJECTS[number] = ALLOWED_PROJECTS.includes(urlProject as any) ? urlProject as typeof ALLOWED_PROJECTS[number] : 'trial';
@@ -47,11 +55,6 @@ export default function Register({}: Props) {
                             alt="Logo" 
                             className="h-12 w-auto"
                         />
-                        {validProject !== 'trial' && (
-                            <span className="text-xl font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-1.5 rounded-lg">
-                                {validProject.charAt(0).toUpperCase() + validProject.slice(1)}
-                            </span>
-                        )}
                     </div>
 
                     {/* Form Section */}
@@ -177,8 +180,8 @@ export default function Register({}: Props) {
                 <div className="hidden md:block md:w-1/2">
                     <div className="w-full h-full">
                         <img
-                            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" 
-                            alt="Office workspace with laptop and coffee"
+                            src={PROJECT_IMAGES[validProject]}
+                            alt={`${validProject.charAt(0).toUpperCase() + validProject.slice(1)} workspace`}
                             className="w-full h-full object-cover"
                         />
                     </div>
