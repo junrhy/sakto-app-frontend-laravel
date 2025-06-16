@@ -11,19 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_subscriptions', function (Blueprint $table) {
-            // Maya fields
-            $table->string('maya_subscription_id')->nullable()->after('maya_checkout_id');
-            $table->string('maya_payment_token_id')->nullable()->after('maya_subscription_id');
-            
-            // Stripe fields
-            $table->string('stripe_session_id')->nullable()->after('maya_payment_token_id');
-            $table->string('stripe_subscription_id')->nullable()->after('stripe_session_id');
-            
-            // Billing fields
-            $table->dateTime('next_billing_date')->nullable()->after('stripe_subscription_id');
-            $table->string('billing_cycle')->nullable()->after('next_billing_date');
-        });
+        if (!Schema::hasColumn('user_subscriptions', 'stripe_session_id') && !Schema::hasColumn('user_subscriptions', 'stripe_subscription_id')) {
+            Schema::table('user_subscriptions', function (Blueprint $table) {
+                $table->string('stripe_session_id')->nullable()->after('maya_payment_token_id');
+                $table->string('stripe_subscription_id')->nullable()->after('stripe_session_id');
+            });
+        }
     }
 
     /**
@@ -31,15 +24,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('user_subscriptions', function (Blueprint $table) {
-            $table->dropColumn([
-                'maya_subscription_id',
-                'maya_payment_token_id',
-                'stripe_session_id',
-                'stripe_subscription_id',
-                'next_billing_date',
-                'billing_cycle'
-            ]);
-        });
+        if (Schema::hasColumn('user_subscriptions', 'stripe_session_id') && Schema::hasColumn('user_subscriptions', 'stripe_subscription_id')) {
+            $count = DB::table('user_subscriptions')->count();
+            if ($count === 0) {
+                Schema::table('user_subscriptions', function (Blueprint $table) {
+                    $table->dropColumn([
+                        'stripe_session_id',
+                        'stripe_subscription_id'
+                    ]);
+                });
+            }
+        }
     }
 }; 
