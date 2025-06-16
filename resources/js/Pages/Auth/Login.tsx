@@ -151,12 +151,39 @@ export default function Login({
                                 </div>
 
                                 <div className="text-center">
-                                    <Link
-                                        href={route('register')}
-                                        className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                                    >
-                                        Don't have an account? <span className="font-medium text-indigo-600 dark:text-indigo-400">Sign up</span>
-                                    </Link>
+                                    <div className="relative inline-block group">
+                                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 w-40 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] transform origin-bottom">
+                                            <div className="py-0.5" role="menu" aria-orientation="vertical">
+                                                {[
+                                                    { name: 'Community', href: route('register', { project: 'community' }) },
+                                                    { name: 'Logistics', href: route('register', { project: 'logistics' }) },
+                                                    { name: 'Medical', href: route('register', { project: 'medical' }) },
+                                                    { name: 'Enterprise', href: route('register', { project: 'enterprise' }) },
+                                                ].map((option) => (
+                                                    <Link
+                                                        key={option.name}
+                                                        href={option.href}
+                                                        className="block px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                                                        role="menuitem"
+                                                    >
+                                                        {option.name}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                                            Don't have an account?{' '}
+                                            <button
+                                                type="button"
+                                                className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 inline-flex items-center"
+                                            >
+                                                Sign up
+                                                <svg className="ml-1 w-4 h-4 group-hover:translate-y-0.5 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </div>
                                 </div>
                             </form>
                         </div>

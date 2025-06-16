@@ -62,7 +62,7 @@ export default function Welcome({
                                             Pricing
                                         </Link>
                                         <Link
-                                            href={route(isMobile ? 'login.mobile' : 'login', { project: 'trial' })}
+                                            href={route(isMobile ? 'login.mobile' : 'login')}
                                             className="group inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                         >
                                             <span>Log in</span>
