@@ -212,9 +212,9 @@ return [
     ],
     [
         'title' => 'Healthcare',
-        'route' => '/dashboard?app=health-insurance',
+        'route' => '/dashboard?app=healthcare',
         'visible' => true,
-        'description' => 'Manage and track health insurance, including members, contributions, and claims.',
+        'description' => 'Manage and track healthcare, including members, contributions, and claims.',
         'price' => 149,
         'categories' => ['Health', 'Insurance', 'Business'],
         'comingSoon' => false,

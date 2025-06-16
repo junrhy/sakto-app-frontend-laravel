@@ -138,7 +138,7 @@ export default function Authenticated({ children, header, user, auth }: Props) {
     const hasContentCreatorAccess = (auth?.modules?.includes('content-creator') && appParam === 'content-creator') ?? false;
     const hasDigitalProductsAccess = (auth?.modules?.includes('digital-products') && appParam === 'digital-products') ?? false;
     const hasPagesAccess = (auth?.modules?.includes('pages') && appParam === 'pages') ?? false;
-    const hasHealthInsuranceAccess = (auth?.modules?.includes('health-insurance') && appParam === 'health-insurance') ?? false;
+    const hasHealthcareAccess = (auth?.modules?.includes('healthcare') && appParam === 'healthcare') ?? false;
 
     const [hideNav, setHideNav] = useState(() => {
         // Get stored preference from localStorage, default to false
@@ -414,7 +414,7 @@ export default function Authenticated({ children, header, user, auth }: Props) {
                             </div>
                         )}
 
-                        {hasHealthInsuranceAccess && (
+                        {hasHealthcareAccess && (
                             <div className="border-t border-white/10">
                                 <div className="px-4 py-2">
                                     <div className="font-medium text-base text-white/90">Health Insurance</div>
@@ -1217,7 +1217,7 @@ export default function Authenticated({ children, header, user, auth }: Props) {
                                             </Dropdown>
                                         </div>
                                     )}
-                                    {hasHealthInsuranceAccess && (
+                                    {hasHealthcareAccess && (
                                         <div className="inline-flex items-center">
                                             <Dropdown>
                                                 <Dropdown.Trigger>
