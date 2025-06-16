@@ -27,6 +27,14 @@ export interface User {
     theme?: 'light' | 'dark' | 'system';
     theme_color?: string;
     contact_number?: string;
+    subscription?: {
+        status: 'active' | 'cancelled' | 'expired' | 'pending';
+        end_date: string;
+        plan: {
+            unlimited_access: boolean;
+            features: string[];
+        };
+    };
 }
 
 export interface Project {

@@ -41,7 +41,7 @@ const getHeaderColorClass = (url: string): string => {
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-950 dark:via-rose-900 dark:to-rose-800';
 };
 
-const requiresSubscription = (appParam: string | null): boolean => {
+const requiresSubscription = (appParam: string | null, auth: Props['auth']): boolean => {
     if (!appParam) return false;
     
     // Match the middleware's subscription-required apps
@@ -62,7 +62,35 @@ const requiresSubscription = (appParam: string | null): boolean => {
     ];
     
     const requires = subscriptionApps.includes(appParam);
-    return requires;
+    
+    // If the app doesn't require subscription, return false
+    if (!requires) return false;
+    
+    // Get the current user's subscription from auth
+    const userSubscription = auth?.user?.subscription;
+    
+    // If no subscription exists, return true (requires subscription)
+    if (!userSubscription) return true;
+    
+    // Check if subscription is active and not expired
+    const isActive = userSubscription.status === 'active';
+    const isExpired = new Date(userSubscription.end_date) < new Date();
+    
+    // If subscription is not active or expired, return true (requires subscription)
+    if (!isActive || isExpired) return true;
+    
+    // Check if the plan has unlimited access
+    const hasUnlimitedAccess = userSubscription.plan?.unlimited_access;
+    
+    // If plan has unlimited access, return false (no subscription required)
+    if (hasUnlimitedAccess) return false;
+    
+    // For non-unlimited plans, check if the app is included in the plan's features
+    const planFeatures = userSubscription.plan?.features || [];
+    const hasFeature = planFeatures.includes(appParam);
+    
+    // Return true if the app is not included in the plan's features
+    return !hasFeature;
 };
 
 export default function Authenticated({ children, header, user, auth }: Props) {
@@ -128,7 +156,7 @@ export default function Authenticated({ children, header, user, auth }: Props) {
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
                 {/* Subscription Notification Banner */}
-                {requiresSubscription(appParam) && (
+                {requiresSubscription(appParam, auth) && (
                     <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-rose-900 dark:via-rose-800 dark:to-rose-700 z-50 text-center text-white text-sm py-2">
                         <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
                             <span className="font-medium">This feature requires a subscription plan for premium access!</span>

@@ -74,6 +74,17 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the user's active subscription.
+     */
+    public function subscription()
+    {
+        return $this->hasOne(UserSubscription::class, 'user_identifier', 'identifier')
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->with('plan');
+    }
+
+    /**
      * Check if the user is an admin.
      *
      * @return bool
