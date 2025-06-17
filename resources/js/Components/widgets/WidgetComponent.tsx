@@ -47,7 +47,7 @@ export function WidgetComponent({
     return (
         <Card className="h-full mb-4 relative shadow-md border-2 border-gray-300 hover:shadow-lg transition-shadow duration-200 dark:border-gray-600">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 border-b dark:border-gray-700">
-                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <CardTitle className="text-base font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
                     {(widget.type as string) === "retail_sales" && (
                         <>
                             <span className="h-2 w-2 bg-green-500 rounded-full"></span>
@@ -139,7 +139,7 @@ export function WidgetComponent({
                 )}
             </CardHeader>
 
-            <div className="h-fit">
+            <div className="h-fit text-gray-900 dark:text-gray-100">
                 {(widget.type as string) === "retail_sales" && <RetailSalesWidget />}
                 {(widget.type as string) === "retail_inventory" && <RetailInventoryWidget />}
                 {(widget.type as string) === "retail_orders" && <RetailOrdersWidget />}

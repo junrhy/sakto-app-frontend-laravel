@@ -154,7 +154,7 @@ export default function Authenticated({ children, header, user, auth }: Props) {
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
                 {/* Subscription Notification Banner */}
                 {requiresSubscription(appParam, auth) && (
-                    <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 z-50 text-center text-white text-sm py-2">
+                    <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-purple-600 dark:to-indigo-600 z-50 text-center text-white text-sm py-2">
                         <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
                             <span className="font-medium">This feature requires a subscription plan for premium access!</span>
                             <Button 
