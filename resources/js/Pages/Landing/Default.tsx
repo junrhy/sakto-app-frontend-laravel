@@ -434,65 +434,76 @@ export default function Welcome({
                                         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
                                             {[
                                                 { 
-                                                    name: 'Community', 
+                                                    name: 'Community Apps', 
                                                     color: 'from-pink-500 to-rose-500',
                                                     description: 'Build and manage vibrant communities',
                                                     icon: (
                                                         <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                                                         </svg>
-                                                    )
+                                                    ),
+                                                    link: route('register', { project: 'community' })
                                                 },
                                                 { 
-                                                    name: 'Logistics', 
+                                                    name: 'Logistics Apps', 
                                                     color: 'from-cyan-500 to-blue-500',
                                                     description: 'Optimize your supply chain',
                                                     icon: (
                                                         <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                                                         </svg>
-                                                    )
+                                                    ),
+                                                    link: route('register', { project: 'logistics' })
                                                 },
                                                 { 
-                                                    name: 'Medical', 
+                                                    name: 'Medical Apps', 
                                                     color: 'from-emerald-500 to-teal-500',
                                                     description: 'Enhance healthcare delivery',
                                                     icon: (
                                                         <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
                                                         </svg>
-                                                    )
+                                                    ),
+                                                    link: route('register', { project: 'medical' })
                                                 },
                                                 { 
-                                                    name: 'Enterprise', 
+                                                    name: 'Enterprise Apps', 
                                                     color: 'from-orange-500 to-amber-500',
                                                     description: 'All apps in one place. Scale your business.',
                                                     icon: (
                                                         <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                                                         </svg>
-                                                    )
+                                                    ),
+                                                    link: route('register', { project: 'enterprise' })
                                                 },
                                             ].map((project) => (
-                                                <button
+                                                <div
                                                     key={project.name}
-                                                    onClick={() => window.location.href = route('register', { project: project.name.toLowerCase() })}
-                                                    className={`group relative overflow-hidden rounded-xl bg-gradient-to-r ${project.color} p-0.5 transition-all duration-300 hover:shadow-lg hover:shadow-${project.color.split('-')[1]}-500/25`}
+                                                    className="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300"
                                                 >
-                                                    <div className="relative rounded-lg bg-white/90 dark:bg-gray-800/90 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur-sm transition-all duration-300 group-hover:bg-white dark:group-hover:bg-gray-800">
+                                                    <div className="relative p-6">
                                                         <div className="flex flex-col items-center">
-                                                            <div className="text-gray-900 dark:text-gray-100 mb-2">
-                                                                {project.icon}
+                                                            <div className={`inline-flex items-center justify-center rounded-xl bg-gradient-to-br ${project.color} p-3 mb-4 shadow-sm`}>
+                                                                <div className="text-white">
+                                                                    {project.icon}
+                                                                </div>
                                                             </div>
                                                             <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 text-center">
                                                                 {project.name}
                                                             </h3>
-                                                            <p className="hidden sm:block text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                                            <p className="hidden sm:block text-sm text-gray-600 dark:text-gray-300 mt-2 mb-6 text-center">
                                                                 {project.description}
                                                             </p>
+                                                            <Link
+                                                                href={project.link}
+                                                                className={`w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r ${project.color} rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${project.color.split('-')[1]}-500 transition-all duration-200`}
+                                                            >
+                                                                Get Started
+                                                            </Link>
                                                         </div>
                                                     </div>
-                                                </button>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
