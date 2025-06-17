@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -19,12 +20,22 @@ interface PageProps {
 }
 
 export default function Member({ auth, member }: PageProps) {
+    const [activeSection, setActiveSection] = useState('profile');
+
+    const scrollToSection = (sectionId: string) => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+            setActiveSection(sectionId);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Head title={`${member.name} - Sakto Community`} />
 
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800">
+            <div id="profile" className="bg-gradient-to-r from-blue-600 to-blue-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="flex flex-col items-center text-center">
                         <h1 className="text-4xl font-bold text-white">{member.name}</h1>
@@ -33,7 +44,7 @@ export default function Member({ auth, member }: PageProps) {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 pb-20">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {/* Contact Information Sidebar */}
                     <div className="md:col-span-1">
@@ -99,20 +110,20 @@ export default function Member({ auth, member }: PageProps) {
                         </div>
 
                         {/* Records Search Section */}
-                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                        <div id="records" className="bg-white rounded-xl shadow-sm p-8 mt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Records</h2>
                             
                             <div className="space-y-6">
                                 {/* Lending Records Search */}
                                 <div>
                                     <h3 className="text-md font-medium text-gray-900 mb-3">Lending Records</h3>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row gap-4">
                                         <input
                                             type="text"
                                             placeholder="Enter Member ID to view lending records..."
                                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         />
-                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
                                             View Records
                                         </button>
                                     </div>
@@ -121,13 +132,13 @@ export default function Member({ auth, member }: PageProps) {
                                 {/* Healthcare Records Search */}
                                 <div>
                                     <h3 className="text-md font-medium text-gray-900 mb-3">Healthcare Records</h3>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row gap-4">
                                         <input
                                             type="text"
                                             placeholder="Enter Member ID to view healthcare records..."
                                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         />
-                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
                                             View Records
                                         </button>
                                     </div>
@@ -136,13 +147,13 @@ export default function Member({ auth, member }: PageProps) {
                                 {/* Mortuary Records Search */}
                                 <div>
                                     <h3 className="text-md font-medium text-gray-900 mb-3">Mortuary Records</h3>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row gap-4">
                                         <input
                                             type="text"
                                             placeholder="Enter Member ID to view mortuary records..."
                                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         />
-                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
                                             View Records
                                         </button>
                                     </div>
@@ -151,7 +162,7 @@ export default function Member({ auth, member }: PageProps) {
                         </div>
 
                         {/* Community Digital Products Section */}
-                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                        <div id="products" className="bg-white rounded-xl shadow-sm p-8 mt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Digital Products</h2>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -226,7 +237,7 @@ export default function Member({ auth, member }: PageProps) {
                         </div>
 
                         {/* Community Challenges Section */}
-                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                        <div id="challenges" className="bg-white rounded-xl shadow-sm p-8 mt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Challenges</h2>
                             <div className="space-y-6">
                                 <div className="border border-gray-200 rounded-lg p-6">
@@ -274,7 +285,7 @@ export default function Member({ auth, member }: PageProps) {
                         </div>
 
                         {/* Community Events Section */}
-                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                        <div id="events" className="bg-white rounded-xl shadow-sm p-8 mt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Events</h2>
                             <div className="space-y-6">
                                 <div className="border border-gray-200 rounded-lg p-6">
@@ -371,6 +382,62 @@ export default function Member({ auth, member }: PageProps) {
                     </div>
                 </div>
             </footer>
+
+            {/* Mobile Navigation Menu */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+                <div className="flex justify-around items-center h-16">
+                    <button
+                        onClick={() => scrollToSection('profile')}
+                        className={`flex flex-col items-center justify-center w-full h-full ${
+                            activeSection === 'profile' ? 'text-blue-600' : 'text-gray-600'
+                        }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => scrollToSection('records')}
+                        className={`flex flex-col items-center justify-center w-full h-full ${
+                            activeSection === 'records' ? 'text-blue-600' : 'text-gray-600'
+                        }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => scrollToSection('products')}
+                        className={`flex flex-col items-center justify-center w-full h-full ${
+                            activeSection === 'products' ? 'text-blue-600' : 'text-gray-600'
+                        }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => scrollToSection('events')}
+                        className={`flex flex-col items-center justify-center w-full h-full ${
+                            activeSection === 'events' ? 'text-blue-600' : 'text-gray-600'
+                        }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => scrollToSection('challenges')}
+                        className={`flex flex-col items-center justify-center w-full h-full ${
+                            activeSection === 'challenges' ? 'text-blue-600' : 'text-gray-600'
+                        }`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     );
 } 
