@@ -332,6 +332,31 @@ export default function Member({ auth, member }: PageProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Community Access Section */}
+                        <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Access</h2>
+                            <div className="flex flex-col items-center space-y-4">
+                                {auth.user ? (
+                                    <Link
+                                        href={route('dashboard')}
+                                        className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+                                    >
+                                        Go to Dashboard
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href={route('login', { project: 'community' })}
+                                        className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+                                    >
+                                        Log in to Community
+                                    </Link>
+                                )}
+                                <p className="text-sm text-gray-500 text-center">
+                                    Access exclusive community features and connect with other members
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -339,9 +364,11 @@ export default function Member({ auth, member }: PageProps) {
             {/* Footer */}
             <footer className="mt-12">
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                    <p className="text-center text-base text-gray-400">
-                        &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
-                    </p>
+                    <div className="flex flex-col items-center space-y-4">
+                        <p className="text-center text-base text-gray-400">
+                            &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
+                        </p>
+                    </div>
                 </div>
             </footer>
         </div>
