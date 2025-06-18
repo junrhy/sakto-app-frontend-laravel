@@ -7,9 +7,18 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Inertia\Inertia;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 class LandingController extends Controller
 {
+    protected $apiUrl, $apiToken;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('api.url');
+        $this->apiToken = config('api.token');
+    }
+
     public function index(Request $request)
     {
         // Check if the request is from a mobile device
@@ -123,12 +132,25 @@ class LandingController extends Controller
             ->select('id', 'name', 'email', 'contact_number', 'created_at')
             ->firstOrFail();
 
+        // Fetch challenges from API
+        $challenges = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges");
+            if ($response->successful()) {
+                $challenges = $response->json();
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
         return Inertia::render('Landing/Community/Member', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
             'phpVersion' => PHP_VERSION,
             'member' => $member,
+            'challenges' => $challenges,
         ]);
     }
 

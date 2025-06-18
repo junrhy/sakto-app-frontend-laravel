@@ -264,16 +264,16 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
                             ))}
                         </div>
                     </div>
-                </form>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" form="challenge-form">
-                        {challenge ? 'Update Challenge' : 'Create Challenge'}
-                    </Button>
-                </DialogFooter>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={onClose} type="button">
+                            Cancel
+                        </Button>
+                        <Button type="submit">
+                            {challenge ? 'Update Challenge' : 'Create Challenge'}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     );

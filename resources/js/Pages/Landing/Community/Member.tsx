@@ -17,9 +17,10 @@ interface PageProps {
         contact_number: string | null;
         created_at: string;
     };
+    challenges: any[];
 }
 
-export default function Member({ auth, member }: PageProps) {
+export default function Member({ auth, member, challenges }: PageProps) {
     const [activeSection, setActiveSection] = useState('profile');
 
     const scrollToSection = (sectionId: string) => {
@@ -239,49 +240,34 @@ export default function Member({ auth, member }: PageProps) {
                         {/* Community Challenges Section */}
                         <div id="challenges" className="bg-white rounded-xl shadow-sm p-8 mt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Challenges</h2>
-                            <div className="space-y-6">
-                                <div className="border border-gray-200 rounded-lg p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900">Monthly Fitness Challenge</h3>
-                                        <span className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">Active</span>
-                                    </div>
-                                    <p className="text-gray-600 mb-4">Join our monthly fitness challenge and track your progress with the community.</p>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">45</span> participants
+                            {challenges.length === 0 ? (
+                                <div className="text-center text-gray-500 py-8">No challenges found.</div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {challenges.map((challenge: any) => (
+                                        <div key={challenge.id} className="border border-gray-200 rounded-lg p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="text-lg font-medium text-gray-900">{challenge.title}</h3>
+                                                <span className={`px-3 py-1 text-sm font-medium rounded-full ${challenge.status === 'active' ? 'text-green-700 bg-green-100' : challenge.status === 'upcoming' ? 'text-blue-700 bg-blue-100' : 'text-gray-700 bg-gray-100'}`}>{challenge.status?.charAt(0).toUpperCase() + challenge.status?.slice(1) || 'Unknown'}</span>
                                             </div>
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">15</span> days left
-                                            </div>
-                                        </div>
-                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                            Join Challenge
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="border border-gray-200 rounded-lg p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900">Healthy Eating Week</h3>
-                                        <span className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">Upcoming</span>
-                                    </div>
-                                    <p className="text-gray-600 mb-4">A week-long challenge focused on maintaining a balanced and nutritious diet.</p>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">28</span> participants
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">Starts in 5 days</span>
+                                            <p className="text-gray-600 mb-4">{challenge.description}</p>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="text-sm text-gray-500">
+                                                        <span className="font-medium text-gray-900">{challenge.participants?.length ?? 0}</span> participants
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        <span className="font-medium text-gray-900">{challenge.end_date ? `${Math.max(0, Math.ceil((new Date(challenge.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} days left` : ''}</span>
+                                                    </div>
+                                                </div>
+                                                <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                                    {challenge.status === 'active' ? 'Join Challenge' : 'Register Interest'}
+                                                </button>
                                             </div>
                                         </div>
-                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                            Register Interest
-                                        </button>
-                                    </div>
+                                    ))}
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* Community Events Section */}
