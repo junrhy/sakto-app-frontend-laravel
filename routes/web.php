@@ -37,6 +37,8 @@ use App\Http\Controllers\PagesController;
 use App\Http\Controllers\HealthInsuranceController;
 use App\Http\Controllers\LandingController;
 
+use App\Models\User;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,6 +48,41 @@ use Illuminate\Support\Facades\Auth;
 
 // Public routes
 Route::group(['middleware' => ['web']], function () {
+    // Add this new route for member manifest
+    Route::get('/manifest/member/{id}.json', function ($id) {
+        $member = User::find($id);
+        
+        if (!$member) {
+            return response()->json([
+                'error' => 'Member not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'name' => "Sakto App - {$member->name}",
+            'short_name' => $member->name,
+            'description' => "Member Profile View for {$member->name}",
+            'start_url' => "/community/member/{$member->id}",
+            'display' => 'standalone',
+            'background_color' => '#ffffff',
+            'theme_color' => '#ffffff',
+            'icons' => [
+                [
+                    'src' => '/images/tetris-white-bg.png',
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
+                ],
+                [
+                    'src' => '/images/tetris-white-bg.png',
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any maskable'
+                ]
+            ]
+        ]);
+    });
+
     // Welcome and Policy Routes
     Route::get('/landing', [LandingController::class, 'index'])->name('landing');
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');

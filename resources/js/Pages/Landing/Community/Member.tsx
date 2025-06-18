@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PageProps {
     auth: {
@@ -70,18 +70,50 @@ interface PageProps {
 export default function Member({ auth, member, challenges, events, pages, contacts }: PageProps) {
     const [activeSection, setActiveSection] = useState('updates');
     const [firstName, setFirstName] = useState('');
+    const [middleName, setMiddleName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [dateOfBirth, setDateOfBirth] = useState('');
     const [searchResults, setSearchResults] = useState<typeof contacts>([]);
     const [isSearching, setIsSearching] = useState(false);
+
+    // Add the CSS classes at the top of the component
+    const mobileMenuStyles = `
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        @media (max-width: 400px) {
+            .max-xs-hidden {
+                display: none;
+            }
+        }
+    `;
+
+    useEffect(() => {
+        // Add the styles to the document head
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = mobileMenuStyles;
+        document.head.appendChild(styleElement);
+
+        // Cleanup on unmount
+        return () => {
+            document.head.removeChild(styleElement);
+        };
+    }, []);
 
     const searchContacts = () => {
         setIsSearching(true);
         const searchResults = contacts.filter(contact => {
             const matchFirstName = firstName.trim() === '' || 
                 contact.first_name.toLowerCase().includes(firstName.toLowerCase().trim());
+            const matchMiddleName = middleName.trim() === '' || 
+                (contact.middle_name && contact.middle_name.toLowerCase().includes(middleName.toLowerCase().trim()));
             const matchLastName = lastName.trim() === '' || 
                 contact.last_name.toLowerCase().includes(lastName.toLowerCase().trim());
-            return matchFirstName && matchLastName;
+            return matchFirstName && matchMiddleName && matchLastName;
         });
         setSearchResults(searchResults);
     };
@@ -166,8 +198,8 @@ export default function Member({ auth, member, challenges, events, pages, contac
             case 'member-search':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Search Member by Name</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Search Member</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
                                     First Name
@@ -182,6 +214,19 @@ export default function Member({ auth, member, challenges, events, pages, contac
                                 />
                             </div>
                             <div>
+                                <label htmlFor="middleName" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Middle Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="middleName"
+                                    value={middleName}
+                                    onChange={(e) => setMiddleName(e.target.value)}
+                                    placeholder="Enter middle name..."
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
                                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
                                     Last Name
                                 </label>
@@ -191,6 +236,18 @@ export default function Member({ auth, member, challenges, events, pages, contac
                                     value={lastName}
                                     onChange={(e) => setLastName(e.target.value)}
                                     placeholder="Enter last name..."
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Date of Birth
+                                </label>
+                                <input
+                                    type="date"
+                                    id="dateOfBirth"
+                                    value={dateOfBirth}
+                                    onChange={(e) => setDateOfBirth(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
@@ -242,7 +299,7 @@ export default function Member({ auth, member, challenges, events, pages, contac
             case 'products':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Digital Products</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Marketplace</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-4">
@@ -284,7 +341,7 @@ export default function Member({ auth, member, challenges, events, pages, contac
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Resources</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {pages.length === 0 ? (
-                                <div className="col-span-2 text-center text-gray-500 py-8">No community pages found.</div>
+                                <div className="col-span-2 text-center text-gray-500 py-8">No resources found.</div>
                             ) : (
                                 pages.map((page) => (
                                     <a 
@@ -315,7 +372,7 @@ export default function Member({ auth, member, challenges, events, pages, contac
             case 'challenges':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Challenges</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Challenges</h2>
                         {challenges.length === 0 ? (
                             <div className="text-center text-gray-500 py-8">No challenges found.</div>
                         ) : (
@@ -358,7 +415,7 @@ export default function Member({ auth, member, challenges, events, pages, contac
             case 'events':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Events</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Events</h2>
                         <div className="space-y-6">
                             {events.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8">No events found.</div>
@@ -430,69 +487,77 @@ export default function Member({ auth, member, challenges, events, pages, contac
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Head title={`${member.name} - Sakto Community`} />
-
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                    <div className="flex flex-row items-center justify-between">
-                        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white whitespace-nowrap truncate mr-4">{member.name}</h1>
-                        <nav className="flex flex-row flex-wrap gap-1 sm:gap-2 overflow-x-auto">
-                            {menuItems.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => setActiveSection(item.id)}
-                                    className={`flex items-center px-2 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap ${
-                                        activeSection === item.id
-                                            ? 'bg-white text-blue-600'
-                                            : 'bg-blue-700 text-white hover:bg-blue-600'
-                                    }`}
-                                    style={{ minWidth: 0 }}
-                                >
-                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                    </svg>
-                                    <span>{item.label}</span>
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {renderContent()}
-            </div>
-
-            {/* Footer */}
-            <footer className="mt-auto">
-                <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="flex items-center space-x-4">
-                            {auth.user ? (
-                                <Link
-                                    href={route('dashboard')}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                >
-                                    Go to Dashboard
-                                </Link>
-                            ) : (
-                                <Link
-                                    href={route('login', { project: 'community' })}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                >
-                                    Log in to Community
-                                </Link>
-                            )}
+        <>
+            <Head>
+                <title>{member?.name ? `${member.name} - Sakto App` : 'Member Profile - Sakto App'}</title>
+                <meta name="description" content={member?.name ? `Profile page of ${member.name}` : 'Member Profile Page'} />
+                {member?.id && <link rel="manifest" href={`/manifest/member/${member.id}.json`} />}
+            </Head>
+            
+            <div className="min-h-screen bg-gray-50">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-800">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                        <div className="flex flex-row items-center justify-between">
+                            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white whitespace-nowrap truncate mr-4">
+                                <span className="hidden sm:inline">{member.name}</span>
+                                <span className="sm:hidden">
+                                    {member.name.split(' ').map(word => word[0]).join('.')}
+                                </span>
+                            </h1>
+                            <nav className="flex flex-row flex-wrap gap-1 sm:gap-2 overflow-x-auto no-scrollbar -mx-4 sm:mx-0 px-4 sm:px-0">
+                                {menuItems.map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setActiveSection(item.id)}
+                                        className={`flex items-center px-2 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap ${
+                                            activeSection === item.id
+                                                ? 'bg-white text-blue-600'
+                                                : 'bg-blue-700 text-white hover:bg-blue-600'
+                                        }`}
+                                        style={{ minWidth: 0 }}
+                                    >
+                                        <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                        </svg>
+                                        <span className="ml-1 sm:ml-2 max-xs-hidden">{item.label}</span>
+                                    </button>
+                                ))}
+                            </nav>
                         </div>
-                        <p className="text-center text-sm text-gray-400">
-                            &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
-                        </p>
                     </div>
                 </div>
-            </footer>
-        </div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    {renderContent()}
+                </div>
+
+                <footer className="mt-auto">
+                    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="flex items-center space-x-4">
+                                {auth.user ? (
+                                    <Link
+                                        href={route('dashboard')}
+                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    >
+                                        Go to {member.name} Portal
+                                    </Link> 
+                                ) : (
+                                    <Link
+                                        href={route('login', { project: 'community' })}
+                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    >
+                                        Log in to {member.name} Portal
+                                    </Link>
+                                )}
+                            </div>
+                            <p className="text-center text-sm text-gray-400">
+                                &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </>
     );
 } 
