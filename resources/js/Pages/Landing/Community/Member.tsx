@@ -1,15 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useEffect } from 'react';
+import { router } from '@inertiajs/react';
 
 interface PageProps {
-    auth: {
-        user: {
-            id: number;
-            name: string;
-            email: string;
-        } | null;
-    };
     member: {
         id: number;
         name: string;
@@ -67,7 +61,7 @@ interface PageProps {
     }[];
 }
 
-export default function Member({ auth, member, challenges, events, pages, contacts }: PageProps) {
+export default function Member({ member, challenges, events, pages, contacts }: PageProps) {
     const [activeSection, setActiveSection] = useState('updates');
     const [firstName, setFirstName] = useState('');
     const [middleName, setMiddleName] = useState('');
@@ -75,6 +69,34 @@ export default function Member({ auth, member, challenges, events, pages, contac
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [searchResults, setSearchResults] = useState<typeof contacts>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [visitorInfo, setVisitorInfo] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleVisitorSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
+
+        // Check if visitor is in contacts list
+        const isInContacts = contacts.some(contact => 
+            contact.email.toLowerCase() === visitorInfo.email.toLowerCase() ||
+            (contact.call_number && contact.call_number === visitorInfo.phone)
+        );
+
+        if (isInContacts) {
+            setIsAuthorized(true);
+        } else {
+            setError('We could not find your information in our records. Please verify your details or contact the administrator for access.');
+        }
+        setIsSubmitting(false);
+    };
 
     // Add the CSS classes at the top of the component
     const mobileMenuStyles = `
@@ -530,68 +552,144 @@ export default function Member({ auth, member, challenges, events, pages, contac
             </Head>
             
             <div className="min-h-screen bg-gray-50">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-800">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                        <div className="flex flex-row items-center justify-between">
-                            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white whitespace-nowrap truncate mr-4">
-                                <span className="hidden sm:inline">{member.name}</span>
-                                <span className="sm:hidden">
-                                    {member.name.split(' ').map(word => word[0]).join('.')}
-                                </span>
-                            </h1>
-                            <nav className="flex flex-row flex-wrap gap-1 sm:gap-2 overflow-x-auto no-scrollbar -mx-4 sm:mx-0 px-4 sm:px-0">
-                                {menuItems.map((item) => (
-                                    <button
-                                        key={item.id}
-                                        onClick={() => setActiveSection(item.id)}
-                                        className={`flex items-center px-2 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap ${
-                                            activeSection === item.id
-                                                ? 'bg-white text-blue-600'
-                                                : 'bg-blue-700 text-white hover:bg-blue-600'
-                                        }`}
-                                        style={{ minWidth: 0 }}
-                                    >
-                                        <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                                        </svg>
-                                        <span className="ml-1 sm:ml-2 max-xs-hidden">{item.label}</span>
-                                    </button>
-                                ))}
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {renderContent()}
-                </div>
-
-                <footer className="mt-auto">
-                    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col items-center space-y-4">
-                            <div className="flex items-center space-x-4">
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                    >
-                                        Go to {member.name} Portal
-                                    </Link> 
-                                ) : (
-                                    <Link
-                                        href={route('login', { project: 'community' })}
-                                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                    >
-                                        Log in to {member.name} Portal
-                                    </Link>
-                                )}
+                {!isAuthorized ? (
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                        <div className="bg-white rounded-xl shadow-sm p-8">
+                            <div className="text-center mb-8">
+                                <h2 className="text-2xl font-semibold text-gray-900 mb-2">Welcome to {member.name}'s Page</h2>
+                                <p className="text-gray-600">Please enter your information to access this page.</p>
                             </div>
-                            <p className="text-center text-sm text-gray-400">
-                                &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
-                            </p>
+
+                            <form onSubmit={handleVisitorSubmit} className="max-w-md mx-auto space-y-4">
+                                <div>
+                                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        First Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="firstName"
+                                        value={visitorInfo.firstName}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                                        required
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Last Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="lastName"
+                                        value={visitorInfo.lastName}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                                        required
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Email Address
+                                    </label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        value={visitorInfo.email}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, email: e.target.value }))}
+                                        required
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        id="phone"
+                                        value={visitorInfo.phone}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, phone: e.target.value }))}
+                                        required
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+
+                                {error && (
+                                    <div className="text-red-600 text-sm mt-2">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isSubmitting ? 'Verifying...' : 'Continue'}
+                                </button>
+                            </form>
                         </div>
                     </div>
-                </footer>
+                ) : (
+                    <>
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-800">
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                                <div className="flex flex-row items-center justify-between">
+                                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white whitespace-nowrap truncate mr-4">
+                                        <span className="hidden sm:inline">{member.name}</span>
+                                        <span className="sm:hidden">
+                                            {member.name.split(' ').map(word => word[0]).join('.')}
+                                        </span>
+                                    </h1>
+                                    <nav className="flex flex-row flex-wrap gap-1 sm:gap-2 overflow-x-auto no-scrollbar -mx-4 sm:mx-0 px-4 sm:px-0">
+                                        {menuItems.map((item) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => setActiveSection(item.id)}
+                                                className={`flex items-center px-2 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap ${
+                                                    activeSection === item.id
+                                                        ? 'bg-white text-blue-600'
+                                                        : 'bg-blue-700 text-white hover:bg-blue-600'
+                                                }`}
+                                                style={{ minWidth: 0 }}
+                                            >
+                                                <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                                                </svg>
+                                                <span className="ml-1 sm:ml-2 max-xs-hidden">{item.label}</span>
+                                            </button>
+                                        ))}
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                            {renderContent()}
+                        </div>
+
+                        <footer className="mt-auto">
+                            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                                <div className="flex flex-col items-center space-y-4">
+                                    <div className="flex items-center space-x-4">
+                                        <Link
+                                            href={route('dashboard')}
+                                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        >
+                                            Go to {member.name} Portal
+                                        </Link> 
+                                    </div>
+                                    <p className="text-center text-sm text-gray-400">
+                                        &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
+                                    </p>
+                                </div>
+                            </div>
+                        </footer>
+                    </>
+                )}
             </div>
         </>
     );
