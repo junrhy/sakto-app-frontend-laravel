@@ -129,16 +129,66 @@ class LandingController extends Controller
     {
         $member = User::where('project_identifier', 'community')
             ->where('id', $id)
-            ->select('id', 'name', 'email', 'contact_number', 'created_at')
+            ->select('id', 'name', 'email', 'contact_number', 'created_at', 'identifier')
             ->firstOrFail();
 
         // Fetch challenges from API
         $challenges = [];
         try {
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/challenges");
+                ->get("{$this->apiUrl}/challenges", [
+                    'client_identifier' => $member->identifier,
+                    'limit' => 5 // Get only the latest 5 challenges
+                ]);
             if ($response->successful()) {
                 $challenges = $response->json();
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
+        // Fetch events from API
+        $events = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/events", [
+                    'client_identifier' => $member->identifier,
+                    'is_public' => true,
+                    'limit' => 5 // Get only the latest 5 events
+                ]);
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $events = $responseData['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
+        // Fetch pages from API
+        $pages = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/pages", [
+                    'client_identifier' => $member->identifier,
+                    'is_published' => true
+                ]);
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $pages = $responseData['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
+        // Fetch contacts from API
+        $contacts = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contacts", [
+                    'client_identifier' => $member->identifier
+                ]);
+            if ($response->successful()) {
+                $contacts = $response->json();
             }
         } catch (\Exception $e) {
             // Optionally log error
@@ -151,6 +201,9 @@ class LandingController extends Controller
             'phpVersion' => PHP_VERSION,
             'member' => $member,
             'challenges' => $challenges,
+            'events' => $events,
+            'pages' => $pages,
+            'contacts' => $contacts
         ]);
     }
 

@@ -18,10 +18,61 @@ interface PageProps {
         created_at: string;
     };
     challenges: any[];
+    events: {
+        id: number;
+        title: string;
+        description: string;
+        start_date: string;
+        end_date: string;
+        location: string;
+        max_participants: number;
+        registration_deadline: string;
+        is_public: boolean;
+        category: string;
+        image: string | null;
+        status: 'draft' | 'published' | 'cancelled';
+        client_identifier: string;
+        created_at: string;
+        updated_at: string;
+        participants: any[];
+    }[];
+    pages: {
+        id: number;
+        title: string;
+        slug: string;
+        content: string;
+        meta_description: string | null;
+        meta_keywords: string | null;
+        is_published: boolean;
+        template: string | null;
+        featured_image: string | null;
+        client_identifier: string;
+        created_at: string;
+        updated_at: string;
+    }[];
+    contacts: {
+        id: number;
+        first_name: string;
+        middle_name: string | null;
+        last_name: string;
+        email: string;
+        call_number: string | null;
+        sms_number: string | null;
+        whatsapp: string | null;
+        address: string | null;
+        id_picture: string | null;
+        client_identifier: string;
+        created_at: string;
+        updated_at: string;
+    }[];
 }
 
-export default function Member({ auth, member, challenges }: PageProps) {
+export default function Member({ auth, member, challenges, events, pages, contacts }: PageProps) {
     const [activeSection, setActiveSection] = useState('profile');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [searchResults, setSearchResults] = useState<typeof contacts>([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     const scrollToSection = (sectionId: string) => {
         const element = document.getElementById(sectionId);
@@ -29,6 +80,18 @@ export default function Member({ auth, member, challenges }: PageProps) {
             element.scrollIntoView({ behavior: 'smooth' });
             setActiveSection(sectionId);
         }
+    };
+
+    const searchContacts = () => {
+        setIsSearching(true);
+        const searchResults = contacts.filter(contact => {
+            const matchFirstName = firstName.trim() === '' || 
+                contact.first_name.toLowerCase().includes(firstName.toLowerCase().trim());
+            const matchLastName = lastName.trim() === '' || 
+                contact.last_name.toLowerCase().includes(lastName.toLowerCase().trim());
+            return matchFirstName && matchLastName;
+        });
+        setSearchResults(searchResults);
     };
 
     return (
@@ -76,7 +139,7 @@ export default function Member({ auth, member, challenges }: PageProps) {
 
                         {/* Member Search Section */}
                         <div className="bg-white rounded-xl shadow-sm p-8 mt-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-3">Search Member ID by Name</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-3">Search Member by Name</h2>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
@@ -86,6 +149,8 @@ export default function Member({ auth, member, challenges }: PageProps) {
                                     <input
                                         type="text"
                                         id="firstName"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
                                         placeholder="Enter first name..."
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
@@ -97,17 +162,56 @@ export default function Member({ auth, member, challenges }: PageProps) {
                                     <input
                                         type="text"
                                         id="lastName"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
                                         placeholder="Enter last name..."
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <button className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    Search Member ID
+                                <button 
+                                    onClick={searchContacts}
+                                    className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Search Member
                                 </button>
                             </div>
-                            <p className="mt-2 text-sm text-gray-500">Enter the member's first and last name to find their ID.</p>
+
+                            {/* Search Results */}
+                            {isSearching && (
+                                <div className="mt-6">
+                                    <h3 className="text-md font-medium text-gray-900 mb-3">Search Results</h3>
+                                    {searchResults.length === 0 ? (
+                                        <p className="text-gray-500">No members found matching your search criteria.</p>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {searchResults.map(contact => (
+                                                <div key={contact.id} className="border border-gray-200 rounded-lg p-4">
+                                                    <div className="flex items-center">
+                                                        {contact.id_picture && (
+                                                            <img 
+                                                                src={contact.id_picture} 
+                                                                alt={`${contact.first_name} ${contact.last_name}`}
+                                                                className="w-12 h-12 rounded-full object-cover mr-4"
+                                                            />
+                                                        )}
+                                                        <div>
+                                                            <h4 className="font-medium text-gray-900">
+                                                                {contact.first_name} {contact.middle_name ? `${contact.middle_name} ` : ''}{contact.last_name}
+                                                            </h4>
+                                                            <p className="text-sm text-gray-500">{contact.email}</p>
+                                                            {contact.call_number && (
+                                                                <p className="text-sm text-gray-500">{contact.call_number}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Records Search Section */}
@@ -210,30 +314,31 @@ export default function Member({ auth, member, challenges }: PageProps) {
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Links</h2>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900">Community Forum</h3>
-                                        <p className="text-sm text-gray-500">Join discussions with other members</p>
-                                    </div>
-                                </a>
-                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900">Resource Library</h3>
-                                        <p className="text-sm text-gray-500">Access community resources and guides</p>
-                                    </div>
-                                </a>
-                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900">Events Calendar</h3>
-                                        <p className="text-sm text-gray-500">View upcoming community events</p>
-                                    </div>
-                                </a>
-                                <a href="#" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="flex-1">
-                                        <h3 className="font-medium text-gray-900">Member Directory</h3>
-                                        <p className="text-sm text-gray-500">Connect with other community members</p>
-                                    </div>
-                                </a>
+                                {pages.length === 0 ? (
+                                    <div className="col-span-2 text-center text-gray-500 py-8">No community pages found.</div>
+                                ) : (
+                                    pages.map((page) => (
+                                        <a 
+                                            key={page.id} 
+                                            href={`/link/${page.slug}`} 
+                                            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                        >
+                                            <div className="flex-1">
+                                                <h3 className="font-medium text-gray-900">{page.title}</h3>
+                                                <p className="text-sm text-gray-500">{page.meta_description || 'View page details'}</p>
+                                            </div>
+                                            {page.featured_image && (
+                                                <div className="ml-4 flex-shrink-0">
+                                                    <img 
+                                                        src={page.featured_image} 
+                                                        alt={page.title} 
+                                                        className="w-12 h-12 object-cover rounded-lg"
+                                                    />
+                                                </div>
+                                            )}
+                                        </a>
+                                    ))
+                                )}
                             </div>
                         </div>
 
@@ -274,59 +379,75 @@ export default function Member({ auth, member, challenges }: PageProps) {
                         <div id="events" className="bg-white rounded-xl shadow-sm p-8 mt-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Community Events</h2>
                             <div className="space-y-6">
-                                <div className="border border-gray-200 rounded-lg p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900">Annual Community Gathering</h3>
-                                        <span className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">Upcoming</span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-500 mb-4">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <span>December 15, 2024 • 2:00 PM</span>
-                                    </div>
-                                    <p className="text-gray-600 mb-4">Join us for our annual community gathering featuring workshops, networking, and celebration of our achievements.</p>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">120</span> registered
+                                {events.length === 0 ? (
+                                    <div className="text-center text-gray-500 py-8">No events found.</div>
+                                ) : (
+                                    events.map((event) => (
+                                        <div key={event.id} className="border border-gray-200 rounded-lg p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
+                                                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                                                    event.status === 'published' ? 'text-green-700 bg-green-100' :
+                                                    event.status === 'draft' ? 'text-blue-700 bg-blue-100' :
+                                                    'text-gray-700 bg-gray-100'
+                                                }`}>
+                                                    {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                                </span>
                                             </div>
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">50</span> spots left
+                                            <div className="flex items-center text-sm text-gray-500 mb-4">
+                                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span>
+                                                    {new Date(event.start_date).toLocaleDateString('en-US', {
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    })} • {new Date(event.start_date).toLocaleTimeString('en-US', {
+                                                        hour: 'numeric',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center text-sm text-gray-500 mb-4">
+                                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span>{event.location}</span>
+                                            </div>
+                                            <p className="text-gray-600 mb-4">{event.description}</p>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="text-sm text-gray-500">
+                                                        <span className="font-medium text-gray-900">{event.participants.length}</span> registered
+                                                    </div>
+                                                    {event.max_participants && (
+                                                        <div className="text-sm text-gray-500">
+                                                            <span className="font-medium text-gray-900">
+                                                                {Math.max(0, event.max_participants - event.participants.length)}
+                                                            </span> spots left
+                                                        </div>
+                                                    )}
+                                                    {event.registration_deadline && (
+                                                        <div className="text-sm text-gray-500">
+                                                            <span className="font-medium text-gray-900">
+                                                                {new Date(event.registration_deadline) > new Date() ? 
+                                                                    `Registration ends ${new Date(event.registration_deadline).toLocaleDateString()}` :
+                                                                    'Registration closed'}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {event.status === 'published' && new Date(event.registration_deadline) > new Date() && (
+                                                    <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                                        Register Now
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
-                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                            Register Now
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="border border-gray-200 rounded-lg p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-medium text-gray-900">Financial Literacy Workshop</h3>
-                                        <span className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">New</span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-500 mb-4">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        <span>January 20, 2025 • 10:00 AM</span>
-                                    </div>
-                                    <p className="text-gray-600 mb-4">Learn essential financial management skills and strategies for better money management.</p>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">45</span> registered
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                                <span className="font-medium text-gray-900">25</span> spots left
-                                            </div>
-                                        </div>
-                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                            Register Now
-                                        </button>
-                                    </div>
-                                </div>
+                                    ))
+                                )}
                             </div>
                         </div>
 
