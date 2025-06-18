@@ -24,9 +24,6 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'Access to all basic features',
-                    '200 credits per month',
-                    'Email support',
-                    'Access to community forums'
                 ],
                 'is_popular' => false,
                 'is_active' => true,
@@ -41,34 +38,24 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'All Basic Plan features',
-                    '500 credits per month',
-                    'Priority email support',
-                    'Advanced analytics',
-                    'Custom branding options'
                 ],
                 'is_popular' => true,
                 'is_active' => true,
                 'badge_text' => 'Most Popular'
             ],
             [
-                'name' => 'Business Plan',
-                'slug' => 'business-plan',
-                'description' => 'For established businesses requiring maximum resources and support.',
-                'price' => 599.00,
-                'duration_in_days' => 30,
-                'unlimited_access' => true,
+                'name' => 'Pay as you go',
+                'slug' => 'pay-as-you-go',
+                'description' => 'For individuals and small businesses just getting started.',
+                'price' => 0.00,
+                'duration_in_days' => 0,
+                'unlimited_access' => false,
                 'features' => [
-                    'All Pro Plan features',
-                    '1,200 credits per month',
-                    'Dedicated account manager',
-                    'Phone support',
-                    'API access',
-                    'Custom integrations',
-                    'Team collaboration tools'
+                    'All Pro Plan features'
                 ],
                 'is_popular' => false,
                 'is_active' => true,
-                'badge_text' => 'Enterprise'
+                'badge_text' => 'Pay as you go'
             ],
             [
                 'name' => 'Annual Basic',
@@ -79,9 +66,6 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'All Basic Plan features',
-                    '200 credits per month',
-                    'Email support',
-                    'Access to community forums',
                     '20% savings compared to monthly plan'
                 ],
                 'is_popular' => false,
@@ -97,31 +81,6 @@ class SubscriptionPlanSeeder extends Seeder
                 'unlimited_access' => true,
                 'features' => [
                     'All Pro Plan features',
-                    '500 credits per month',
-                    'Priority email support',
-                    'Advanced analytics',
-                    'Custom branding options',
-                    '20% savings compared to monthly plan'
-                ],
-                'is_popular' => false,
-                'is_active' => true,
-                'badge_text' => null
-            ],
-            [
-                'name' => 'Annual Business',
-                'slug' => 'annual-business',
-                'description' => 'Save 20% with our annual Business plan subscription.',
-                'price' => 5750.00,
-                'duration_in_days' => 365,
-                'unlimited_access' => true,
-                'features' => [
-                    'All Business Plan features',
-                    '1,200 credits per month',
-                    'Dedicated account manager',
-                    'Phone support',
-                    'API access',
-                    'Custom integrations',
-                    'Team collaboration tools',
                     '20% savings compared to monthly plan'
                 ],
                 'is_popular' => false,
