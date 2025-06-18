@@ -38,7 +38,7 @@ const getHeaderColorClass = (url: string): string => {
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700';
 };
 
-const requiresSubscription = (appParam: string | null, auth: Props['auth']): boolean => {
+const requiresSubscription = (appParam: string | null, auth: any): boolean => {
     if (!appParam) return false;
     
     // Match the middleware's subscription-required apps
@@ -90,14 +90,19 @@ const requiresSubscription = (appParam: string | null, auth: Props['auth']): boo
     return !hasFeature;
 };
 
-export default function Authenticated({ children, header, user, auth }: Props) {
+export default function Authenticated({ children, header, user, auth: propAuth }: Props) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [credits, setCredits] = useState<number>(0);
 
     const { url } = usePage();
-    const pageProps = usePage<{ auth: { user: any } }>().props;
-    const authUser = user || pageProps.auth.user;
+    const pageProps = usePage<{ auth: { user: any; project: any; modules: string[] } }>().props;
+    // Merge prop auth with page auth, preferring prop auth if available
+    const auth = propAuth || pageProps.auth;
+    const authUser = user || auth.user;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
+
+    // Parse enabled modules from project
+    const enabledModules = auth?.user?.project?.enabledModules ? JSON.parse(auth.user.project.enabledModules) : [];
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -117,28 +122,28 @@ export default function Authenticated({ children, header, user, auth }: Props) {
         fetchCredits();
     }, [authUser.identifier]);
 
-    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions') && !url.includes('dashboard');
+    const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
 
-    const hasRetailAccess = (auth?.modules?.includes('retail') && appParam === 'retail') ?? false;
-    const hasFnbAccess = (auth?.modules?.includes('fnb') && appParam === 'fnb') ?? false;
-    const hasWarehousingAccess = (auth?.modules?.includes('warehousing') && appParam === 'warehousing') ?? false;
-    const hasTransportationAccess = (auth?.modules?.includes('transportation') && appParam === 'transportation') ?? false;
-    const hasRentalItemAccess = (auth?.modules?.includes('rental-items') && appParam === 'rental-items') ?? false;
-    const hasRentalPropertyAccess = (auth?.modules?.includes('rental-properties') && appParam === 'rental-properties') ?? false;
-    const hasClinicalAccess = (auth?.modules?.includes('clinical') && appParam === 'clinical') ?? false;
-    const hasLendingAccess = (auth?.modules?.includes('lending') && appParam === 'lending') ?? false;
-    const hasPayrollAccess = (auth?.modules?.includes('payroll') && appParam === 'payroll') ?? false;
-    const hasTravelAccess = (auth?.modules?.includes('travel') && appParam === 'travel') ?? false;
-    const hasSmsAccess = (auth?.modules?.includes('sms') && appParam === 'sms') ?? false;
-    const hasEmailAccess = (auth?.modules?.includes('email') && appParam === 'email') ?? false;
-    const hasContactsAccess = (auth?.modules?.includes('contacts') && appParam === 'contacts') ?? false;
-    const hasGenealogyAccess = (auth?.modules?.includes('genealogy') && appParam === 'genealogy') ?? false;
-    const hasEventsAccess = (auth?.modules?.includes('events') && appParam === 'events') ?? false;
-    const hasChallengesAccess = (auth?.modules?.includes('challenges') && appParam === 'challenges') ?? false;
-    const hasContentCreatorAccess = (auth?.modules?.includes('content-creator') && appParam === 'content-creator') ?? false;
-    const hasDigitalProductsAccess = (auth?.modules?.includes('digital-products') && appParam === 'digital-products') ?? false;
-    const hasPagesAccess = (auth?.modules?.includes('pages') && appParam === 'pages') ?? false;
-    const hasHealthcareAccess = (auth?.modules?.includes('healthcare') && appParam === 'healthcare') ?? false;
+    const hasRetailAccess = (enabledModules.includes('retail') && appParam === 'retail') ?? false;
+    const hasFnbAccess = (enabledModules.includes('fnb') && appParam === 'fnb') ?? false;
+    const hasWarehousingAccess = (enabledModules.includes('warehousing') && appParam === 'warehousing') ?? false;
+    const hasTransportationAccess = (enabledModules.includes('transportation') && appParam === 'transportation') ?? false;
+    const hasRentalItemAccess = (enabledModules.includes('rental-items') && appParam === 'rental-items') ?? false;
+    const hasRentalPropertyAccess = (enabledModules.includes('rental-properties') && appParam === 'rental-properties') ?? false;
+    const hasClinicalAccess = (enabledModules.includes('clinical') && appParam === 'clinical') ?? false;
+    const hasLendingAccess = (enabledModules.includes('lending') && appParam === 'lending') ?? false;
+    const hasPayrollAccess = (enabledModules.includes('payroll') && appParam === 'payroll') ?? false;
+    const hasTravelAccess = (enabledModules.includes('travel') && appParam === 'travel') ?? false;
+    const hasSmsAccess = (enabledModules.includes('sms') && appParam === 'sms') ?? false;
+    const hasEmailAccess = (enabledModules.includes('email') && appParam === 'email') ?? false;
+    const hasContactsAccess = (enabledModules.includes('contacts') && appParam === 'contacts') ?? false;
+    const hasGenealogyAccess = (enabledModules.includes('genealogy') && appParam === 'genealogy') ?? false;
+    const hasEventsAccess = (enabledModules.includes('events') && appParam === 'events') ?? false;
+    const hasChallengesAccess = (enabledModules.includes('challenges') && appParam === 'challenges') ?? false;
+    const hasContentCreatorAccess = (enabledModules.includes('content-creator') && appParam === 'content-creator') ?? false;
+    const hasDigitalProductsAccess = (enabledModules.includes('digital-products') && appParam === 'digital-products') ?? false;
+    const hasPagesAccess = (enabledModules.includes('pages') && appParam === 'pages') ?? false;
+    const hasHealthcareAccess = (enabledModules.includes('healthcare') && appParam === 'healthcare') ?? false;
 
     const [hideNav, setHideNav] = useState(() => {
         // Get stored preference from localStorage, default to false
