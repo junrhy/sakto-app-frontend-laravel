@@ -79,25 +79,6 @@ export default function Member({ member, challenges, events, pages, contacts }: 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
-    const handleVisitorSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setError('');
-
-        // Check if visitor is in contacts list
-        const isInContacts = contacts.some(contact => 
-            contact.email.toLowerCase() === visitorInfo.email.toLowerCase() ||
-            (contact.call_number && contact.call_number === visitorInfo.phone)
-        );
-
-        if (isInContacts) {
-            setIsAuthorized(true);
-        } else {
-            setError('We could not find your information in our records. Please verify your details or contact the administrator for access.');
-        }
-        setIsSubmitting(false);
-    };
-
     // Add the CSS classes at the top of the component
     const mobileMenuStyles = `
         .no-scrollbar {
@@ -126,41 +107,24 @@ export default function Member({ member, challenges, events, pages, contacts }: 
         };
     }, []);
 
-    // Add manifest management
-    useEffect(() => {
-        if (member?.id) {
-            // Remove any existing manifest link
-            const existingManifest = document.querySelector('link[rel="manifest"]');
-            if (existingManifest) {
-                existingManifest.remove();
-            }
+    const handleVisitorSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError('');
 
-            // Create and append new manifest link
-            const manifestLink = document.createElement('link');
-            manifestLink.rel = 'manifest';
-            manifestLink.href = `/manifest/member/${member.id}.json`;
-            document.head.appendChild(manifestLink);
+        // Check if visitor is in contacts list
+        const isInContacts = contacts.some(contact => 
+            contact.email.toLowerCase() === visitorInfo.email.toLowerCase() ||
+            (contact.call_number && contact.call_number === visitorInfo.phone)
+        );
 
-            // Update apple-mobile-web-app-title
-            const existingTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-            if (existingTitle) {
-                existingTitle.setAttribute('content', member.name);
-            } else {
-                const titleMeta = document.createElement('meta');
-                titleMeta.name = 'apple-mobile-web-app-title';
-                titleMeta.content = member.name;
-                document.head.appendChild(titleMeta);
-            }
-
-            // Cleanup on unmount
-            return () => {
-                manifestLink.remove();
-                if (existingTitle) {
-                    existingTitle.remove();
-                }
-            };
+        if (isInContacts) {
+            setIsAuthorized(true);
+        } else {
+            setError('We could not find your information in our records. Please verify your details or contact the administrator for access.');
         }
-    }, [member?.id, member?.name]);
+        setIsSubmitting(false);
+    };
 
     const searchContacts = () => {
         setIsSearching(true);
@@ -526,13 +490,13 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                                                     </div>
                                                 )}
                                             </div>
-                                            {event.status === 'published' && new Date(event.registration_deadline) > new Date() && (
-                                                <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                                    Register Now
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
+                                                    {event.status === 'published' && new Date(event.registration_deadline) > new Date() && (
+                                                        <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                                                            Register Now
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                 ))
                             )}
                         </div>

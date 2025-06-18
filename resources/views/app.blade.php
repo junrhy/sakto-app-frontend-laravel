@@ -24,7 +24,7 @@
         
         <!-- PWA manifest -->
         @if(request()->route()->getName() === 'community.member')
-            <!-- Manifest will be loaded dynamically by the Member component -->
+            <link rel="manifest" href="{{ asset('manifest/member/' . request()->route('id') . '.json') }}">
         @else
             <link rel="manifest" href="{{ asset('manifest.json') }}">
         @endif
