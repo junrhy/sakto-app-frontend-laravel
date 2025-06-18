@@ -58,11 +58,11 @@ Route::group(['middleware' => ['web']], function () {
             ], 404);
         }
 
-        return response()->json([
-            'name' => "Sakto App - {$member->name}",
+        $manifest = [
+            'name' => "Sakto App - " . $member->name,
             'short_name' => $member->name,
-            'description' => "Member Profile View for {$member->name}",
-            'start_url' => "/community/member/{$member->id}",
+            'description' => "Member Profile View for " . $member->name,
+            'start_url' => "/community/member/" . $member->id,
             'display' => 'standalone',
             'background_color' => '#ffffff',
             'theme_color' => '#ffffff',
@@ -80,7 +80,11 @@ Route::group(['middleware' => ['web']], function () {
                     'purpose' => 'any maskable'
                 ]
             ]
-        ]);
+        ];
+
+        return response()->json($manifest)
+            ->header('Content-Type', 'application/manifest+json')
+            ->header('Cache-Control', 'public, max-age=3600');
     });
 
     // Welcome and Policy Routes

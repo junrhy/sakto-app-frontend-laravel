@@ -104,6 +104,42 @@ export default function Member({ auth, member, challenges, events, pages, contac
         };
     }, []);
 
+    // Add manifest management
+    useEffect(() => {
+        if (member?.id) {
+            // Remove any existing manifest link
+            const existingManifest = document.querySelector('link[rel="manifest"]');
+            if (existingManifest) {
+                existingManifest.remove();
+            }
+
+            // Create and append new manifest link
+            const manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = `/manifest/member/${member.id}.json`;
+            document.head.appendChild(manifestLink);
+
+            // Update apple-mobile-web-app-title
+            const existingTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+            if (existingTitle) {
+                existingTitle.setAttribute('content', member.name);
+            } else {
+                const titleMeta = document.createElement('meta');
+                titleMeta.name = 'apple-mobile-web-app-title';
+                titleMeta.content = member.name;
+                document.head.appendChild(titleMeta);
+            }
+
+            // Cleanup on unmount
+            return () => {
+                manifestLink.remove();
+                if (existingTitle) {
+                    existingTitle.remove();
+                }
+            };
+        }
+    }, [member?.id, member?.name]);
+
     const searchContacts = () => {
         setIsSearching(true);
         const searchResults = contacts.filter(contact => {
@@ -491,7 +527,6 @@ export default function Member({ auth, member, challenges, events, pages, contac
             <Head>
                 <title>{member?.name ? `${member.name} - Sakto App` : 'Member Profile - Sakto App'}</title>
                 <meta name="description" content={member?.name ? `Profile page of ${member.name}` : 'Member Profile Page'} />
-                {member?.id && <link rel="manifest" href={`/manifest/member/${member.id}.json`} />}
             </Head>
             
             <div className="min-h-screen bg-gray-50">

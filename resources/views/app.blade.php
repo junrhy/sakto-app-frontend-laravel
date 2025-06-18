@@ -23,7 +23,11 @@
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Laravel') }}">
         
         <!-- PWA manifest -->
-        <link rel="manifest" href="{{ asset('manifest.json') }}">
+        @if(request()->route()->getName() === 'community.member')
+            <!-- Manifest will be loaded dynamically by the Member component -->
+        @else
+            <link rel="manifest" href="{{ asset('manifest.json') }}">
+        @endif
         
         <!-- Theme color for Safari -->
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
