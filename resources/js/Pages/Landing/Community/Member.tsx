@@ -63,12 +63,6 @@ interface PageProps {
 
 export default function Member({ member, challenges, events, pages, contacts }: PageProps) {
     const [activeSection, setActiveSection] = useState('updates');
-    const [firstName, setFirstName] = useState('');
-    const [middleName, setMiddleName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [dateOfBirth, setDateOfBirth] = useState('');
-    const [searchResults, setSearchResults] = useState<typeof contacts>([]);
-    const [isSearching, setIsSearching] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [visitorInfo, setVisitorInfo] = useState({
         firstName: '',
@@ -152,7 +146,8 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                 visitorInfo: {
                     firstName: visitorInfo.firstName,
                     lastName: visitorInfo.lastName,
-                    email: visitorInfo.email
+                    email: visitorInfo.email,
+                    phone: visitorInfo.phone
                 }
             };
             localStorage.setItem(`visitor_auth_${member.id}`, JSON.stringify(authData));
@@ -175,20 +170,6 @@ export default function Member({ member, challenges, events, pages, contacts }: 
         });
     };
 
-    const searchContacts = () => {
-        setIsSearching(true);
-        const searchResults = contacts.filter(contact => {
-            const matchFirstName = firstName.trim() === '' || 
-                contact.first_name.toLowerCase().includes(firstName.toLowerCase().trim());
-            const matchMiddleName = middleName.trim() === '' || 
-                (contact.middle_name && contact.middle_name.toLowerCase().includes(middleName.toLowerCase().trim()));
-            const matchLastName = lastName.trim() === '' || 
-                contact.last_name.toLowerCase().includes(lastName.toLowerCase().trim());
-            return matchFirstName && matchMiddleName && matchLastName;
-        });
-        setSearchResults(searchResults);
-    };
-
     const menuItems = [
         { id: 'updates', label: 'Updates', icon: 'M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m10-4H7a2 2 0 00-2 2v0a2 2 0 002 2h10a2 2 0 002-2v0a2 2 0 00-2-2z' },
         { id: 'profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -196,7 +177,6 @@ export default function Member({ member, challenges, events, pages, contacts }: 
         { id: 'community', label: 'Resources', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
         { id: 'challenges', label: 'Challenges', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
         { id: 'events', label: 'Events', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-        { id: 'member-search', label: 'Member Search', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
     ];
 
     const dummyUpdates = [
@@ -249,121 +229,99 @@ export default function Member({ member, challenges, events, pages, contacts }: 
             case 'profile':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Profile</h2>
                         <div className="space-y-6">
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Email</p>
-                                <p className="text-gray-900 font-medium">{member.email}</p>
+                                <p className="text-sm text-gray-500 mb-1">First Name</p>
+                                <p className="text-gray-900 font-medium">{(() => {
+                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                    if (authData) {
+                                        try {
+                                            const { visitorInfo } = JSON.parse(authData);
+                                            return visitorInfo?.firstName || 'Not available';
+                                        } catch (error) {
+                                            return 'Not available';
+                                        }
+                                    }
+                                    return 'Not available';
+                                })()}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Contact Number</p>
-                                <p className="text-gray-900 font-medium">{member.contact_number || 'Not provided'}</p>
+                                <p className="text-sm text-gray-500 mb-1">Last Name</p>
+                                <p className="text-gray-900 font-medium">{(() => {
+                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                    if (authData) {
+                                        try {
+                                            const { visitorInfo } = JSON.parse(authData);
+                                            return visitorInfo?.lastName || 'Not available';
+                                        } catch (error) {
+                                            return 'Not available';
+                                        }
+                                    }
+                                    return 'Not available';
+                                })()}</p>
                             </div>
-                            <p className="text-gray-600">
-                                Welcome to {member.name}'s page.
-                            </p>
+                            <div>
+                                <p className="text-sm text-gray-500 mb-1">Email Address</p>
+                                <p className="text-gray-900 font-medium">{(() => {
+                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                    if (authData) {
+                                        try {
+                                            const { visitorInfo } = JSON.parse(authData);
+                                            return visitorInfo?.email || 'Not available';
+                                        } catch (error) {
+                                            return 'Not available';
+                                        }
+                                    }
+                                    return 'Not available';
+                                })()}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500 mb-1">Phone Number</p>
+                                <p className="text-gray-900 font-medium">{(() => {
+                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                    if (authData) {
+                                        try {
+                                            const { visitorInfo } = JSON.parse(authData);
+                                            return visitorInfo?.phone || 'Not available';
+                                        } catch (error) {
+                                            return 'Not available';
+                                        }
+                                    }
+                                    return 'Not available';
+                                })()}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500 mb-1">Accessing</p>
+                                <p className="text-gray-900 font-medium">{member.name}'s Page</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500 mb-1">Session Started</p>
+                                <p className="text-gray-900 font-medium">{(() => {
+                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                    if (authData) {
+                                        try {
+                                            const { timestamp } = JSON.parse(authData);
+                                            return new Date(timestamp).toLocaleString();
+                                        } catch (error) {
+                                            return 'Not available';
+                                        }
+                                    }
+                                    return 'Not available';
+                                })()}</p>
+                            </div>
+                            <div className="pt-4 border-t border-gray-200">
+                                <Link
+                                    href={route('dashboard')}
+                                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                    Go to {member.name} Portal
+                                </Link>
+                            </div>
                         </div>
-                    </div>
-                );
-
-            case 'member-search':
-                return (
-                    <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-3">Search Member</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    First Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="firstName"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    placeholder="Enter first name..."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="middleName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Middle Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="middleName"
-                                    value={middleName}
-                                    onChange={(e) => setMiddleName(e.target.value)}
-                                    placeholder="Enter middle name..."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Last Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="lastName"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                    placeholder="Enter last name..."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date of Birth
-                                </label>
-                                <input
-                                    type="date"
-                                    id="dateOfBirth"
-                                    value={dateOfBirth}
-                                    onChange={(e) => setDateOfBirth(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <button 
-                                onClick={searchContacts}
-                                className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Search Member
-                            </button>
-                        </div>
-                        {isSearching && (
-                            <div className="mt-6">
-                                <h3 className="text-md font-medium text-gray-900 mb-3">Search Results</h3>
-                                {searchResults.length === 0 ? (
-                                    <p className="text-gray-500">No members found matching your search criteria.</p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {searchResults.map(contact => (
-                                            <div key={contact.id} className="border border-gray-200 rounded-lg p-4">
-                                                <div className="flex items-center">
-                                                    {contact.id_picture && (
-                                                        <img 
-                                                            src={contact.id_picture} 
-                                                            alt={`${contact.first_name} ${contact.last_name}`}
-                                                            className="w-12 h-12 rounded-full object-cover mr-4"
-                                                        />
-                                                    )}
-                                                    <div>
-                                                        <h4 className="font-medium text-gray-900">
-                                                            {contact.first_name} {contact.middle_name ? `${contact.middle_name} ` : ''}{contact.last_name}
-                                                        </h4>
-                                                        <p className="text-sm text-gray-500">{contact.email}</p>
-                                                        {contact.call_number && (
-                                                            <p className="text-sm text-gray-500">{contact.call_number}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 );
 
@@ -647,16 +605,20 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                         </div>
                     </div>
                 ) : (
-                    <>
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-800">
+                    <div className="flex flex-col h-screen">
+                        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 to-blue-800">
                             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                                 <div className="flex flex-row items-center justify-between">
-                                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white whitespace-nowrap truncate mr-4">
-                                        <span className="hidden sm:inline">{member.name}</span>
-                                        <span className="sm:hidden">
-                                            {member.name.split(' ').map(word => word[0]).join('.')}
-                                        </span>
-                                    </h1>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-shrink-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <span className="text-xl font-bold text-blue-600">
+                                                {member.name.charAt(0).toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white whitespace-nowrap truncate hidden sm:block">
+                                            {member.name}
+                                        </h1>
+                                    </div>
                                     <nav className="flex flex-row flex-wrap gap-1 sm:gap-2 overflow-x-auto no-scrollbar -mx-4 sm:mx-0 px-4 sm:px-0">
                                         {menuItems.map((item) => (
                                             <button
@@ -690,28 +652,24 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                             </div>
                         </div>
 
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                            {renderContent()}
-                        </div>
-
-                        <footer className="mt-auto">
-                            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-                                <div className="flex flex-col items-center space-y-4">
-                                    <div className="flex items-center space-x-4">
-                                        <Link
-                                            href={route('dashboard')}
-                                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                        >
-                                            Go to {member.name} Portal
-                                        </Link> 
-                                    </div>
-                                    <p className="text-center text-sm text-gray-400">
-                                        &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
-                                    </p>
+                        <div className="flex-1 overflow-hidden pt-16">
+                            <div className="h-full overflow-y-auto">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                    {renderContent()}
                                 </div>
+
+                                <footer className="mt-auto">
+                                    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                                        <div className="flex flex-col items-center space-y-4">
+                                            <p className="text-center text-sm text-gray-400">
+                                                &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </footer>
                             </div>
-                        </footer>
-                    </>
+                        </div>
+                    </div>
                 )}
             </div>
         </>
