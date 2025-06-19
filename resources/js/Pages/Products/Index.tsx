@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/Components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Package, Download } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Package, Download, ShoppingCart } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -23,6 +23,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import { useCart } from '@/Components/CartContext';
+import { CartButton } from '@/Components/CartButton';
+import { ShoppingCartPanel } from '@/Components/ShoppingCart';
 
 interface Product {
     id: number;
@@ -47,6 +50,7 @@ interface Props extends PageProps {
     products: Product[];
     currency: {
         symbol: string;
+        code: string;
     };
 }
 
@@ -83,6 +87,7 @@ const getTypeLabel = (type: string) => {
 export default function Index({ auth, products, currency }: Props) {
     const [search, setSearch] = useState('');
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+    const { addItem, getItemQuantity } = useCart();
 
     const filteredProducts = useMemo(() => {
         if (!search.trim()) return products;
@@ -165,6 +170,34 @@ export default function Index({ auth, products, currency }: Props) {
         return <Badge variant="default">In Stock ({quantity})</Badge>;
     };
 
+    const handleAddToCart = (product: Product) => {
+        // Check if product is in stock (for physical products)
+        if (product.type === 'physical' && product.stock_quantity !== undefined && product.stock_quantity <= 0) {
+            alert('This product is out of stock');
+            return;
+        }
+
+        // Check if already in cart and at max quantity
+        const currentQuantity = getItemQuantity(product.id);
+        if (product.type === 'physical' && product.stock_quantity !== undefined) {
+            if (currentQuantity >= product.stock_quantity) {
+                alert('Cannot add more items than available in stock');
+                return;
+            }
+        }
+
+        addItem({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            thumbnail_url: product.thumbnail_url,
+            type: product.type,
+            stock_quantity: product.stock_quantity
+        });
+
+        alert('Product added to cart!');
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -183,6 +216,7 @@ export default function Index({ auth, products, currency }: Props) {
                                 className="pl-9 w-full sm:w-[300px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
                             />
                         </div>
+                        <CartButton />
                         {selectedProducts.length > 0 && (
                             <Button
                                 variant="outline"
@@ -208,25 +242,24 @@ export default function Index({ auth, products, currency }: Props) {
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6">
+                        <div className="p-6 text-gray-900 dark:text-gray-100">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[50px]">
+                                        <TableHead>
                                             <Checkbox
-                                                checked={selectedProducts.length === filteredProducts.length}
+                                                checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
                                                 onCheckedChange={toggleSelectAll}
                                             />
                                         </TableHead>
-                                        <TableHead>Name</TableHead>
+                                        <TableHead>Product</TableHead>
                                         <TableHead>SKU</TableHead>
                                         <TableHead>Category</TableHead>
                                         <TableHead>Type</TableHead>
                                         <TableHead>Price</TableHead>
                                         <TableHead>Stock</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Last Updated</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                        <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -252,70 +285,85 @@ export default function Index({ auth, products, currency }: Props) {
                                                 {getStockStatus(product.stock_quantity, product.type)}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant={
-                                                        product.status === 'published'
-                                                            ? 'default'
-                                                            : product.status === 'draft'
-                                                            ? 'secondary'
-                                                            : product.status === 'inactive'
-                                                            ? 'outline'
-                                                            : 'destructive'
-                                                    }
-                                                >
-                                                    {product.status}
+                                                <Badge variant={product.status === 'published' ? 'default' : 'secondary'}>
+                                                    {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>{format(new Date(product.updated_at), 'PPP')}</TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                                            <span className="sr-only">Open menu</span>
-                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                            </svg>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('products.show', product.id)}>
-                                                                <Eye className="w-4 h-4 mr-2" />
-                                                                View
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('products.edit', product.id)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
-                                                                Edit
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        {product.type === 'digital' && product.file_url && (
+                                            <TableCell>
+                                                <div className="flex items-center space-x-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleAddToCart(product)}
+                                                        disabled={
+                                                            product.type === 'physical' && 
+                                                            product.stock_quantity !== undefined && 
+                                                            product.stock_quantity <= 0
+                                                        }
+                                                    >
+                                                        <ShoppingCart className="w-3 h-3 mr-1" />
+                                                        Add to Cart
+                                                    </Button>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                <span className="sr-only">Open menu</span>
+                                                                <span className="h-4 w-4">⋮</span>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
                                                             <DropdownMenuItem asChild>
-                                                                <Link href={route('products.download', product.id)}>
-                                                                    <Download className="w-4 h-4 mr-2" />
-                                                                    Download
+                                                                <Link href={route('products.show', product.id)}>
+                                                                    <Eye className="w-4 h-4 mr-2" />
+                                                                    View
                                                                 </Link>
                                                             </DropdownMenuItem>
-                                                        )}
-                                                        <DropdownMenuItem
-                                                            onClick={() => handleDelete(product.id)}
-                                                            className="text-red-600"
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('products.edit', product.id)}>
+                                                                    <Edit className="w-4 h-4 mr-2" />
+                                                                    Edit
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            {product.type === 'digital' && product.file_url && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={route('products.download', product.id)}>
+                                                                        <FileDown className="w-4 h-4 mr-2" />
+                                                                        Download
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleDelete(product.id)}
+                                                                className="text-red-600"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
                             </Table>
+
+                            {filteredProducts.length === 0 && (
+                                <div className="text-center py-8">
+                                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                                    <p className="text-gray-500">
+                                        {search ? 'Try adjusting your search to find more products.' : 'Get started by creating your first product.'}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Shopping Cart Panel */}
+            <ShoppingCartPanel currency={currency} />
         </AuthenticatedLayout>
     );
 } 
