@@ -96,6 +96,31 @@ export default function Member({ member, challenges, events, pages, contacts }: 
     `;
 
     useEffect(() => {
+        // Check if user is already authorized for today
+        const checkAuthorization = () => {
+            const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+            if (authData) {
+                try {
+                    const { isAuthorized: storedAuth, timestamp, memberId } = JSON.parse(authData);
+                    const today = new Date().toDateString();
+                    const storedDate = new Date(timestamp).toDateString();
+                    
+                    // Check if it's the same member and same day
+                    if (storedAuth && memberId === member.id && storedDate === today) {
+                        setIsAuthorized(true);
+                        return;
+                    }
+                } catch (error) {
+                    // If there's an error parsing the data, remove it
+                    localStorage.removeItem(`visitor_auth_${member.id}`);
+                }
+            }
+        };
+
+        checkAuthorization();
+    }, [member.id]);
+
+    useEffect(() => {
         // Add the styles to the document head
         const styleElement = document.createElement('style');
         styleElement.innerHTML = mobileMenuStyles;
@@ -119,11 +144,35 @@ export default function Member({ member, challenges, events, pages, contacts }: 
         );
 
         if (isInContacts) {
+            // Store authorization data in localStorage
+            const authData = {
+                isAuthorized: true,
+                timestamp: new Date().toISOString(),
+                memberId: member.id,
+                visitorInfo: {
+                    firstName: visitorInfo.firstName,
+                    lastName: visitorInfo.lastName,
+                    email: visitorInfo.email
+                }
+            };
+            localStorage.setItem(`visitor_auth_${member.id}`, JSON.stringify(authData));
+            
             setIsAuthorized(true);
         } else {
             setError('We could not find your information in our records. Please verify your details or contact the administrator for access.');
         }
         setIsSubmitting(false);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem(`visitor_auth_${member.id}`);
+        setIsAuthorized(false);
+        setVisitorInfo({
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: ''
+        });
     };
 
     const searchContacts = () => {
@@ -535,7 +584,7 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                                         value={visitorInfo.firstName}
                                         onChange={(e) => setVisitorInfo(prev => ({ ...prev, firstName: e.target.value }))}
                                         required
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                                     />
                                 </div>
 
@@ -549,7 +598,7 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                                         value={visitorInfo.lastName}
                                         onChange={(e) => setVisitorInfo(prev => ({ ...prev, lastName: e.target.value }))}
                                         required
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                                     />
                                 </div>
 
@@ -563,7 +612,7 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                                         value={visitorInfo.email}
                                         onChange={(e) => setVisitorInfo(prev => ({ ...prev, email: e.target.value }))}
                                         required
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                                     />
                                 </div>
 
@@ -577,7 +626,7 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                                         value={visitorInfo.phone}
                                         onChange={(e) => setVisitorInfo(prev => ({ ...prev, phone: e.target.value }))}
                                         required
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                                     />
                                 </div>
 
@@ -626,6 +675,16 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                                                 <span className="ml-1 sm:ml-2 max-xs-hidden">{item.label}</span>
                                             </button>
                                         ))}
+                                        <button
+                                            onClick={handleLogout}
+                                            className="flex items-center px-2 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap bg-red-600 text-white hover:bg-red-700"
+                                            title="Logout from this session"
+                                        >
+                                            <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                            </svg>
+                                            <span className="ml-1 sm:ml-2 max-xs-hidden">Logout</span>
+                                        </button>
                                     </nav>
                                 </div>
                             </div>
