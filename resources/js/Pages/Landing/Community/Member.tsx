@@ -72,9 +72,29 @@ interface PageProps {
         created_at: string;
         updated_at: string;
     }[];
+    products: {
+        id: number;
+        name: string;
+        description: string;
+        price: number | string;
+        category: string;
+        type: 'physical' | 'digital' | 'service' | 'subscription';
+        sku: string | null;
+        stock_quantity: number | null;
+        weight: number | null;
+        dimensions: string | null;
+        file_url: string | null;
+        thumbnail_url: string | null;
+        status: 'draft' | 'published' | 'archived' | 'inactive';
+        tags: string[] | null;
+        metadata: any;
+        client_identifier: string;
+        created_at: string;
+        updated_at: string;
+    }[];
 }
 
-export default function Member({ member, challenges, events, pages, contacts, updates }: PageProps) {
+export default function Member({ member, challenges, events, pages, contacts, updates, products }: PageProps) {
     const [activeSection, setActiveSection] = useState('updates');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [visitorInfo, setVisitorInfo] = useState({
@@ -181,6 +201,18 @@ export default function Member({ member, challenges, events, pages, contacts, up
             email: '',
             phone: ''
         });
+    };
+
+    // Helper function to format price
+    const formatPrice = (price: number | string): string => {
+        if (typeof price === 'number') {
+            return price.toFixed(2);
+        }
+        if (typeof price === 'string') {
+            const numPrice = parseFloat(price);
+            return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+        }
+        return '0.00';
     };
 
     const menuItems = [
@@ -348,38 +380,58 @@ export default function Member({ member, challenges, events, pages, contacts, up
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Marketplace</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-medium text-gray-900">Community App</h3>
-                                    <span className="px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full">Free</span>
-                                </div>
-                                <p className="text-gray-600 mb-4">Access community features, updates, and connect with members on the go.</p>
-                                <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                    Download
-                                </button>
+                        {products.length === 0 ? (
+                            <div className="text-center text-gray-500 py-8">No products available at the moment.</div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {products.map((product) => (
+                                    <div key={product.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                                        {product.thumbnail_url && (
+                                            <div className="mb-4">
+                                                <img 
+                                                    src={product.thumbnail_url} 
+                                                    alt={product.name} 
+                                                    className="w-full h-32 object-cover rounded-lg"
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{product.category}</span>
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                                product.type === 'digital' ? 'text-blue-700 bg-blue-100' :
+                                                product.type === 'service' ? 'text-purple-700 bg-purple-100' :
+                                                product.type === 'subscription' ? 'text-orange-700 bg-orange-100' :
+                                                'text-green-700 bg-green-100'
+                                            }`}>
+                                                {product.type}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">{product.name}</h3>
+                                        <p className="text-gray-600 mb-4 text-sm line-clamp-2">{product.description}</p>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-xl font-bold text-gray-900">
+                                                ${formatPrice(product.price)}
+                                            </span>
+                                            {product.stock_quantity !== null && (
+                                                <span className="text-sm text-gray-500">
+                                                    {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : 'Out of stock'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <button 
+                                            className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                                product.stock_quantity === 0 ? 
+                                                'bg-gray-300 text-gray-500 cursor-not-allowed' : 
+                                                'bg-blue-600 text-white hover:bg-blue-700'
+                                            }`}
+                                            disabled={product.stock_quantity === 0}
+                                        >
+                                            {product.stock_quantity === 0 ? 'Out of Stock' : 'Order Now'}
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-medium text-gray-900">Member Portal</h3>
-                                    <span className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">Premium</span>
-                                </div>
-                                <p className="text-gray-600 mb-4">Exclusive access to premium features and advanced community tools.</p>
-                                <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                    Subscribe
-                                </button>
-                            </div>
-                            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-medium text-gray-900">Resource Library</h3>
-                                    <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-100 rounded-full">Member Only</span>
-                                </div>
-                                <p className="text-gray-600 mb-4">Access to community resources, guides, and educational materials.</p>
-                                <button className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                    Access
-                                </button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 );
 

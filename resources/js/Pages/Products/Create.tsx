@@ -21,9 +21,12 @@ interface Props extends PageProps {
         modules?: string[];
     };
     client_identifier: string;
+    currency: {
+        symbol: string;
+    };
 }
 
-export default function Create({ auth, client_identifier }: Props) {
+export default function Create({ auth, client_identifier, currency }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         description: '',
@@ -127,15 +130,20 @@ export default function Create({ auth, client_identifier }: Props) {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
                                         <InputLabel htmlFor="price" value="Price" />
-                                        <Input
-                                            id="price"
-                                            type="number"
-                                            step="0.01"
-                                            className="mt-1 block w-full"
-                                            value={data.price}
-                                            onChange={e => setData('price', e.target.value)}
-                                            required
-                                        />
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                                {currency.symbol}
+                                            </span>
+                                            <Input
+                                                id="price"
+                                                type="number"
+                                                step="0.01"
+                                                className="mt-1 block w-full pl-8"
+                                                value={data.price}
+                                                onChange={e => setData('price', e.target.value)}
+                                                required
+                                            />
+                                        </div>
                                         <InputError message={errors.price} className="mt-2" />
                                     </div>
 

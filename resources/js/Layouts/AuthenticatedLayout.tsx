@@ -124,26 +124,26 @@ export default function Authenticated({ children, header, user, auth: propAuth }
 
     const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
 
-    const hasRetailAccess = (enabledModules.includes('retail') && appParam === 'retail') ?? false;
-    const hasFnbAccess = (enabledModules.includes('fnb') && appParam === 'fnb') ?? false;
-    const hasWarehousingAccess = (enabledModules.includes('warehousing') && appParam === 'warehousing') ?? false;
-    const hasTransportationAccess = (enabledModules.includes('transportation') && appParam === 'transportation') ?? false;
-    const hasRentalItemAccess = (enabledModules.includes('rental-items') && appParam === 'rental-items') ?? false;
-    const hasRentalPropertyAccess = (enabledModules.includes('rental-properties') && appParam === 'rental-properties') ?? false;
-    const hasClinicalAccess = (enabledModules.includes('clinical') && appParam === 'clinical') ?? false;
-    const hasLendingAccess = (enabledModules.includes('lending') && appParam === 'lending') ?? false;
-    const hasPayrollAccess = (enabledModules.includes('payroll') && appParam === 'payroll') ?? false;
-    const hasTravelAccess = (enabledModules.includes('travel') && appParam === 'travel') ?? false;
-    const hasSmsAccess = (enabledModules.includes('sms') && appParam === 'sms') ?? false;
-    const hasEmailAccess = (enabledModules.includes('email') && appParam === 'email') ?? false;
-    const hasContactsAccess = (enabledModules.includes('contacts') && appParam === 'contacts') ?? false;
-    const hasGenealogyAccess = (enabledModules.includes('genealogy') && appParam === 'genealogy') ?? false;
-    const hasEventsAccess = (enabledModules.includes('events') && appParam === 'events') ?? false;
-    const hasChallengesAccess = (enabledModules.includes('challenges') && appParam === 'challenges') ?? false;
-    const hasContentCreatorAccess = (enabledModules.includes('content-creator') && appParam === 'content-creator') ?? false;
-    const hasProductsAccess = (enabledModules.includes('products') && appParam === 'products') ?? false;
-    const hasPagesAccess = (enabledModules.includes('pages') && appParam === 'pages') ?? false;
-    const hasHealthcareAccess = (enabledModules.includes('healthcare') && appParam === 'healthcare') ?? false;
+    const hasRetailAccess = (enabledModules.includes('retail') && (appParam === 'retail' || url.includes('retail'))) ?? false;
+    const hasFnbAccess = (enabledModules.includes('fnb') && (appParam === 'fnb' || url.includes('fnb'))) ?? false;
+    const hasWarehousingAccess = (enabledModules.includes('warehousing') && (appParam === 'warehousing' || url.includes('warehousing'))) ?? false;
+    const hasTransportationAccess = (enabledModules.includes('transportation') && (appParam === 'transportation' || url.includes('transportation'))) ?? false;
+    const hasRentalItemAccess = (enabledModules.includes('rental-items') && (appParam === 'rental-items' || url.includes('rental-items'))) ?? false;
+    const hasRentalPropertyAccess = (enabledModules.includes('rental-properties') && (appParam === 'rental-properties' || url.includes('rental-properties'))) ?? false;
+    const hasClinicalAccess = (enabledModules.includes('clinical') && (appParam === 'clinical' || url.includes('clinical'))) ?? false;
+    const hasLendingAccess = (enabledModules.includes('lending') && (appParam === 'lending' || url.includes('lending'))) ?? false;
+    const hasPayrollAccess = (enabledModules.includes('payroll') && (appParam === 'payroll' || url.includes('payroll'))) ?? false;
+    const hasTravelAccess = (enabledModules.includes('travel') && (appParam === 'travel' || url.includes('travel'))) ?? false;
+    const hasSmsAccess = (enabledModules.includes('sms') && (appParam === 'sms' || url.includes('sms'))) ?? false;
+    const hasEmailAccess = (enabledModules.includes('email') && (appParam === 'email' || url.includes('email'))) ?? false;
+    const hasContactsAccess = (enabledModules.includes('contacts') && (appParam === 'contacts' || url.includes('contacts'))) ?? false;
+    const hasGenealogyAccess = (enabledModules.includes('genealogy') && (appParam === 'genealogy' || url.includes('genealogy'))) ?? false;
+    const hasEventsAccess = (enabledModules.includes('events') && (appParam === 'events' || url.includes('events'))) ?? false;
+    const hasChallengesAccess = (enabledModules.includes('challenges') && (appParam === 'challenges' || url.includes('challenges'))) ?? false;
+    const hasContentCreatorAccess = (enabledModules.includes('content-creator') && (appParam === 'content-creator' || url.includes('content-creator'))) ?? false;
+    const hasProductsAccess = (enabledModules.includes('products') && (appParam === 'products' || url.includes('products'))) ?? false;
+    const hasPagesAccess = (enabledModules.includes('pages') && (appParam === 'pages' || url.includes('pages'))) ?? false;
+    const hasHealthcareAccess = (enabledModules.includes('healthcare') && (appParam === 'healthcare' || url.includes('healthcare'))) ?? false;
 
     const [hideNav, setHideNav] = useState(() => {
         // Get stored preference from localStorage, default to false

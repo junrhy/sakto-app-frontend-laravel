@@ -36,6 +36,9 @@ interface Props extends PageProps {
         modules?: string[];
     };
     product: Product;
+    currency: {
+        symbol: string;
+    };
 }
 
 const getTypeIcon = (type: string) => {
@@ -88,7 +91,7 @@ const getStockStatus = (quantity?: number, type?: string) => {
     return <Badge variant="default">In Stock ({quantity})</Badge>;
 };
 
-export default function Show({ auth, product }: Props) {
+export default function Show({ auth, product, currency }: Props) {
     return (
         <AuthenticatedLayout
             auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
@@ -187,7 +190,7 @@ export default function Show({ auth, product }: Props) {
                                     <div className="space-y-4">
                                         <div>
                                             <h3 className="font-semibold mb-1">Price</h3>
-                                            <p className="text-2xl font-bold">{formatCurrency(product.price)}</p>
+                                            <p className="text-2xl font-bold">{formatCurrency(product.price, currency.symbol)}</p>
                                         </div>
 
                                         {product.sku && (

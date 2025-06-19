@@ -45,6 +45,9 @@ interface Product {
 
 interface Props extends PageProps {
     products: Product[];
+    currency: {
+        symbol: string;
+    };
 }
 
 const getTypeIcon = (type: string) => {
@@ -77,7 +80,7 @@ const getTypeLabel = (type: string) => {
     }
 };
 
-export default function Index({ auth, products }: Props) {
+export default function Index({ auth, products, currency }: Props) {
     const [search, setSearch] = useState('');
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
 
@@ -118,7 +121,7 @@ export default function Index({ auth, products }: Props) {
             product.sku || '',
             product.category,
             getTypeLabel(product.type),
-            formatCurrency(product.price),
+            `${currency.symbol}${product.price.toFixed(2)}`,
             product.stock_quantity || 'N/A',
             product.status,
             format(new Date(product.updated_at), 'PPP')
@@ -244,7 +247,7 @@ export default function Index({ auth, products }: Props) {
                                                     <span>{getTypeLabel(product.type)}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{formatCurrency(product.price)}</TableCell>
+                                            <TableCell>{formatCurrency(product.price, currency.symbol)}</TableCell>
                                             <TableCell>
                                                 {getStockStatus(product.stock_quantity, product.type)}
                                             </TableCell>

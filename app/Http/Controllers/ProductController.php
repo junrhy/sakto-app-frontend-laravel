@@ -22,33 +22,33 @@ class ProductController extends Controller
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
             
             Log::info('Making API request', [
                 'url' => "{$this->apiUrl}/products",
                 'client_identifier' => $clientIdentifier
             ]);
 
-            // $response = Http::withToken($this->apiToken)    
-            //     ->get("{$this->apiUrl}/products", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/products", [
+                    'client_identifier' => $clientIdentifier
+                ]);
             
-            // if (!$response->successful()) {
-            //     Log::error('API request failed', [
-            //         'status' => $response->status(),
-            //         'body' => $response->body(),
-            //         'url' => "{$this->apiUrl}/products"
-            //     ]);
+            if (!$response->successful()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'url' => "{$this->apiUrl}/products"
+                ]);
                 
-            //     return back()->withErrors(['error' => 'Failed to fetch products']);
-            // }
+                return back()->withErrors(['error' => 'Failed to fetch products']);
+            }
 
-            // $products = $response->json();
-
-            $products = [];
+            $products = $response->json();
 
             return Inertia::render('Products/Index', [
-                'products' => $products
+                'products' => $products,
+                'currency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             Log::error('Exception in products index', [
@@ -63,8 +63,11 @@ class ProductController extends Controller
     public function create()
     {
         $clientIdentifier = auth()->user()->identifier;
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+        
         return Inertia::render('Products/Create', [
-            'client_identifier' => $clientIdentifier
+            'client_identifier' => $clientIdentifier,
+            'currency' => $jsonAppCurrency
         ]);
     }
 
@@ -115,6 +118,8 @@ class ProductController extends Controller
 
     public function show($id)
     {
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+        
         $response = Http::withToken($this->apiToken)
             ->get("{$this->apiUrl}/products/{$id}");
         
@@ -124,12 +129,15 @@ class ProductController extends Controller
         }
 
         return Inertia::render('Products/Show', [
-            'product' => $response->json()
+            'product' => $response->json(),
+            'currency' => $jsonAppCurrency
         ]);
     }
 
     public function edit($id)
     {
+        $jsonAppCurrency = json_decode(auth()->user()->app_currency);
+        
         $response = Http::withToken($this->apiToken)
             ->get("{$this->apiUrl}/products/{$id}");
         
@@ -139,7 +147,8 @@ class ProductController extends Controller
         }
 
         return Inertia::render('Products/Edit', [
-            'product' => $response->json()
+            'product' => $response->json(),
+            'currency' => $jsonAppCurrency
         ]);
     }
 
@@ -266,6 +275,7 @@ class ProductController extends Controller
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
+            $jsonAppCurrency = json_decode(auth()->user()->app_currency);
             
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/products/settings", [
@@ -277,7 +287,8 @@ class ProductController extends Controller
             }
 
             return Inertia::render('Products/Settings', [
-                'settings' => $response->json()
+                'settings' => $response->json(),
+                'currency' => $jsonAppCurrency
             ]);
         } catch (\Exception $e) {
             Log::error('Exception in products settings', [

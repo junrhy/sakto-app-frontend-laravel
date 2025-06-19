@@ -211,6 +211,22 @@ class LandingController extends Controller
             // Optionally log error
         }
 
+        // Fetch products from API
+        $products = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products", [
+                    'client_identifier' => $member->identifier,
+                    'status' => 'published',
+                    'limit' => 6 // Get only the latest 6 products for marketplace display
+                ]);
+            if ($response->successful()) {
+                $products = $response->json();
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
         return Inertia::render('Landing/Community/Member', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -221,7 +237,8 @@ class LandingController extends Controller
             'events' => $events,
             'pages' => $pages,
             'contacts' => $contacts,
-            'updates' => $updates
+            'updates' => $updates,
+            'products' => $products
         ]);
     }
 
