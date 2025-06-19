@@ -10,7 +10,7 @@ import {
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Edit, Trash2, Search, Calendar } from 'lucide-react';
-import { format, startOfYear, endOfYear } from 'date-fns';
+import { format, startOfYear, endOfYear, subYears } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import EditClaimDialog from './EditClaimDialog';
@@ -49,7 +49,7 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [startDate, setStartDate] = useState<Date>(startOfYear(new Date()));
+    const [startDate, setStartDate] = useState<Date>(startOfYear(subYears(new Date(), 10)));
     const [endDate, setEndDate] = useState<Date>(endOfYear(new Date()));
 
     const handleSort = (field: keyof Claim) => {
