@@ -73,15 +73,9 @@ class ContentCreatorController extends Controller
             'slug' => 'required|string|max:255|unique:content,slug',
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
-            'status' => 'required|string|in:draft,published,archived',
-            'type' => 'required|string|in:article,page,post',
+            'status' => 'required|string|in:draft,published',
             'featured_image' => 'nullable|image|max:2048',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
-            'tags' => 'nullable|array',
-            'categories' => 'nullable|array',
             'author_id' => 'required|exists:users,id',
-            'scheduled_at' => 'nullable|date',
         ]);
 
         if ($request->hasFile('featured_image')) {
@@ -96,11 +90,11 @@ class ContentCreatorController extends Controller
             ->post("{$this->apiUrl}/content-creator", $validated);
 
         if (!$response->successful()) {
-            return back()->withErrors(['error' => 'Failed to create content']);
+            return back()->withErrors(['error' => 'Failed to create post']);
         }
 
         return redirect()->route('content-creator.index')
-            ->with('message', 'Content created successfully');
+            ->with('message', 'Post created successfully');
     }
 
     public function show($id)
@@ -140,14 +134,8 @@ class ContentCreatorController extends Controller
             'slug' => 'required|string|max:255|unique:content,slug,' . $id,
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
-            'status' => 'required|string|in:draft,published,archived',
-            'type' => 'required|string|in:article,page,post',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
-            'tags' => 'nullable|array',
-            'categories' => 'nullable|array',
+            'status' => 'required|string|in:draft,published',
             'author_id' => 'required|exists:users,id',
-            'scheduled_at' => 'nullable|date',
         ];
 
         if ($request->hasFile('featured_image')) {
@@ -180,15 +168,15 @@ class ContentCreatorController extends Controller
             ->put("{$this->apiUrl}/content-creator/{$id}", $validated);
 
         if (!$response->successful()) {
-            Log::error('Failed to update content', [
+            Log::error('Failed to update post', [
                 'response' => $response->json(),
                 'status' => $response->status()
             ]);
-            return back()->withErrors(['error' => 'Failed to update content: ' . ($response->json()['message'] ?? 'Unknown error')]);
+            return back()->withErrors(['error' => 'Failed to update post: ' . ($response->json()['message'] ?? 'Unknown error')]);
         }
 
         return redirect()->route('content-creator.index')
-            ->with('message', 'Content updated successfully');
+            ->with('message', 'Post updated successfully');
     }
 
     public function destroy($id)
@@ -211,11 +199,11 @@ class ContentCreatorController extends Controller
             ->delete("{$this->apiUrl}/content-creator/{$id}");
 
         if (!$response->successful()) {
-            return back()->withErrors(['error' => 'Failed to delete content']);
+            return back()->withErrors(['error' => 'Failed to delete post']);
         }
 
         return redirect()->route('content-creator.index')
-            ->with('message', 'Content deleted successfully');
+            ->with('message', 'Post deleted successfully');
     }
 
     public function settings()
