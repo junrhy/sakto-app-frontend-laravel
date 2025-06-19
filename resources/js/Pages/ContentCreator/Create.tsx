@@ -26,7 +26,7 @@ export default function Create({ auth, client_identifier }: Props) {
         excerpt: '',
         status: 'draft',
         featured_image: null as File | null,
-        author_id: auth.user.id,
+        author: auth.user.name,
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -72,10 +72,6 @@ export default function Create({ auth, client_identifier }: Props) {
                         </div>
                     </div>
                     <div className="flex space-x-2">
-                        <Button variant="outline" disabled={processing}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Preview
-                        </Button>
                         <Button onClick={handleSubmit} disabled={processing}>
                             <Save className="w-4 h-4 mr-2" />
                             {processing ? 'Saving...' : 'Save Post'}

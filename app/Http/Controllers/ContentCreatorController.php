@@ -22,29 +22,14 @@ class ContentCreatorController extends Controller
     {
         try {
             $clientIdentifier = auth()->user()->identifier;
-            
-            Log::info('Making API request', [
-                'url' => "{$this->apiUrl}/content-creator",
-                'client_identifier' => $clientIdentifier
-            ]);
 
-            // $response = Http::withToken($this->apiToken)    
-            //     ->get("{$this->apiUrl}/content-creator", [
-            //         'client_identifier' => $clientIdentifier
-            //     ]);
+            $response = Http::withToken($this->apiToken)    
+                ->get("{$this->apiUrl}/content-creator", [
+                    'client_identifier' => $clientIdentifier
+                ]);
             
-            // if (!$response->successful()) {
-            //     Log::error('API request failed', [
-            //         'status' => $response->status(),
-            //         'body' => $response->body(),
-            //         'url' => "{$this->apiUrl}/content-creator"
-            //     ]);
-                
-            //     return back()->withErrors(['error' => 'Failed to fetch content']);
-            // }
+            $content = $response->json()['data'];
 
-            // $content = $response->json();
-            $content = [];
             return Inertia::render('ContentCreator/Index', [
                 'content' => $content
             ]);
@@ -70,12 +55,12 @@ class ContentCreatorController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:content,slug',
+            'slug' => 'required|string|max:255',
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'status' => 'required|string|in:draft,published',
             'featured_image' => 'nullable|image|max:2048',
-            'author_id' => 'required|exists:users,id',
+            'author' => 'required|string',
         ]);
 
         if ($request->hasFile('featured_image')) {
@@ -131,11 +116,11 @@ class ContentCreatorController extends Controller
     {
         $rules = [
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:content,slug,' . $id,
+            'slug' => 'required|string|max:255',
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'status' => 'required|string|in:draft,published',
-            'author_id' => 'required|exists:users,id',
+            'author' => 'required|string',
         ];
 
         if ($request->hasFile('featured_image')) {
@@ -163,6 +148,8 @@ class ContentCreatorController extends Controller
             $path = $request->file('featured_image')->store('content_images', 'public');
             $validated['featured_image'] = Storage::disk('public')->url($path);
         }
+
+        $validated['client_identifier'] = auth()->user()->identifier;
 
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/content-creator/{$id}", $validated);

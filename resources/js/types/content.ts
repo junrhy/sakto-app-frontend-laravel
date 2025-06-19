@@ -12,11 +12,7 @@ export interface Content {
     tags?: string[];
     categories?: string[];
     author_id: number;
-    author?: {
-        id: number;
-        name: string;
-        email: string;
-    };
+    author?: string;
     scheduled_at?: string;
     created_at: string;
     updated_at: string;

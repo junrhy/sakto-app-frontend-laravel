@@ -32,7 +32,7 @@ export default function Edit({ auth, content }: Props) {
         excerpt: content.excerpt || '',
         status: content.status,
         featured_image: null as File | null,
-        author_id: content.author_id,
+        author: auth.user.name,
     });
 
     const handleSubmit = (e: FormEvent) => {
@@ -78,10 +78,6 @@ export default function Edit({ auth, content }: Props) {
                         </div>
                     </div>
                     <div className="flex space-x-2">
-                        <Button variant="outline" disabled={processing}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            Preview
-                        </Button>
                         <Button onClick={handleSubmit} disabled={processing}>
                             <Save className="w-4 h-4 mr-2" />
                             {processing ? 'Saving...' : 'Update Post'}
