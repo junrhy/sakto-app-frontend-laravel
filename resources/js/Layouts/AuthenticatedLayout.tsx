@@ -53,9 +53,9 @@ const requiresSubscription = (appParam: string | null, auth: any): boolean => {
         'events',
         'challenges',
         'content-creator',
-        'digital-products',
+        'products',
         'pages',
-        'health-insurance'
+        'healthcare'
     ];
     
     const requires = subscriptionApps.includes(appParam);
@@ -141,7 +141,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const hasEventsAccess = (enabledModules.includes('events') && appParam === 'events') ?? false;
     const hasChallengesAccess = (enabledModules.includes('challenges') && appParam === 'challenges') ?? false;
     const hasContentCreatorAccess = (enabledModules.includes('content-creator') && appParam === 'content-creator') ?? false;
-    const hasDigitalProductsAccess = (enabledModules.includes('digital-products') && appParam === 'digital-products') ?? false;
+    const hasProductsAccess = (enabledModules.includes('products') && appParam === 'products') ?? false;
     const hasPagesAccess = (enabledModules.includes('pages') && appParam === 'pages') ?? false;
     const hasHealthcareAccess = (enabledModules.includes('healthcare') && appParam === 'healthcare') ?? false;
 
@@ -397,12 +397,12 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                             </div>
                         )}
 
-                        {hasDigitalProductsAccess && (
+                        {hasProductsAccess && (
                             <div className="border-t border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Digital Products</div>
-                                    <ResponsiveNavLink href={`/digital-products?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                        Digital Products
+                                    <div className="font-medium text-base text-white/90">Products</div>
+                                    <ResponsiveNavLink href={`/products?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Products
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -1148,7 +1148,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                             </Dropdown>
                                         </div>
                                     )}
-                                    {hasDigitalProductsAccess && (
+                                    {hasProductsAccess && (
                                         <div className="inline-flex items-center">
                                             <Dropdown>
                                                 <Dropdown.Trigger>
@@ -1157,7 +1157,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                             type="button"
                                                             className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                         >
-                                                            <span className="mt-[1px]">Digital Products</span>
+                                                            <span className="mt-[1px]">Products</span>
                                                             <svg
                                                                 className="ml-2 -mr-0.5 h-4 w-4"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1175,10 +1175,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 </Dropdown.Trigger>
 
                                                 <Dropdown.Content>
-                                                    <Dropdown.Link href={`/digital-products?app=${appParam}`}>
-                                                        Digital Products
+                                                    <Dropdown.Link href={`/products?app=${appParam}`}>
+                                                        Products
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/digital-products/settings?app=${appParam}`}>
+                                                    <Dropdown.Link href={`/products/settings?app=${appParam}`}>
                                                         Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>

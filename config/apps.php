@@ -189,10 +189,10 @@ return [
         'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
     ],
     [
-        'title' => 'Digital Products',
-        'route' => '/dashboard?app=digital-products',
+        'title' => 'Products',
+        'route' => '/dashboard?app=products',
         'visible' => true,
-        'description' => 'Create and manage digital products, including ebooks, courses, and memberships.',
+        'description' => 'Create and manage products.',
         'price' => 149,
         'categories' => ['Digital', 'Products', 'Business'],
         'comingSoon' => false,

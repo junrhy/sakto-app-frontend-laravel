@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class DigitalProductController extends Controller
+class ProductController extends Controller
 {
     protected $apiUrl, $apiToken;
 
@@ -24,12 +24,12 @@ class DigitalProductController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             
             Log::info('Making API request', [
-                'url' => "{$this->apiUrl}/digital-products",
+                'url' => "{$this->apiUrl}/products",
                 'client_identifier' => $clientIdentifier
             ]);
 
             // $response = Http::withToken($this->apiToken)    
-            //     ->get("{$this->apiUrl}/digital-products", [
+            //     ->get("{$this->apiUrl}/products", [
             //         'client_identifier' => $clientIdentifier
             //     ]);
             
@@ -37,33 +37,33 @@ class DigitalProductController extends Controller
             //     Log::error('API request failed', [
             //         'status' => $response->status(),
             //         'body' => $response->body(),
-            //         'url' => "{$this->apiUrl}/digital-products"
+            //         'url' => "{$this->apiUrl}/products"
             //     ]);
                 
-            //     return back()->withErrors(['error' => 'Failed to fetch digital products']);
+            //     return back()->withErrors(['error' => 'Failed to fetch products']);
             // }
 
             // $products = $response->json();
 
             $products = [];
 
-            return Inertia::render('DigitalProducts/Index', [
+            return Inertia::render('Products/Index', [
                 'products' => $products
             ]);
         } catch (\Exception $e) {
-            Log::error('Exception in digital products index', [
+            Log::error('Exception in products index', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return back()->withErrors(['error' => 'An error occurred while fetching digital products']);
+            return back()->withErrors(['error' => 'An error occurred while fetching products']);
         }
     }
 
     public function create()
     {
         $clientIdentifier = auth()->user()->identifier;
-        return Inertia::render('DigitalProducts/Create', [
+        return Inertia::render('Products/Create', [
             'client_identifier' => $clientIdentifier
         ]);
     }
@@ -75,21 +75,27 @@ class DigitalProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'category' => 'required|string|max:255',
-            'type' => 'required|string|in:ebook,course,software,audio,other',
-            'file' => 'required|file|max:102400', // max 100MB
+            'type' => 'required|string|in:physical,digital,service,subscription',
+            'sku' => 'nullable|string|max:255',
+            'stock_quantity' => 'nullable|integer|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'dimensions' => 'nullable|string|max:255',
+            'file' => 'nullable|file|max:102400', // max 100MB for digital products
             'thumbnail' => 'nullable|image|max:2048', // max 2MB
-            'status' => 'required|string|in:draft,published,archived',
+            'status' => 'required|string|in:draft,published,archived,inactive',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:255',
+            'metadata' => 'nullable|array',
         ]);
 
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('digital_products', 'public');
+        // Handle file uploads for digital products
+        if ($request->hasFile('file') && $validated['type'] === 'digital') {
+            $path = $request->file('file')->store('products/files', 'public');
             $validated['file_url'] = Storage::disk('public')->url($path);
         }
 
         if ($request->hasFile('thumbnail')) {
-            $path = $request->file('thumbnail')->store('digital_product_thumbnails', 'public');
+            $path = $request->file('thumbnail')->store('products/thumbnails', 'public');
             $validated['thumbnail_url'] = Storage::disk('public')->url($path);
         }
 
@@ -97,27 +103,27 @@ class DigitalProductController extends Controller
         $validated['client_identifier'] = $clientIdentifier;
         
         $response = Http::withToken($this->apiToken)
-            ->post("{$this->apiUrl}/digital-products", $validated);
+            ->post("{$this->apiUrl}/products", $validated);
 
         if (!$response->successful()) {
-            return back()->withErrors(['error' => 'Failed to create digital product']);
+            return back()->withErrors(['error' => 'Failed to create product']);
         }
 
-        return redirect()->route('digital-products.index')
-            ->with('message', 'Digital product created successfully');
+        return redirect()->route('products.index')
+            ->with('message', 'Product created successfully');
     }
 
     public function show($id)
     {
         $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/digital-products/{$id}");
+            ->get("{$this->apiUrl}/products/{$id}");
         
         if (!$response->successful()) {
-            return redirect()->route('digital-products.index')
-                ->with('error', 'Digital product not found');
+            return redirect()->route('products.index')
+                ->with('error', 'Product not found');
         }
 
-        return Inertia::render('DigitalProducts/Show', [
+        return Inertia::render('Products/Show', [
             'product' => $response->json()
         ]);
     }
@@ -125,14 +131,14 @@ class DigitalProductController extends Controller
     public function edit($id)
     {
         $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/digital-products/{$id}");
+            ->get("{$this->apiUrl}/products/{$id}");
         
         if (!$response->successful()) {
-            return redirect()->route('digital-products.index')
-                ->with('error', 'Digital product not found');
+            return redirect()->route('products.index')
+                ->with('error', 'Product not found');
         }
 
-        return Inertia::render('DigitalProducts/Edit', [
+        return Inertia::render('Products/Edit', [
             'product' => $response->json()
         ]);
     }
@@ -144,10 +150,15 @@ class DigitalProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'category' => 'required|string|max:255',
-            'type' => 'required|string|in:ebook,course,software,audio,other',
-            'status' => 'required|string|in:draft,published,archived',
+            'type' => 'required|string|in:physical,digital,service,subscription',
+            'sku' => 'nullable|string|max:255',
+            'stock_quantity' => 'nullable|integer|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'dimensions' => 'nullable|string|max:255',
+            'status' => 'required|string|in:draft,published,archived,inactive',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:255',
+            'metadata' => 'nullable|array',
         ];
 
         if ($request->hasFile('file')) {
@@ -164,7 +175,7 @@ class DigitalProductController extends Controller
         if ($request->hasFile('file')) {
             // Get the old product data to delete previous file if it exists
             $getResponse = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/digital-products/{$id}");
+                ->get("{$this->apiUrl}/products/{$id}");
             
             if ($getResponse->successful()) {
                 $product = $getResponse->json();
@@ -176,14 +187,14 @@ class DigitalProductController extends Controller
                 }
             }
 
-            $path = $request->file('file')->store('digital_products', 'public');
+            $path = $request->file('file')->store('products/files', 'public');
             $validated['file_url'] = Storage::disk('public')->url($path);
         }
 
         if ($request->hasFile('thumbnail')) {
             // Get the old product data to delete previous thumbnail if it exists
             $getResponse = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/digital-products/{$id}");
+                ->get("{$this->apiUrl}/products/{$id}");
             
             if ($getResponse->successful()) {
                 $product = $getResponse->json();
@@ -195,30 +206,30 @@ class DigitalProductController extends Controller
                 }
             }
 
-            $path = $request->file('thumbnail')->store('digital_product_thumbnails', 'public');
+            $path = $request->file('thumbnail')->store('products/thumbnails', 'public');
             $validated['thumbnail_url'] = Storage::disk('public')->url($path);
         }
 
         $response = Http::withToken($this->apiToken)
-            ->put("{$this->apiUrl}/digital-products/{$id}", $validated);
+            ->put("{$this->apiUrl}/products/{$id}", $validated);
 
         if (!$response->successful()) {
-            Log::error('Failed to update digital product', [
+            Log::error('Failed to update product', [
                 'response' => $response->json(),
                 'status' => $response->status()
             ]);
-            return back()->withErrors(['error' => 'Failed to update digital product: ' . ($response->json()['message'] ?? 'Unknown error')]);
+            return back()->withErrors(['error' => 'Failed to update product: ' . ($response->json()['message'] ?? 'Unknown error')]);
         }
 
-        return redirect()->route('digital-products.index')
-            ->with('message', 'Digital product updated successfully');
+        return redirect()->route('products.index')
+            ->with('message', 'Product updated successfully');
     }
 
     public function destroy($id)
     {
         // Get product data first to get the file and thumbnail paths
         $getResponse = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/digital-products/{$id}");
+            ->get("{$this->apiUrl}/products/{$id}");
         
         if ($getResponse->successful()) {
             $product = $getResponse->json();
@@ -241,14 +252,14 @@ class DigitalProductController extends Controller
         }
 
         $response = Http::withToken($this->apiToken)
-            ->delete("{$this->apiUrl}/digital-products/{$id}");
+            ->delete("{$this->apiUrl}/products/{$id}");
 
         if (!$response->successful()) {
-            return back()->withErrors(['error' => 'Failed to delete digital product']);
+            return back()->withErrors(['error' => 'Failed to delete product']);
         }
 
-        return redirect()->route('digital-products.index')
-            ->with('message', 'Digital product deleted successfully');
+        return redirect()->route('products.index')
+            ->with('message', 'Product deleted successfully');
     }
 
     public function settings()
@@ -257,24 +268,24 @@ class DigitalProductController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/digital-products/settings", [
+                ->get("{$this->apiUrl}/products/settings", [
                     'client_identifier' => $clientIdentifier
                 ]);
             
             if (!$response->successful()) {
-                return back()->withErrors(['error' => 'Failed to fetch settings']);
+                return back()->withErrors(['error' => 'Failed to fetch product settings']);
             }
 
-            return Inertia::render('DigitalProducts/Settings', [
+            return Inertia::render('Products/Settings', [
                 'settings' => $response->json()
             ]);
         } catch (\Exception $e) {
-            Log::error('Exception in digital products settings', [
+            Log::error('Exception in products settings', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            return back()->withErrors(['error' => 'An error occurred while fetching settings']);
+            return back()->withErrors(['error' => 'An error occurred while fetching product settings']);
         }
     }
 
@@ -284,7 +295,7 @@ class DigitalProductController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/digital-products", [
+                ->get("{$this->apiUrl}/products", [
                     'client_identifier' => $clientIdentifier
                 ]);
             
@@ -294,7 +305,7 @@ class DigitalProductController extends Controller
 
             return response()->json($response->json());
         } catch (\Exception $e) {
-            Log::error('Exception in get digital products', [
+            Log::error('Exception in get products', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -307,7 +318,7 @@ class DigitalProductController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/digital-products/{$id}/download");
+                ->get("{$this->apiUrl}/products/{$id}/download");
             
             if (!$response->successful()) {
                 return back()->withErrors(['error' => 'Failed to download product']);
@@ -322,12 +333,53 @@ class DigitalProductController extends Controller
 
             return Storage::disk('public')->download($filePath, $product['name'] . '.' . pathinfo($filePath, PATHINFO_EXTENSION));
         } catch (\Exception $e) {
-            Log::error('Exception in download digital product', [
+            Log::error('Exception in download product', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return back()->withErrors(['error' => 'An error occurred while downloading the product']);
+        }
+    }
+
+    public function updateStock(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'stock_quantity' => 'required|integer|min:0',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->patch("{$this->apiUrl}/products/{$id}/stock", $validated);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to update stock']);
+        }
+
+        return back()->with('message', 'Stock updated successfully');
+    }
+
+    public function getCategories()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products/categories", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+            
+            if (!$response->successful()) {
+                return response()->json(['error' => 'Failed to fetch categories'], 500);
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in get categories', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['error' => 'An error occurred while fetching categories'], 500);
         }
     }
 }

@@ -31,7 +31,7 @@ class ModuleSeeder extends Seeder
             ['id' => 14, 'name' => 'Pages', 'identifier' => 'pages'],
             ['id' => 15, 'name' => 'Challenges', 'identifier' => 'challenges'],
             ['id' => 16, 'name' => 'Content Creator', 'identifier' => 'content-creator'],
-            ['id' => 17, 'name' => 'Digital Products', 'identifier' => 'digital-products'],
+            ['id' => 17, 'name' => 'Products', 'identifier' => 'products'],
             ['id' => 18, 'name' => 'Healthcare', 'identifier' => 'healthcare'],
             ['id' => 19, 'name' => 'Events', 'identifier' => 'events'],
         ];

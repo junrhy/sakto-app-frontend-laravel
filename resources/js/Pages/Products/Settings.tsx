@@ -43,23 +43,23 @@ export default function Settings({ auth, settings }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('digital-products.settings.update'));
+        post(route('products.settings.update'));
     };
 
     return (
         <AuthenticatedLayout
             auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Digital Products Settings</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Products Settings</h2>}
         >
-            <Head title="Digital Products Settings" />
+            <Head title="Products Settings" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Digital Products Settings</CardTitle>
+                            <CardTitle>Products Settings</CardTitle>
                             <CardDescription>
-                                Configure your digital products settings and preferences
+                                Configure your products settings and preferences
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -115,10 +115,10 @@ export default function Settings({ auth, settings }: Props) {
                                         className="mt-1 block w-full"
                                         value={data.storage_path}
                                         onChange={e => setData('storage_path', e.target.value)}
-                                        placeholder="digital_products"
+                                        placeholder="products"
                                     />
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Path where digital products will be stored
+                                        Path where products will be stored
                                     </p>
                                     <InputError message={errors.storage_path} className="mt-2" />
                                 </div>

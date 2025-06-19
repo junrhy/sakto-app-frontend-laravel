@@ -32,7 +32,7 @@ use App\Http\Controllers\AppsController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\ContentCreatorController;
-use App\Http\Controllers\DigitalProductController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\HealthInsuranceController;
 use App\Http\Controllers\LandingController;
@@ -437,18 +437,20 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         ]);
     })->name('help');
     
-    // Digital Products (subscription required)
-    Route::prefix('digital-products')->group(function () {
-        Route::get('/', [DigitalProductController::class, 'index'])->name('digital-products.index');
-        Route::get('/create', [DigitalProductController::class, 'create'])->name('digital-products.create');
-        Route::post('/', [DigitalProductController::class, 'store'])->name('digital-products.store');
-        Route::get('/{id}', [DigitalProductController::class, 'show'])->name('digital-products.show');
-        Route::get('/{id}/edit', [DigitalProductController::class, 'edit'])->name('digital-products.edit');
-        Route::put('/{id}', [DigitalProductController::class, 'update'])->name('digital-products.update');
-        Route::delete('/{id}', [DigitalProductController::class, 'destroy'])->name('digital-products.destroy');
-        Route::get('/settings', [DigitalProductController::class, 'settings'])->name('digital-products.settings');
-        Route::get('/list', [DigitalProductController::class, 'getProducts'])->name('digital-products.list');
-        Route::get('/{id}/download', [DigitalProductController::class, 'download'])->name('digital-products.download');
+    // Products (subscription required)
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/', [ProductController::class, 'store'])->name('products.store');
+        Route::get('/{id}', [ProductController::class, 'show'])->name('products.show');
+        Route::get('/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+        Route::put('/{id}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+        Route::get('/settings', [ProductController::class, 'settings'])->name('products.settings');
+        Route::get('/list', [ProductController::class, 'getProducts'])->name('products.list');
+        Route::get('/{id}/download', [ProductController::class, 'download'])->name('products.download');
+        Route::patch('/{id}/stock', [ProductController::class, 'updateStock'])->name('products.update-stock');
+        Route::get('/categories', [ProductController::class, 'getCategories'])->name('products.categories');
     });
     
     // Content Management (subscription required)
