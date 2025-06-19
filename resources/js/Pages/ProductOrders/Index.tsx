@@ -82,27 +82,50 @@ interface Props extends PageProps {
         symbol: string;
         code: string;
     };
+    errors?: {
+        [key: string]: string;
+    };
 }
 
-export default function Index({ auth, orders, currency }: Props) {
+export default function Index({ auth, orders, currency, errors }: Props) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string>('');
-    const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
     const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
 
+    // Ensure orders has proper structure with defaults
+    const safeOrders = useMemo(() => {
+        if (!orders || typeof orders !== 'object') {
+            return {
+                data: [],
+                current_page: 1,
+                last_page: 1,
+                per_page: 15,
+                total: 0
+            };
+        }
+        return {
+            data: orders.data || [],
+            current_page: orders.current_page || 1,
+            last_page: orders.last_page || 1,
+            per_page: orders.per_page || 15,
+            total: orders.total || 0
+        };
+    }, [orders]);
+
     const filteredOrders = useMemo(() => {
-        return orders.data.filter((order) => {
+        return safeOrders.data.filter((order) => {
             const matchesSearch = 
                 order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.customer_email.toLowerCase().includes(searchTerm.toLowerCase());
             
-            const matchesStatus = !statusFilter || order.order_status === statusFilter;
-            const matchesPaymentStatus = !paymentStatusFilter || order.payment_status === paymentStatusFilter;
+            const matchesStatus = statusFilter === 'all' || order.order_status === statusFilter;
+            const matchesPaymentStatus = paymentStatusFilter === 'all' || order.payment_status === paymentStatusFilter;
             
             return matchesSearch && matchesStatus && matchesPaymentStatus;
         });
-    }, [orders.data, searchTerm, statusFilter, paymentStatusFilter]);
+    }, [safeOrders.data, searchTerm, statusFilter, paymentStatusFilter]);
 
     const toggleSelect = (orderId: number) => {
         setSelectedOrders(prev => 
@@ -191,6 +214,17 @@ export default function Index({ auth, orders, currency }: Props) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    {/* Error Messages */}
+                    {errors && Object.keys(errors).length > 0 && (
+                        <div className="mb-6">
+                            {Object.entries(errors).map(([key, message]) => (
+                                <div key={key} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-2">
+                                    {message}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                         <div>
@@ -237,7 +271,7 @@ export default function Index({ auth, orders, currency }: Props) {
                                         <SelectValue placeholder="Order Status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Statuses</SelectItem>
+                                        <SelectItem value="all">All Statuses</SelectItem>
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="confirmed">Confirmed</SelectItem>
                                         <SelectItem value="processing">Processing</SelectItem>
@@ -252,7 +286,7 @@ export default function Index({ auth, orders, currency }: Props) {
                                         <SelectValue placeholder="Payment Status" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Payment Statuses</SelectItem>
+                                        <SelectItem value="all">All Payment Statuses</SelectItem>
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="paid">Paid</SelectItem>
                                         <SelectItem value="failed">Failed</SelectItem>
@@ -264,8 +298,8 @@ export default function Index({ auth, orders, currency }: Props) {
                                     variant="outline" 
                                     onClick={() => {
                                         setSearchTerm('');
-                                        setStatusFilter('');
-                                        setPaymentStatusFilter('');
+                                        setStatusFilter('all');
+                                        setPaymentStatusFilter('all');
                                     }}
                                 >
                                     Clear Filters
@@ -420,13 +454,13 @@ export default function Index({ auth, orders, currency }: Props) {
                     </Card>
 
                     {/* Pagination */}
-                    {orders.last_page > 1 && (
+                    {safeOrders.last_page > 1 && (
                         <div className="flex justify-center mt-6">
                             <div className="flex space-x-2">
-                                {Array.from({ length: orders.last_page }, (_, i) => i + 1).map((page) => (
+                                {Array.from({ length: safeOrders.last_page }, (_, i) => i + 1).map((page) => (
                                     <Button
                                         key={page}
-                                        variant={page === orders.current_page ? "default" : "outline"}
+                                        variant={page === safeOrders.current_page ? "default" : "outline"}
                                         onClick={() => router.get(route('product-orders.index'), { page })}
                                     >
                                         {page}

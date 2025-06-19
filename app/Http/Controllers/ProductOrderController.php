@@ -23,10 +23,22 @@ class ProductOrderController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             $jsonAppCurrency = json_decode(auth()->user()->app_currency);
             
+            Log::info('Fetching orders from API', [
+                'client_identifier' => $clientIdentifier,
+                'api_url' => $this->apiUrl,
+                'has_token' => !empty($this->apiToken)
+            ]);
+            
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/product-orders", [
                     'client_identifier' => $clientIdentifier
                 ]);
+            
+            Log::info('API response received', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body_length' => strlen($response->body())
+            ]);
             
             if (!$response->successful()) {
                 Log::error('Failed to fetch orders', [
@@ -37,6 +49,11 @@ class ProductOrderController extends Controller
             }
 
             $orders = $response->json();
+            
+            Log::info('Orders data processed', [
+                'orders_count' => is_array($orders) ? count($orders) : 'not_array',
+                'orders_type' => gettype($orders)
+            ]);
 
             return Inertia::render('ProductOrders/Index', [
                 'orders' => $orders,
@@ -255,7 +272,6 @@ class ProductOrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'client_identifier' => 'required|string',
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'nullable|string|max:20',
@@ -274,6 +290,9 @@ class ProductOrderController extends Controller
             'payment_method' => 'nullable|string|in:cash,card,bank_transfer,digital_wallet,cod',
             'notes' => 'nullable|string',
         ]);
+
+        // Add client_identifier from authenticated user
+        $validated['client_identifier'] = auth()->user()->identifier;
 
         try {
             $response = Http::withToken($this->apiToken)

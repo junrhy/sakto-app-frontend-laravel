@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/Components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Package, Download, ShoppingCart } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Package, Download, ShoppingCart, ListOrdered } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -227,6 +227,12 @@ export default function Index({ auth, products, currency }: Props) {
                                 Export Selected
                             </Button>
                         )}
+                        <Link href={route('product-orders.index')}>
+                            <Button variant="outline">
+                                <ListOrdered className="w-4 h-4 mr-2" />
+                                View Orders
+                            </Button>
+                        </Link>
                         <Link href={route('products.create')}>
                             <Button>
                                 <Plus className="w-4 h-4 mr-2" />

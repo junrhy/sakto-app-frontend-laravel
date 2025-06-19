@@ -84,7 +84,6 @@ export default function Checkout({ auth, currency }: Props) {
         try {
             // Prepare order data
             const orderData = {
-                client_identifier: auth.user.identifier,
                 customer_name: formData.customer_name,
                 customer_email: formData.customer_email,
                 customer_phone: formData.customer_phone,
