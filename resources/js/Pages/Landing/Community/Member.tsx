@@ -9,6 +9,10 @@ interface PageProps {
         name: string;
         email: string;
         contact_number: string | null;
+        app_currency: {
+            code: string;
+            symbol: string;
+        } | null;
         created_at: string;
     };
     challenges: any[];
@@ -205,14 +209,19 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
     // Helper function to format price
     const formatPrice = (price: number | string): string => {
+        const currency = member.app_currency?.symbol || '$';
+        let formattedPrice: string;
+        
         if (typeof price === 'number') {
-            return price.toFixed(2);
-        }
-        if (typeof price === 'string') {
+            formattedPrice = price.toFixed(2);
+        } else if (typeof price === 'string') {
             const numPrice = parseFloat(price);
-            return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+            formattedPrice = isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+        } else {
+            formattedPrice = '0.00';
         }
-        return '0.00';
+        
+        return `${currency}${formattedPrice}`;
     };
 
     const menuItems = [
@@ -410,7 +419,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                         <p className="text-gray-600 mb-4 text-sm line-clamp-2">{product.description}</p>
                                         <div className="flex items-center justify-between mb-4">
                                             <span className="text-xl font-bold text-gray-900">
-                                                ${formatPrice(product.price)}
+                                                {formatPrice(product.price)}
                                             </span>
                                             {product.stock_quantity !== null && (
                                                 <span className="text-sm text-gray-500">
@@ -418,16 +427,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                 </span>
                                             )}
                                         </div>
-                                        <button 
-                                            className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                                product.stock_quantity === 0 ? 
-                                                'bg-gray-300 text-gray-500 cursor-not-allowed' : 
-                                                'bg-blue-600 text-white hover:bg-blue-700'
-                                            }`}
-                                            disabled={product.stock_quantity === 0}
-                                        >
-                                            {product.stock_quantity === 0 ? 'Out of Stock' : 'Order Now'}
-                                        </button>
                                     </div>
                                 ))}
                             </div>

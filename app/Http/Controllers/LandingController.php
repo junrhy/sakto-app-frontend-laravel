@@ -129,8 +129,11 @@ class LandingController extends Controller
     {
         $member = User::where('project_identifier', 'community')
             ->where('id', $id)
-            ->select('id', 'name', 'email', 'contact_number', 'created_at', 'identifier')
+            ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier')
             ->firstOrFail();
+
+        // Decode the app_currency JSON
+        $member->app_currency = json_decode($member->app_currency);
 
         // Fetch challenges from API
         $challenges = [];
