@@ -59,9 +59,22 @@ interface PageProps {
         created_at: string;
         updated_at: string;
     }[];
+    updates: {
+        id: number;
+        title: string;
+        slug: string;
+        content: string;
+        excerpt: string | null;
+        status: 'draft' | 'published';
+        featured_image: string | null;
+        author: string;
+        client_identifier: string;
+        created_at: string;
+        updated_at: string;
+    }[];
 }
 
-export default function Member({ member, challenges, events, pages, contacts }: PageProps) {
+export default function Member({ member, challenges, events, pages, contacts, updates }: PageProps) {
     const [activeSection, setActiveSection] = useState('updates');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [visitorInfo, setVisitorInfo] = useState({
@@ -179,30 +192,6 @@ export default function Member({ member, challenges, events, pages, contacts }: 
         { id: 'events', label: 'Events', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
     ];
 
-    const dummyUpdates = [
-        {
-            id: 1,
-            user: 'Jane Doe',
-            avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-            time: '2 hours ago',
-            content: 'Excited to join the Sakto Community! Looking forward to connecting with everyone.'
-        },
-        {
-            id: 2,
-            user: 'John Smith',
-            avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-            time: '5 hours ago',
-            content: "Don't forget about the upcoming community event this weekend!"
-        },
-        {
-            id: 3,
-            user: 'Maria Garcia',
-            avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-            time: '1 day ago',
-            content: 'Shared a new resource in the Resources section. Check it out!'
-        },
-    ];
-
     const renderContent = () => {
         switch (activeSection) {
             case 'updates':
@@ -210,18 +199,48 @@ export default function Member({ member, challenges, events, pages, contacts }: 
                     <div className="bg-white rounded-xl shadow-sm p-8">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Updates</h2>
                         <div className="space-y-6">
-                            {dummyUpdates.map(update => (
-                                <div key={update.id} className="border border-gray-200 rounded-lg p-4 flex items-start gap-4">
-                                    <img src={update.avatar} alt={update.user} className="w-12 h-12 rounded-full object-cover" />
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium text-gray-900">{update.user}</span>
-                                            <span className="text-xs text-gray-400">{update.time}</span>
+                            {updates.length === 0 ? (
+                                <div className="text-center text-gray-500 py-8">No updates found.</div>
+                            ) : (
+                                updates.map(update => (
+                                    <div key={update.id} className="border border-gray-200 rounded-lg p-4 flex items-start gap-4">
+                                        {update.featured_image ? (
+                                            <img src={update.featured_image} alt={update.title} className="w-12 h-12 rounded-lg object-cover" />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-medium text-gray-900">{update.title}</span>
+                                                <span className="text-xs text-gray-400">
+                                                    {new Date(update.created_at).toLocaleDateString('en-US', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    })}
+                                                </span>
+                                            </div>
+                                            {update.excerpt && (
+                                                <p className="text-sm text-gray-600 mb-2">{update.excerpt}</p>
+                                            )}
+                                            <div className="text-xs text-gray-500 mb-2">
+                                                By {update.author}
+                                            </div>
+                                            <div className="text-gray-700 text-sm line-clamp-3" 
+                                                 dangerouslySetInnerHTML={{ 
+                                                     __html: update.content.length > 200 
+                                                         ? update.content.substring(0, 200) + '...' 
+                                                         : update.content 
+                                                 }} 
+                                            />
                                         </div>
-                                        <p className="text-gray-700">{update.content}</p>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
                 );

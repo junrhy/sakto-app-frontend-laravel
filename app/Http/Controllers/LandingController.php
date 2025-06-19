@@ -194,6 +194,23 @@ class LandingController extends Controller
             // Optionally log error
         }
 
+        // Fetch content/updates from API
+        $updates = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/content-creator", [
+                    'client_identifier' => $member->identifier,
+                    'status' => 'published',
+                    'limit' => 10 // Get the latest 10 published content items
+                ]);
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $updates = $responseData['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
         return Inertia::render('Landing/Community/Member', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -203,7 +220,8 @@ class LandingController extends Controller
             'challenges' => $challenges,
             'events' => $events,
             'pages' => $pages,
-            'contacts' => $contacts
+            'contacts' => $contacts,
+            'updates' => $updates
         ]);
     }
 
