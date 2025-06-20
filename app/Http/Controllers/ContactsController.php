@@ -452,4 +452,18 @@ class ContactsController extends Controller
             ], 500);
         }
     }
+
+    public function destroyBulk(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids)) {
+            return back()->withErrors(['error' => 'No contacts selected for deletion.']);
+        }
+        $response = \Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/contacts/bulk-delete", [ 'ids' => $ids ]);
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to bulk delete contacts.']);
+        }
+        return redirect()->route('contacts.index')->with('message', 'Contacts deleted successfully.');
+    }
 }

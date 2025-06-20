@@ -155,6 +155,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/store-self', [ContactsController::class, 'storeSelf'])->name('contacts.store-self');
         Route::get('/{id}/public', [ContactsController::class, 'publicProfile'])->name('contacts.public-profile');
         Route::get('/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
+        Route::post('/bulk-delete', [ContactsController::class, 'destroyBulk'])->name('contacts.bulk-delete');
     });
 
     // Public Genealogy Routes

@@ -33,6 +33,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/select";
+import { QRCodeSVG } from 'qrcode.react';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/Components/ui/tabs";
 
 interface IdNumber {
     id: number;
@@ -89,6 +96,7 @@ export default function Index({ auth, contacts }: Props) {
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [groupFilter, setGroupFilter] = useState<string>('all');
+    const [activeTab, setActiveTab] = useState<string>('details');
 
     // Parse id_numbers if it's a string
     const parseIdNumbers = (idNumbers: any) => {
@@ -230,6 +238,16 @@ export default function Index({ auth, contacts }: Props) {
         }
     };
 
+    const handleBulkDelete = async () => {
+        if (selectedContacts.length === 0) return;
+        if (!window.confirm('Are you sure you want to delete the selected contacts?')) return;
+        router.post(route('contacts.bulk-delete'), { ids: selectedContacts }, {
+            onSuccess: () => {
+                setSelectedContacts([]);
+            }
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -274,7 +292,7 @@ export default function Index({ auth, contacts }: Props) {
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                                <Button variant="destructive" size="sm" className="whitespace-nowrap">
+                                <Button variant="destructive" size="sm" className="whitespace-nowrap" onClick={handleBulkDelete}>
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Delete ({selectedContacts.length})
                                 </Button>
@@ -424,8 +442,8 @@ export default function Index({ auth, contacts }: Props) {
                         <DialogTitle className="text-gray-900 dark:text-gray-100">Contact Details</DialogTitle>
                     </DialogHeader>
                     {selectedContact && (
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="col-span-2 flex items-center justify-between">
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-4">
                                     {selectedContact.id_picture ? (
                                         <img 
@@ -474,81 +492,216 @@ export default function Index({ auth, contacts }: Props) {
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Groups</h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedContact.group && selectedContact.group.length > 0 ? (
-                                            selectedContact.group.map((group, index) => (
-                                                <span
-                                                    key={index}
-                                                    className="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                                                >
-                                                    {group}
-                                                </span>
-                                            ))
-                                        ) : (
-                                            <p className="text-gray-500 dark:text-gray-400">No groups assigned</p>
-                                        )}
-                                    </div>
-                                </div>
+                            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                                <TabsList className="grid w-full grid-cols-5 bg-gray-100 dark:bg-gray-800">
+                                    <TabsTrigger value="details" className="text-gray-700 dark:text-gray-300">Details</TabsTrigger>
+                                    <TabsTrigger value="contact" className="text-gray-700 dark:text-gray-300">Contact</TabsTrigger>
+                                    <TabsTrigger value="social" className="text-gray-700 dark:text-gray-300">Social</TabsTrigger>
+                                    <TabsTrigger value="qr" className="text-gray-700 dark:text-gray-300">QR Code</TabsTrigger>
+                                    <TabsTrigger value="idcard" className="text-gray-700 dark:text-gray-300">ID Card</TabsTrigger>
+                                </TabsList>
 
-                                <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">ID Numbers</h4>
-                                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                                        {Array.isArray(selectedContact.id_numbers) && selectedContact.id_numbers.length > 0 ? (
-                                            selectedContact.id_numbers.map((idNum, index) => (
-                                                <div key={`${idNum.type}-${idNum.number}-${index}`} className="flex items-center justify-between py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{idNum.type}:</span>
-                                                        <span className="text-sm text-gray-600 dark:text-gray-400">{idNum.number}</span>
+                                <TabsContent value="details" className="space-y-6 mt-6">
+                                    <div>
+                                        <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Groups</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedContact.group && selectedContact.group.length > 0 ? (
+                                                selectedContact.group.map((group, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="inline-flex items-center px-2 py-1 rounded text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                                                    >
+                                                        {group}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <p className="text-gray-500 dark:text-gray-400">No groups assigned</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">ID Numbers</h4>
+                                        <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                                            {Array.isArray(selectedContact.id_numbers) && selectedContact.id_numbers.length > 0 ? (
+                                                selectedContact.id_numbers.map((idNum, index) => (
+                                                    <div key={`${idNum.type}-${idNum.number}-${index}`} className="flex items-center justify-between py-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{idNum.type}:</span>
+                                                            <span className="text-sm text-gray-600 dark:text-gray-400">{idNum.number}</span>
+                                                        </div>
+                                                        {idNum.notes && (
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                                                {idNum.notes}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    {idNum.notes && (
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400 italic">
-                                                            {idNum.notes}
-                                                        </span>
-                                                    )}
+                                                ))
+                                            ) : (
+                                                <p className="text-gray-500 dark:text-gray-400 py-3">No ID numbers added</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Personal Information</h4>
+                                        <div className="space-y-3">
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Date of Birth:</span> {formatDate(selectedContact.date_of_birth)}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Father's Name:</span> {selectedContact.fathers_name || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Mother's Maiden Name:</span> {selectedContact.mothers_maiden_name || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Address:</span> {selectedContact.address || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Notes:</span> {selectedContact.notes || '-'}</p>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="contact" className="space-y-6 mt-6">
+                                    <div>
+                                        <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Contact Information</h4>
+                                        <div className="space-y-3">
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Email:</span> {selectedContact.email}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Call Number:</span> {selectedContact.call_number || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">SMS Number:</span> {selectedContact.sms_number || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">WhatsApp:</span> {selectedContact.whatsapp || '-'}</p>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="social" className="space-y-6 mt-6">
+                                    <div>
+                                        <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Social Media</h4>
+                                        <div className="space-y-3">
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Facebook:</span> {selectedContact.facebook || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Instagram:</span> {selectedContact.instagram || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Twitter:</span> {selectedContact.twitter || '-'}</p>
+                                            <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">LinkedIn:</span> {selectedContact.linkedin || '-'}</p>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="qr" className="space-y-6 mt-6">
+                                    <div>
+                                        <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Public Profile QR Code</h4>
+                                        <div className="flex flex-col items-center space-y-4">
+                                            <QRCodeSVG
+                                                value={route('contacts.public-profile', selectedContact.id)}
+                                                size={200}
+                                                level="M"
+                                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white"
+                                            />
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                                                Scan this QR code to view the public profile
+                                            </p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+                                                {route('contacts.public-profile', selectedContact.id)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="idcard" className="space-y-6 mt-6">
+                                    <div>
+                                        <div className="flex flex-col lg:flex-row gap-6">
+                                            {/* Front of ID Card */}
+                                            <div className="flex-1">
+                                                <h5 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Front</h5>
+                                                <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-lg shadow-lg border border-blue-700" style={{ width: '240px', height: '380px', padding: '16px' }}>
+                                                    <div className="text-center mb-4">
+                                                        <div className="flex justify-center mb-3">
+                                                            {selectedContact.id_picture ? (
+                                                                <img 
+                                                                    src={selectedContact.id_picture} 
+                                                                    alt={`${selectedContact.first_name}'s ID`}
+                                                                    className="w-20 h-24 object-cover rounded border-2 border-white shadow-lg"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-20 h-24 bg-blue-500 rounded border-2 border-white shadow-lg flex items-center justify-center">
+                                                                    <span className="text-white text-sm font-medium">PHOTO</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <h3 className="text-lg font-bold mb-1 leading-tight">
+                                                            {selectedContact.first_name} {selectedContact.middle_name} {selectedContact.last_name}
+                                                        </h3>
+                                                        <p className="text-blue-100 text-sm capitalize">{selectedContact.gender}</p>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-3 text-sm">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-blue-100 font-medium">Email:</span>
+                                                            <span className="font-medium truncate ml-2 text-right">{selectedContact.email}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-blue-100 font-medium">Phone:</span>
+                                                            <span className="font-medium truncate ml-2 text-right">{selectedContact.call_number || selectedContact.sms_number || selectedContact.whatsapp || 'N/A'}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-blue-100 font-medium">DOB:</span>
+                                                            <span className="font-medium">{formatDate(selectedContact.date_of_birth) || 'N/A'}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-start">
+                                                            <span className="text-blue-100 font-medium">Address:</span>
+                                                            <span className="font-medium text-right max-w-[140px] ml-2">{selectedContact.address || 'N/A'}</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="mt-4 pt-3 border-t border-blue-500 text-center">
+                                                        <p className="text-xs text-blue-100">
+                                                            A member of {auth.user.name}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-gray-500 dark:text-gray-400 py-3">No ID numbers added</p>
-                                        )}
-                                    </div>
-                                </div>
+                                            </div>
 
-                                <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Personal Information</h4>
-                                    <div className="space-y-3">
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Date of Birth:</span> {formatDate(selectedContact.date_of_birth)}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Father's Name:</span> {selectedContact.fathers_name || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Mother's Maiden Name:</span> {selectedContact.mothers_maiden_name || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Address:</span> {selectedContact.address || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Notes:</span> {selectedContact.notes || '-'}</p>
-                                    </div>
-                                </div>
-                            </div>
+                                            {/* Back of ID Card */}
+                                            <div className="flex-1">
+                                                <h5 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Back</h5>
+                                                <div className="bg-gradient-to-br from-gray-700 to-gray-900 text-white rounded-lg shadow-lg border border-gray-600" style={{ width: '240px', height: '380px', padding: '16px' }}>
+                                                    <div className="text-center mb-4">
+                                                        <h4 className="text-base font-bold text-gray-100 mb-3">Emergency Contacts</h4>
+                                                        <div className="space-y-2 text-sm">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-300">Father:</span>
+                                                                <span className="font-medium truncate ml-1">{selectedContact.fathers_name || 'N/A'}</span>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <span className="text-gray-300">Mother:</span>
+                                                                <span className="font-medium truncate ml-1">{selectedContact.mothers_maiden_name || 'N/A'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                            <div className="space-y-6">
-                                <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Contact Information</h4>
-                                    <div className="space-y-3">
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Email:</span> {selectedContact.email}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Call Number:</span> {selectedContact.call_number || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">SMS Number:</span> {selectedContact.sms_number || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">WhatsApp:</span> {selectedContact.whatsapp || '-'}</p>
+                                                    <div className="border-t border-gray-600 pt-4 flex-1 flex flex-col justify-center">
+                                                        <h4 className="text-base font-bold text-gray-100 mb-3 text-center">QR Code</h4>
+                                                        <div className="flex justify-center">
+                                                            <QRCodeSVG
+                                                                value={route('contacts.public-profile', selectedContact.id)}
+                                                                size={140}
+                                                                level="M"
+                                                                className="bg-white p-2 rounded"
+                                                            />
+                                                        </div>
+                                                        <p className="text-sm text-gray-400 text-center mt-2">
+                                                            Scan to view profile
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4 text-center">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => window.print()}
+                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            >
+                                                Print ID Card
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-medium text-gray-500 dark:text-gray-400 mb-4">Social Media</h4>
-                                    <div className="space-y-3">
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Facebook:</span> {selectedContact.facebook || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Instagram:</span> {selectedContact.instagram || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">Twitter:</span> {selectedContact.twitter || '-'}</p>
-                                        <p className="text-gray-700 dark:text-gray-300"><span className="font-medium">LinkedIn:</span> {selectedContact.linkedin || '-'}</p>
-                                    </div>
-                                </div>
-                            </div>
+                                </TabsContent>
+                            </Tabs>
                         </div>
                     )}
                 </DialogContent>
