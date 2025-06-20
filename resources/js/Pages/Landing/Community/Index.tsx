@@ -39,98 +39,64 @@ export default function Community({ auth, communityUsers }: PageProps) {
     return (
         <>
             <Head title="Community - Connect and Share" />
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-                {/* Hero Section */}
-                <div className="relative overflow-hidden bg-white">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-                            <div className="pt-16 sm:pt-24 lg:pt-32 px-4 sm:px-6 lg:px-8">
-                                <div className="text-center lg:text-left">
-                                    <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                                        <span className="block">Connect with your</span>
-                                        <span className="block text-indigo-600">Family</span>
-                                    </h1>
-                                    <p className="mt-5 max-w-xl mx-auto lg:mx-0 text-xl text-gray-500">
-                                        Reunite with relatives, strengthen family bonds, and build lasting connections across generations in our family-focused communities.
-                                    </p>
-                                    <div className="mt-8 flex justify-center lg:justify-start">
-                                        <div className="rounded-md shadow">
-                                            <Link
-                                                href={route('register', { project: 'community' })}
-                                                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:scale-105"
-                                            >
-                                                Add your family
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
+            <div className="min-h-screen bg-gray-50">
+                {/* Header */}
+                <div className="bg-indigo-600 shadow-sm border-b border-indigo-700">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex items-center">
+                                <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
+                                <span className="ml-2 text-xl font-bold text-white">Sakto Community</span>
                             </div>
-                        </div>
-                    </div>
-                    <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 hidden lg:block">
-                        <div className="h-56 w-full sm:h-72 md:h-96 lg:w-full lg:h-full relative">
-                            <img
-                                className="absolute inset-0 w-full h-full object-cover"
-                                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                                alt="Family gathering"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/90 to-purple-600/90 mix-blend-multiply"></div>
+                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                <div className="relative w-full sm:min-w-96">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Search communities..."
+                                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                <Link
+                                    href={route('register', { project: 'community' })}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 transition-colors duration-200 w-full sm:w-auto justify-center whitespace-nowrap"
+                                >
+                                    New Community
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    {/* Community Members Section */}
-                    <div className="mt-12">
-                        <div className="flex flex-col space-y-4 mb-8">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-3xl font-bold text-gray-900">Community Members</h2>
-                                <div className="text-sm text-gray-500">
-                                    {searchQuery ? (
-                                        <span>Showing {filteredCount} of {totalMembers} members</span>
-                                    ) : (
-                                        <span>{totalMembers} members</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="relative max-w-md">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    {/* Members Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                        {filteredUsers.length > 0 ? (
+                            filteredUsers.map((user) => (
+                                <MemberCard key={user.id} user={user} />
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-12">
+                                <div className="max-w-md mx-auto">
+                                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        {searchQuery ? 'Try adjusting your search terms.' : 'No members have joined yet.'}
+                                    </p>
                                 </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search members..."
-                                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
                             </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {filteredUsers.length > 0 ? (
-                                filteredUsers.map((user) => (
-                                    <MemberCard key={user.id} user={user} />
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center py-12">
-                                    <p className="text-gray-500 text-lg">No members found matching your search.</p>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </div>
                 </div>
-
-                {/* Footer */}
-                <footer className="bg-white border-t border-gray-100 mt-12">
-                    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                        <p className="text-center text-base text-gray-400">
-                            &copy; {new Date().getFullYear()} Sakto Community Platform. All rights reserved.
-                        </p>
-                    </div>
-                </footer>
             </div>
         </>
     );

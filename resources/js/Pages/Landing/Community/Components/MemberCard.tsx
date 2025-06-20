@@ -28,8 +28,8 @@ export default function MemberCard({ user }: MemberCardProps) {
             </div>
             <div className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
-                <p className="mt-2 text-sm text-gray-500">{user.email}</p>
-                <p className="mt-1 text-sm text-gray-400">
+                <p className="mt-2 text-sm text-gray-500 hidden sm:block">{user.email}</p>
+                <p className="mt-1 text-sm text-gray-400 hidden sm:block">
                     Joined {new Date(user.created_at).toLocaleDateString()}
                 </p>
             </div>
