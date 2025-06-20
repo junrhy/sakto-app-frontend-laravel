@@ -6,7 +6,7 @@ import { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, startOfWeek, endOfWeek } from 'date-fns';
 import { toast } from 'sonner';
 import {
     Tooltip,
@@ -55,8 +55,8 @@ export default function Calendar({ auth }: PageProps) {
     };
 
     const getDaysInMonth = () => {
-        const start = startOfMonth(currentDate);
-        const end = endOfMonth(currentDate);
+        const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 }); // Start from Sunday
+        const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 }); // End on Saturday
         return eachDayOfInterval({ start, end });
     };
 
