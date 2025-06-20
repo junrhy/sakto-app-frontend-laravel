@@ -123,10 +123,11 @@ class ContentCreatorController extends Controller
             'author' => 'required|string',
         ];
 
+        // Handle featured_image validation
         if ($request->hasFile('featured_image')) {
-            $rules['featured_image'] = 'required|image|max:2048';
+            $rules['featured_image'] = 'image|max:2048';
         } else {
-            $rules['featured_image'] = 'nullable|string';
+            $rules['featured_image'] = 'nullable';
         }
 
         $validated = $request->validate($rules);

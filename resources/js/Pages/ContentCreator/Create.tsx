@@ -29,14 +29,68 @@ export default function Create({ auth, client_identifier }: Props) {
         author: auth.user.name,
     });
 
+    // Track if a file is selected
+    const [fileSelected, setFileSelected] = useState(false);
+
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        router.post(route('content-creator.store'), data);
+        
+        const routeUrl = route('content-creator.store');
+        
+        // Check if there's a file to upload
+        if (data.featured_image instanceof File) {
+            // Create FormData for file upload
+            const formData = new FormData();
+            
+            // Ensure all form fields are properly appended
+            formData.append('title', data.title || '');
+            formData.append('slug', data.slug || '');
+            formData.append('content', data.content || '');
+            formData.append('excerpt', data.excerpt || '');
+            formData.append('status', data.status || 'draft');
+            formData.append('author', data.author || '');
+            formData.append('featured_image', data.featured_image);
+            
+            // Use Inertia router with FormData
+            router.post(routeUrl, formData, {
+                forceFormData: true,
+                onSuccess: () => {
+                    // Success handled by redirect
+                },
+                onError: (errors) => {
+                    console.log('Errors:', errors);
+                }
+            });
+        } else {
+            // Use regular data without file
+            const formData = {
+                title: data.title,
+                slug: data.slug,
+                content: data.content,
+                excerpt: data.excerpt,
+                status: data.status,
+                author: data.author,
+            };
+            
+            // Use Inertia router with regular data
+            router.post(routeUrl, formData, {
+                onSuccess: () => {
+                    // Success handled by redirect
+                },
+                onError: (errors) => {
+                    console.log('Errors:', errors);
+                }
+            });
+        }
     };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setData('featured_image', e.target.files[0]);
+            setFileSelected(true);
+        } else {
+            setData('featured_image', null);
+            setFileSelected(false);
         }
     };
 
@@ -70,12 +124,6 @@ export default function Create({ auth, client_identifier }: Props) {
                                 Write and publish your post
                             </p>
                         </div>
-                    </div>
-                    <div className="flex space-x-2">
-                        <Button onClick={handleSubmit} disabled={processing}>
-                            <Save className="w-4 h-4 mr-2" />
-                            {processing ? 'Saving...' : 'Save Post'}
-                        </Button>
                     </div>
                 </div>
             }
@@ -209,6 +257,16 @@ export default function Create({ auth, client_identifier }: Props) {
                                                 <p><strong>Created:</strong> {new Date().toLocaleDateString()}</p>
                                             </div>
                                         </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Submit Button */}
+                                <Card>
+                                    <CardContent className="pt-6">
+                                        <Button type="submit" disabled={processing} className="w-full">
+                                            <Save className="w-4 h-4 mr-2" />
+                                            {processing ? 'Saving...' : 'Save Post'}
+                                        </Button>
                                     </CardContent>
                                 </Card>
                             </div>
