@@ -422,9 +422,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         {hasHealthcareAccess && (
                             <div className="border-t border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Health Insurance</div>
+                                    <div className="font-medium text-base text-white/90">Healthcare</div>
                                     <ResponsiveNavLink href={`/health-insurance?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                        Health Insurance
+                                        Healthcare
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -1231,7 +1231,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                             type="button"
                                                             className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
                                                         >
-                                                            <span className="mt-[1px]">Health Insurance</span>
+                                                            <span className="mt-[1px]">Healthcare</span>
                                                             <svg
                                                                 className="ml-2 -mr-0.5 h-4 w-4"
                                                                 xmlns="http://www.w3.org/2000/svg"

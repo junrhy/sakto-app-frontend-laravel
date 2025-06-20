@@ -109,6 +109,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [expandedUpdates, setExpandedUpdates] = useState<Set<number>>(new Set());
 
     // Helper function to format datetime for display (handles timezone properly)
     const formatDateTimeForDisplay = (dateTimeString: string | null | undefined, options?: Intl.DateTimeFormatOptions) => {
@@ -275,6 +276,18 @@ export default function Member({ member, challenges, events, pages, contacts, up
         });
     };
 
+    const toggleUpdateExpansion = (updateId: number) => {
+        setExpandedUpdates(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(updateId)) {
+                newSet.delete(updateId);
+            } else {
+                newSet.add(updateId);
+            }
+            return newSet;
+        });
+    };
+
     // Helper function to format price
     const formatPrice = (price: number | string): string => {
         const currency = member.app_currency?.symbol || '$';
@@ -306,7 +319,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
             case 'updates':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Updates</h2>
                         <div className="space-y-4">
                             {updates.length === 0 ? (
                                 <div className="text-center text-gray-500 py-12">
@@ -365,23 +377,18 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                             {/* Post Content */}
                                             <div className="px-4 pb-3">
-                                                <h4 className="font-semibold text-gray-900 mb-2 text-base">
-                                                    {update.title}
-                                                </h4>
-                                                {update.excerpt && (
-                                                    <p className="text-gray-700 text-sm mb-3 leading-relaxed">
-                                                        {update.excerpt}
-                                                    </p>
-                                                )}
                                                 <div className="text-gray-700 text-sm leading-relaxed" 
                                                      dangerouslySetInnerHTML={{ 
-                                                         __html: update.content.length > 300 
-                                                             ? update.content.substring(0, 300) + '...' 
-                                                             : update.content 
+                                                         __html: expandedUpdates.has(update.id) || update.content.length <= 300
+                                                             ? update.content 
+                                                             : update.content.substring(0, 300) + '...' 
                                                      }} 
                                                 />
-                                                {update.content.length > 300 && (
-                                                    <button className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2">
+                                                {update.content.length > 300 && !expandedUpdates.has(update.id) && (
+                                                    <button 
+                                                        onClick={() => toggleUpdateExpansion(update.id)}
+                                                        className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 transition-colors"
+                                                    >
                                                         See more
                                                     </button>
                                                 )}
@@ -389,7 +396,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                             {/* Post Image */}
                                             {update.featured_image && (
-                                                <div className="px-4 pb-3">
+                                                <div>
                                                     <img 
                                                         src={update.featured_image} 
                                                         alt={update.title} 
