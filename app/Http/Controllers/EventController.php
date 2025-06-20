@@ -93,6 +93,7 @@ class EventController extends Controller
             'is_public' => 'boolean',
             'category' => 'required|string',
             'image' => 'nullable|image|max:2048',
+            'status' => 'nullable|in:draft,published,archived',
         ]);
 
         if ($request->hasFile('image')) {
@@ -152,6 +153,7 @@ class EventController extends Controller
             'is_public' => 'boolean',
             'category' => 'required|string',
             'image' => 'nullable|image|max:2048',
+            'status' => 'nullable|in:draft,published,archived',
         ]);
 
         // Add client_identifier to the validated data
