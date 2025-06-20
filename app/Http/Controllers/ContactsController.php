@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class ContactsController extends Controller
 {
@@ -242,9 +243,31 @@ class ContactsController extends Controller
             ->with('message', 'Contact deleted successfully');
     }
 
-    public function selfRegistration()
+    public function selfRegistration(Request $request)
     {
-        return Inertia::render('Contacts/SelfRegistration');
+        $clientIdentifier = $request->query('client_identifier');
+        
+        if (!$clientIdentifier) {
+            return redirect('/')->with('error', 'Client identifier is required');
+        }
+
+        // Find the user by identifier
+        $user = User::where('identifier', $clientIdentifier)->first();
+        
+        if (!$user) {
+            return redirect('/')->with('error', 'Invalid client identifier');
+        }
+
+        return Inertia::render('Contacts/SelfRegistration', [
+            'client_identifier' => $clientIdentifier,
+            'auth' => [
+                'user' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'identifier' => $user->identifier
+                ]
+            ]
+        ]);
     }
 
     public function publicProfile($id)
@@ -302,7 +325,7 @@ class ContactsController extends Controller
             return back()->withErrors(['error' => 'Failed to submit registration']);
         }
 
-        return redirect()->route('contacts.self-registration')
+        return redirect()->route('contacts.self-registration', ['client_identifier' => $validated['client_identifier']])
             ->with('message', 'Registration submitted successfully! We will review your information.');
     }
 

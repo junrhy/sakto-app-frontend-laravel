@@ -4,7 +4,7 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusIcon, XIcon } from 'lucide-react';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { cn } from '@/lib/utils';
@@ -21,15 +21,21 @@ interface Props {
         error?: string;
     };
     client_identifier?: string;
+    auth?: {
+        user: {
+            name: string;
+            email: string;
+        };
+    };
 }
 
-export default function SelfRegistration({ flash = {}, client_identifier }: Props) {
+export default function SelfRegistration({ flash = {}, client_identifier, auth }: Props) {
     const { url } = usePage();
     const urlParams = new URLSearchParams(url.split('?')[1]);
     const urlClientIdentifier = urlParams.get('client_identifier') || client_identifier || '';
     
     const { data, setData, post, processing, errors } = useForm({
-        client_identifier: urlClientIdentifier,
+        client_identifier: client_identifier || urlClientIdentifier,
         first_name: '',
         middle_name: '',
         last_name: '',
@@ -51,6 +57,7 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -86,27 +93,79 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        post(route('contacts.store-self'));
+        post(route('contacts.store-self'), {
+            onSuccess: () => {
+                setShowSuccess(true);
+            }
+        });
     }
 
-    return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12">
-            <Head title="Contact Self Registration" />
+    useEffect(() => {
+        if (flash.message) {
+            setShowSuccess(true);
+        }
+    }, [flash.message]);
 
-            <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                <div className="bg-white dark:bg-gray-800/40 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="p-6 space-y-8">
-                        <div className="flex justify-between items-center">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                                Contact Self Registration
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12">
+            <Head title="Contact Registration" />
+
+            <div className="max-w-5xl mx-auto sm:px-6 lg:px-8">
+                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl overflow-hidden shadow-2xl sm:rounded-2xl border border-white/20 dark:border-gray-700/50">
+                    <div className="p-8 space-y-8">
+                        <div className="text-center space-y-4">
+                            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg">
+                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                                Contact Registration
                             </h1>
-                            <a 
-                                href="/"
-                                className="text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-                            >
-                                Back to Home
-                            </a>
+                            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                                Complete your contact information to get started
+                            </p>
                         </div>
+
+                        {auth?.user && (
+                            <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-400/20 dark:to-indigo-400/20 border border-blue-200/50 dark:border-blue-400/30 rounded-xl p-6 backdrop-blur-sm">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-blue-900 dark:text-blue-100 font-medium">
+                                            Are you a member of the <span className="font-bold text-blue-700 dark:text-blue-300">{auth.user.name}</span>?
+                                        </p>
+                                        <p className="text-blue-700 dark:text-blue-200 text-sm">
+                                            Please complete your contact information below to continue.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {showSuccess && (
+                            <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-400/20 dark:to-emerald-400/20 border border-green-200/50 dark:border-green-400/30 rounded-xl p-6 backdrop-blur-sm">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-green-900 dark:text-green-100 font-medium">
+                                            Registration Successful!
+                                        </p>
+                                        <p className="text-green-700 dark:text-green-200 text-sm">
+                                            Your contact information has been submitted successfully. We will review your details shortly.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {flash.message && (
                             <Alert className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800">
@@ -125,47 +184,50 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="space-y-2">
-                                <Label htmlFor="client_identifier" className="text-gray-700 dark:text-gray-300">Client Identifier</Label>
-                                <Input
-                                    id="client_identifier"
-                                    value={data.client_identifier}
-                                    onChange={e => setData('client_identifier', e.target.value)}
-                                    placeholder="Enter client identifier"
-                                    readOnly={!!urlClientIdentifier}
-                                    className={cn(
-                                        "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700",
-                                        urlClientIdentifier && "bg-gray-100 dark:bg-gray-800"
-                                    )}
-                                />
-                                {errors.client_identifier && (
-                                    <p className="text-sm text-red-600 dark:text-red-400">{errors.client_identifier}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Profile Picture</h3>
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Profile Picture</h3>
+                                </div>
                                 <div className="flex items-center gap-6">
                                     {previewUrl ? (
-                                        <img 
-                                            src={previewUrl} 
-                                            alt="ID Preview" 
-                                            className="w-32 h-32 object-cover rounded-lg ring-2 ring-gray-200 dark:ring-gray-700"
-                                        />
+                                        <div className="relative">
+                                            <img 
+                                                src={previewUrl} 
+                                                alt="ID Preview" 
+                                                className="w-32 h-32 object-cover rounded-2xl ring-4 ring-white dark:ring-gray-700 shadow-lg"
+                                            />
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
                                     ) : (
-                                        <div className="w-32 h-32 bg-gray-100 dark:bg-gray-800 rounded-lg ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
-                                            <span className="text-gray-500 dark:text-gray-400">No Image</span>
+                                        <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl ring-4 ring-white dark:ring-gray-700 shadow-lg flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                            <div className="text-center">
+                                                <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">No Image</span>
+                                            </div>
                                         </div>
                                     )}
-                                    <div className="flex-1 space-y-2">
-                                        <Label htmlFor="id_picture" className="text-gray-700 dark:text-gray-300">Upload Photo</Label>
-                                        <Input
-                                            id="id_picture"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageChange}
-                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
-                                        />
+                                    <div className="flex-1 space-y-3">
+                                        <Label htmlFor="id_picture" className="text-gray-700 dark:text-gray-300 font-medium">Upload Photo</Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="id_picture"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-colors file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-900/20 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/30 file:cursor-pointer h-11"
+                                            />
+                                        </div>
                                         {errors.id_picture && (
                                             <p className="text-sm text-red-600 dark:text-red-400">{errors.id_picture}</p>
                                         )}
@@ -173,16 +235,24 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+                                </div>
                                 <div className="grid grid-cols-3 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300">First Name</Label>
+                                        <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300 font-medium">First Name</Label>
                                         <Input
                                             id="first_name"
                                             value={data.first_name}
                                             onChange={e => setData('first_name', e.target.value)}
-                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                                            placeholder="Enter first name"
                                         />
                                         {errors.first_name && (
                                             <p className="text-sm text-red-600 dark:text-red-400">{errors.first_name}</p>
@@ -190,12 +260,13 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="middle_name" className="text-gray-700 dark:text-gray-300">Middle Name</Label>
+                                        <Label htmlFor="middle_name" className="text-gray-700 dark:text-gray-300 font-medium">Middle Name</Label>
                                         <Input
                                             id="middle_name"
                                             value={data.middle_name}
                                             onChange={e => setData('middle_name', e.target.value)}
-                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                                            placeholder="Enter middle name"
                                         />
                                         {errors.middle_name && (
                                             <p className="text-sm text-red-600 dark:text-red-400">{errors.middle_name}</p>
@@ -203,12 +274,13 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300">Last Name</Label>
+                                        <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300 font-medium">Last Name</Label>
                                         <Input
                                             id="last_name"
                                             value={data.last_name}
                                             onChange={e => setData('last_name', e.target.value)}
-                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                                            placeholder="Enter last name"
                                         />
                                         {errors.last_name && (
                                             <p className="text-sm text-red-600 dark:text-red-400">{errors.last_name}</p>
@@ -217,12 +289,12 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300">Gender</Label>
+                                    <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300 font-medium">Gender</Label>
                                     <Select
                                         value={data.gender}
                                         onValueChange={(value: 'male' | 'female' | 'other') => setData('gender', value)}
                                     >
-                                        <SelectTrigger id="gender" className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                                        <SelectTrigger id="gender" className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-colors">
                                             <SelectValue placeholder="Select gender" />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
@@ -501,13 +573,71 @@ export default function SelfRegistration({ flash = {}, client_identifier }: Prop
                                 )}
                             </div>
 
-                            <div className="flex justify-end pt-6">
+                            <div className="flex justify-end pt-8 space-x-4">
+                                {showSuccess && (
+                                    <Button 
+                                        type="button"
+                                        onClick={() => {
+                                            setShowSuccess(false);
+                                            // Reset form data
+                                            setData({
+                                                client_identifier: client_identifier || urlClientIdentifier,
+                                                first_name: '',
+                                                middle_name: '',
+                                                last_name: '',
+                                                gender: 'male' as 'male' | 'female' | 'other',
+                                                fathers_name: '',
+                                                mothers_maiden_name: '',
+                                                email: '',
+                                                call_number: '',
+                                                sms_number: '',
+                                                whatsapp: '',
+                                                facebook: '',
+                                                instagram: '',
+                                                twitter: '',
+                                                linkedin: '',
+                                                address: '',
+                                                notes: '',
+                                                id_picture: null as File | null,
+                                                id_numbers: [] as IdNumber[],
+                                            });
+                                            setPreviewUrl(null);
+                                        }}
+                                        className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 dark:from-gray-500 dark:to-gray-600 dark:hover:from-gray-600 dark:hover:to-gray-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                    >
+                                        <div className="flex items-center space-x-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            <span>Register Another</span>
+                                        </div>
+                                    </Button>
+                                )}
                                 <Button 
                                     type="submit" 
-                                    disabled={processing}
-                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                    disabled={processing || showSuccess}
+                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white font-medium px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                 >
-                                    Submit Registration
+                                    {processing ? (
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            <span>Submitting...</span>
+                                        </div>
+                                    ) : showSuccess ? (
+                                        <div className="flex items-center space-x-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <span>Submitted Successfully</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center space-x-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <span>Submit Registration</span>
+                                        </div>
+                                    )}
                                 </Button>
                             </div>
                         </form>
