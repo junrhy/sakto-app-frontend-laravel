@@ -110,6 +110,74 @@ export default function Member({ member, challenges, events, pages, contacts, up
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
+    // Helper function to format datetime for display (handles timezone properly)
+    const formatDateTimeForDisplay = (dateTimeString: string | null | undefined, options?: Intl.DateTimeFormatOptions) => {
+        if (!dateTimeString) return 'N/A';
+        
+        try {
+            let dateTime = dateTimeString;
+            if (!dateTime.includes('T')) {
+                dateTime = `${dateTime}T00:00`;
+            }
+            
+            const dateTimeObj = new Date(dateTime);
+            
+            // Check if the date is valid
+            if (isNaN(dateTimeObj.getTime())) {
+                console.warn('Invalid date:', dateTimeString);
+                return 'Invalid Date';
+            }
+            
+            // For display, we want to show the time as stored in the database
+            // Parse the date string directly to avoid timezone issues
+            const [datePart, timePart] = dateTime.split('T');
+            const [year, month, day] = datePart.split('-').map(Number);
+            const [hours, minutes] = (timePart || '00:00').split(':').map(Number);
+            
+            // Create a date object with the parsed components
+            const displayDate = new Date(year, month - 1, day, hours, minutes);
+            
+            return displayDate.toLocaleDateString('en-US', options);
+        } catch (error) {
+            console.warn('Error formatting datetime:', dateTimeString, error);
+            return 'Invalid Date';
+        }
+    };
+
+    // Helper function to format time for display
+    const formatTimeForDisplay = (dateTimeString: string | null | undefined, options?: Intl.DateTimeFormatOptions) => {
+        if (!dateTimeString) return 'N/A';
+        
+        try {
+            let dateTime = dateTimeString;
+            if (!dateTime.includes('T')) {
+                dateTime = `${dateTime}T00:00`;
+            }
+            
+            const dateTimeObj = new Date(dateTime);
+            
+            // Check if the date is valid
+            if (isNaN(dateTimeObj.getTime())) {
+                console.warn('Invalid date:', dateTimeString);
+                return 'Invalid Time';
+            }
+            
+            // For display, we want to show the time as stored in the database
+            // Parse the date string directly to avoid timezone issues
+            const [datePart, timePart] = dateTime.split('T');
+            const [year, month, day] = datePart.split('-').map(Number);
+            const [hours, minutes] = (timePart || '00:00').split(':').map(Number);
+            
+            // Create a date object with the parsed components
+            const displayDate = new Date(year, month - 1, day, hours, minutes);
+            
+            return displayDate.toLocaleTimeString('en-US', options);
+        } catch (error) {
+            console.warn('Error formatting datetime:', dateTimeString, error);
+            return 'Invalid Time';
+        }
+    };
+
     // Add the CSS classes at the top of the component
     const mobileMenuStyles = `
         .no-scrollbar {
@@ -271,7 +339,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         </div>
                                                         <div className="flex items-center gap-2 text-xs text-gray-500">
                                                             <span>
-                                                                {new Date(update.created_at).toLocaleDateString('en-US', {
+                                                                {formatDateTimeForDisplay(update.created_at, {
                                                                     month: 'short',
                                                                     day: 'numeric',
                                                                     year: 'numeric'
@@ -279,7 +347,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                             </span>
                                                             <span>•</span>
                                                             <span>
-                                                                {new Date(update.created_at).toLocaleTimeString('en-US', {
+                                                                {formatTimeForDisplay(update.created_at, {
                                                                     hour: 'numeric',
                                                                     minute: '2-digit'
                                                                 })}
@@ -563,7 +631,13 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         if (authData) {
                                                             try {
                                                                 const { timestamp } = JSON.parse(authData);
-                                                                return new Date(timestamp).toLocaleString();
+                                                                return formatDateTimeForDisplay(timestamp, {
+                                                                    year: 'numeric',
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    hour: 'numeric',
+                                                                    minute: '2-digit'
+                                                                });
                                                             } catch (error) {
                                                                 return 'Not available';
                                                             }
@@ -874,7 +948,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                     <span>
-                                                        {new Date(page.updated_at).toLocaleDateString('en-US', {
+                                                        {formatDateTimeForDisplay(page.updated_at, {
                                                             month: 'short',
                                                             day: 'numeric',
                                                             year: 'numeric'
@@ -1105,7 +1179,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         </svg>
                                                         <div>
                                                             <span className="font-medium text-gray-900">
-                                                                {new Date(event.start_date).toLocaleDateString('en-US', {
+                                                                {formatDateTimeForDisplay(event.start_date, {
                                                                     weekday: 'long',
                                                                     month: 'long',
                                                                     day: 'numeric',
@@ -1113,7 +1187,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                                 })}
                                                             </span>
                                                             <span className="text-gray-500 ml-2">
-                                                                at {new Date(event.start_date).toLocaleTimeString('en-US', {
+                                                                at {formatTimeForDisplay(event.start_date, {
                                                                     hour: 'numeric',
                                                                     minute: '2-digit'
                                                                 })}
@@ -1176,7 +1250,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                             </svg>
                                                             <span>
-                                                                Online registration closes on {new Date(event.registration_deadline).toLocaleDateString('en-US', {
+                                                                Online registration closes on {formatDateTimeForDisplay(event.registration_deadline, {
                                                                     month: 'short',
                                                                     day: 'numeric',
                                                                     year: 'numeric'
@@ -1189,12 +1263,15 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                 {/* Action Button */}
                                                 <div className="flex justify-end">
                                                     {event.status === 'published' && new Date(event.registration_deadline) > new Date() ? (
-                                                        <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 font-medium">
+                                                        <Link
+                                                            href={`/events/${event.id}/public-register`}
+                                                            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                                                        >
                                                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                                             </svg>
                                                             Register Now
-                                                        </button>
+                                                        </Link>
                                                     ) : event.status === 'published' ? (
                                                         <button className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium" disabled>
                                                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
