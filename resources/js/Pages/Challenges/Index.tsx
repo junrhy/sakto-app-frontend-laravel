@@ -38,7 +38,7 @@ interface User {
 }
 
 interface Reward {
-    type: 'badge' | 'points' | 'achievement';
+    type: 'badge' | 'points' | 'achievement' | 'cash' | 'item' | 'gift' | 'certificate' | 'trophy' | 'medal';
     value: string;
 }
 
@@ -48,7 +48,7 @@ interface Challenge {
     description: string;
     start_date: string;
     end_date: string;
-    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'other';
+    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'cooking' | 'photography' | 'art' | 'writing' | 'music' | 'dance' | 'sports' | 'quiz' | 'other';
     goal_value: number;
     goal_unit: string;
     participants: number[];
@@ -218,6 +218,14 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                 <SelectItem value="distance">Distance</SelectItem>
                                 <SelectItem value="time">Time</SelectItem>
                                 <SelectItem value="weight">Weight</SelectItem>
+                                <SelectItem value="cooking">Cooking</SelectItem>
+                                <SelectItem value="photography">Photography</SelectItem>
+                                <SelectItem value="art">Art</SelectItem>
+                                <SelectItem value="writing">Writing</SelectItem>
+                                <SelectItem value="music">Music</SelectItem>
+                                <SelectItem value="dance">Dance</SelectItem>
+                                <SelectItem value="sports">Sports</SelectItem>
+                                <SelectItem value="quiz">Quiz</SelectItem>
                                 <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                         </Select>

@@ -115,12 +115,12 @@ class ChallengeController extends Controller
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'goal_type' => 'required|in:steps,calories,distance,time,weight,other',
+            'goal_type' => 'required|in:steps,calories,distance,time,weight,cooking,photography,art,writing,music,dance,sports,quiz,other',
             'goal_value' => 'required|numeric',
             'goal_unit' => 'required|string',
             'visibility' => 'required|in:public,private,friends,family,coworkers',
             'rewards' => 'nullable|array',
-            'rewards.*.type' => 'required|in:badge,points,achievement',
+            'rewards.*.type' => 'required|in:badge,points,achievement,cash,item,gift,certificate,trophy,medal',
             'rewards.*.value' => 'required|string'
         ]);
 
@@ -152,12 +152,12 @@ class ChallengeController extends Controller
             'description' => 'sometimes|required|string',
             'start_date' => 'sometimes|required|date',
             'end_date' => 'sometimes|required|date|after:start_date',
-            'goal_type' => 'sometimes|required|in:steps,calories,distance,time,weight,other',
+            'goal_type' => 'sometimes|required|in:steps,calories,distance,time,weight,cooking,photography,art,writing,music,dance,sports,quiz,other',
             'goal_value' => 'sometimes|required|numeric',
             'goal_unit' => 'sometimes|required|string',
             'visibility' => 'sometimes|required|in:public,private,friends,family,coworkers',
             'rewards' => 'nullable|array',
-            'rewards.*.type' => 'required|in:badge,points,achievement',
+            'rewards.*.type' => 'required|in:badge,points,achievement,cash,item,gift,certificate,trophy,medal',
             'rewards.*.value' => 'required|string'
         ]);
 

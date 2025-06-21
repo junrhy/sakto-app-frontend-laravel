@@ -18,7 +18,7 @@ interface User {
 }
 
 interface Reward {
-    type: 'badge' | 'points' | 'achievement';
+    type: 'badge' | 'points' | 'achievement' | 'cash' | 'item' | 'gift' | 'certificate' | 'trophy' | 'medal';
     value: string;
 }
 
@@ -27,7 +27,7 @@ interface ChallengeFormData {
     description: string;
     start_date: string;
     end_date: string;
-    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'other';
+    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'cooking' | 'photography' | 'art' | 'writing' | 'music' | 'dance' | 'sports' | 'quiz' | 'other';
     goal_value: number;
     goal_unit: string;
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
@@ -41,7 +41,7 @@ interface Challenge {
     description: string;
     start_date: string;
     end_date: string;
-    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'other';
+    goal_type: 'steps' | 'calories' | 'distance' | 'time' | 'weight' | 'cooking' | 'photography' | 'art' | 'writing' | 'music' | 'dance' | 'sports' | 'quiz' | 'other';
     goal_value: number;
     goal_unit: string;
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
@@ -192,6 +192,14 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
                                 <option value="distance">Distance</option>
                                 <option value="time">Time</option>
                                 <option value="weight">Weight</option>
+                                <option value="cooking">Cooking</option>
+                                <option value="photography">Photography</option>
+                                <option value="art">Art</option>
+                                <option value="writing">Writing</option>
+                                <option value="music">Music</option>
+                                <option value="dance">Dance</option>
+                                <option value="sports">Sports</option>
+                                <option value="quiz">Quiz</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
@@ -244,6 +252,12 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
                                 <option value="badge">Badge</option>
                                 <option value="points">Points</option>
                                 <option value="achievement">Achievement</option>
+                                <option value="cash">Cash Prize</option>
+                                <option value="item">Item</option>
+                                <option value="gift">Gift</option>
+                                <option value="certificate">Certificate</option>
+                                <option value="trophy">Trophy</option>
+                                <option value="medal">Medal</option>
                             </select>
                             <input
                                 type="text"
