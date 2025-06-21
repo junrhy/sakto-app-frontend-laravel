@@ -162,7 +162,7 @@ export default function Show({ auth, product, currency }: Props) {
                                     <div>
                                         <h3 className="font-semibold mb-2">Tags</h3>
                                         <div className="flex flex-wrap gap-2">
-                                            {product.tags.map((tag) => (
+                                            {(product.tags || []).map((tag) => (
                                                 <Badge key={tag} variant="outline">
                                                     {tag}
                                                 </Badge>

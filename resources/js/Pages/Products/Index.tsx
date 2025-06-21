@@ -98,7 +98,7 @@ export default function Index({ auth, products, currency }: Props) {
             product.category.toLowerCase().includes(searchLower) ||
             getTypeLabel(product.type).toLowerCase().includes(searchLower) ||
             product.sku?.toLowerCase().includes(searchLower) ||
-            product.tags.some(tag => tag.toLowerCase().includes(searchLower))
+            (product.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
         );
     }, [products, search]);
 

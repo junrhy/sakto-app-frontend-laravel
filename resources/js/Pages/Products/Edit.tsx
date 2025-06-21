@@ -57,7 +57,7 @@ export default function Edit({ auth, product, currency }: Props) {
         weight: product.weight?.toString() || '',
         dimensions: product.dimensions || '',
         status: product.status,
-        tags: product.tags,
+        tags: product.tags || [],
         file: null as File | null,
         thumbnail: null as File | null,
         _method: 'PUT'
