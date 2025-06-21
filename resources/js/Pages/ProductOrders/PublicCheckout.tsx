@@ -35,6 +35,10 @@ interface CartItem {
     thumbnail_url?: string;
     type: 'physical' | 'digital' | 'service' | 'subscription';
     stock_quantity?: number;
+    variant?: {
+        id: number;
+        attributes: Record<string, string>;
+    };
 }
 
 interface Props {
@@ -89,15 +93,15 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
         }));
     };
 
-    const updateQuantity = (productId: number, newQuantity: number) => {
+    const updateQuantity = (productId: number, newQuantity: number, variantId?: number) => {
         if (newQuantity <= 0) {
-            removeItem(productId);
+            removeItem(productId, variantId);
             return;
         }
 
         setCartItems(prev => {
             const updated = prev.map(item => 
-                item.id === productId 
+                item.id === productId && (!variantId ? !item.variant : item.variant?.id === variantId)
                     ? { ...item, quantity: newQuantity }
                     : item
             );
@@ -106,9 +110,11 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
         });
     };
 
-    const removeItem = (productId: number) => {
+    const removeItem = (productId: number, variantId?: number) => {
         setCartItems(prev => {
-            const updated = prev.filter(item => item.id !== productId);
+            const updated = prev.filter(item => 
+                !(item.id === productId && (!variantId ? !item.variant : item.variant?.id === variantId))
+            );
             localStorage.setItem(`cart_${member.id}`, JSON.stringify(updated));
             return updated;
         });
@@ -144,6 +150,8 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
                 order_items: cartItems.map(item => ({
                     product_id: item.id,
                     name: item.name,
+                    variant_id: item.variant?.id || null,
+                    attributes: item.variant?.attributes || null,
                     quantity: item.quantity,
                     price: item.price
                 })),
@@ -283,6 +291,13 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
                                                     <h4 className="text-sm font-medium text-gray-900 truncate">
                                                         {item.name}
                                                     </h4>
+                                                    {item.variant && (
+                                                        <div className="text-xs text-gray-600 mt-1">
+                                                            {Object.entries(item.variant.attributes)
+                                                                .map(([key, value]) => `${key}: ${value}`)
+                                                                .join(', ')}
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-center mt-1">
                                                         {getProductTypeIcon(item.type)}
                                                         <span className="text-xs text-gray-500 ml-1">
@@ -293,14 +308,14 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
                                                 <div className="flex items-center space-x-2">
                                                     <div className="flex items-center border rounded">
                                                         <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant?.id)}
                                                             className="px-2 py-1 text-gray-500 hover:text-gray-700"
                                                         >
                                                             -
                                                         </button>
                                                         <span className="px-2 py-1 text-sm">{item.quantity}</span>
                                                         <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant?.id)}
                                                             className="px-2 py-1 text-gray-500 hover:text-gray-700"
                                                         >
                                                             +
@@ -311,7 +326,7 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
                                                             {formatPrice(item.price * item.quantity)}
                                                         </p>
                                                         <button
-                                                            onClick={() => removeItem(item.id)}
+                                                            onClick={() => removeItem(item.id, item.variant?.id)}
                                                             className="text-xs text-red-500 hover:text-red-700"
                                                         >
                                                             Remove

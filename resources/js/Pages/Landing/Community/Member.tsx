@@ -96,6 +96,17 @@ interface PageProps {
         client_identifier: string;
         created_at: string;
         updated_at: string;
+        active_variants?: Array<{
+            id: number;
+            sku?: string;
+            price?: number;
+            stock_quantity: number;
+            weight?: number;
+            dimensions?: string;
+            thumbnail_url?: string;
+            attributes: Record<string, string>;
+            is_active: boolean;
+        }>;
     }[];
 }
 
@@ -113,6 +124,8 @@ export default function Member({ member, challenges, events, pages, contacts, up
     const [expandedUpdates, setExpandedUpdates] = useState<Set<number>>(new Set());
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [showCart, setShowCart] = useState(false);
+    const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
+    const [variantErrors, setVariantErrors] = useState<Record<number, string>>({});
 
     // Helper function to format datetime for display (handles timezone properly)
     const formatDateTimeForDisplay = (dateTimeString: string | null | undefined, options?: Intl.DateTimeFormatOptions) => {
@@ -309,32 +322,47 @@ export default function Member({ member, challenges, events, pages, contacts, up
     };
 
     // Cart management functions
-    const addToCart = (product: any) => {
+    const addToCart = (product: any, variant?: any, quantity: number = 1) => {
+        const cartItem = {
+            id: product.id,
+            name: product.name,
+            price: variant?.price || product.price,
+            quantity: quantity,
+            variant: variant,
+            product: product
+        };
+
         setCartItems(prev => {
-            const existingItem = prev.find(item => item.id === product.id);
-            if (existingItem) {
-                return prev.map(item =>
-                    item.id === product.id
-                        ? { ...item, quantity: item.quantity + 1 }
+            const existingItemIndex = prev.findIndex(item => 
+                item.id === product.id && 
+                (!variant ? !item.variant : item.variant?.id === variant?.id)
+            );
+            
+            if (existingItemIndex >= 0) {
+                return prev.map((item, index) =>
+                    index === existingItemIndex
+                        ? { ...item, quantity: item.quantity + quantity }
                         : item
                 );
             } else {
-                return [...prev, { ...product, quantity: 1 }];
+                return [...prev, cartItem];
             }
         });
     };
 
-    const removeFromCart = (productId: number) => {
-        setCartItems(prev => prev.filter(item => item.id !== productId));
+    const removeFromCart = (productId: number, variantId?: number) => {
+        setCartItems(prev => prev.filter(item => item.id !== productId || (!variantId ? !item.variant : item.variant?.id !== variantId)));
     };
 
-    const updateCartQuantity = (productId: number, quantity: number) => {
+    const updateCartQuantity = (productId: number, quantity: number, variantId?: number) => {
         if (quantity <= 0) {
-            removeFromCart(productId);
+            removeFromCart(productId, variantId);
             return;
         }
         setCartItems(prev => prev.map(item =>
-            item.id === productId ? { ...item, quantity } : item
+            item.id === productId && (!variantId ? !item.variant : item.variant?.id === variantId) 
+                ? { ...item, quantity } 
+                : item
         ));
     };
 
@@ -348,6 +376,73 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
     const clearCart = () => {
         setCartItems([]);
+    };
+
+    // Variant management functions
+    const handleVariantSelection = (productId: number, variant: any) => {
+        setSelectedVariants(prev => ({
+            ...prev,
+            [productId]: variant
+        }));
+        setVariantErrors(prev => ({
+            ...prev,
+            [productId]: ''
+        }));
+    };
+
+    const getAvailableAttributes = (product: any) => {
+        if (!product.active_variants || product.active_variants.length === 0) {
+            return {};
+        }
+
+        const attributes: Record<string, string[]> = {};
+        
+        product.active_variants.forEach((variant: any) => {
+            if (variant.is_active && variant.stock_quantity > 0) {
+                Object.entries(variant.attributes).forEach(([key, value]) => {
+                    if (!attributes[key]) {
+                        attributes[key] = [];
+                    }
+                    if (!attributes[key].includes(value as string)) {
+                        attributes[key].push(value as string);
+                    }
+                });
+            }
+        });
+        
+        return attributes;
+    };
+
+    const findMatchingVariant = (product: any, selectedAttributes: Record<string, string>) => {
+        if (!product.active_variants) return null;
+        
+        return product.active_variants.find((variant: any) => 
+            variant.is_active && 
+            variant.stock_quantity > 0 &&
+            Object.entries(selectedAttributes).every(([key, value]) => 
+                variant.attributes[key] === value
+            )
+        ) || null;
+    };
+
+    const getEffectivePrice = (product: any, variant?: any) => {
+        if (variant && variant.price) {
+            return variant.price;
+        }
+        return product.price;
+    };
+
+    const getEffectiveStock = (product: any, variant?: any) => {
+        if (variant) {
+            return variant.stock_quantity;
+        }
+        return product.stock_quantity || 0;
+    };
+
+    const isVariantComplete = (product: any, selectedAttributes: Record<string, string>) => {
+        const availableAttributes = getAvailableAttributes(product);
+        return Object.keys(availableAttributes).length === 0 || 
+               Object.keys(availableAttributes).every(key => selectedAttributes[key]);
     };
 
     const handleCheckout = () => {
@@ -732,21 +827,23 @@ export default function Member({ member, challenges, events, pages, contacts, up
             case 'products':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                             <h2 className="text-lg font-semibold text-gray-900">Marketplace</h2>
                             {getCartItemCount() > 0 && (
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-600">
-                                            {getCartItemCount()} item{getCartItemCount() !== 1 ? 's' : ''} in cart
-                                        </span>
-                                        <span className="text-sm font-medium text-gray-900">
-                                            Total: {formatPrice(getCartTotal())}
-                                        </span>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                        <div className="flex items-center justify-between sm:justify-start">
+                                            <span className="text-sm text-gray-600">
+                                                {getCartItemCount()} item{getCartItemCount() !== 1 ? 's' : ''} in cart
+                                            </span>
+                                            <span className="text-sm font-medium text-gray-900 sm:ml-4">
+                                                Total: {formatPrice(getCartTotal())}
+                                            </span>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={handleCheckout}
-                                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                                     >
                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
@@ -808,19 +905,22 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                             </div>
 
                                             {/* Stock Status */}
-                                            {product.stock_quantity !== null && (
+                                            {(product.stock_quantity !== null || (product.active_variants && product.active_variants.length > 0)) && (
                                                 <div className="absolute top-3 right-3">
                                                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                        product.stock_quantity > 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
+                                                        getEffectiveStock(product, selectedVariants[product.id]) > 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
                                                     }`}>
                                                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                            {product.stock_quantity > 0 ? (
+                                                            {getEffectiveStock(product, selectedVariants[product.id]) > 0 ? (
                                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                             ) : (
                                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                                             )}
                                                         </svg>
-                                                        {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : 'Out of stock'}
+                                                        {getEffectiveStock(product, selectedVariants[product.id]) > 0 
+                                                            ? `${getEffectiveStock(product, selectedVariants[product.id])} in stock` 
+                                                            : 'Out of stock'
+                                                        }
                                                     </span>
                                                 </div>
                                             )}
@@ -856,14 +956,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                             {/* Product Details */}
                                             <div className="space-y-2 mb-4">
-                                                {product.sku && (
-                                                    <div className="flex items-center text-xs text-gray-500">
-                                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                                        </svg>
-                                                        <span>SKU: {product.sku}</span>
-                                                    </div>
-                                                )}
                                                 {product.weight && (
                                                     <div className="flex items-center text-xs text-gray-500">
                                                         <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -900,29 +992,142 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                 </div>
                                             )}
 
+                                            {/* Variant Selection */}
+                                            {product.active_variants && product.active_variants.length > 0 && (
+                                                <div className="mb-4">
+                                                    <div className="space-y-3">
+                                                        {Object.entries(getAvailableAttributes(product)).map(([attributeKey, options]) => (
+                                                            <div key={attributeKey} className="space-y-2">
+                                                                <label className="text-sm font-medium text-gray-700 capitalize">
+                                                                    {attributeKey}
+                                                                </label>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {options.map((option) => {
+                                                                        const selectedAttributes = selectedVariants[product.id]?.attributes || {};
+                                                                        const isSelected = selectedAttributes[attributeKey] === option;
+                                                                        
+                                                                        return (
+                                                                            <button
+                                                                                key={option}
+                                                                                onClick={() => {
+                                                                                    const newAttributes = { ...selectedAttributes, [attributeKey]: option };
+                                                                                    const matchingVariant = findMatchingVariant(product, newAttributes);
+                                                                                    handleVariantSelection(product.id, matchingVariant);
+                                                                                }}
+                                                                                className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                                                                                    isSelected
+                                                                                        ? 'bg-blue-600 text-white border-blue-600'
+                                                                                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                                                                                }`}
+                                                                            >
+                                                                                {option}
+                                                                            </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        
+                                                        {/* Selected Variant Info */}
+                                                        {selectedVariants[product.id] && (
+                                                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4">
+                                                                <div className="flex items-start justify-between mb-2">
+                                                                    <div className="flex-1">
+                                                                        <div className="flex items-center mb-1">
+                                                                            <svg className="w-4 h-4 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                            </svg>
+                                                                            <span className="text-sm font-semibold text-blue-900">Selected</span>
+                                                                        </div>
+                                                                        <div className="flex flex-wrap gap-1">
+                                                                            {Object.entries(selectedVariants[product.id].attributes).map(([key, value]) => (
+                                                                                <span key={key} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                                                                                    <span className="capitalize">{key}:</span>
+                                                                                    <span className="ml-1 font-semibold">{value as string}</span>
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="text-right ml-4 min-w-[120px] pr-2">
+                                                                        <div className="text-lg font-bold text-blue-900">
+                                                                            {formatPrice(getEffectivePrice(product, selectedVariants[product.id]))}
+                                                                        </div>
+                                                                        <div className="flex items-center justify-end text-xs text-blue-700 mt-1">
+                                                                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                            </svg>
+                                                                            {getEffectiveStock(product, selectedVariants[product.id])} in stock
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Variant Error */}
+                                                        {variantErrors[product.id] && (
+                                                            <div className="text-red-600 text-xs">
+                                                                {variantErrors[product.id]}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Product Price and Action */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-baseline">
                                                     <span className="text-2xl font-bold text-gray-900">
-                                                        {formatPrice(product.price)}
+                                                        {formatPrice(getEffectivePrice(product, selectedVariants[product.id]))}
                                                     </span>
                                                     {product.type === 'subscription' && (
                                                         <span className="text-xs text-gray-500 ml-1">/month</span>
+                                                    )}
+                                                    {selectedVariants[product.id]?.price && selectedVariants[product.id].price !== product.price && (
+                                                        <span className="text-sm text-gray-500 line-through ml-2">
+                                                            {formatPrice(product.price)}
+                                                        </span>
                                                     )}
                                                 </div>
                                                 
                                                 {/* Cart Controls */}
                                                 {(() => {
-                                                    const cartItem = cartItems.find(item => item.id === product.id);
+                                                    const selectedVariant = selectedVariants[product.id];
+                                                    const effectivePrice = getEffectivePrice(product, selectedVariant);
+                                                    const effectiveStock = getEffectiveStock(product, selectedVariant);
+                                                    
+                                                    // Find cart item for this product/variant combination
+                                                    const cartItem = cartItems.find(item => 
+                                                        item.id === product.id && 
+                                                        (!selectedVariant ? !item.variant : item.variant?.id === selectedVariant?.id)
+                                                    );
                                                     const quantity = cartItem?.quantity || 0;
                                                     
-                                                    if (product.stock_quantity === 0 || product.status !== 'published') {
+                                                    // Check if product/variant is available
+                                                    const isAvailable = product.status === 'published' && 
+                                                        (selectedVariant ? effectiveStock > 0 : (product.stock_quantity || 0) > 0);
+                                                    
+                                                    if (!isAvailable) {
                                                         return (
                                                             <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 cursor-not-allowed">
                                                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                                 </svg>
-                                                                {product.stock_quantity === 0 ? 'Out of Stock' : 'Not Available'}
+                                                                {effectiveStock === 0 ? 'Out of Stock' : 'Not Available'}
+                                                            </button>
+                                                        );
+                                                    }
+                                                    
+                                                    // Check if variant selection is required but not complete
+                                                    if (product.active_variants && product.active_variants.length > 0 && !selectedVariant) {
+                                                        return (
+                                                            <button 
+                                                                onClick={() => setVariantErrors(prev => ({ ...prev, [product.id]: 'Please select a variant' }))}
+                                                                className="inline-flex items-center px-3 py-1.5 rounded-lg font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors text-xs"
+                                                            >
+                                                                <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                                                </svg>
+                                                                Select
                                                             </button>
                                                         );
                                                     }
@@ -931,7 +1136,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         return (
                                                             <div className="flex items-center space-x-2">
                                                                 <button
-                                                                    onClick={() => updateCartQuantity(product.id, quantity - 1)}
+                                                                    onClick={() => updateCartQuantity(product.id, quantity - 1, selectedVariant?.id)}
                                                                     className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center"
                                                                 >
                                                                     -
@@ -940,8 +1145,9 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                                     {quantity}
                                                                 </span>
                                                                 <button
-                                                                    onClick={() => updateCartQuantity(product.id, quantity + 1)}
-                                                                    className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center"
+                                                                    onClick={() => updateCartQuantity(product.id, quantity + 1, selectedVariant?.id)}
+                                                                    disabled={quantity >= effectiveStock}
+                                                                    className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                                                 >
                                                                     +
                                                                 </button>
@@ -951,10 +1157,10 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                     
                                                     return (
                                                         <button
-                                                            onClick={() => addToCart(product)}
-                                                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
+                                                            onClick={() => addToCart(product, selectedVariant, 1)}
+                                                            className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm hover:shadow-md"
                                                         >
-                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
                                                             </svg>
                                                             Add to Cart
@@ -964,128 +1170,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                );
-
-            case 'community':
-                return (
-                    <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Resources</h2>
-                        {pages.length === 0 ? (
-                            <div className="text-center text-gray-500 py-12">
-                                <svg className="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                <p className="text-lg font-medium">No resources found</p>
-                                <p className="text-sm">Check back later for new resources</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {pages.map((page) => (
-                                    <a 
-                                        key={page.id} 
-                                        href={`/link/${page.slug}`}
-                                        className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200 block"
-                                    >
-                                        {/* Resource Image */}
-                                        {page.featured_image ? (
-                                            <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600">
-                                                <img 
-                                                    src={page.featured_image} 
-                                                    alt={page.title} 
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                                <div className="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-20 transition-all duration-200"></div>
-                                                <div className="absolute top-3 right-3">
-                                                    <div className="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                                                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                                                <div className="text-white text-center">
-                                                    <svg className="w-12 h-12 mx-auto mb-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                    <p className="text-sm font-medium">Resource</p>
-                                                </div>
-                                                <div className="absolute top-3 right-3">
-                                                    <div className="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
-                                                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Resource Content */}
-                                        <div className="p-6">
-                                            {/* Resource Header */}
-                                            <div className="mb-4">
-                                                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-2 line-clamp-2">
-                                                    {page.title}
-                                                </h3>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                        page.is_published ? 'text-green-700 bg-green-100' : 'text-yellow-700 bg-yellow-100'
-                                                    }`}>
-                                                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                            {page.is_published ? (
-                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                            ) : (
-                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                                                            )}
-                                                        </svg>
-                                                        {page.is_published ? 'Published' : 'Draft'}
-                                                    </span>
-                                                    {page.template && (
-                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-blue-700 bg-blue-100">
-                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                                                            </svg>
-                                                            Template
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Resource Description */}
-                                            {page.meta_description && (
-                                                <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
-                                                    {page.meta_description}
-                                                </p>
-                                            )}
-
-                                            {/* Resource Meta */}
-                                            <div className="flex items-center justify-between text-xs text-gray-500">
-                                                <div className="flex items-center">
-                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    <span>
-                                                        {formatDateTimeForDisplay(page.updated_at, {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            year: 'numeric'
-                                                        })}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center text-blue-600 group-hover:text-blue-700 transition-colors">
-                                                    <span className="font-medium">View Resource</span>
-                                                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
                                 ))}
                             </div>
                         )}

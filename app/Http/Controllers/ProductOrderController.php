@@ -389,6 +389,8 @@ class ProductOrderController extends Controller
             'order_items' => 'required|array|min:1',
             'order_items.*.product_id' => 'required|integer',
             'order_items.*.name' => 'required|string',
+            'order_items.*.variant_id' => 'nullable|integer',
+            'order_items.*.attributes' => 'nullable|array',
             'order_items.*.quantity' => 'required|integer|min:1',
             'order_items.*.price' => 'required|numeric|min:0',
             'subtotal' => 'required|numeric|min:0',

@@ -19,6 +19,8 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number | string;
+    variant_id?: number;
+    attributes?: Record<string, string>;
 }
 
 interface Order {
@@ -267,6 +269,13 @@ export default function PublicCheckoutSuccess({ order, currency, member }: Props
                                         <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
                                             <div className="flex-1">
                                                 <h4 className="font-medium text-gray-900">{item.name}</h4>
+                                                {item.attributes && Object.keys(item.attributes).length > 0 && (
+                                                    <div className="text-sm text-gray-600 mt-1">
+                                                        {Object.entries(item.attributes)
+                                                            .map(([key, value]) => `${key}: ${value}`)
+                                                            .join(', ')}
+                                                    </div>
+                                                )}
                                                 <div className="flex items-center mt-1">
                                                     <span className="text-sm text-gray-500">
                                                         Quantity: {item.quantity}
