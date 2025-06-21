@@ -13,9 +13,29 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Package, Download, ShoppingCart, ListOrdered } from 'lucide-react';
+import { 
+    Plus, 
+    Edit, 
+    Trash2, 
+    Eye, 
+    SearchIcon, 
+    FileDown, 
+    Package, 
+    Download, 
+    ShoppingCart, 
+    ListOrdered,
+    Filter,
+    Grid3X3,
+    List,
+    MoreHorizontal,
+    Star,
+    TrendingUp,
+    Users,
+    Calendar
+} from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -57,15 +77,15 @@ interface Props extends PageProps {
 const getTypeIcon = (type: string) => {
     switch (type) {
         case 'physical':
-            return <Package className="w-4 h-4" />;
+            return <Package className="w-4 h-4 text-blue-600" />;
         case 'digital':
-            return <Download className="w-4 h-4" />;
+            return <Download className="w-4 h-4 text-green-600" />;
         case 'service':
             return <span className="w-4 h-4">🔧</span>;
         case 'subscription':
             return <span className="w-4 h-4">🔄</span>;
         default:
-            return <Package className="w-4 h-4" />;
+            return <Package className="w-4 h-4 text-gray-600" />;
     }
 };
 
@@ -84,23 +104,114 @@ const getTypeLabel = (type: string) => {
     }
 };
 
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'published':
+            return 'bg-green-100 text-green-800 border-green-200';
+        case 'draft':
+            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        case 'archived':
+            return 'bg-gray-100 text-gray-800 border-gray-200';
+        case 'inactive':
+            return 'bg-red-100 text-red-800 border-red-200';
+        default:
+            return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+};
+
 export default function Index({ auth, products, currency }: Props) {
     const [search, setSearch] = useState('');
     const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState({
+        category: '',
+        type: '',
+        status: '',
+        priceRange: '',
+        stockStatus: ''
+    });
     const { addItem, getItemQuantity } = useCart();
 
     const filteredProducts = useMemo(() => {
-        if (!search.trim()) return products;
-        const searchLower = search.toLowerCase();
-        return products.filter(product => 
-            product.name.toLowerCase().includes(searchLower) ||
-            product.description.toLowerCase().includes(searchLower) ||
-            product.category.toLowerCase().includes(searchLower) ||
-            getTypeLabel(product.type).toLowerCase().includes(searchLower) ||
-            product.sku?.toLowerCase().includes(searchLower) ||
-            (product.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
-        );
-    }, [products, search]);
+        let filtered = products;
+
+        // Search filter
+        if (search.trim()) {
+            const searchLower = search.toLowerCase();
+            filtered = filtered.filter(product => 
+                product.name.toLowerCase().includes(searchLower) ||
+                product.description.toLowerCase().includes(searchLower) ||
+                product.category.toLowerCase().includes(searchLower) ||
+                getTypeLabel(product.type).toLowerCase().includes(searchLower) ||
+                product.sku?.toLowerCase().includes(searchLower) ||
+                (product.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
+            );
+        }
+
+        // Category filter
+        if (filters.category) {
+            filtered = filtered.filter(product => product.category === filters.category);
+        }
+
+        // Type filter
+        if (filters.type) {
+            filtered = filtered.filter(product => product.type === filters.type);
+        }
+
+        // Status filter
+        if (filters.status) {
+            filtered = filtered.filter(product => product.status === filters.status);
+        }
+
+        // Price range filter
+        if (filters.priceRange) {
+            const [min, max] = filters.priceRange.split('-').map(Number);
+            filtered = filtered.filter(product => {
+                if (max) {
+                    return product.price >= min && product.price <= max;
+                }
+                return product.price >= min;
+            });
+        }
+
+        // Stock status filter
+        if (filters.stockStatus) {
+            filtered = filtered.filter(product => {
+                switch (filters.stockStatus) {
+                    case 'in-stock':
+                        return product.type !== 'physical' || (product.stock_quantity !== undefined && product.stock_quantity > 0);
+                    case 'out-of-stock':
+                        return product.type === 'physical' && product.stock_quantity !== undefined && product.stock_quantity === 0;
+                    case 'low-stock':
+                        return product.type === 'physical' && product.stock_quantity !== undefined && product.stock_quantity <= 10 && product.stock_quantity > 0;
+                    case 'unlimited':
+                        return product.type === 'digital' || product.type === 'service' || product.type === 'subscription';
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        return filtered;
+    }, [products, search, filters]);
+
+    const clearFilters = () => {
+        setFilters({
+            category: '',
+            type: '',
+            status: '',
+            priceRange: '',
+            stockStatus: ''
+        });
+    };
+
+    const hasActiveFilters = Object.values(filters).some(value => value !== '');
+
+    // Get unique categories, types, and statuses for filter options
+    const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products]);
+    const types = useMemo(() => [...new Set(products.map(p => p.type))], [products]);
+    const statuses = useMemo(() => [...new Set(products.map(p => p.status))], [products]);
 
     const toggleSelectAll = () => {
         if (selectedProducts.length === filteredProducts.length) {
@@ -152,32 +263,30 @@ export default function Index({ auth, products, currency }: Props) {
 
     const getStockStatus = (quantity?: number, type?: string) => {
         if (type === 'digital' || type === 'service' || type === 'subscription') {
-            return <Badge variant="secondary">Unlimited</Badge>;
+            return <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">Unlimited</Badge>;
         }
         
         if (quantity === undefined || quantity === null) {
-            return <Badge variant="secondary">N/A</Badge>;
+            return <Badge variant="secondary" className="bg-gray-50 text-gray-700 border-gray-200">N/A</Badge>;
         }
         
         if (quantity === 0) {
-            return <Badge variant="destructive">Out of Stock</Badge>;
+            return <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">Out of Stock</Badge>;
         }
         
         if (quantity <= 10) {
-            return <Badge variant="secondary">Low Stock ({quantity})</Badge>;
+            return <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-200">Low Stock ({quantity})</Badge>;
         }
         
-        return <Badge variant="default">In Stock ({quantity})</Badge>;
+        return <Badge variant="default" className="bg-green-50 text-green-700 border-green-200">In Stock ({quantity})</Badge>;
     };
 
     const handleAddToCart = (product: Product) => {
-        // Check if product is in stock (for physical products)
         if (product.type === 'physical' && product.stock_quantity !== undefined && product.stock_quantity <= 0) {
             alert('This product is out of stock');
             return;
         }
 
-        // Check if already in cart and at max quantity
         const currentQuantity = getItemQuantity(product.id);
         if (product.type === 'physical' && product.stock_quantity !== undefined) {
             if (currentQuantity >= product.stock_quantity) {
@@ -198,173 +307,568 @@ export default function Index({ auth, products, currency }: Props) {
         alert('Product added to cart!');
     };
 
+    const stats = {
+        total: products.length,
+        published: products.filter(p => p.status === 'published').length,
+        lowStock: products.filter(p => p.type === 'physical' && p.stock_quantity !== undefined && p.stock_quantity <= 10).length,
+        categories: new Set(products.map(p => p.category)).size
+    };
+
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
-                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Products
-                    </h2>
-                    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-                        <div className="relative">
-                            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
-                            <Input
-                                type="search"
-                                placeholder="Search products..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 w-full sm:w-[300px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
-                            />
+                <div className="flex flex-col space-y-6">
+                    <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
+                        <div>
+                            <h2 className="font-bold text-3xl text-gray-900 dark:text-gray-100">
+                                Products
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                Manage your product catalog and inventory
+                            </p>
                         </div>
-                        <CartButton />
-                        {selectedProducts.length > 0 && (
-                            <Button
-                                variant="outline"
-                                onClick={exportToCSV}
-                                className="flex items-center"
-                            >
-                                <FileDown className="w-4 h-4 mr-2" />
-                                Export Selected
-                            </Button>
-                        )}
-                        <Link href={route('product-orders.index')}>
-                            <Button variant="outline">
-                                <ListOrdered className="w-4 h-4 mr-2" />
-                                View Orders
-                            </Button>
-                        </Link>
-                        <Link href={route('products.create')}>
-                            <Button>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Create Product
-                            </Button>
-                        </Link>
+                        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+                            <CartButton />
+                            {selectedProducts.length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    onClick={exportToCSV}
+                                    className="flex items-center bg-white hover:bg-gray-50"
+                                >
+                                    <FileDown className="w-4 h-4 mr-2" />
+                                    Export Selected
+                                </Button>
+                            )}
+                            <Link href={route('product-orders.index')}>
+                                <Button variant="outline" className="bg-white hover:bg-gray-50">
+                                    <ListOrdered className="w-4 h-4 mr-2" />
+                                    View Orders
+                                </Button>
+                            </Link>
+                            <Link href={route('products.create')}>
+                                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Create Product
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-blue-600">Total Products</p>
+                                        <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
+                                    </div>
+                                    <Package className="w-8 h-8 text-blue-600" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-green-600">Published</p>
+                                        <p className="text-2xl font-bold text-green-900">{stats.published}</p>
+                                    </div>
+                                    <TrendingUp className="w-8 h-8 text-green-600" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-orange-600">Low Stock</p>
+                                        <p className="text-2xl font-bold text-orange-900">{stats.lowStock}</p>
+                                    </div>
+                                    <Star className="w-8 h-8 text-orange-600" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-purple-600">Categories</p>
+                                        <p className="text-2xl font-bold text-purple-900">{stats.categories}</p>
+                                    </div>
+                                    <Users className="w-8 h-8 text-purple-600" />
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             }
         >
             <Head title="Products" />
 
-            <div className="py-12">
+            <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>
-                                            <Checkbox
-                                                checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
-                                                onCheckedChange={toggleSelectAll}
-                                            />
-                                        </TableHead>
-                                        <TableHead>Product</TableHead>
-                                        <TableHead>SKU</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>Stock</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredProducts.map((product) => (
-                                        <TableRow key={product.id}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    checked={selectedProducts.includes(product.id)}
-                                                    onCheckedChange={() => toggleSelect(product.id)}
-                                                />
-                                            </TableCell>
-                                            <TableCell className="font-medium">{product.name}</TableCell>
-                                            <TableCell>{product.sku || '-'}</TableCell>
-                                            <TableCell>{product.category}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    {getTypeIcon(product.type)}
-                                                    <span>{getTypeLabel(product.type)}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{formatCurrency(product.price, currency.symbol)}</TableCell>
-                                            <TableCell>
-                                                {getStockStatus(product.stock_quantity, product.type)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={product.status === 'published' ? 'default' : 'secondary'}>
-                                                    {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center space-x-2">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleAddToCart(product)}
-                                                        disabled={
-                                                            product.type === 'physical' && 
-                                                            product.stock_quantity !== undefined && 
-                                                            product.stock_quantity <= 0
-                                                        }
-                                                    >
-                                                        <ShoppingCart className="w-3 h-3 mr-1" />
-                                                        Add to Cart
-                                                    </Button>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <span className="sr-only">Open menu</span>
-                                                                <span className="h-4 w-4">⋮</span>
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={route('products.show', product.id)}>
-                                                                    <Eye className="w-4 h-4 mr-2" />
-                                                                    View
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem asChild>
-                                                                <Link href={route('products.edit', product.id)}>
-                                                                    <Edit className="w-4 h-4 mr-2" />
-                                                                    Edit
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            {product.type === 'digital' && product.file_url && (
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={route('products.download', product.id)}>
-                                                                        <FileDown className="w-4 h-4 mr-2" />
-                                                                        Download
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuItem 
-                                                                onClick={() => handleDelete(product.id)}
-                                                                className="text-red-600"
-                                                            >
-                                                                <Trash2 className="w-4 h-4 mr-2" />
-                                                                Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                    {/* Search and Filters */}
+                    <Card className="mb-8 shadow-sm border-0 bg-white/50 backdrop-blur-sm">
+                        <CardContent className="p-6">
+                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
+                                <div className="flex-1 max-w-md">
+                                    <div className="relative">
+                                        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                        <Input
+                                            type="search"
+                                            placeholder="Search products by name, category, SKU..."
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="pl-10 w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                                        <Button
+                                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setViewMode('grid')}
+                                            className="h-8 px-3"
+                                        >
+                                            <Grid3X3 className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            variant={viewMode === 'list' ? 'default' : 'ghost'}
+                                            size="sm"
+                                            onClick={() => setViewMode('list')}
+                                            className="h-8 px-3"
+                                        >
+                                            <List className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className={`bg-white ${hasActiveFilters ? 'border-blue-500 text-blue-600' : ''}`}
+                                        onClick={() => setShowFilters(!showFilters)}
+                                    >
+                                        <Filter className="w-4 h-4 mr-2" />
+                                        Filters
+                                        {hasActiveFilters && (
+                                            <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 text-xs">
+                                                {Object.values(filters).filter(v => v !== '').length}
+                                            </Badge>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
 
-                            {filteredProducts.length === 0 && (
-                                <div className="text-center py-8">
-                                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-                                    <p className="text-gray-500">
-                                        {search ? 'Try adjusting your search to find more products.' : 'Get started by creating your first product.'}
-                                    </p>
+                            {/* Filter Panel */}
+                            {showFilters && (
+                                <div className="mt-6 pt-6 border-t border-gray-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                                        {/* Category Filter */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Category
+                                            </label>
+                                            <select
+                                                value={filters.category}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                <option value="">All Categories</option>
+                                                {categories.map(category => (
+                                                    <option key={category} value={category}>{category}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Type Filter */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Type
+                                            </label>
+                                            <select
+                                                value={filters.type}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                <option value="">All Types</option>
+                                                {types.map(type => (
+                                                    <option key={type} value={type}>{getTypeLabel(type)}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Status Filter */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Status
+                                            </label>
+                                            <select
+                                                value={filters.status}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                <option value="">All Statuses</option>
+                                                {statuses.map(status => (
+                                                    <option key={status} value={status}>
+                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Price Range Filter */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Price Range
+                                            </label>
+                                            <select
+                                                value={filters.priceRange}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                <option value="">All Prices</option>
+                                                <option value="0-50">Under {currency.symbol}50</option>
+                                                <option value="50-100">{currency.symbol}50 - {currency.symbol}100</option>
+                                                <option value="100-200">{currency.symbol}100 - {currency.symbol}200</option>
+                                                <option value="200-500">{currency.symbol}200 - {currency.symbol}500</option>
+                                                <option value="500-">{currency.symbol}500+</option>
+                                            </select>
+                                        </div>
+
+                                        {/* Stock Status Filter */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Stock Status
+                                            </label>
+                                            <select
+                                                value={filters.stockStatus}
+                                                onChange={(e) => setFilters(prev => ({ ...prev, stockStatus: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                <option value="">All Stock</option>
+                                                <option value="in-stock">In Stock</option>
+                                                <option value="out-of-stock">Out of Stock</option>
+                                                <option value="low-stock">Low Stock</option>
+                                                <option value="unlimited">Unlimited</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Filter Actions */}
+                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                        <div className="text-sm text-gray-600">
+                                            {filteredProducts.length} of {products.length} products
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            {hasActiveFilters && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={clearFilters}
+                                                    className="text-gray-600 hover:text-gray-800"
+                                                >
+                                                    Clear All Filters
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Products Display */}
+                    {viewMode === 'grid' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredProducts.map((product) => (
+                                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/50 backdrop-blur-sm overflow-hidden">
+                                    {/* Product Image */}
+                                    <div className="relative h-48 bg-gray-100 overflow-hidden">
+                                        {product.thumbnail_url ? (
+                                            <img
+                                                src={product.thumbnail_url}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                                                <Package className="w-12 h-12 text-gray-400" />
+                                            </div>
+                                        )}
+                                        {/* Status Badge Overlay */}
+                                        <div className="absolute top-3 right-3">
+                                            <Badge className={`text-xs ${getStatusColor(product.status)}`}>
+                                                {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                                            </Badge>
+                                        </div>
+                                        {/* Type Badge Overlay */}
+                                        <div className="absolute top-3 left-3">
+                                            <div className="flex items-center space-x-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
+                                                {getTypeIcon(product.type)}
+                                                <span className="text-xs font-medium text-gray-700">
+                                                    {getTypeLabel(product.type)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {/* Checkbox Overlay */}
+                                        <div className="absolute top-3 left-1/2 transform -translate-x-1/2">
+                                            <Checkbox
+                                                checked={selectedProducts.includes(product.id)}
+                                                onCheckedChange={() => toggleSelect(product.id)}
+                                                className="bg-white/90 backdrop-blur-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 text-sm">
+                                                    {product.name}
+                                                </h3>
+                                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                                    {product.description}
+                                                </p>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={route('products.show', product.id)}>
+                                                            <Eye className="w-4 h-4 mr-2" />
+                                                            View
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={route('products.edit', product.id)}>
+                                                            <Edit className="w-4 h-4 mr-2" />
+                                                            Edit
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    {product.type === 'digital' && product.file_url && (
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('products.download', product.id)}>
+                                                                <FileDown className="w-4 h-4 mr-2" />
+                                                                Download
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    <DropdownMenuItem 
+                                                        onClick={() => handleDelete(product.id)}
+                                                        className="text-red-600"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="pt-0">
+                                        <div className="space-y-3">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs text-gray-500">SKU</span>
+                                                    <span className="text-xs font-mono text-gray-700">{product.sku || 'N/A'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs text-gray-500">Category</span>
+                                                    <Badge variant="outline" className="text-xs bg-gray-50">
+                                                        {product.category}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs text-gray-500">Stock</span>
+                                                    <div className="text-xs">
+                                                        {getStockStatus(product.stock_quantity, product.type)}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-2 border-t border-gray-100">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                        {formatCurrency(product.price, currency.symbol)}
+                                                    </span>
+                                                </div>
+                                                
+                                                <Button
+                                                    onClick={() => handleAddToCart(product)}
+                                                    disabled={
+                                                        product.type === 'physical' && 
+                                                        product.stock_quantity !== undefined && 
+                                                        product.stock_quantity <= 0
+                                                    }
+                                                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                                                    size="sm"
+                                                >
+                                                    <ShoppingCart className="w-4 h-4 mr-2" />
+                                                    Add to Cart
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
-                    </div>
+                    ) : (
+                        <Card className="shadow-sm border-0 bg-white/50 backdrop-blur-sm">
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50/50">
+                                            <TableHead className="w-12">
+                                                <Checkbox
+                                                    checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                                                    onCheckedChange={toggleSelectAll}
+                                                />
+                                            </TableHead>
+                                            <TableHead className="w-16">Image</TableHead>
+                                            <TableHead>Product</TableHead>
+                                            <TableHead>SKU</TableHead>
+                                            <TableHead>Category</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Price</TableHead>
+                                            <TableHead>Stock</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="w-32">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredProducts.map((product) => (
+                                            <TableRow key={product.id} className="hover:bg-gray-50/50">
+                                                <TableCell>
+                                                    <Checkbox
+                                                        checked={selectedProducts.includes(product.id)}
+                                                        onCheckedChange={() => toggleSelect(product.id)}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                        {product.thumbnail_url ? (
+                                                            <img
+                                                                src={product.thumbnail_url}
+                                                                alt={product.name}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <Package className="w-6 h-6 text-gray-400" />
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{product.name}</div>
+                                                        <div className="text-sm text-gray-500 line-clamp-1">{product.description}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="font-mono text-sm">{product.sku || '-'}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className="bg-gray-50">
+                                                        {product.category}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        {getTypeIcon(product.type)}
+                                                        <span className="text-sm">{getTypeLabel(product.type)}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="font-semibold">{formatCurrency(product.price, currency.symbol)}</TableCell>
+                                                <TableCell>
+                                                    {getStockStatus(product.stock_quantity, product.type)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge className={`text-xs ${getStatusColor(product.status)}`}>
+                                                        {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleAddToCart(product)}
+                                                            disabled={
+                                                                product.type === 'physical' && 
+                                                                product.stock_quantity !== undefined && 
+                                                                product.stock_quantity <= 0
+                                                            }
+                                                            className="h-8"
+                                                        >
+                                                            <ShoppingCart className="w-3 h-3 mr-1" />
+                                                            Add
+                                                        </Button>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                    <MoreHorizontal className="w-4 h-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={route('products.show', product.id)}>
+                                                                        <Eye className="w-4 h-4 mr-2" />
+                                                                        View
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={route('products.edit', product.id)}>
+                                                                        <Edit className="w-4 h-4 mr-2" />
+                                                                        Edit
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                                {product.type === 'digital' && product.file_url && (
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('products.download', product.id)}>
+                                                                            <FileDown className="w-4 h-4 mr-2" />
+                                                                            Download
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => handleDelete(product.id)}
+                                                                    className="text-red-600"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {filteredProducts.length === 0 && (
+                        <Card className="text-center py-12 bg-white/50 backdrop-blur-sm">
+                            <CardContent>
+                                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+                                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                                    {search ? 'Try adjusting your search terms to find more products.' : 'Get started by creating your first product to build your catalog.'}
+                                </p>
+                                {!search && (
+                                    <Link href={route('products.create')}>
+                                        <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Create Your First Product
+                                        </Button>
+                                    </Link>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
 
