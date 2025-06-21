@@ -14,6 +14,7 @@ interface PageProps {
             symbol: string;
         } | null;
         created_at: string;
+        identifier?: string;
     };
     challenges: any[];
     events: {
@@ -110,6 +111,8 @@ export default function Member({ member, challenges, events, pages, contacts, up
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [expandedUpdates, setExpandedUpdates] = useState<Set<number>>(new Set());
+    const [cartItems, setCartItems] = useState<any[]>([]);
+    const [showCart, setShowCart] = useState(false);
 
     // Helper function to format datetime for display (handles timezone properly)
     const formatDateTimeForDisplay = (dateTimeString: string | null | undefined, options?: Intl.DateTimeFormatOptions) => {
@@ -303,6 +306,58 @@ export default function Member({ member, challenges, events, pages, contacts, up
         }
         
         return `${currency}${formattedPrice}`;
+    };
+
+    // Cart management functions
+    const addToCart = (product: any) => {
+        setCartItems(prev => {
+            const existingItem = prev.find(item => item.id === product.id);
+            if (existingItem) {
+                return prev.map(item =>
+                    item.id === product.id
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                );
+            } else {
+                return [...prev, { ...product, quantity: 1 }];
+            }
+        });
+    };
+
+    const removeFromCart = (productId: number) => {
+        setCartItems(prev => prev.filter(item => item.id !== productId));
+    };
+
+    const updateCartQuantity = (productId: number, quantity: number) => {
+        if (quantity <= 0) {
+            removeFromCart(productId);
+            return;
+        }
+        setCartItems(prev => prev.map(item =>
+            item.id === productId ? { ...item, quantity } : item
+        ));
+    };
+
+    const getCartTotal = () => {
+        return cartItems.reduce((total, item) => total + (parseFloat(item.price.toString()) * item.quantity), 0);
+    };
+
+    const getCartItemCount = () => {
+        return cartItems.reduce((total, item) => total + item.quantity, 0);
+    };
+
+    const clearCart = () => {
+        setCartItems([]);
+    };
+
+    const handleCheckout = () => {
+        // Save cart to localStorage for the checkout page
+        localStorage.setItem(`cart_${member.id}`, JSON.stringify(cartItems));
+        
+        // Navigate to checkout page
+        window.location.href = route('member.public-checkout', {
+            client_identifier: member.identifier || member.id.toString()
+        });
     };
 
     const menuItems = [
@@ -677,7 +732,30 @@ export default function Member({ member, challenges, events, pages, contacts, up
             case 'products':
                 return (
                     <div className="bg-white rounded-xl shadow-sm p-8">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-6">Marketplace</h2>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-lg font-semibold text-gray-900">Marketplace</h2>
+                            {getCartItemCount() > 0 && (
+                                <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">
+                                            {getCartItemCount()} item{getCartItemCount() !== 1 ? 's' : ''} in cart
+                                        </span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            Total: {formatPrice(getCartTotal())}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={handleCheckout}
+                                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+                                        </svg>
+                                        Checkout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                         {products.length === 0 ? (
                             <div className="text-center text-gray-500 py-12">
                                 <svg className="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -832,20 +910,57 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         <span className="text-xs text-gray-500 ml-1">/month</span>
                                                     )}
                                                 </div>
-                                                <button className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                                                    product.stock_quantity === 0 || product.status !== 'published'
-                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
-                                                }`}>
-                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                                                    </svg>
-                                                    {product.stock_quantity === 0 ? 'Out of Stock' : 
-                                                     product.status !== 'published' ? 'Not Available' : 
-                                                     product.type === 'digital' ? 'Download' :
-                                                     product.type === 'service' ? 'Book Now' :
-                                                     product.type === 'subscription' ? 'Subscribe' : 'Add to Cart'}
-                                                </button>
+                                                
+                                                {/* Cart Controls */}
+                                                {(() => {
+                                                    const cartItem = cartItems.find(item => item.id === product.id);
+                                                    const quantity = cartItem?.quantity || 0;
+                                                    
+                                                    if (product.stock_quantity === 0 || product.status !== 'published') {
+                                                        return (
+                                                            <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 cursor-not-allowed">
+                                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                                {product.stock_quantity === 0 ? 'Out of Stock' : 'Not Available'}
+                                                            </button>
+                                                        );
+                                                    }
+                                                    
+                                                    if (quantity > 0) {
+                                                        return (
+                                                            <div className="flex items-center space-x-2">
+                                                                <button
+                                                                    onClick={() => updateCartQuantity(product.id, quantity - 1)}
+                                                                    className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <span className="text-sm font-medium min-w-[2rem] text-center">
+                                                                    {quantity}
+                                                                </span>
+                                                                <button
+                                                                    onClick={() => updateCartQuantity(product.id, quantity + 1)}
+                                                                    className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center"
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    
+                                                    return (
+                                                        <button
+                                                            onClick={() => addToCart(product)}
+                                                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-md hover:shadow-lg"
+                                                        >
+                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+                                                            </svg>
+                                                            Add to Cart
+                                                        </button>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
                                     </div>

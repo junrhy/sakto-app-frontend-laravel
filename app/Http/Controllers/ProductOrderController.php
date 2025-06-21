@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class ProductOrderController extends Controller
 {
@@ -316,6 +317,142 @@ class ProductOrderController extends Controller
             ]);
             
             return back()->withErrors(['error' => 'An error occurred while creating the order']);
+        }
+    }
+
+    public function publicCheckout(Request $request)
+    {
+        try {
+            $clientIdentifier = $request->query('client_identifier');
+            
+            if (!$clientIdentifier) {
+                return back()->withErrors(['error' => 'Invalid request']);
+            }
+
+            // Find user by identifier
+            $user = User::where('identifier', $clientIdentifier)->first();
+            
+            if (!$user) {
+                return back()->withErrors(['error' => 'User not found']);
+            }
+
+            $jsonAppCurrency = json_decode($user->app_currency ?? '{"symbol": "$", "code": "USD"}');
+
+            return Inertia::render('ProductOrders/PublicCheckout', [
+                'currency' => $jsonAppCurrency,
+                'member' => $user,
+                'client_identifier' => $clientIdentifier
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in public checkout', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while loading checkout']);
+        }
+    }
+
+    public function publicStore(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'nullable|string|max:20',
+            'shipping_address' => 'nullable|string',
+            'billing_address' => 'nullable|string',
+            'order_items' => 'required|array|min:1',
+            'order_items.*.product_id' => 'required|integer',
+            'order_items.*.name' => 'required|string',
+            'order_items.*.quantity' => 'required|integer|min:1',
+            'order_items.*.price' => 'required|numeric|min:0',
+            'subtotal' => 'required|numeric|min:0',
+            'tax_amount' => 'nullable|numeric|min:0',
+            'shipping_fee' => 'nullable|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+            'payment_method' => 'nullable|string|in:cash,card,bank_transfer,digital_wallet,cod',
+            'notes' => 'nullable|string',
+            'client_identifier' => 'required|string',
+        ]);
+
+        try {
+            // Find user by identifier
+            $user = User::where('identifier', $validated['client_identifier'])->first();
+            
+            if (!$user) {
+                return back()->withErrors(['error' => 'User not found']);
+            }
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/product-orders", $validated);
+
+            if (!$response->successful()) {
+                Log::error('Failed to create public order', [
+                    'response' => $response->json(),
+                    'status' => $response->status()
+                ]);
+                return back()->withErrors(['error' => 'Failed to create order']);
+            }
+
+            $order = $response->json();
+
+            return redirect()->route('member.public-checkout.success', [
+                'member_id' => $user->id,
+                'order_id' => $order['id']
+            ])->with('message', 'Order created successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Exception in public order store', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while creating the order']);
+        }
+    }
+
+    public function publicCheckoutSuccess(Request $request)
+    {
+        try {
+            $orderId = $request->query('order_id');
+            $memberId = $request->query('member_id');
+            
+            if (!$orderId || !$memberId) {
+                return back()->withErrors(['error' => 'Invalid request']);
+            }
+
+            // Get order details
+            $orderResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/product-orders/{$orderId}");
+            
+            if (!$orderResponse->successful()) {
+                return back()->withErrors(['error' => 'Order not found']);
+            }
+
+            $order = $orderResponse->json();
+
+            // Find user by ID
+            $user = User::find($memberId);
+            
+            if (!$user) {
+                return back()->withErrors(['error' => 'User not found']);
+            }
+
+            $jsonAppCurrency = json_decode($user->app_currency ?? '{"symbol": "$", "code": "USD"}');
+
+            return Inertia::render('ProductOrders/PublicCheckoutSuccess', [
+                'order' => $order,
+                'currency' => $jsonAppCurrency,
+                'member' => $user
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in public checkout success', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while loading order confirmation']);
         }
     }
 } 
