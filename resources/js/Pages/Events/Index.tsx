@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Calendar, Plus, Search, Trash2, Users, UserPlus, Eye, MapPin, Clock, Tag, DollarSign } from 'lucide-react';
+import { Calendar, Plus, Search, Trash2, Users, UserPlus, Eye, MapPin, Clock, Tag, DollarSign, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -238,7 +238,7 @@ export default function Index({ auth, events }: Props) {
                                                     </Badge>
                                                     {event.is_paid_event ? (
                                                         <Badge className="bg-green-100 text-green-800 flex items-center space-x-1">
-                                                            <DollarSign className="w-3 h-3" />
+                                                            <CreditCard className="w-3 h-3" />
                                                             <span>{formatEventPrice(event.event_price, event.currency)}</span>
                                                         </Badge>
                                                     ) : (

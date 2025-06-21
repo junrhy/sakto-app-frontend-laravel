@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Com
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, Tag, UserPlus } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, Tag, UserPlus, CreditCard, DollarSign } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 
@@ -26,6 +26,10 @@ interface Event {
         current_participants: number;
         registration_deadline: string;
         is_public: boolean;
+        is_paid_event: boolean;
+        event_price: number;
+        currency: string;
+        payment_instructions: string;
         category: string;
         image: string;
     };
@@ -48,6 +52,12 @@ export default function PublicRegister({ event }: Props) {
 
     const isRegistrationOpen = new Date(eventData?.registration_deadline) > new Date();
     const isEventFull = eventData?.max_participants > 0 && eventData?.current_participants >= eventData?.max_participants;
+
+    const formatPrice = (price: number | string | null | undefined, currency: string) => {
+        if (price === null || price === undefined) return 'Free';
+        const numericPrice = typeof price === 'number' ? price : parseFloat(price) || 0;
+        return `${currency} ${numericPrice.toFixed(2)}`;
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,6 +120,12 @@ export default function PublicRegister({ event }: Props) {
                                     <Tag className="w-3 h-3 mr-1" />
                                     {eventData?.category}
                                 </Badge>
+                                {eventData?.is_paid_event && (
+                                    <Badge variant="secondary" className="bg-amber-500/90 text-white hover:bg-amber-600/90 border-0">
+                                        <DollarSign className="w-3 h-3 mr-1" />
+                                        Paid Event
+                                    </Badge>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -148,71 +164,100 @@ export default function PublicRegister({ event }: Props) {
                                                 <p>Please check back later or contact the event organizer.</p>
                                             </motion.div>
                                         ) : (
-                                            <motion.form 
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                onSubmit={handleSubmit} 
-                                                className="space-y-6"
-                                            >
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="name" className="text-slate-700 font-medium">Full Name</Label>
-                                                        <Input
-                                                            id="name"
-                                                            value={formData.name}
-                                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                            required
-                                                            className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                            placeholder="Enter your full name"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
-                                                        <Input
-                                                            id="email"
-                                                            type="email"
-                                                            value={formData.email}
-                                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                                            required
-                                                            className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                            placeholder="Enter your email address"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="phone" className="text-slate-700 font-medium">Phone Number</Label>
-                                                        <Input
-                                                            id="phone"
-                                                            value={formData.phone}
-                                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                                            className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                            placeholder="Enter your phone number (optional)"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="notes" className="text-slate-700 font-medium">Additional Notes</Label>
-                                                        <Textarea
-                                                            id="notes"
-                                                            value={formData.notes}
-                                                            onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                                                            placeholder="Any special requirements or information"
-                                                            className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm min-h-[100px]"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex justify-end pt-4">
-                                                    <Button 
-                                                        type="submit"
-                                                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                            <motion.div className="space-y-6">
+                                                {/* Payment Information Notice */}
+                                                {eventData?.is_paid_event && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-6 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg"
                                                     >
-                                                        <UserPlus className="w-4 h-4 mr-2" />
-                                                        Register for Event
-                                                    </Button>
-                                                </div>
-                                            </motion.form>
+                                                        <div className="flex items-start">
+                                                            <CreditCard className="w-6 h-6 mr-3 mt-0.5 text-amber-600" />
+                                                            <div>
+                                                                <h3 className="font-semibold text-slate-900 mb-2">Payment Required</h3>
+                                                                <div className="text-2xl font-bold text-amber-700 mb-2">
+                                                                    {formatPrice(eventData?.event_price, eventData?.currency)}
+                                                                </div>
+                                                                {eventData?.payment_instructions && (
+                                                                    <div className="mt-3 p-3 bg-white/60 rounded border border-amber-200">
+                                                                        <p className="font-medium text-slate-900 mb-1">Payment Instructions:</p>
+                                                                        <div className="text-slate-600 text-sm whitespace-pre-line">
+                                                                            {eventData.payment_instructions}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                <motion.form 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    onSubmit={handleSubmit} 
+                                                    className="space-y-6"
+                                                >
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="name" className="text-slate-700 font-medium">Full Name</Label>
+                                                            <Input
+                                                                id="name"
+                                                                value={formData.name}
+                                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                                                required
+                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                placeholder="Enter your full name"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
+                                                            <Input
+                                                                id="email"
+                                                                type="email"
+                                                                value={formData.email}
+                                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                                                required
+                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                placeholder="Enter your email address"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="phone" className="text-slate-700 font-medium">Phone Number</Label>
+                                                            <Input
+                                                                id="phone"
+                                                                value={formData.phone}
+                                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                placeholder="Enter your phone number (optional)"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="notes" className="text-slate-700 font-medium">Additional Notes</Label>
+                                                            <Textarea
+                                                                id="notes"
+                                                                value={formData.notes}
+                                                                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                                                placeholder="Any special requirements or information"
+                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm min-h-[100px]"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-end pt-4">
+                                                        <Button 
+                                                            type="submit"
+                                                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                                        >
+                                                            <UserPlus className="w-4 h-4 mr-2" />
+                                                            Register for Event
+                                                        </Button>
+                                                    </div>
+                                                </motion.form>
+                                            </motion.div>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -275,6 +320,22 @@ export default function PublicRegister({ event }: Props) {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Payment Information in Sidebar */}
+                                            {eventData?.is_paid_event && (
+                                                <div className="p-4 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200">
+                                                    <p className="font-semibold text-slate-900 mb-2 flex items-center">
+                                                        <CreditCard className="w-4 h-4 mr-2 text-amber-600" />
+                                                        Payment Required
+                                                    </p>
+                                                    <div className="text-slate-600">
+                                                        <div className="text-lg font-bold text-amber-700 mb-1">
+                                                            {formatPrice(eventData?.event_price, eventData?.currency)}
+                                                        </div>
+                                                        <p className="text-sm">Payment will be collected during registration</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
