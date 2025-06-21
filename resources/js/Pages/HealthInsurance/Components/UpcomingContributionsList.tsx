@@ -91,31 +91,31 @@ export default function UpcomingContributionsList({ members, contributions, appC
     );
 
     const ContributionTable = ({ contributions, title }: { contributions: typeof upcomingContributions, title: string }) => (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="p-4 border-b">
-                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-hidden dark:border dark:border-gray-700">
+            <div className="p-4 border-b dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
             </div>
             <div className="overflow-x-auto">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-gray-50">
-                            <TableHead className="font-semibold">Member Name</TableHead>
-                            <TableHead className="font-semibold">Contribution Amount</TableHead>
-                            <TableHead className="font-semibold">Next Contribution Date</TableHead>
+                        <TableRow className="bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                            <TableHead className="font-semibold dark:text-gray-300">Member Name</TableHead>
+                            <TableHead className="font-semibold dark:text-gray-300">Contribution Amount</TableHead>
+                            <TableHead className="font-semibold dark:text-gray-300">Next Contribution Date</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {contributions.map((member) => (
-                            <TableRow key={member.id} className="hover:bg-gray-50">
-                                <TableCell className="font-medium">{member.name}</TableCell>
+                            <TableRow key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:border-gray-700">
+                                <TableCell className="font-medium dark:text-gray-200">{member.name}</TableCell>
                                 <TableCell>
-                                    <span className="font-medium text-primary">
+                                    <span className="font-medium text-primary dark:text-blue-400">
                                         {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
                                     </span>
                                 </TableCell>
                                 <TableCell>
                                     {member.nextContributionDate && 
-                                        <span className="text-gray-600">
+                                        <span className="text-gray-600 dark:text-gray-400">
                                             {format(member.nextContributionDate, 'MMM dd, yyyy')}
                                         </span>
                                     }
@@ -123,8 +123,8 @@ export default function UpcomingContributionsList({ members, contributions, appC
                             </TableRow>
                         ))}
                         {contributions.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center text-muted-foreground py-4">
+                            <TableRow className="dark:border-gray-700">
+                                <TableCell colSpan={3} className="text-center text-muted-foreground dark:text-gray-400 py-4">
                                     No matching contributions found
                                 </TableCell>
                             </TableRow>
@@ -137,41 +137,41 @@ export default function UpcomingContributionsList({ members, contributions, appC
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 p-4 bg-white rounded-lg shadow-sm">
+            <div className="flex flex-col gap-4 p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm dark:border dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-900">Upcoming Contributions</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Upcoming Contributions</h2>
                     <div className="flex items-center gap-4 min-w-[400px]">
                         <Input
                             type="search"
                             placeholder="Search by member name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full"
+                            className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
                         />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-1">Total Upcoming</div>
-                        <div className="text-xl font-semibold text-gray-900">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Upcoming</div>
+                        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                             {appCurrency.symbol}{calculateTotalContributions(upcomingContributions).toFixed(2)}
                         </div>
                     </div>
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-1">Monthly Total</div>
-                        <div className="text-xl font-semibold text-gray-900">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly Total</div>
+                        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                             {appCurrency.symbol}{calculateTotalContributions(monthlyContributions).toFixed(2)}
                         </div>
                     </div>
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-1">Quarterly Total</div>
-                        <div className="text-xl font-semibold text-gray-900">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Quarterly Total</div>
+                        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                             {appCurrency.symbol}{calculateTotalContributions(quarterlyContributions).toFixed(2)}
                         </div>
                     </div>
-                    <div className="p-4 bg-gray-50 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-1">Annual Total</div>
-                        <div className="text-xl font-semibold text-gray-900">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Annual Total</div>
+                        <div className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                             {appCurrency.symbol}{calculateTotalContributions(annualContributions).toFixed(2)}
                         </div>
                     </div>
@@ -189,7 +189,7 @@ export default function UpcomingContributionsList({ members, contributions, appC
                     <ContributionTable contributions={annualContributions} title="Annual Contributions" />
                 )}
                 {upcomingContributions.length === 0 && (
-                    <div className="text-center text-muted-foreground py-12 bg-gray-50 rounded-lg">
+                    <div className="text-center text-muted-foreground dark:text-gray-400 py-12 bg-gray-50 dark:bg-gray-800 rounded-lg dark:border dark:border-gray-700">
                         No upcoming contributions found
                     </div>
                 )}

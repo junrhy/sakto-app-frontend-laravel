@@ -133,12 +133,12 @@ export default function ContributionsList({ contributions, members, appCurrency 
         <div className="space-y-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                     <Input
                         placeholder="Search contributions..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8"
+                        className="pl-8 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
                     />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -148,16 +148,16 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 <Button
                                     variant="outline"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal",
-                                        !startDate && "text-muted-foreground",
-                                        startDate && "border-primary bg-primary/5"
+                                        "w-[240px] justify-start text-left font-normal dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
+                                        !startDate && "text-muted-foreground dark:text-gray-400",
+                                        startDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
                                     )}
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
                                     {startDate ? format(startDate, "PPP") : "Start date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
                                 <DatePicker
                                     mode="single"
                                     selected={startDate}
@@ -166,22 +166,22 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 />
                             </PopoverContent>
                         </Popover>
-                        <span className="text-muted-foreground font-medium">to</span>
+                        <span className="text-muted-foreground dark:text-gray-400 font-medium">to</span>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal",
-                                        !endDate && "text-muted-foreground",
-                                        endDate && "border-primary bg-primary/5"
+                                        "w-[240px] justify-start text-left font-normal dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
+                                        !endDate && "text-muted-foreground dark:text-gray-400",
+                                        endDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
                                     )}
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
                                     {endDate ? format(endDate, "PPP") : "End date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
                                 <DatePicker
                                     mode="single"
                                     selected={endDate}
@@ -199,56 +199,56 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 setStartDate(startOfYear(new Date()));
                                 setEndDate(endOfYear(new Date()));
                             }}
-                            className="text-muted-foreground hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200"
                         >
                             Reset to current year
                         </Button>
                     )}
                 </div>
             </div>
-            <div className="rounded-md border">
+            <div className="rounded-md border dark:border-gray-700">
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className="dark:border-gray-700">
                             <TableHead 
-                                className="cursor-pointer"
+                                className="cursor-pointer dark:text-gray-300"
                                 onClick={() => handleSort('payment_date')}
                             >
                                 Payment Date {sortField === 'payment_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                             </TableHead>
-                            <TableHead>Member</TableHead>
+                            <TableHead className="dark:text-gray-300">Member</TableHead>
                             <TableHead 
-                                className="cursor-pointer"
+                                className="cursor-pointer dark:text-gray-300"
                                 onClick={() => handleSort('amount')}
                             >
                                 Amount {sortField === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
                             </TableHead>
                             <TableHead 
-                                className="cursor-pointer"
+                                className="cursor-pointer dark:text-gray-300"
                                 onClick={() => handleSort('payment_method')}
                             >
                                 Payment Method {sortField === 'payment_method' && (sortDirection === 'asc' ? '↑' : '↓')}
                             </TableHead>
-                            <TableHead>Reference Number</TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead className="dark:text-gray-300">Reference Number</TableHead>
+                            <TableHead className="dark:text-gray-300">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredContributions.map((contribution) => (
-                            <TableRow key={contribution.id}>
-                                <TableCell>
+                            <TableRow key={contribution.id} className="dark:border-gray-700">
+                                <TableCell className="dark:text-gray-300">
                                     {format(new Date(contribution.payment_date), 'MMM d, yyyy')}
                                 </TableCell>
-                                <TableCell className="font-medium">
+                                <TableCell className="font-medium dark:text-gray-200">
                                     {getMemberName(contribution.member_id)}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="dark:text-gray-300">
                                     {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
                                 </TableCell>
-                                <TableCell className="capitalize">
+                                <TableCell className="capitalize dark:text-gray-300">
                                     {contribution.payment_method.replace('_', ' ')}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="dark:text-gray-300">
                                     {contribution.reference_number}
                                 </TableCell>
                                 <TableCell>
@@ -257,13 +257,14 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => handleEdit(contribution)}
+                                            className="dark:text-gray-300 dark:hover:text-gray-100"
                                         >
                                             <Edit className="h-4 w-4" />
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-red-500 hover:text-red-700"
+                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                             onClick={() => handleDelete(contribution.member_id, contribution.id)}
                                         >
                                             <Trash2 className="h-4 w-4" />

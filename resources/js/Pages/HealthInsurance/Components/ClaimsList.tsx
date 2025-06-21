@@ -142,12 +142,12 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                     <Input
                         placeholder="Search by member name, claim type, hospital, diagnosis, or status..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 h-10"
+                        className="pl-8 h-10 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
                     />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -157,16 +157,16 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 <Button
                                     variant="outline"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal h-10",
-                                        !startDate && "text-muted-foreground",
-                                        startDate && "border-primary bg-primary/5"
+                                        "w-[240px] justify-start text-left font-normal h-10 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
+                                        !startDate && "text-muted-foreground dark:text-gray-400",
+                                        startDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
                                     )}
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
                                     {startDate ? format(startDate, "PPP") : "Start date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
                                 <DatePicker
                                     mode="single"
                                     selected={startDate}
@@ -175,22 +175,22 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 />
                             </PopoverContent>
                         </Popover>
-                        <span className="text-muted-foreground font-medium">to</span>
+                        <span className="text-muted-foreground dark:text-gray-400 font-medium">to</span>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal h-10",
-                                        !endDate && "text-muted-foreground",
-                                        endDate && "border-primary bg-primary/5"
+                                        "w-[240px] justify-start text-left font-normal h-10 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
+                                        !endDate && "text-muted-foreground dark:text-gray-400",
+                                        endDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
                                     )}
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
                                     {endDate ? format(endDate, "PPP") : "End date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
                                 <DatePicker
                                     mode="single"
                                     selected={endDate}
@@ -208,7 +208,7 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 setStartDate(startOfYear(new Date()));
                                 setEndDate(endOfYear(new Date()));
                             }}
-                            className="text-muted-foreground hover:text-foreground h-10"
+                            className="text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200 h-10"
                         >
                             Reset to current year
                         </Button>
@@ -216,90 +216,90 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                 </div>
             </div>
 
-            <div className="rounded-lg border bg-card">
+            <div className="rounded-lg border bg-card dark:bg-gray-900 dark:border-gray-700">
                 <Table>
                     <TableHeader>
-                        <TableRow className="hover:bg-muted/50">
+                        <TableRow className="hover:bg-muted/50 dark:border-gray-700 dark:hover:bg-gray-800/50">
                             <TableHead 
-                                className="cursor-pointer font-semibold"
+                                className="cursor-pointer font-semibold dark:text-gray-300"
                                 onClick={() => handleSort('date_of_service')}
                             >
                                 <div className="flex items-center gap-2">
                                     Service Date
                                     {sortField === 'date_of_service' && (
-                                        <span className="text-muted-foreground">
+                                        <span className="text-muted-foreground dark:text-gray-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold">Member</TableHead>
+                            <TableHead className="font-semibold dark:text-gray-300">Member</TableHead>
                             <TableHead 
-                                className="cursor-pointer font-semibold"
+                                className="cursor-pointer font-semibold dark:text-gray-300"
                                 onClick={() => handleSort('claim_type')}
                             >
                                 <div className="flex items-center gap-2">
                                     Type
                                     {sortField === 'claim_type' && (
-                                        <span className="text-muted-foreground">
+                                        <span className="text-muted-foreground dark:text-gray-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
                             <TableHead 
-                                className="cursor-pointer font-semibold"
+                                className="cursor-pointer font-semibold dark:text-gray-300"
                                 onClick={() => handleSort('amount')}
                             >
                                 <div className="flex items-center gap-2">
                                     Amount
                                     {sortField === 'amount' && (
-                                        <span className="text-muted-foreground">
+                                        <span className="text-muted-foreground dark:text-gray-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold">Hospital</TableHead>
+                            <TableHead className="font-semibold dark:text-gray-300">Hospital</TableHead>
                             <TableHead 
-                                className="cursor-pointer font-semibold"
+                                className="cursor-pointer font-semibold dark:text-gray-300"
                                 onClick={() => handleSort('status')}
                             >
                                 <div className="flex items-center gap-2">
                                     Status
                                     {sortField === 'status' && (
-                                        <span className="text-muted-foreground">
+                                        <span className="text-muted-foreground dark:text-gray-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold text-right">Actions</TableHead>
+                            <TableHead className="font-semibold text-right dark:text-gray-300">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredClaims.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                            <TableRow className="dark:border-gray-700">
+                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground dark:text-gray-400">
                                     No claims found
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredClaims.map((claim) => (
-                                <TableRow key={claim.id} className="hover:bg-muted/50">
-                                    <TableCell className="font-medium">
+                                <TableRow key={claim.id} className="hover:bg-muted/50 dark:border-gray-700 dark:hover:bg-gray-800/50">
+                                    <TableCell className="font-medium dark:text-gray-200">
                                         {format(new Date(claim.date_of_service), 'MMM d, yyyy')}
                                     </TableCell>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium dark:text-gray-200">
                                         {getMemberName(claim.member_id)}
                                     </TableCell>
-                                    <TableCell className="capitalize">
+                                    <TableCell className="capitalize dark:text-gray-300">
                                         {claim.claim_type}
                                     </TableCell>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium dark:text-gray-200">
                                         {appCurrency.symbol}{Number(claim.amount).toFixed(2)}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="dark:text-gray-300">
                                         {claim.hospital_name}
                                     </TableCell>
                                     <TableCell>
@@ -318,14 +318,14 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleEdit(claim.member_id, claim.id)}
-                                                className="hover:bg-muted"
+                                                className="hover:bg-muted dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
                                                 onClick={() => handleDelete(claim.member_id, claim.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />

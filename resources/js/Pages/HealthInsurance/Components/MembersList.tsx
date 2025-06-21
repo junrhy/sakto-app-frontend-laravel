@@ -144,82 +144,82 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
     }, {} as Record<string, typeof filteredMembers>);
 
     const renderListView = () => (
-        <div className="rounded-md border">
+        <div className="rounded-md border dark:border-gray-700">
             <Table>
                 <TableHeader>
-                    <TableRow>
+                    <TableRow className="dark:border-gray-700">
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('name')}
                         >
                             Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('membership_start_date')}
                         >
                             Start Date {sortField === 'membership_start_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('contribution_amount')}
                         >
                             Premium {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('contribution_frequency')}
                         >
                             Frequency {sortField === 'contribution_frequency' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('total_contribution')}
                         >
                             Total Contribution {sortField === 'total_contribution' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('total_claims_amount')}
                         >
                             Total Claims {sortField === 'total_claims_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('net_balance')}
                         >
                             Net Balance {sortField === 'net_balance' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
                         <TableHead 
-                            className="cursor-pointer"
+                            className="cursor-pointer dark:text-gray-300"
                             onClick={() => handleSort('status')}
                         >
                             Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
                         </TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="dark:text-gray-300">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {filteredMembers.map((member) => (
-                        <TableRow key={member.id}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>
+                        <TableRow key={member.id} className="dark:border-gray-700">
+                            <TableCell className="font-medium dark:text-gray-200">{member.name}</TableCell>
+                            <TableCell className="dark:text-gray-300">
                                 {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="dark:text-gray-300">
                                 {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
                             </TableCell>
-                            <TableCell className="capitalize">
+                            <TableCell className="capitalize dark:text-gray-300">
                                 {member.contribution_frequency}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="dark:text-gray-300">
                                 {appCurrency.symbol}{Number(member.total_contribution).toFixed(2)}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="dark:text-gray-300">
                                 {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
                             </TableCell>
                             <TableCell>
-                                <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500' : ''}>
+                                <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500 dark:text-red-400' : 'dark:text-gray-300'}>
                                     {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
                                 </span>
                             </TableCell>
@@ -234,6 +234,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => window.open(`/health-insurance/members/${member.id}/public`, '_blank')}
+                                        className="dark:text-gray-300 dark:hover:text-gray-100"
                                     >
                                         <Eye className="h-4 w-4" />
                                     </Button>
@@ -241,13 +242,14 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => onMemberSelect(member)}
+                                        className="dark:text-gray-300 dark:hover:text-gray-100"
                                     >
                                         <Edit className="h-4 w-4" />
                                     </Button>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-red-500 hover:text-red-700"
+                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                         onClick={() => handleDelete(member.id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
@@ -265,43 +267,43 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
         <div className="space-y-6">
             {Object.entries(groupedMembers).map(([group, members]) => (
                 <div key={group} className="space-y-2">
-                    <h3 className="text-lg font-semibold">{group}</h3>
-                    <div className="rounded-md border">
+                    <h3 className="text-lg font-semibold dark:text-gray-200">{group}</h3>
+                    <div className="rounded-md border dark:border-gray-700">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Start Date</TableHead>
-                                    <TableHead>Premium</TableHead>
-                                    <TableHead>Frequency</TableHead>
-                                    <TableHead>Total Contribution</TableHead>
-                                    <TableHead>Total Claims</TableHead>
-                                    <TableHead>Net Balance</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Actions</TableHead>
+                                <TableRow className="dark:border-gray-700">
+                                    <TableHead className="dark:text-gray-300">Name</TableHead>
+                                    <TableHead className="dark:text-gray-300">Start Date</TableHead>
+                                    <TableHead className="dark:text-gray-300">Premium</TableHead>
+                                    <TableHead className="dark:text-gray-300">Frequency</TableHead>
+                                    <TableHead className="dark:text-gray-300">Total Contribution</TableHead>
+                                    <TableHead className="dark:text-gray-300">Total Claims</TableHead>
+                                    <TableHead className="dark:text-gray-300">Net Balance</TableHead>
+                                    <TableHead className="dark:text-gray-300">Status</TableHead>
+                                    <TableHead className="dark:text-gray-300">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {members.map((member) => (
-                                    <TableRow key={member.id}>
-                                        <TableCell className="font-medium">{member.name}</TableCell>
-                                        <TableCell>
+                                    <TableRow key={member.id} className="dark:border-gray-700">
+                                        <TableCell className="font-medium dark:text-gray-200">{member.name}</TableCell>
+                                        <TableCell className="dark:text-gray-300">
                                             {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="dark:text-gray-300">
                                             {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
                                         </TableCell>
-                                        <TableCell className="capitalize">
+                                        <TableCell className="capitalize dark:text-gray-300">
                                             {member.contribution_frequency}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="dark:text-gray-300">
                                             {appCurrency.symbol}{Number(member.total_contribution).toFixed(2)}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="dark:text-gray-300">
                                             {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
                                         </TableCell>
                                         <TableCell>
-                                            <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500' : ''}>
+                                            <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500 dark:text-red-400' : 'dark:text-gray-300'}>
                                                 {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
                                             </span>
                                         </TableCell>
@@ -316,6 +318,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => window.open(`/health-insurance/members/${member.id}/public`, '_blank')}
+                                                    className="dark:text-gray-300 dark:hover:text-gray-100"
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -323,13 +326,14 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => onMemberSelect(member)}
+                                                    className="dark:text-gray-300 dark:hover:text-gray-100"
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="text-red-500 hover:text-red-700"
+                                                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                                     onClick={() => handleDelete(member.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -350,21 +354,27 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                     <Input
                         placeholder="Search members..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8"
+                        className="pl-8 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
                     />
                 </div>
                 <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'list' | 'group')}>
-                    <TabsList>
-                        <TabsTrigger value="list">
+                    <TabsList className="dark:bg-gray-800">
+                        <TabsTrigger 
+                            value="list"
+                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                        >
                             <List className="h-4 w-4 mr-2" />
                             List View
                         </TabsTrigger>
-                        <TabsTrigger value="group">
+                        <TabsTrigger 
+                            value="group"
+                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                        >
                             <Users className="h-4 w-4 mr-2" />
                             Group View
                         </TabsTrigger>

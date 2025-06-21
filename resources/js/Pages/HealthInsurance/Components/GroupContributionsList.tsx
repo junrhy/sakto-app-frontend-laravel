@@ -49,44 +49,44 @@ export default function GroupContributionsList({ members, appCurrency }: Props) 
     }), { total_contribution: 0, total_claims: 0, net_balance: 0 });
 
     return (
-        <Card className="shadow-lg">
-            <CardHeader className="bg-gray-50 border-b">
-                <CardTitle className="text-xl font-semibold text-gray-800">Group Financial Summary</CardTitle>
+        <Card className="shadow-lg dark:bg-gray-900 dark:border-gray-700">
+            <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700">
+                <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">Group Financial Summary</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-6 dark:bg-gray-900">
                 <Table>
                     <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                            <TableHead className="font-semibold text-gray-700">Group Name</TableHead>
-                            <TableHead className="font-semibold text-gray-700 text-right">Total Contributions</TableHead>
-                            <TableHead className="font-semibold text-gray-700 text-right">Total Claims</TableHead>
-                            <TableHead className="font-semibold text-gray-700 text-right">Net Balance</TableHead>
+                        <TableRow className="hover:bg-transparent dark:border-gray-700">
+                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Group Name</TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Contributions</TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Claims</TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Net Balance</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sortedGroups.map(({ group, total_contribution, total_claims, net_balance }) => (
-                            <TableRow key={group} className="hover:bg-gray-50">
-                                <TableCell className="font-medium text-gray-800">{group}</TableCell>
-                                <TableCell className="text-right font-medium">
+                            <TableRow key={group} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:border-gray-700">
+                                <TableCell className="font-medium text-gray-800 dark:text-gray-200">{group}</TableCell>
+                                <TableCell className="text-right font-medium dark:text-gray-200">
                                     {appCurrency.symbol}{total_contribution.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="text-right font-medium">
+                                <TableCell className="text-right font-medium dark:text-gray-200">
                                     {appCurrency.symbol}{total_claims.toLocaleString()}
                                 </TableCell>
-                                <TableCell className={`text-right font-medium ${net_balance < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                <TableCell className={`text-right font-medium ${net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                     {appCurrency.symbol}{net_balance.toLocaleString()}
                                 </TableCell>
                             </TableRow>
                         ))}
-                        <TableRow className="bg-gray-50 hover:bg-gray-100">
-                            <TableCell className="font-bold text-gray-900">Total</TableCell>
-                            <TableCell className="text-right font-bold text-gray-900">
+                        <TableRow className="bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700">
+                            <TableCell className="font-bold text-gray-900 dark:text-gray-100">Total</TableCell>
+                            <TableCell className="text-right font-bold text-gray-900 dark:text-gray-100">
                                 {appCurrency.symbol}{grandTotal.total_contribution.toLocaleString()}
                             </TableCell>
-                            <TableCell className="text-right font-bold text-gray-900">
+                            <TableCell className="text-right font-bold text-gray-900 dark:text-gray-100">
                                 {appCurrency.symbol}{grandTotal.total_claims.toLocaleString()}
                             </TableCell>
-                            <TableCell className={`text-right font-bold ${grandTotal.net_balance < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            <TableCell className={`text-right font-bold ${grandTotal.net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                 {appCurrency.symbol}{grandTotal.net_balance.toLocaleString()}
                             </TableCell>
                         </TableRow>
