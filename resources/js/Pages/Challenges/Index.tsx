@@ -3,17 +3,10 @@ import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/Components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users, ExternalLink } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users, ExternalLink, Calendar, Target, Users2, Filter, MoreHorizontal } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -72,6 +65,7 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
     const [selectedChallenges, setSelectedChallenges] = useState<number[]>([]);
     const [visibilityFilter, setVisibilityFilter] = useState<string>('all');
     const [goalTypeFilter, setGoalTypeFilter] = useState<string>('all');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     const filteredChallenges = useMemo(() => {
         let filtered = challenges;
@@ -176,184 +170,341 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
         }
     };
 
+    const getGoalTypeIcon = (goalType: string) => {
+        switch (goalType) {
+            case 'steps':
+                return '👟';
+            case 'calories':
+                return '🔥';
+            case 'distance':
+                return '🏃';
+            case 'time':
+                return '⏱️';
+            case 'weight':
+                return '⚖️';
+            case 'cooking':
+                return '👨‍🍳';
+            case 'photography':
+                return '📸';
+            case 'art':
+                return '🎨';
+            case 'writing':
+                return '✍️';
+            case 'music':
+                return '🎵';
+            case 'dance':
+                return '💃';
+            case 'sports':
+                return '⚽';
+            case 'quiz':
+                return '🧠';
+            default:
+                return '🎯';
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'active':
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+            case 'completed':
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+            case 'archived':
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+            default:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        }
+    };
+
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
-                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Challenges
-                    </h2>
-                    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-                        <div className="relative">
-                            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
-                            <Input
-                                type="search"
-                                placeholder="Search challenges..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 w-full sm:w-[300px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
-                            />
+                <div className="flex flex-col space-y-6">
+                    <div className="flex flex-col space-y-2">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            Challenges
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Create and manage fitness, wellness, and personal development challenges
+                        </p>
+                    </div>
+                    
+                    <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="relative flex-1 sm:max-w-sm">
+                                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
+                                <Input
+                                    type="search"
+                                    placeholder="Search challenges..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-9 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
+                                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                                        <Filter className="w-4 h-4 mr-2" />
+                                        <SelectValue placeholder="Visibility" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Visibilities</SelectItem>
+                                        <SelectItem value="public">Public</SelectItem>
+                                        <SelectItem value="private">Private</SelectItem>
+                                        <SelectItem value="friends">Friends</SelectItem>
+                                        <SelectItem value="family">Family</SelectItem>
+                                        <SelectItem value="coworkers">Coworkers</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Select value={goalTypeFilter} onValueChange={setGoalTypeFilter}>
+                                    <SelectTrigger className="w-full sm:w-[180px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                                        <Target className="w-4 h-4 mr-2" />
+                                        <SelectValue placeholder="Goal Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Goal Types</SelectItem>
+                                        <SelectItem value="steps">Steps</SelectItem>
+                                        <SelectItem value="calories">Calories</SelectItem>
+                                        <SelectItem value="distance">Distance</SelectItem>
+                                        <SelectItem value="time">Time</SelectItem>
+                                        <SelectItem value="weight">Weight</SelectItem>
+                                        <SelectItem value="cooking">Cooking</SelectItem>
+                                        <SelectItem value="photography">Photography</SelectItem>
+                                        <SelectItem value="art">Art</SelectItem>
+                                        <SelectItem value="writing">Writing</SelectItem>
+                                        <SelectItem value="music">Music</SelectItem>
+                                        <SelectItem value="dance">Dance</SelectItem>
+                                        <SelectItem value="sports">Sports</SelectItem>
+                                        <SelectItem value="quiz">Quiz</SelectItem>
+                                        <SelectItem value="other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-                            <SelectTrigger className="w-full sm:w-[200px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
-                                <SelectValue placeholder="Filter by visibility" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Visibilities</SelectItem>
-                                <SelectItem value="public">Public</SelectItem>
-                                <SelectItem value="private">Private</SelectItem>
-                                <SelectItem value="friends">Friends</SelectItem>
-                                <SelectItem value="family">Family</SelectItem>
-                                <SelectItem value="coworkers">Coworkers</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select value={goalTypeFilter} onValueChange={setGoalTypeFilter}>
-                            <SelectTrigger className="w-full sm:w-[200px] bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
-                                <SelectValue placeholder="Filter by goal type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Goal Types</SelectItem>
-                                <SelectItem value="steps">Steps</SelectItem>
-                                <SelectItem value="calories">Calories</SelectItem>
-                                <SelectItem value="distance">Distance</SelectItem>
-                                <SelectItem value="time">Time</SelectItem>
-                                <SelectItem value="weight">Weight</SelectItem>
-                                <SelectItem value="cooking">Cooking</SelectItem>
-                                <SelectItem value="photography">Photography</SelectItem>
-                                <SelectItem value="art">Art</SelectItem>
-                                <SelectItem value="writing">Writing</SelectItem>
-                                <SelectItem value="music">Music</SelectItem>
-                                <SelectItem value="dance">Dance</SelectItem>
-                                <SelectItem value="sports">Sports</SelectItem>
-                                <SelectItem value="quiz">Quiz</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {selectedChallenges.length > 0 && (
-                            <Button
-                                variant="outline"
-                                onClick={exportToCSV}
-                                className="flex items-center"
-                            >
-                                <FileDown className="w-4 h-4 mr-2" />
-                                Export Selected
+                        
+                        <div className="flex items-center gap-3">
+                            {selectedChallenges.length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    onClick={exportToCSV}
+                                    className="flex items-center"
+                                >
+                                    <FileDown className="w-4 h-4 mr-2" />
+                                    Export ({selectedChallenges.length})
+                                </Button>
+                            )}
+                            <Button onClick={() => setIsFormOpen(true)} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create Challenge
                             </Button>
-                        )}
-                        <Button onClick={() => setIsFormOpen(true)}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create Challenge
-                        </Button>
+                        </div>
                     </div>
                 </div>
             }
         >
             <Head title="Challenges" />
 
-            <div className="py-12">
+            <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50px]">
-                                            <Checkbox
-                                                checked={selectedChallenges.length === filteredChallenges.length}
-                                                onCheckedChange={toggleSelectAll}
-                                            />
-                                        </TableHead>
-                                        <TableHead>Title</TableHead>
-                                        <TableHead>Goal</TableHead>
-                                        <TableHead>Visibility</TableHead>
-                                        <TableHead>Participants</TableHead>
-                                        <TableHead>Start Date</TableHead>
-                                        <TableHead>End Date</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredChallenges.map((challenge) => (
-                                        <TableRow key={challenge.id}>
-                                            <TableCell>
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Challenges</p>
+                                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{challenges.length}</p>
+                                    </div>
+                                    <div className="h-12 w-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                                        <Target className="h-6 w-6 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">Active</p>
+                                        <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                                            {challenges.filter(c => c.status === 'active').length}
+                                        </p>
+                                    </div>
+                                    <div className="h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
+                                        <div className="h-3 w-3 bg-white rounded-full animate-pulse"></div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Completed</p>
+                                        <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                            {challenges.filter(c => c.status === 'completed').length}
+                                        </p>
+                                    </div>
+                                    <div className="h-12 w-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                                        <div className="h-6 w-6 text-white">✓</div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Total Participants</p>
+                                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                                            {challenges.reduce((sum, c) => sum + (c.participants?.length || 0), 0)}
+                                        </p>
+                                    </div>
+                                    <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                                        <Users2 className="h-6 w-6 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Challenges Grid */}
+                    {filteredChallenges.length === 0 ? (
+                        <Card className="text-center py-12">
+                            <CardContent>
+                                <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                                    <Target className="h-12 w-12 text-gray-400" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No challenges found</h3>
+                                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                    {search || visibilityFilter !== 'all' || goalTypeFilter !== 'all' 
+                                        ? 'Try adjusting your filters or search terms.' 
+                                        : 'Get started by creating your first challenge!'}
+                                </p>
+                                {!search && visibilityFilter === 'all' && goalTypeFilter === 'all' && (
+                                    <Button onClick={() => setIsFormOpen(true)}>
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Create Challenge
+                                    </Button>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredChallenges.map((challenge) => (
+                                <Card key={challenge.id} className="group hover:shadow-lg transition-all duration-200 border-gray-200 dark:border-gray-700">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="text-2xl">{getGoalTypeIcon(challenge.goal_type)}</div>
+                                                <div className="flex-1 min-w-0">
+                                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                                        {challenge.title}
+                                                    </CardTitle>
+                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                                        {challenge.description}
+                                                    </CardDescription>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     checked={selectedChallenges.includes(challenge.id)}
                                                     onCheckedChange={() => toggleSelect(challenge.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity"
                                                 />
-                                            </TableCell>
-                                            <TableCell className="font-medium">{challenge.title}</TableCell>
-                                            <TableCell>
-                                                {challenge.goal_value} {challenge.goal_unit}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge 
-                                                    variant={getVisibilityBadgeColor(challenge.visibility)}
-                                                    className="capitalize"
-                                                >
-                                                    {challenge.visibility}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>{challenge.participants?.length || 0}</TableCell>
-                                            <TableCell>{format(new Date(challenge.start_date), 'PPP')}</TableCell>
-                                            <TableCell>{format(new Date(challenge.end_date), 'PPP')}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    {challenge.visibility === 'public' && (
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            asChild
-                                                            className="h-8"
-                                                        >
-                                                            <Link href={route('challenges.public-register', challenge.id)}>
-                                                                <ExternalLink className="w-4 h-4 mr-1" />
-                                                            </Link>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
-                                                    )}
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <span className="sr-only">Open menu</span>
-                                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                                </svg>
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('challenges.leaderboard', challenge.id)}>
+                                                                <Users className="w-4 h-4 mr-2" />
+                                                                Leaderboard
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        {challenge.visibility === 'public' && (
                                                             <DropdownMenuItem asChild>
-                                                                <Link href={route('challenges.leaderboard', challenge.id)}>
-                                                                    <Users className="w-4 h-4 mr-2" />
-                                                                    Leaderboard
+                                                                <Link href={route('challenges.public-show', challenge.id)}>
+                                                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                                                    Public View
                                                                 </Link>
                                                             </DropdownMenuItem>
-                                                            {challenge.visibility === 'public' && (
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={route('challenges.public-show', challenge.id)}>
-                                                                        <ExternalLink className="w-4 h-4 mr-2" />
-                                                                        Public View
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
-                                                                Edit
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                className="text-red-600"
-                                                                onClick={() => handleDelete(challenge.id)}
-                                                            >
-                                                                <Trash2 className="w-4 h-4 mr-2" />
-                                                                Delete
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                                        )}
+                                                        <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
+                                                            <Edit className="w-4 h-4 mr-2" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-red-600"
+                                                            onClick={() => handleDelete(challenge.id)}
+                                                        >
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    
+                                    <CardContent className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                <Target className="h-4 w-4 text-gray-500" />
+                                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    {challenge.goal_value} {challenge.goal_unit}
+                                                </span>
+                                            </div>
+                                            <Badge 
+                                                variant={getVisibilityBadgeColor(challenge.visibility)}
+                                                className="capitalize"
+                                            >
+                                                {challenge.visibility}
+                                            </Badge>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                                            <div className="flex items-center space-x-1">
+                                                <Calendar className="h-4 w-4" />
+                                                <span>{format(new Date(challenge.start_date), 'MMM dd')}</span>
+                                                <span>-</span>
+                                                <span>{format(new Date(challenge.end_date), 'MMM dd, yyyy')}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-1">
+                                                <Users2 className="h-4 w-4" />
+                                                <span>{challenge.participants?.length || 0}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(challenge.status)}`}>
+                                                {challenge.status}
+                                            </span>
+                                            {challenge.visibility === 'public' && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    asChild
+                                                    className="text-xs"
+                                                >
+                                                    <Link href={route('challenges.public-register', challenge.id)}>
+                                                        <ExternalLink className="w-3 h-3 mr-1" />
+                                                        Join
+                                                    </Link>
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
