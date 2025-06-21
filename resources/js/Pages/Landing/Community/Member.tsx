@@ -1080,20 +1080,24 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                         {/* Action Button */}
                                         <div className="flex justify-end">
-                                            <button className={`inline-flex items-center px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                                                challenge.status === 'active' 
-                                                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg' 
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}>
-                                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    {challenge.status === 'active' ? (
+                                            {challenge.status === 'active' ? (
+                                                <Link
+                                                    href={route('challenges.public-register', challenge.id)}
+                                                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+                                                >
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                    ) : (
+                                                    </svg>
+                                                    Join Challenge
+                                                </Link>
+                                            ) : (
+                                                <button className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium" disabled>
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                    )}
-                                                </svg>
-                                                {challenge.status === 'active' ? 'Join Challenge' : 'Register Interest'}
-                                            </button>
+                                                    </svg>
+                                                    Register Interest
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
