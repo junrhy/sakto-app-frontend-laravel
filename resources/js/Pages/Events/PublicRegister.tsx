@@ -7,9 +7,10 @@ import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import { Switch } from '@/Components/ui/switch';
 import { format } from 'date-fns';
 import { toast, Toaster } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, Tag, UserPlus, CreditCard, DollarSign } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, Tag, UserPlus, CreditCard, DollarSign, Plus, Minus, Users as UsersIcon } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 
@@ -43,12 +44,19 @@ export default function PublicRegister({ event }: Props) {
     // Extract the actual event data from the response
     const eventData = event.data;
     
+    const [isMultipleRegistration, setIsMultipleRegistration] = useState(false);
+    const [numberOfRegistrants, setNumberOfRegistrants] = useState(2);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
         notes: ''
     });
+
+    // State for multiple registrants
+    const [multipleRegistrants, setMultipleRegistrants] = useState([
+        { name: '', email: '', phone: '' }
+    ]);
 
     const isRegistrationOpen = new Date(eventData?.registration_deadline) > new Date();
     const isEventFull = eventData?.max_participants > 0 && eventData?.current_participants >= eventData?.max_participants;
@@ -57,6 +65,40 @@ export default function PublicRegister({ event }: Props) {
         if (price === null || price === undefined) return 'Free';
         const numericPrice = typeof price === 'number' ? price : parseFloat(price) || 0;
         return `${currency} ${numericPrice.toFixed(2)}`;
+    };
+
+    const handleMultipleRegistrationChange = (checked: boolean) => {
+        setIsMultipleRegistration(checked);
+        if (checked) {
+            setMultipleRegistrants([{ name: '', email: '', phone: '' }]);
+        } else {
+            setFormData({ name: '', email: '', phone: '', notes: '' });
+        }
+    };
+
+    const addRegistrant = () => {
+        const maxAvailable = eventData?.max_participants > 0 
+            ? eventData.max_participants - eventData.current_participants 
+            : 10; // Default limit for unlimited events
+        
+        if (multipleRegistrants.length < maxAvailable) {
+            setMultipleRegistrants([...multipleRegistrants, { name: '', email: '', phone: '' }]);
+        } else {
+            toast.error(`Maximum ${maxAvailable} registrants allowed`);
+        }
+    };
+
+    const removeRegistrant = (index: number) => {
+        if (multipleRegistrants.length > 1) {
+            const newRegistrants = multipleRegistrants.filter((_, i) => i !== index);
+            setMultipleRegistrants(newRegistrants);
+        }
+    };
+
+    const updateRegistrant = (index: number, field: string, value: string) => {
+        const newRegistrants = [...multipleRegistrants];
+        newRegistrants[index] = { ...newRegistrants[index], [field]: value };
+        setMultipleRegistrants(newRegistrants);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -71,23 +113,57 @@ export default function PublicRegister({ event }: Props) {
             toast.error('This event is already full');
             return;
         }
-        
-        router.post(`/events/${eventData?.id}/public-register`, formData, {
-            onSuccess: () => {
-                toast.success('You have successfully registered for this event');
-                // Reset form data after successful registration
-                setFormData({
-                    name: '',
-                    email: '',
-                    phone: '',
-                    notes: ''
-                });
-            },
-            onError: (errors) => {
-                toast.error('Failed to register for the event');
-                console.error(errors);
+
+        if (isMultipleRegistration) {
+            // Validate multiple registrants
+            const validRegistrants = multipleRegistrants.filter(r => r.name.trim() && r.email.trim());
+            if (validRegistrants.length === 0) {
+                toast.error('Please add at least one registrant');
+                return;
             }
-        });
+
+            const submissionData = {
+                registrants: validRegistrants,
+                notes: formData.notes,
+                is_multiple: true
+            };
+
+            router.post(`/events/${eventData?.id}/public-register`, submissionData, {
+                onSuccess: () => {
+                    toast.success(`Successfully registered ${validRegistrants.length} person(s) for this event`);
+                    setMultipleRegistrants([{ name: '', email: '', phone: '' }]);
+                    setFormData({ name: '', email: '', phone: '', notes: '' });
+                },
+                onError: (errors) => {
+                    toast.error('Failed to register for the event');
+                    console.error(errors);
+                }
+            });
+        } else {
+            // Single registration
+            router.post(`/events/${eventData?.id}/public-register`, formData, {
+                onSuccess: () => {
+                    toast.success('You have successfully registered for this event');
+                    setFormData({
+                        name: '',
+                        email: '',
+                        phone: '',
+                        notes: ''
+                    });
+                },
+                onError: (errors) => {
+                    toast.error('Failed to register for the event');
+                    console.error(errors);
+                }
+            });
+        }
+    };
+
+    const getTotalPrice = () => {
+        if (!eventData?.is_paid_event || !eventData?.event_price) return 0;
+        const price = typeof eventData.event_price === 'number' ? eventData.event_price : parseFloat(eventData.event_price) || 0;
+        const registrantCount = isMultipleRegistration ? multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length : 1;
+        return price * registrantCount;
     };
 
     return (
@@ -96,8 +172,8 @@ export default function PublicRegister({ event }: Props) {
             <Toaster position="top-right" richColors />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-                {/* Hero Section */}
-                <div className="relative h-[150px] w-full overflow-hidden">
+                {/* Hero Section - Hidden on mobile */}
+                <div className="relative h-[150px] w-full overflow-hidden hidden md:block">
                     <div 
                         className="absolute inset-0 bg-cover bg-center"
                         style={{ 
@@ -165,6 +241,28 @@ export default function PublicRegister({ event }: Props) {
                                             </motion.div>
                                         ) : (
                                             <motion.div className="space-y-6">
+                                                {/* Registration Mode Toggle */}
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg"
+                                                >
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center space-x-3">
+                                                            <UsersIcon className="w-5 h-5 text-blue-600" />
+                                                            <div>
+                                                                <h3 className="font-semibold text-slate-900">Register Multiple People</h3>
+                                                                <p className="text-sm text-slate-600">Register yourself and others for this event</p>
+                                                            </div>
+                                                        </div>
+                                                        <Switch
+                                                            checked={isMultipleRegistration}
+                                                            onCheckedChange={handleMultipleRegistrationChange}
+                                                            className="data-[state=checked]:bg-blue-600"
+                                                        />
+                                                    </div>
+                                                </motion.div>
+
                                                 {/* Payment Information Notice */}
                                                 {eventData?.is_paid_event && (
                                                     <motion.div 
@@ -174,10 +272,13 @@ export default function PublicRegister({ event }: Props) {
                                                     >
                                                         <div className="flex items-start">
                                                             <CreditCard className="w-6 h-6 mr-3 mt-0.5 text-amber-600" />
-                                                            <div>
+                                                            <div className="flex-1">
                                                                 <h3 className="font-semibold text-slate-900 mb-2">Payment Required</h3>
                                                                 <div className="text-2xl font-bold text-amber-700 mb-2">
-                                                                    {formatPrice(eventData?.event_price, eventData?.currency)}
+                                                                    {isMultipleRegistration 
+                                                                        ? `${formatPrice(getTotalPrice(), eventData?.currency)} (${multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length} × ${formatPrice(eventData?.event_price, eventData?.currency)})`
+                                                                        : formatPrice(eventData?.event_price, eventData?.currency)
+                                                                    }
                                                                 </div>
                                                                 {eventData?.payment_instructions && (
                                                                     <div className="mt-3 p-3 bg-white/60 rounded border border-amber-200">
@@ -198,54 +299,147 @@ export default function PublicRegister({ event }: Props) {
                                                     onSubmit={handleSubmit} 
                                                     className="space-y-6"
                                                 >
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="name" className="text-slate-700 font-medium">Full Name</Label>
-                                                            <Input
-                                                                id="name"
-                                                                value={formData.name}
-                                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                                required
-                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                                placeholder="Enter your full name"
-                                                            />
+                                                    {isMultipleRegistration ? (
+                                                        // Multiple Registration Form
+                                                        <div className="space-y-6">
+                                                            {multipleRegistrants.map((registrant, index) => (
+                                                                <motion.div
+                                                                    key={index}
+                                                                    initial={{ opacity: 0, x: -20 }}
+                                                                    animate={{ opacity: 1, x: 0 }}
+                                                                    className="p-4 border border-slate-200 rounded-lg bg-white/50 backdrop-blur-sm"
+                                                                >
+                                                                    <div className="flex items-center justify-between mb-4">
+                                                                        <h4 className="font-semibold text-slate-900">
+                                                                            Person {index + 1}
+                                                                        </h4>
+                                                                        {multipleRegistrants.length > 1 && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="outline"
+                                                                                size="sm"
+                                                                                onClick={() => removeRegistrant(index)}
+                                                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                            >
+                                                                                <Minus className="w-4 h-4" />
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                        <div className="space-y-2">
+                                                                            <Label htmlFor={`name-${index}`} className="text-slate-700 font-medium">Full Name *</Label>
+                                                                            <Input
+                                                                                id={`name-${index}`}
+                                                                                value={registrant.name}
+                                                                                onChange={e => updateRegistrant(index, 'name', e.target.value)}
+                                                                                required
+                                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                                placeholder="Enter full name"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            <Label htmlFor={`email-${index}`} className="text-slate-700 font-medium">Email Address *</Label>
+                                                                            <Input
+                                                                                id={`email-${index}`}
+                                                                                type="email"
+                                                                                value={registrant.email}
+                                                                                onChange={e => updateRegistrant(index, 'email', e.target.value)}
+                                                                                required
+                                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                                placeholder="Enter email address"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="space-y-2 md:col-span-2">
+                                                                            <Label htmlFor={`phone-${index}`} className="text-slate-700 font-medium">Phone Number</Label>
+                                                                            <Input
+                                                                                id={`phone-${index}`}
+                                                                                value={registrant.phone}
+                                                                                onChange={e => updateRegistrant(index, 'phone', e.target.value)}
+                                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                                placeholder="Enter phone number (optional)"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </motion.div>
+                                                            ))}
+                                                            
+                                                            <div className="flex justify-center">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    onClick={addRegistrant}
+                                                                    className="border-dashed border-2 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700"
+                                                                >
+                                                                    <Plus className="w-4 h-4 mr-2" />
+                                                                    Add Another Person
+                                                                </Button>
+                                                            </div>
                                                         </div>
+                                                    ) : (
+                                                        // Single Registration Form
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="name" className="text-slate-700 font-medium">Full Name</Label>
+                                                                <Input
+                                                                    id="name"
+                                                                    value={formData.name}
+                                                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                                                    required
+                                                                    className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                    placeholder="Enter your full name"
+                                                                />
+                                                            </div>
 
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
-                                                            <Input
-                                                                id="email"
-                                                                type="email"
-                                                                value={formData.email}
-                                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                                                required
-                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                                placeholder="Enter your email address"
-                                                            />
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="email" className="text-slate-700 font-medium">Email Address</Label>
+                                                                <Input
+                                                                    id="email"
+                                                                    type="email"
+                                                                    value={formData.email}
+                                                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                                                    required
+                                                                    className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                    placeholder="Enter your email address"
+                                                                />
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="phone" className="text-slate-700 font-medium">Phone Number</Label>
+                                                                <Input
+                                                                    id="phone"
+                                                                    value={formData.phone}
+                                                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                                    className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
+                                                                    placeholder="Enter your phone number (optional)"
+                                                                />
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="notes" className="text-slate-700 font-medium">Additional Notes</Label>
+                                                                <Textarea
+                                                                    id="notes"
+                                                                    value={formData.notes}
+                                                                    onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                                                    placeholder="Any special requirements or information"
+                                                                    className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm min-h-[100px]"
+                                                                />
+                                                            </div>
                                                         </div>
+                                                    )}
 
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="phone" className="text-slate-700 font-medium">Phone Number</Label>
-                                                            <Input
-                                                                id="phone"
-                                                                value={formData.phone}
-                                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                                                className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                                placeholder="Enter your phone number (optional)"
-                                                            />
-                                                        </div>
-
+                                                    {/* Additional Notes for Multiple Registration */}
+                                                    {isMultipleRegistration && (
                                                         <div className="space-y-2">
                                                             <Label htmlFor="notes" className="text-slate-700 font-medium">Additional Notes</Label>
                                                             <Textarea
                                                                 id="notes"
                                                                 value={formData.notes}
                                                                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                                                                placeholder="Any special requirements or information"
+                                                                placeholder="Any special requirements or information for the group"
                                                                 className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm min-h-[100px]"
                                                             />
                                                         </div>
-                                                    </div>
+                                                    )}
 
                                                     <div className="flex justify-end pt-4">
                                                         <Button 
@@ -253,7 +447,10 @@ export default function PublicRegister({ event }: Props) {
                                                             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                                                         >
                                                             <UserPlus className="w-4 h-4 mr-2" />
-                                                            Register for Event
+                                                            {isMultipleRegistration 
+                                                                ? `Register ${multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length} Person(s)`
+                                                                : 'Register for Event'
+                                                            }
                                                         </Button>
                                                     </div>
                                                 </motion.form>
@@ -263,7 +460,8 @@ export default function PublicRegister({ event }: Props) {
                                 </Card>
                             </div>
                             
-                            <div>
+                            {/* Event Details Section - Hidden on mobile */}
+                            <div className="hidden md:block">
                                 <Card className="sticky top-6 hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm shadow-lg">
                                     <CardHeader className="border-b bg-blue-600 text-white">
                                         <CardTitle className="text-xl">Event Details</CardTitle>
@@ -330,7 +528,10 @@ export default function PublicRegister({ event }: Props) {
                                                     </p>
                                                     <div className="text-slate-600">
                                                         <div className="text-lg font-bold text-amber-700 mb-1">
-                                                            {formatPrice(eventData?.event_price, eventData?.currency)}
+                                                            {isMultipleRegistration 
+                                                                ? `${formatPrice(getTotalPrice(), eventData?.currency)} (${multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length} × ${formatPrice(eventData?.event_price, eventData?.currency)})`
+                                                                : formatPrice(eventData?.event_price, eventData?.currency)
+                                                            }
                                                         </div>
                                                         <p className="text-sm">Payment will be collected during registration</p>
                                                     </div>

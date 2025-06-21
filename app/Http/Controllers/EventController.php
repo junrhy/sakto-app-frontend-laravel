@@ -477,30 +477,79 @@ class EventController extends Controller
      */
     public function publicRegisterParticipant(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'notes' => 'nullable|string'
-        ]);
+        // Check if this is a multiple registration
+        if ($request->has('is_multiple') && $request->is_multiple) {
+            $validated = $request->validate([
+                'registrants' => 'required|array|min:1',
+                'registrants.*.name' => 'required|string|max:255',
+                'registrants.*.email' => 'required|email|max:255',
+                'registrants.*.phone' => 'nullable|string|max:20',
+                'notes' => 'nullable|string'
+            ]);
 
-        try {
-            $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/events/{$id}/participants", $validated);
+            $successCount = 0;
+            $errors = [];
 
-            if (!$response->successful()) {
-                return back()->withErrors(['error' => 'Failed to register for the event']);
+            // Register each person individually
+            foreach ($validated['registrants'] as $index => $registrant) {
+                try {
+                    $participantData = [
+                        'name' => $registrant['name'],
+                        'email' => $registrant['email'],
+                        'phone' => $registrant['phone'] ?? null,
+                        'notes' => $validated['notes'] ?? null
+                    ];
+
+                    $response = Http::withToken($this->apiToken)
+                        ->post("{$this->apiUrl}/events/{$id}/participants", $participantData);
+
+                    if ($response->successful()) {
+                        $successCount++;
+                    } else {
+                        $errors[] = "Failed to register {$registrant['name']}: " . ($response->json()['message'] ?? 'Unknown error');
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = "Failed to register {$registrant['name']}: " . $e->getMessage();
+                }
             }
 
-            return redirect()->route('events.public-register', $id)
-                ->with('success', 'You have successfully registered for this event!');
-        } catch (\Exception $e) {
-            Log::error('Exception in public event registration', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            if ($successCount > 0) {
+                $message = "Successfully registered {$successCount} person(s) for this event!";
+                if (!empty($errors)) {
+                    $message .= " Some registrations failed: " . implode(', ', $errors);
+                }
+                return redirect()->route('events.public-register', $id)
+                    ->with('success', $message);
+            } else {
+                return back()->withErrors(['error' => 'Failed to register any participants: ' . implode(', ', $errors)]);
+            }
+        } else {
+            // Single registration (existing logic)
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'phone' => 'nullable|string|max:20',
+                'notes' => 'nullable|string'
             ]);
-            
-            return back()->withErrors(['error' => 'An error occurred while registering for the event']);
+
+            try {
+                $response = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/events/{$id}/participants", $validated);
+
+                if (!$response->successful()) {
+                    return back()->withErrors(['error' => 'Failed to register for the event']);
+                }
+
+                return redirect()->route('events.public-register', $id)
+                    ->with('success', 'You have successfully registered for this event!');
+            } catch (\Exception $e) {
+                Log::error('Exception in public event registration', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return back()->withErrors(['error' => 'An error occurred while registering for the event']);
+            }
         }
     }
 
