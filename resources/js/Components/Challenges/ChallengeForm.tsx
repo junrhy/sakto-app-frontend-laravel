@@ -71,13 +71,26 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
 
     const [newReward, setNewReward] = useState<Reward>({ type: 'badge', value: '' });
 
+    // Function to format date for HTML date input (YYYY-MM-DD)
+    const formatDateForInput = (dateString: string): string => {
+        if (!dateString) return '';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return '';
+        }
+    };
+
     useEffect(() => {
         if (challenge) {
             setFormData({
                 title: challenge.title,
                 description: challenge.description,
-                start_date: challenge.start_date,
-                end_date: challenge.end_date,
+                start_date: formatDateForInput(challenge.start_date),
+                end_date: formatDateForInput(challenge.end_date),
                 goal_type: challenge.goal_type,
                 goal_value: challenge.goal_value,
                 goal_unit: challenge.goal_unit,

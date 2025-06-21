@@ -13,7 +13,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users, ExternalLink } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -288,41 +288,57 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                             <TableCell>{format(new Date(challenge.start_date), 'PPP')}</TableCell>
                                             <TableCell>{format(new Date(challenge.end_date), 'PPP')}</TableCell>
                                             <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                                            <span className="sr-only">Open menu</span>
-                                                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                            </svg>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('challenges.leaderboard', challenge.id)}>
-                                                                <Eye className="w-4 h-4 mr-2" />
-                                                                View
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('challenges.participants', challenge.id)}>
-                                                                <Users className="w-4 h-4 mr-2" />
-                                                                Participants
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
-                                                            <Edit className="w-4 h-4 mr-2" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className="text-red-600"
-                                                            onClick={() => handleDelete(challenge.id)}
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {challenge.visibility === 'public' && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            asChild
+                                                            className="h-8"
                                                         >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                            <Link href={route('challenges.public-register', challenge.id)}>
+                                                                <ExternalLink className="w-4 h-4 mr-1" />
+                                                            </Link>
+                                                        </Button>
+                                                    )}
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                <span className="sr-only">Open menu</span>
+                                                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                                </svg>
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('challenges.leaderboard', challenge.id)}>
+                                                                    <Users className="w-4 h-4 mr-2" />
+                                                                    Leaderboard
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            {challenge.visibility === 'public' && (
+                                                                <DropdownMenuItem asChild>
+                                                                    <Link href={route('challenges.public-show', challenge.id)}>
+                                                                        <ExternalLink className="w-4 h-4 mr-2" />
+                                                                        Public View
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
+                                                                <Edit className="w-4 h-4 mr-2" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className="text-red-600"
+                                                                onClick={() => handleDelete(challenge.id)}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}

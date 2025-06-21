@@ -175,6 +175,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/events/{id}/public-register', [EventController::class, 'publicRegisterParticipant'])->name('events.public-register.store');
     Route::get('/events/{id}/public', [EventController::class, 'publicShow'])->name('events.public-show');
 
+    // Public Challenge Registration Routes
+    Route::get('/challenges/{id}/public-register', [ChallengeController::class, 'publicRegister'])->name('challenges.public-register');
+    Route::post('/challenges/{id}/public-register', [ChallengeController::class, 'publicRegisterParticipant'])->name('challenges.public-register.store');
+    Route::get('/challenges/{id}/public', [ChallengeController::class, 'publicShow'])->name('challenges.public-show');
+
     // Maya Webhook Route - exclude from CSRF protection
     Route::post('/webhooks/maya', [MayaWebhookController::class, 'handleWebhook'])
         ->name('webhooks.maya')

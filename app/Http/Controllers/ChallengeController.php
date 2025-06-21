@@ -321,20 +321,56 @@ class ChallengeController extends Controller
      */
     public function getLeaderboard($id)
     {
-        $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/challenges/{$id}/leaderboard");
+        try {
+            // Fetch challenge details
+            $challengeResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}");
+                
+            if (!$challengeResponse->successful()) {
+                Log::error('Failed to fetch challenge for leaderboard', [
+                    'status' => $challengeResponse->status(),
+                    'body' => $challengeResponse->body()
+                ]);
+                return back()->withErrors(['error' => 'Challenge not found']);
+            }
+            
+            $challenge = $challengeResponse->json();
 
-        if (!$response->successful()) {
-            Log::error('Failed to fetch leaderboard', [
-                'status' => $response->status(),
-                'body' => $response->body()
+            // Fetch leaderboard data
+            $leaderboardResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}/leaderboard");
+
+            if (!$leaderboardResponse->successful()) {
+                Log::error('Failed to fetch leaderboard', [
+                    'status' => $leaderboardResponse->status(),
+                    'body' => $leaderboardResponse->body()
+                ]);
+                return back()->withErrors(['error' => 'Failed to fetch leaderboard']);
+            }
+
+            $leaderboard = $leaderboardResponse->json();
+
+            // Calculate challenge status
+            $now = now();
+            $startDate = \Carbon\Carbon::parse($challenge['start_date']);
+            $endDate = \Carbon\Carbon::parse($challenge['end_date']);
+            
+            $challenge['is_active'] = $now->between($startDate, $endDate);
+            $challenge['is_upcoming'] = $now->lt($startDate);
+            $challenge['is_ended'] = $now->gt($endDate);
+
+            return Inertia::render('Challenges/Leaderboard', [
+                'challenge' => $challenge,
+                'leaderboard' => $leaderboard
             ]);
-            return back()->withErrors(['error' => 'Failed to fetch leaderboard']);
+        } catch (\Exception $e) {
+            Log::error('Exception in getLeaderboard', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while loading the leaderboard']);
         }
-
-        return Inertia::render('Challenges/Leaderboard', [
-            'leaderboard' => $response->json()
-        ]);
     }
 
     /**
@@ -409,5 +445,181 @@ class ChallengeController extends Controller
         }
 
         return back()->with('success', 'Participant removed successfully');
+    }
+
+    /**
+     * Display public challenge registration page
+     */
+    public function publicRegister($id)
+    {
+        try {
+            // Fetch challenge details
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}");
+                
+            if (!$response->successful()) {
+                Log::error('Failed to fetch challenge for public registration', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return back()->withErrors(['error' => 'Challenge not found']);
+            }
+            
+            $challenge = $response->json();
+            
+            // Check if challenge is public
+            if ($challenge['visibility'] !== 'public') {
+                return back()->withErrors(['error' => 'This challenge is not open for public registration']);
+            }
+
+            // Check challenge status
+            $now = now();
+            $startDate = \Carbon\Carbon::parse($challenge['start_date']);
+            $endDate = \Carbon\Carbon::parse($challenge['end_date']);
+            
+            $challenge['is_active'] = $now->between($startDate, $endDate);
+            $challenge['is_upcoming'] = $now->lt($startDate);
+            $challenge['is_ended'] = $now->gt($endDate);
+
+            return Inertia::render('Challenges/PublicRegister', [
+                'challenge' => $challenge
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in publicRegister', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while loading the registration page']);
+        }
+    }
+
+    /**
+     * Handle public challenge registration submission
+     */
+    public function publicRegisterParticipant(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'zip_code' => 'nullable|string|max:20',
+        ]);
+
+        try {
+            // First, get the challenge to verify it's public and get client identifier
+            $challengeResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}");
+                
+            if (!$challengeResponse->successful()) {
+                return back()->withErrors(['error' => 'Challenge not found']);
+            }
+            
+            $challenge = $challengeResponse->json();
+            
+            if ($challenge['visibility'] !== 'public') {
+                return back()->withErrors(['error' => 'This challenge is not open for public registration']);
+            }
+
+            // Check if challenge is still active
+            $now = now();
+            $startDate = \Carbon\Carbon::parse($challenge['start_date']);
+            $endDate = \Carbon\Carbon::parse($challenge['end_date']);
+            
+            if ($now->gt($endDate)) {
+                return back()->withErrors(['error' => 'This challenge has already ended']);
+            }
+
+            // Check if participant already exists with this email
+            $participantsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}/participants");
+
+            if ($participantsResponse->successful()) {
+                $participants = $participantsResponse->json();
+                $existingParticipant = collect($participants)->first(function ($participant) use ($validated) {
+                    return strtolower($participant['email']) === strtolower($validated['email']);
+                });
+
+                if ($existingParticipant) {
+                    return back()->withErrors(['email' => 'You have already registered for this challenge with this email address']);
+                }
+            }
+
+            // Add client identifier from the challenge
+            $validated['client_identifier'] = $challenge['client_identifier'];
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/challenges/{$id}/participants", $validated);
+
+            if (!$response->successful()) {
+                Log::error('Failed to register participant publicly', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                
+                // Handle specific error cases
+                if ($response->status() === 422) {
+                    $errors = $response->json('errors');
+                    if ($errors) {
+                        return back()->withErrors($errors);
+                    }
+                }
+                
+                return back()->withErrors(['error' => 'Failed to register for challenge. Please try again.']);
+            }
+
+            return redirect()->route('challenges.public-show', $id)
+                ->with('success', 'Successfully registered for the challenge!');
+        } catch (\Exception $e) {
+            Log::error('Exception in publicRegisterParticipant', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'An error occurred during registration. Please try again.']);
+        }
+    }
+
+    /**
+     * Display public challenge view
+     */
+    public function publicShow($id)
+    {
+        try {
+            // Fetch challenge details
+            $challengeResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}");
+                
+            if (!$challengeResponse->successful()) {
+                return back()->withErrors(['error' => 'Challenge not found']);
+            }
+            
+            $challenge = $challengeResponse->json();
+            
+            // Fetch participants
+            $participantsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/challenges/{$id}/participants");
+
+            $participants = [];
+            if ($participantsResponse->successful()) {
+                $participants = $participantsResponse->json();
+            }
+
+            return Inertia::render('Challenges/PublicShow', [
+                'challenge' => $challenge,
+                'participants' => $participants
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in publicShow', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors(['error' => 'An error occurred while loading the challenge']);
+        }
     }
 }
