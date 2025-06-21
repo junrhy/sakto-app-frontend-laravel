@@ -54,6 +54,8 @@ interface Order {
     customer_phone?: string;
     order_items: Array<{
         product_id: number;
+        variant_id?: number;
+        attributes?: Record<string, string>;
         name: string;
         quantity: number;
         price: number;
@@ -375,7 +377,16 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                                                     {order.order_items.length} item{order.order_items.length !== 1 ? 's' : ''}
                                                 </div>
                                                 <div className="text-xs text-gray-500">
-                                                    {order.order_items.map(item => item.name).join(', ')}
+                                                    {order.order_items.map(item => {
+                                                        let displayName = item.name;
+                                                        if (item.variant_id && item.attributes) {
+                                                            const variantDetails = Object.entries(item.attributes)
+                                                                .map(([key, value]) => `${key}: ${value}`)
+                                                                .join(', ');
+                                                            displayName += ` (${variantDetails})`;
+                                                        }
+                                                        return displayName;
+                                                    }).join(', ')}
                                                 </div>
                                             </TableCell>
                                             <TableCell>

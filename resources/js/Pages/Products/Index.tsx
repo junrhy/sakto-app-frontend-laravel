@@ -62,6 +62,22 @@ interface Product {
     thumbnail_url?: string;
     file_url?: string;
     tags: string[];
+    variants?: Array<{
+        id: number;
+        sku?: string;
+        price?: number;
+        stock_quantity: number;
+        attributes: Record<string, string>;
+        is_active: boolean;
+    }>;
+    active_variants?: Array<{
+        id: number;
+        sku?: string;
+        price?: number;
+        stock_quantity: number;
+        attributes: Record<string, string>;
+        is_active: boolean;
+    }>;
     created_at: string;
     updated_at: string;
 }
@@ -263,22 +279,45 @@ export default function Index({ auth, products, currency }: Props) {
 
     const getStockStatus = (quantity?: number, type?: string) => {
         if (type === 'digital' || type === 'service' || type === 'subscription') {
-            return <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">Unlimited</Badge>;
+            return <Badge variant="secondary" className="text-xs">Unlimited</Badge>;
         }
         
         if (quantity === undefined || quantity === null) {
-            return <Badge variant="secondary" className="bg-gray-50 text-gray-700 border-gray-200">N/A</Badge>;
+            return <Badge variant="secondary" className="text-xs">N/A</Badge>;
         }
         
         if (quantity === 0) {
-            return <Badge variant="destructive" className="bg-red-50 text-red-700 border-red-200">Out of Stock</Badge>;
+            return <Badge variant="destructive" className="text-xs">Out of Stock</Badge>;
         }
         
         if (quantity <= 10) {
-            return <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-200">Low Stock ({quantity})</Badge>;
+            return <Badge variant="secondary" className="text-xs">Low Stock ({quantity})</Badge>;
         }
         
-        return <Badge variant="default" className="bg-green-50 text-green-700 border-green-200">In Stock ({quantity})</Badge>;
+        return <Badge variant="default" className="text-xs">In Stock ({quantity})</Badge>;
+    };
+
+    const getVariantInfo = (product: Product) => {
+        if (!product.active_variants || product.active_variants.length === 0) {
+            return null;
+        }
+
+        const activeVariants = product.active_variants.filter(v => v.is_active);
+        if (activeVariants.length === 0) {
+            return null;
+        }
+
+        // Get unique attribute keys
+        const attributeKeys = new Set<string>();
+        activeVariants.forEach(variant => {
+            Object.keys(variant.attributes).forEach(key => attributeKeys.add(key));
+        });
+
+        return {
+            count: activeVariants.length,
+            attributes: Array.from(attributeKeys),
+            hasVariants: true
+        };
     };
 
     const handleAddToCart = (product: Product) => {
@@ -287,7 +326,14 @@ export default function Index({ auth, products, currency }: Props) {
             return;
         }
 
-        const currentQuantity = getItemQuantity(product.id);
+        // For products with variants, redirect to product detail page
+        if (product.active_variants && product.active_variants.length > 0) {
+            router.visit(route('products.show', product.id));
+            return;
+        }
+
+        // For simple products without variants
+        const currentQuantity = getItemQuantity(product.id, 0); // 0 indicates no variant
         if (product.type === 'physical' && product.stock_quantity !== undefined) {
             if (currentQuantity >= product.stock_quantity) {
                 alert('Cannot add more items than available in stock');
@@ -297,11 +343,12 @@ export default function Index({ auth, products, currency }: Props) {
 
         addItem({
             id: product.id,
+            productId: product.id,
+            variantId: 0, // 0 indicates no variant
             name: product.name,
+            quantity: 1,
             price: product.price,
-            thumbnail_url: product.thumbnail_url,
-            type: product.type,
-            stock_quantity: product.stock_quantity
+            thumbnail_url: product.thumbnail_url
         });
 
         alert('Product added to cart!');
@@ -688,6 +735,21 @@ export default function Index({ auth, products, currency }: Props) {
                                                         {getStockStatus(product.stock_quantity, product.type)}
                                                     </div>
                                                 </div>
+                                                {/* Variant Indicator */}
+                                                {(() => {
+                                                    const variantInfo = getVariantInfo(product);
+                                                    if (variantInfo) {
+                                                        return (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-xs text-gray-500">Variants</span>
+                                                                <Badge variant="secondary" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                                                    {variantInfo.count} {variantInfo.attributes.join(', ')}
+                                                                </Badge>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                })()}
                                             </div>
 
                                             <div className="pt-2 border-t border-gray-100">
@@ -708,7 +770,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                     size="sm"
                                                 >
                                                     <ShoppingCart className="w-4 h-4 mr-2" />
-                                                    Add to Cart
+                                                    {getVariantInfo(product) ? 'Select' : 'Add'}
                                                 </Button>
                                             </div>
                                         </div>
@@ -765,6 +827,20 @@ export default function Index({ auth, products, currency }: Props) {
                                                     <div>
                                                         <div className="font-medium text-gray-900">{product.name}</div>
                                                         <div className="text-sm text-gray-500 line-clamp-1">{product.description}</div>
+                                                        {/* Variant Indicator */}
+                                                        {(() => {
+                                                            const variantInfo = getVariantInfo(product);
+                                                            if (variantInfo) {
+                                                                return (
+                                                                    <div className="mt-1">
+                                                                        <Badge variant="secondary" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                                                            {variantInfo.count} variants ({variantInfo.attributes.join(', ')})
+                                                                        </Badge>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })()}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="font-mono text-sm">{product.sku || '-'}</TableCell>
@@ -802,7 +878,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                             className="h-8"
                                                         >
                                                             <ShoppingCart className="w-3 h-3 mr-1" />
-                                                            Add
+                                                            {getVariantInfo(product) ? 'Select' : 'Add'}
                                                         </Button>
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>

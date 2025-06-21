@@ -6,24 +6,24 @@ import { ShoppingCart } from 'lucide-react';
 
 interface CartButtonProps {
     className?: string;
+    onClick?: () => void;
 }
 
-export const CartButton: React.FC<CartButtonProps> = ({ className }) => {
-    const { toggleCart, getItemCount } = useCart();
-    const itemCount = getItemCount();
+export const CartButton: React.FC<CartButtonProps> = ({ className, onClick }) => {
+    const { state } = useCart();
 
     return (
         <Button
             variant="outline"
             size="sm"
-            onClick={toggleCart}
+            onClick={onClick}
             className={className}
         >
             <ShoppingCart className="w-4 h-4 mr-2" />
             Cart
-            {itemCount > 0 && (
+            {state.itemCount > 0 && (
                 <Badge className="ml-2 bg-blue-600 text-white">
-                    {itemCount}
+                    {state.itemCount > 99 ? '99+' : state.itemCount}
                 </Badge>
             )}
         </Button>

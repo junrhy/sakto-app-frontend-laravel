@@ -37,6 +37,8 @@ import {
 
 interface OrderItem {
     product_id: number;
+    variant_id?: number;
+    attributes?: Record<string, string>;
     name: string;
     quantity: number;
     price: number;
@@ -253,7 +255,20 @@ export default function Show({ auth, order, currency }: Props) {
                                         <TableBody>
                                             {order.order_items.map((item, index) => (
                                                 <TableRow key={index}>
-                                                    <TableCell className="font-medium">{item.name}</TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium">{item.name}</div>
+                                                        {item.variant_id && item.attributes && (
+                                                            <div className="text-sm text-gray-500 mt-1">
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {Object.entries(item.attributes).map(([key, value]) => (
+                                                                        <Badge key={key} variant="secondary" className="text-xs">
+                                                                            {key}: {value}
+                                                                        </Badge>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell>{item.quantity}</TableCell>
                                                     <TableCell>{formatCurrency(item.price, currency.symbol)}</TableCell>
                                                     <TableCell>{formatCurrency(item.price * item.quantity, currency.symbol)}</TableCell>

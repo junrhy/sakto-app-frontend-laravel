@@ -272,6 +272,12 @@ class ProductOrderController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('Product order store request received', [
+            'request_data' => $request->all(),
+            'user_id' => auth()->id(),
+            'user_identifier' => auth()->user()->identifier
+        ]);
+
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
@@ -280,7 +286,9 @@ class ProductOrderController extends Controller
             'billing_address' => 'nullable|string',
             'order_items' => 'required|array|min:1',
             'order_items.*.product_id' => 'required|integer',
-            'order_items.*.name' => 'required|string',
+            'order_items.*.name' => 'nullable|string',
+            'order_items.*.variant_id' => 'nullable|integer',
+            'order_items.*.attributes' => 'nullable|array',
             'order_items.*.quantity' => 'required|integer|min:1',
             'order_items.*.price' => 'required|numeric|min:0',
             'subtotal' => 'required|numeric|min:0',
@@ -295,9 +303,21 @@ class ProductOrderController extends Controller
         // Add client_identifier from authenticated user
         $validated['client_identifier'] = auth()->user()->identifier;
 
+        Log::info('Validated order data', [
+            'validated_data' => $validated,
+            'api_url' => $this->apiUrl
+        ]);
+
         try {
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/product-orders", $validated);
+
+            Log::info('API response received', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'response_body' => $response->json(),
+                'api_url' => "{$this->apiUrl}/product-orders"
+            ]);
 
             if (!$response->successful()) {
                 Log::error('Failed to create order', [
@@ -306,6 +326,11 @@ class ProductOrderController extends Controller
                 ]);
                 return back()->withErrors(['error' => 'Failed to create order']);
             }
+
+            Log::info('Order created successfully', [
+                'order_id' => $response->json('id'),
+                'redirecting_to' => route('product-orders.index')
+            ]);
 
             return redirect()->route('product-orders.index')
                 ->with('message', 'Order created successfully');

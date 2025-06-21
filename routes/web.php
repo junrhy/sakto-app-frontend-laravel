@@ -37,6 +37,7 @@ use App\Http\Controllers\PagesController;
 use App\Http\Controllers\HealthInsuranceController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProductOrderController;
+use App\Http\Controllers\ProductVariantController;
 
 use App\Models\User;
 
@@ -487,6 +488,18 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         Route::get('/{id}/download', [ProductController::class, 'download'])->name('products.download');
         Route::patch('/{id}/stock', [ProductController::class, 'updateStock'])->name('products.update-stock');
         Route::get('/categories', [ProductController::class, 'getCategories'])->name('products.categories');
+    });
+
+    // Product Variants (subscription required)
+    Route::prefix('products/{productId}/variants')->group(function () {
+        Route::get('/', [ProductVariantController::class, 'index'])->name('product-variants.index');
+        Route::post('/', [ProductVariantController::class, 'store'])->name('product-variants.store');
+        Route::get('/attributes', [ProductVariantController::class, 'getAttributes'])->name('product-variants.attributes');
+        Route::post('/bulk-update', [ProductVariantController::class, 'bulkUpdate'])->name('product-variants.bulk-update');
+        Route::get('/{variantId}', [ProductVariantController::class, 'show'])->name('product-variants.show');
+        Route::put('/{variantId}', [ProductVariantController::class, 'update'])->name('product-variants.update');
+        Route::delete('/{variantId}', [ProductVariantController::class, 'destroy'])->name('product-variants.destroy');
+        Route::patch('/{variantId}/stock', [ProductVariantController::class, 'updateStock'])->name('product-variants.update-stock');
     });
     
     // Product Orders (subscription required)

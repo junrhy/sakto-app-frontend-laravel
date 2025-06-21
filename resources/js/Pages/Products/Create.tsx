@@ -13,6 +13,7 @@ import { Badge } from '@/Components/ui/badge';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import VariantManager from '@/Components/VariantManager';
 
 interface Props extends PageProps {
     auth: {
@@ -23,6 +24,7 @@ interface Props extends PageProps {
     client_identifier: string;
     currency: {
         symbol: string;
+        code: string;
     };
 }
 
@@ -41,6 +43,7 @@ export default function Create({ auth, client_identifier, currency }: Props) {
         tags: [] as string[],
         file: null as File | null,
         thumbnail: null as File | null,
+        variants: [] as any[],
     });
 
     const [newTag, setNewTag] = useState('');
@@ -48,6 +51,10 @@ export default function Create({ auth, client_identifier, currency }: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('products.store'));
+    };
+
+    const handleVariantsChange = (variants: any[]) => {
+        setData('variants', variants);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'file' | 'thumbnail') => {
@@ -223,6 +230,17 @@ export default function Create({ auth, client_identifier, currency }: Props) {
                                             <InputError message={errors.dimensions} className="mt-2" />
                                         </div>
                                     </div>
+                                )}
+
+                                {/* Product Variants */}
+                                {data.type === 'physical' && (
+                                    <VariantManager
+                                        productId={0} // Will be set after product creation
+                                        productType={data.type}
+                                        currency={currency}
+                                        initialVariants={data.variants}
+                                        onVariantsChange={handleVariantsChange}
+                                    />
                                 )}
 
                                 {/* Digital product fields */}

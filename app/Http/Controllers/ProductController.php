@@ -89,6 +89,15 @@ class ProductController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:255',
             'metadata' => 'nullable|array',
+            'variants' => 'nullable|array',
+            'variants.*.sku' => 'nullable|string|max:255',
+            'variants.*.price' => 'nullable|numeric|min:0',
+            'variants.*.stock_quantity' => 'required_with:variants|integer|min:0',
+            'variants.*.weight' => 'nullable|numeric|min:0',
+            'variants.*.dimensions' => 'nullable|string|max:255',
+            'variants.*.attributes' => 'required_with:variants|array|min:1',
+            'variants.*.attributes.*' => 'string|max:255',
+            'variants.*.thumbnail' => 'nullable|image|max:2048',
         ]);
 
         // Handle file uploads for digital products
@@ -105,11 +114,40 @@ class ProductController extends Controller
         $clientIdentifier = auth()->user()->identifier;
         $validated['client_identifier'] = $clientIdentifier;
         
+        // Extract variants data before sending to API
+        $variants = $validated['variants'] ?? null;
+        unset($validated['variants']);
+        
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/products", $validated);
 
         if (!$response->successful()) {
             return back()->withErrors(['error' => 'Failed to create product']);
+        }
+
+        $product = $response->json();
+
+        // Create variants if provided
+        if ($variants && $validated['type'] === 'physical') {
+            foreach ($variants as $variantData) {
+                // Handle variant thumbnail upload
+                if (isset($variantData['thumbnail']) && $variantData['thumbnail'] instanceof \Illuminate\Http\UploadedFile) {
+                    $path = $variantData['thumbnail']->store('products/variants/thumbnails', 'public');
+                    $variantData['thumbnail_url'] = Storage::disk('public')->url($path);
+                }
+                unset($variantData['thumbnail']);
+
+                $variantResponse = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/products/{$product['id']}/variants", $variantData);
+
+                if (!$variantResponse->successful()) {
+                    Log::error('Failed to create variant', [
+                        'product_id' => $product['id'],
+                        'variant_data' => $variantData,
+                        'response' => $variantResponse->json()
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('products.index')
@@ -146,8 +184,19 @@ class ProductController extends Controller
                 ->with('error', 'Product not found');
         }
 
+        $product = $response->json();
+        
+        // Debug logging for variants
+        Log::info('Product edit API response', [
+            'product_id' => $id,
+            'product_name' => $product['name'] ?? 'Unknown',
+            'has_variants' => isset($product['active_variants']),
+            'variants_count' => isset($product['active_variants']) ? count($product['active_variants']) : 0,
+            'variants_data' => $product['active_variants'] ?? []
+        ]);
+
         return Inertia::render('Products/Edit', [
-            'product' => $response->json(),
+            'product' => $product,
             'currency' => $jsonAppCurrency
         ]);
     }
@@ -168,6 +217,17 @@ class ProductController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:255',
             'metadata' => 'nullable|array',
+            'variants' => 'nullable|array',
+            'variants.*.id' => 'nullable|integer|exists:product_variants,id',
+            'variants.*.sku' => 'nullable|string|max:255',
+            'variants.*.price' => 'nullable|numeric|min:0',
+            'variants.*.stock_quantity' => 'required_with:variants|integer|min:0',
+            'variants.*.weight' => 'nullable|numeric|min:0',
+            'variants.*.dimensions' => 'nullable|string|max:255',
+            'variants.*.attributes' => 'required_with:variants|array|min:1',
+            'variants.*.attributes.*' => 'string|max:255',
+            'variants.*.thumbnail' => 'nullable|image|max:2048',
+            'variants.*.is_active' => 'boolean',
         ];
 
         if ($request->hasFile('file')) {
@@ -219,6 +279,10 @@ class ProductController extends Controller
             $validated['thumbnail_url'] = Storage::disk('public')->url($path);
         }
 
+        // Extract variants data before sending to API
+        $variants = $validated['variants'] ?? null;
+        unset($validated['variants']);
+
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/products/{$id}", $validated);
 
@@ -228,6 +292,36 @@ class ProductController extends Controller
                 'status' => $response->status()
             ]);
             return back()->withErrors(['error' => 'Failed to update product: ' . ($response->json()['message'] ?? 'Unknown error')]);
+        }
+
+        // Handle variants if provided
+        if ($variants && $validated['type'] === 'physical') {
+            foreach ($variants as $variantData) {
+                // Handle variant thumbnail upload
+                if (isset($variantData['thumbnail']) && $variantData['thumbnail'] instanceof \Illuminate\Http\UploadedFile) {
+                    $path = $variantData['thumbnail']->store('products/variants/thumbnails', 'public');
+                    $variantData['thumbnail_url'] = Storage::disk('public')->url($path);
+                }
+                unset($variantData['thumbnail']);
+
+                if (isset($variantData['id'])) {
+                    // Update existing variant
+                    $variantResponse = Http::withToken($this->apiToken)
+                        ->put("{$this->apiUrl}/products/{$id}/variants/{$variantData['id']}", $variantData);
+                } else {
+                    // Create new variant
+                    $variantResponse = Http::withToken($this->apiToken)
+                        ->post("{$this->apiUrl}/products/{$id}/variants", $variantData);
+                }
+
+                if (!$variantResponse->successful()) {
+                    Log::error('Failed to update/create variant', [
+                        'product_id' => $id,
+                        'variant_data' => $variantData,
+                        'response' => $variantResponse->json()
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('products.index')

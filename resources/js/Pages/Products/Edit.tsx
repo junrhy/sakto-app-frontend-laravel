@@ -13,6 +13,7 @@ import { Badge } from '@/Components/ui/badge';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import VariantManager from '@/Components/VariantManager';
 
 interface Product {
     id: number;
@@ -29,6 +30,8 @@ interface Product {
     thumbnail_url?: string;
     file_url?: string;
     tags: string[];
+    variants?: any[];
+    active_variants?: any[];
     created_at: string;
     updated_at: string;
 }
@@ -42,6 +45,7 @@ interface Props extends PageProps {
     product: Product;
     currency: {
         symbol: string;
+        code: string;
     };
 }
 
@@ -58,6 +62,7 @@ export default function Edit({ auth, product, currency }: Props) {
         dimensions: product.dimensions || '',
         status: product.status,
         tags: product.tags || [],
+        variants: product.active_variants || [],
         file: null as File | null,
         thumbnail: null as File | null,
         _method: 'PUT'
@@ -68,6 +73,10 @@ export default function Edit({ auth, product, currency }: Props) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('products.update', product.id));
+    };
+
+    const handleVariantsChange = (variants: any[]) => {
+        setData('variants', variants);
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'file' | 'thumbnail') => {
@@ -243,6 +252,17 @@ export default function Edit({ auth, product, currency }: Props) {
                                             <InputError message={errors.dimensions} className="mt-2" />
                                         </div>
                                     </div>
+                                )}
+
+                                {/* Product Variants */}
+                                {data.type === 'physical' && (
+                                    <VariantManager
+                                        productId={product.id}
+                                        productType={data.type}
+                                        currency={currency}
+                                        initialVariants={data.variants}
+                                        onVariantsChange={handleVariantsChange}
+                                    />
                                 )}
 
                                 {/* Digital product fields */}

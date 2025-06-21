@@ -46,6 +46,8 @@ import {
 
 interface OrderItem {
     product_id: number;
+    variant_id?: number;
+    attributes?: Record<string, string>;
     name: string;
     quantity: number;
     price: number;
@@ -414,7 +416,16 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                         <div className="space-y-2">
                                             {order.order_items.map((item, index) => (
                                                 <div key={index} className="flex justify-between text-sm">
-                                                    <span className="truncate">{item.name} (x{item.quantity})</span>
+                                                    <div className="truncate">
+                                                        <div>{item.name} (x{item.quantity})</div>
+                                                        {item.variant_id && item.attributes && (
+                                                            <div className="text-xs text-gray-500 mt-1">
+                                                                {Object.entries(item.attributes)
+                                                                    .map(([key, value]) => `${key}: ${value}`)
+                                                                    .join(', ')}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <span>{formatCurrency(item.price * item.quantity, currency.symbol)}</span>
                                                 </div>
                                             ))}
