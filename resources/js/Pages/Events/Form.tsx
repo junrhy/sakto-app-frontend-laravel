@@ -23,6 +23,10 @@ interface Event {
     max_participants: number;
     registration_deadline: string;
     is_public: boolean;
+    is_paid_event: boolean;
+    event_price: number;
+    currency: string;
+    payment_instructions: string;
     category: string;
     image: string;
     status: string;
@@ -41,6 +45,10 @@ interface FormData {
     max_participants: number;
     registration_deadline: string;
     is_public: boolean;
+    is_paid_event: boolean;
+    event_price: number;
+    currency: string;
+    payment_instructions: string;
     category: string;
     image: string | File;
     status: string;
@@ -94,6 +102,10 @@ export default function Form({ auth, event }: Props) {
         max_participants: event?.max_participants || 0,
         registration_deadline: formatDateTimeForInput(event?.registration_deadline),
         is_public: event?.is_public || false,
+        is_paid_event: event?.is_paid_event || false,
+        event_price: event?.event_price || 0,
+        currency: event?.currency || '',
+        payment_instructions: event?.payment_instructions || '',
         category: event?.category || '',
         image: event?.image || '',
         status: event?.status || 'draft',
@@ -115,6 +127,10 @@ export default function Form({ auth, event }: Props) {
                     max_participants: event.max_participants || 0,
                     registration_deadline: formatDateTimeForInput(event.registration_deadline),
                     is_public: event.is_public || false,
+                    is_paid_event: event.is_paid_event || false,
+                    event_price: event.event_price || 0,
+                    currency: event.currency || '',
+                    payment_instructions: event.payment_instructions || '',
                     category: event.category || '',
                     image: event.image || '',
                     status: event.status || 'draft',
@@ -132,6 +148,10 @@ export default function Form({ auth, event }: Props) {
                     max_participants: 0,
                     registration_deadline: '',
                     is_public: false,
+                    is_paid_event: false,
+                    event_price: 0,
+                    currency: '',
+                    payment_instructions: '',
                     category: '',
                     image: '',
                     status: 'draft',
@@ -173,6 +193,10 @@ export default function Form({ auth, event }: Props) {
             max_participants: data.max_participants,
             registration_deadline: data.registration_deadline + ':00',
             is_public: data.is_public,
+            is_paid_event: data.is_paid_event,
+            event_price: data.event_price,
+            currency: data.currency,
+            payment_instructions: data.payment_instructions,
             category: data.category,
             status: data.status,
         };
@@ -452,6 +476,113 @@ export default function Form({ auth, event }: Props) {
                                         )}
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Payment Information Section */}
+                        <Card className="shadow-lg border-0">
+                            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-emerald-100 rounded-lg">
+                                        <div className="h-5 w-5 text-emerald-600">₱</div>
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-xl font-semibold text-gray-800">
+                                            Payment Information
+                                        </CardTitle>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            Configure payment settings for your event
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center space-x-3">
+                                        <Switch
+                                            id="is_paid_event"
+                                            checked={data.is_paid_event}
+                                            onCheckedChange={(checked) => setData('is_paid_event', checked)}
+                                        />
+                                        <div className="flex items-center space-x-2">
+                                            <div className="h-4 w-4 text-gray-600">₱</div>
+                                            <Label htmlFor="is_paid_event" className="text-sm font-medium text-gray-700">
+                                                Paid Event
+                                            </Label>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500 ml-6">
+                                        Enable this if participants need to pay to attend
+                                    </p>
+                                    {errors.is_paid_event && (
+                                        <div className="text-sm text-red-600">{errors.is_paid_event}</div>
+                                    )}
+                                </div>
+
+                                {data.is_paid_event && (
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="event_price" className="text-sm font-medium text-gray-700">
+                                                    Event Price *
+                                                </Label>
+                                                <Input
+                                                    id="event_price"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    value={data.event_price}
+                                                    onChange={e => setData('event_price', parseFloat(e.target.value) || 0)}
+                                                    placeholder="0.00"
+                                                    className="h-11"
+                                                    required
+                                                />
+                                                {errors.event_price && (
+                                                    <div className="text-sm text-red-600">{errors.event_price}</div>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="currency" className="text-sm font-medium text-gray-700">
+                                                    Currency
+                                                </Label>
+                                                <Select
+                                                    value={data.currency}
+                                                    onValueChange={(value) => setData('currency', value)}
+                                                >
+                                                    <SelectTrigger className="h-11">
+                                                        <SelectValue placeholder="Select currency" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="PHP">PHP (Philippine Peso)</SelectItem>
+                                                        <SelectItem value="USD">USD (US Dollar)</SelectItem>
+                                                        <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                                                        <SelectItem value="GBP">GBP (British Pound)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.currency && (
+                                                    <div className="text-sm text-red-600">{errors.currency}</div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="payment_instructions" className="text-sm font-medium text-gray-700">
+                                                Payment Instructions
+                                            </Label>
+                                            <Textarea
+                                                id="payment_instructions"
+                                                value={data.payment_instructions}
+                                                onChange={e => setData('payment_instructions', e.target.value)}
+                                                placeholder="Provide instructions on how participants should pay (e.g., bank transfer details, payment links, etc.)"
+                                                className="min-h-[100px] resize-none"
+                                            />
+                                            {errors.payment_instructions && (
+                                                <div className="text-sm text-red-600">{errors.payment_instructions}</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 

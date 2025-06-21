@@ -642,6 +642,7 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
             Route::post('/', [EventController::class, 'registerParticipant'])->name('events.participants.register');
             Route::delete('/{participant}', [EventController::class, 'unregisterParticipant'])->name('events.participants.unregister');
             Route::post('/{participant}/check-in', [EventController::class, 'checkInParticipant'])->name('events.participants.check-in');
+            Route::put('/{participant}/payment', [EventController::class, 'updatePaymentStatus'])->name('events.participants.payment');
         });
         
         // Filtering routes

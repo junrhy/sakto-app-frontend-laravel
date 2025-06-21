@@ -91,6 +91,10 @@ class EventController extends Controller
             'max_participants' => 'nullable|integer|min:1',
             'registration_deadline' => 'nullable|date|before:start_date',
             'is_public' => 'boolean',
+            'is_paid_event' => 'boolean',
+            'event_price' => 'nullable|numeric|min:0|required_if:is_paid_event,true',
+            'currency' => 'nullable|string|size:3',
+            'payment_instructions' => 'nullable|string',
             'category' => 'required|string',
             'image' => 'nullable|image|max:2048',
             'status' => 'nullable|in:draft,published,archived',
@@ -151,6 +155,10 @@ class EventController extends Controller
             'max_participants' => 'nullable|integer|min:1',
             'registration_deadline' => 'nullable|date|before:start_date',
             'is_public' => 'boolean',
+            'is_paid_event' => 'boolean',
+            'event_price' => 'nullable|numeric|min:0|required_if:is_paid_event,true',
+            'currency' => 'nullable|string|size:3',
+            'payment_instructions' => 'nullable|string',
             'category' => 'required|string',
             'image' => 'nullable|image|max:2048',
             'status' => 'nullable|in:draft,published,archived',
@@ -541,5 +549,25 @@ class EventController extends Controller
             
             return redirect()->route('welcome')->withErrors(['error' => 'An error occurred while loading the event']);
         }
+    }
+
+    public function updatePaymentStatus(Request $request, $eventId, $participantId)
+    {
+        $validated = $request->validate([
+            'payment_status' => 'required|in:pending,paid,cancelled',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|max:255',
+            'transaction_id' => 'nullable|string|max:255',
+            'payment_notes' => 'nullable|string',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->put("{$this->apiUrl}/events/{$eventId}/participants/{$participantId}/payment", $validated);
+
+        if (!$response->successful()) {
+            return back()->withErrors(['error' => 'Failed to update payment status']);
+        }
+
+        return Inertia::location("/events/{$eventId}/participants");
     }
 }
