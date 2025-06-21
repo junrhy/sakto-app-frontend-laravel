@@ -125,7 +125,7 @@ export default function Home({ auth }: Props) {
             <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
                 {/* Message for users without subscription */}
                 {!isLoadingSubscription && !subscription && (
-                    <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
+                    <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
                         <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
                             <span className="font-medium">Upgrade to a subscription plan for premium access to all features!</span>
                             <Button 
@@ -170,7 +170,7 @@ export default function Home({ auth }: Props) {
                                         <Button
                                             variant="secondary"
                                             size="sm"
-                                            className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white dark:from-purple-500 dark:to-purple-600 dark:hover:from-purple-600 dark:hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
                                             onClick={() => window.location.href = route('subscriptions.index')}
                                         >
                                             <SparklesIcon className="w-4 h-4" />
