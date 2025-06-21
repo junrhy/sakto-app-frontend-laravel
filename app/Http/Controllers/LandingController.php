@@ -112,7 +112,7 @@ class LandingController extends Controller
     public function community()
     {
         $communityUsers = User::where('project_identifier', 'community')
-            ->select('id', 'name', 'email', 'created_at')
+            ->select('id', 'name', 'email', 'created_at', 'slug')
             ->latest()
             ->get();
 
@@ -125,12 +125,28 @@ class LandingController extends Controller
         ]);
     }
 
-    public function communityMember($id)
+    public function communityMember($identifier)
     {
-        $member = User::where('project_identifier', 'community')
-            ->where('id', $id)
-            ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier')
-            ->firstOrFail();
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->select('id', 'name', 'email', 'contact_number', 'app_currency', 'created_at', 'identifier', 'slug')
+                ->first();
+        }
+
+        if (!$member) {
+            abort(404, 'Member not found');
+        }
 
         // Decode the app_currency JSON
         $member->app_currency = json_decode($member->app_currency);

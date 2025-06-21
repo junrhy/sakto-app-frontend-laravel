@@ -32,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'project_identifier',
         'identifier',
         'is_admin',
+        'slug',
     ];
 
     /**
@@ -100,6 +101,52 @@ class User extends Authenticatable implements MustVerifyEmail
         
         static::creating(function ($user) {
             $user->identifier = (string) Str::uuid();
+            
+            // Generate slug from name if not provided
+            if (empty($user->slug)) {
+                $user->slug = $user->generateSlug();
+            }
         });
+
+        static::updating(function ($user) {
+            // Regenerate slug if name changed
+            if ($user->isDirty('name') && !$user->isDirty('slug')) {
+                $user->slug = $user->generateSlug();
+            }
+        });
+    }
+
+    /**
+     * Generate a unique slug for the user
+     */
+    public function generateSlug(): string
+    {
+        $baseSlug = Str::slug($this->name);
+        $slug = $baseSlug;
+        $counter = 1;
+        
+        // Ensure unique slug
+        while (static::where('slug', $slug)->where('id', '!=', $this->id)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+        
+        return $slug;
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    /**
+     * Get the short URL for this user
+     */
+    public function getShortUrlAttribute(): string
+    {
+        return route('member.short', ['identifier' => $this->slug ?? $this->id]);
     }
 }

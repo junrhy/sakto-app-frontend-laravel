@@ -5,6 +5,7 @@ interface User {
     name: string;
     email: string;
     created_at: string;
+    slug?: string;
 }
 
 interface MemberCardProps {
@@ -14,7 +15,7 @@ interface MemberCardProps {
 export default function MemberCard({ user }: MemberCardProps) {
     return (
         <Link 
-            href={route('community.member', { id: user.id })}
+            href={route('member.short', { identifier: user.slug || user.id })}
             className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
         >
             <div className="relative h-48 bg-gradient-to-r from-indigo-500 to-purple-600">

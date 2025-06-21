@@ -94,7 +94,18 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
     Route::get('/community', [LandingController::class, 'community'])->name('community');
-    Route::get('/community/member/{id}', [LandingController::class, 'communityMember'])->name('community.member');
+    
+    // Redirect old ID-based URLs to slug-based URLs for SEO
+    Route::get('/community/member/{id}', function ($id) {
+        $user = \App\Models\User::where('project_identifier', 'community')->where('id', $id)->first();
+        if ($user && $user->slug) {
+            return redirect()->route('member.short', ['identifier' => $user->slug], 301);
+        }
+        abort(404);
+    })->where('id', '[0-9]+');
+    
+    Route::get('/community/member/{identifier}', [LandingController::class, 'communityMember'])->name('community.member');
+    Route::get('/m/{identifier}', [LandingController::class, 'communityMember'])->name('member.short');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
 
     Route::get('/', function (Request $request) {
