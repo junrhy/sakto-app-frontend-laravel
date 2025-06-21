@@ -23,8 +23,8 @@
         <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Laravel') }}">
         
         <!-- PWA manifest -->
-        @if(request()->route()->getName() === 'community.member')
-            <link rel="manifest" href="{{ asset('manifest/member/' . request()->route('id') . '.json') }}">
+        @if(in_array(request()->route()->getName(), ['community.member', 'member.short']))
+            <link rel="manifest" href="{{ asset('manifest/member/' . request()->route('identifier') . '.json') }}">
         @else
             <link rel="manifest" href="{{ asset('manifest.json') }}">
         @endif

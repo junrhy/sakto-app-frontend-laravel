@@ -50,8 +50,21 @@ use Illuminate\Support\Facades\Auth;
 // Public routes
 Route::group(['middleware' => ['web']], function () {
     // Add this new route for member manifest
-    Route::get('/manifest/member/{id}.json', function ($id) {
-        $member = User::find($id);
+    Route::get('/manifest/member/{identifier}.json', function ($identifier) {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
         
         if (!$member) {
             return response()->json([
@@ -63,19 +76,19 @@ Route::group(['middleware' => ['web']], function () {
             'name' => "Sakto App - " . $member->name,
             'short_name' => $member->name,
             'description' => "Member Profile View for " . $member->name,
-            'start_url' => "/community/member/" . $member->id,
+            'start_url' => "/m/" . ($member->slug ?? $member->id),
             'display' => 'standalone',
             'background_color' => '#ffffff',
             'theme_color' => '#ffffff',
             'icons' => [
                 [
-                    'src' => '/images/tetris-white-bg.png',
+                    'src' => '/images/tetris-white-bg-small.png',
                     'sizes' => '192x192',
                     'type' => 'image/png',
                     'purpose' => 'any maskable'
                 ],
                 [
-                    'src' => '/images/tetris-white-bg.png',
+                    'src' => '/images/tetris-white-bg-small.png',
                     'sizes' => '512x512',
                     'type' => 'image/png',
                     'purpose' => 'any maskable'
