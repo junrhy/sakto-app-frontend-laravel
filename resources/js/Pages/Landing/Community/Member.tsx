@@ -476,6 +476,11 @@ export default function Member({ member, challenges, events, pages, contacts, up
     };
 
     const getEffectiveStock = (product: any, variant?: any) => {
+        // Digital, service, and subscription products don't have stock limitations
+        if (product.type === 'digital' || product.type === 'service' || product.type === 'subscription') {
+            return 999; // Always available
+        }
+        
         if (variant) {
             return variant.stock_quantity;
         }
@@ -940,7 +945,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                     <div className="bg-white rounded-xl shadow-sm p-8">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                             <h2 className="text-lg font-semibold text-gray-900">Marketplace</h2>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                            <div className="flex items-center gap-3">
                                 {/* Filter Toggle Button */}
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
@@ -956,30 +961,33 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                         </span>
                                     )}
                                 </button>
-                                
-                                {getCartItemCount() > 0 && (
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                        <div className="flex items-center justify-between sm:justify-start">
-                                            <span className="text-sm text-gray-600">
-                                                {getCartItemCount()} item{getCartItemCount() !== 1 ? 's' : ''} in cart
-                                            </span>
-                                            <span className="text-sm font-medium text-gray-900 sm:ml-4">
-                                                Total: {formatPrice(getCartTotal())}
-                                            </span>
-                                        </div>
-                                        <button
-                                            onClick={handleCheckout}
-                                            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                        >
-                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                                            </svg>
-                                            Checkout
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         </div>
+
+                        {/* Cart Summary Row */}
+                        {getCartItemCount() > 0 && (
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                    <div className="flex items-center justify-between sm:justify-start">
+                                        <span className="text-sm text-gray-600">
+                                            {getCartItemCount()} item{getCartItemCount() !== 1 ? 's' : ''} in cart
+                                        </span>
+                                        <span className="text-sm font-medium text-gray-900 sm:ml-4">
+                                            Total: {formatPrice(getCartTotal())}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleCheckout}
+                                    className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+                                    </svg>
+                                    Checkout
+                                </button>
+                            </div>
+                        )}
 
                         {/* Filter Panel */}
                         {showFilters && (
@@ -1144,19 +1152,31 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                             </div>
 
                                             {/* Stock Status */}
-                                            {(product.stock_quantity !== null || (product.active_variants && product.active_variants.length > 0)) && (
+                                            {(product.stock_quantity !== null || (product.active_variants && product.active_variants.length > 0) || product.type !== 'physical') && (
                                                 <div className="absolute top-3 right-3">
                                                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                        product.type === 'digital' ? 'text-blue-700 bg-blue-100' :
+                                                        product.type === 'service' ? 'text-purple-700 bg-purple-100' :
+                                                        product.type === 'subscription' ? 'text-orange-700 bg-orange-100' :
                                                         getEffectiveStock(product, selectedVariants[product.id]) > 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
                                                     }`}>
                                                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                            {getEffectiveStock(product, selectedVariants[product.id]) > 0 ? (
+                                                            {product.type === 'digital' ? (
+                                                                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                                            ) : product.type === 'service' ? (
+                                                                <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                                                            ) : product.type === 'subscription' ? (
+                                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                                                            ) : getEffectiveStock(product, selectedVariants[product.id]) > 0 ? (
                                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                                             ) : (
                                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                                             )}
                                                         </svg>
-                                                        {getEffectiveStock(product, selectedVariants[product.id]) > 0 
+                                                        {product.type === 'digital' ? 'Instant Download' :
+                                                         product.type === 'service' ? 'Available' :
+                                                         product.type === 'subscription' ? 'Active' :
+                                                         getEffectiveStock(product, selectedVariants[product.id]) > 0 
                                                             ? `${getEffectiveStock(product, selectedVariants[product.id])} in stock` 
                                                             : 'Out of stock'
                                                         }
@@ -1194,24 +1214,48 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                             </p>
 
                                             {/* Product Details */}
-                                            <div className="space-y-2 mb-4">
-                                                {product.weight && (
+                                            {product.type === 'physical' && (
+                                                <div className="space-y-2 mb-4">
+                                                    {product.weight && (
+                                                        <div className="flex items-center text-xs text-gray-500">
+                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                                            </svg>
+                                                            <span>{product.weight}g</span>
+                                                        </div>
+                                                    )}
+                                                    {product.dimensions && (
+                                                        <div className="flex items-center text-xs text-gray-500">
+                                                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                                                            </svg>
+                                                            <span>{product.dimensions}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Product Type Specific Info */}
+                                            {product.type !== 'physical' && (
+                                                <div className="mb-4">
                                                     <div className="flex items-center text-xs text-gray-500">
                                                         <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                                            {product.type === 'digital' ? (
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            ) : product.type === 'service' ? (
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            ) : (
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            )}
                                                         </svg>
-                                                        <span>{product.weight}g</span>
+                                                        <span>
+                                                            {product.type === 'digital' ? 'Digital product - instant access' :
+                                                             product.type === 'service' ? 'Service - contact for scheduling' :
+                                                             'Subscription - recurring billing'}
+                                                        </span>
                                                     </div>
-                                                )}
-                                                {product.dimensions && (
-                                                    <div className="flex items-center text-xs text-gray-500">
-                                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                                                        </svg>
-                                                        <span>{product.dimensions}</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
 
                                             {/* Product Tags */}
                                             {product.tags && product.tags.length > 0 && (
@@ -1343,7 +1387,8 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                     
                                                     // Check if product/variant is available
                                                     const isAvailable = product.status === 'published' && 
-                                                        (selectedVariant ? effectiveStock > 0 : (product.stock_quantity || 0) > 0);
+                                                        (product.type !== 'physical' || 
+                                                         (selectedVariant ? effectiveStock > 0 : (product.stock_quantity || 0) > 0));
                                                     
                                                     if (!isAvailable) {
                                                         return (
@@ -1385,7 +1430,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                                 </span>
                                                                 <button
                                                                     onClick={() => updateCartQuantity(product.id, quantity + 1, selectedVariant?.id)}
-                                                                    disabled={quantity >= effectiveStock}
+                                                                    disabled={product.type === 'physical' && quantity >= effectiveStock}
                                                                     className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                                                 >
                                                                     +
