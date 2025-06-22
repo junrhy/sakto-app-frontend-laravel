@@ -46,6 +46,7 @@ import {
 import { useCart } from '@/Components/CartContext';
 import { CartButton } from '@/Components/CartButton';
 import { ShoppingCartPanel } from '@/Components/ShoppingCart';
+import { useTheme } from '@/Components/ThemeProvider';
 
 interface Product {
     id: number;
@@ -123,15 +124,15 @@ const getTypeLabel = (type: string) => {
 const getStatusColor = (status: string) => {
     switch (status) {
         case 'published':
-            return 'bg-green-100 text-green-800 border-green-200';
+            return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700';
         case 'draft':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700';
         case 'archived':
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
         case 'inactive':
-            return 'bg-red-100 text-red-800 border-red-200';
+            return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
 };
 
@@ -148,6 +149,7 @@ export default function Index({ auth, products, currency }: Props) {
         stockStatus: ''
     });
     const { addItem, getItemQuantity } = useCart();
+    const { theme } = useTheme();
 
     const filteredProducts = useMemo(() => {
         let filtered = products;
@@ -279,11 +281,11 @@ export default function Index({ auth, products, currency }: Props) {
 
     const getStockStatus = (quantity?: number, type?: string) => {
         if (type === 'digital' || type === 'service' || type === 'subscription') {
-            return <Badge variant="secondary" className="text-xs">Unlimited</Badge>;
+            return <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">Unlimited</Badge>;
         }
         
         if (quantity === undefined || quantity === null) {
-            return <Badge variant="secondary" className="text-xs">N/A</Badge>;
+            return <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">N/A</Badge>;
         }
         
         if (quantity === 0) {
@@ -291,10 +293,10 @@ export default function Index({ auth, products, currency }: Props) {
         }
         
         if (quantity <= 10) {
-            return <Badge variant="secondary" className="text-xs">Low Stock ({quantity})</Badge>;
+            return <Badge variant="secondary" className="text-xs bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700">Low Stock ({quantity})</Badge>;
         }
         
-        return <Badge variant="default" className="text-xs">In Stock ({quantity})</Badge>;
+        return <Badge variant="default" className="text-xs bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700">In Stock ({quantity})</Badge>;
     };
 
     const getVariantInfo = (product: Product) => {
@@ -380,14 +382,14 @@ export default function Index({ auth, products, currency }: Props) {
                                 <Button
                                     variant="outline"
                                     onClick={exportToCSV}
-                                    className="flex items-center bg-white hover:bg-gray-50"
+                                    className="flex items-center bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600"
                                 >
                                     <FileDown className="w-4 h-4 mr-2" />
                                     Export Selected
                                 </Button>
                             )}
                             <Link href={route('product-orders.index')}>
-                                <Button variant="outline" className="bg-white hover:bg-gray-50">
+                                <Button variant="outline" className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600">
                                     <ListOrdered className="w-4 h-4 mr-2" />
                                     View Orders
                                 </Button>
@@ -403,47 +405,47 @@ export default function Index({ auth, products, currency }: Props) {
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-blue-600">Total Products</p>
-                                        <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
+                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Products</p>
+                                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</p>
                                     </div>
-                                    <Package className="w-8 h-8 text-blue-600" />
+                                    <Package className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-green-600">Published</p>
-                                        <p className="text-2xl font-bold text-green-900">{stats.published}</p>
+                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">Published</p>
+                                        <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.published}</p>
                                     </div>
-                                    <TrendingUp className="w-8 h-8 text-green-600" />
+                                    <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-orange-600">Low Stock</p>
-                                        <p className="text-2xl font-bold text-orange-900">{stats.lowStock}</p>
+                                        <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Low Stock</p>
+                                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.lowStock}</p>
                                     </div>
-                                    <Star className="w-8 h-8 text-orange-600" />
+                                    <Star className="w-8 h-8 text-orange-600 dark:text-orange-400" />
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-purple-600">Categories</p>
-                                        <p className="text-2xl font-bold text-purple-900">{stats.categories}</p>
+                                        <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Categories</p>
+                                        <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.categories}</p>
                                     </div>
-                                    <Users className="w-8 h-8 text-purple-600" />
+                                    <Users className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                                 </div>
                             </CardContent>
                         </Card>
@@ -456,23 +458,23 @@ export default function Index({ auth, products, currency }: Props) {
             <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Search and Filters */}
-                    <Card className="mb-8 shadow-sm border-0 bg-white/50 backdrop-blur-sm">
+                    <Card className="mb-8 shadow-sm border-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
                         <CardContent className="p-6">
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-6">
                                 <div className="flex-1 max-w-md">
                                     <div className="relative">
-                                        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
                                         <Input
                                             type="search"
                                             placeholder="Search products by name, category, SKU..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
-                                            className="pl-10 w-full bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                                            className="pl-10 w-full bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
                                         />
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-4">
-                                    <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                                    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                                         <Button
                                             variant={viewMode === 'grid' ? 'default' : 'ghost'}
                                             size="sm"
@@ -493,7 +495,7 @@ export default function Index({ auth, products, currency }: Props) {
                                     <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className={`bg-white ${hasActiveFilters ? 'border-blue-500 text-blue-600' : ''}`}
+                                        className={`bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 ${hasActiveFilters ? 'border-blue-500 text-blue-600 dark:text-blue-400' : ''}`}
                                         onClick={() => setShowFilters(!showFilters)}
                                     >
                                         <Filter className="w-4 h-4 mr-2" />
@@ -509,17 +511,17 @@ export default function Index({ auth, products, currency }: Props) {
 
                             {/* Filter Panel */}
                             {showFilters && (
-                                <div className="mt-6 pt-6 border-t border-gray-200">
+                                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                                         {/* Category Filter */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Category
                                             </label>
                                             <select
                                                 value={filters.category}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                             >
                                                 <option value="">All Categories</option>
                                                 {categories.map(category => (
@@ -530,13 +532,13 @@ export default function Index({ auth, products, currency }: Props) {
 
                                         {/* Type Filter */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Type
                                             </label>
                                             <select
                                                 value={filters.type}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                             >
                                                 <option value="">All Types</option>
                                                 {types.map(type => (
@@ -547,13 +549,13 @@ export default function Index({ auth, products, currency }: Props) {
 
                                         {/* Status Filter */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Status
                                             </label>
                                             <select
                                                 value={filters.status}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                             >
                                                 <option value="">All Statuses</option>
                                                 {statuses.map(status => (
@@ -566,13 +568,13 @@ export default function Index({ auth, products, currency }: Props) {
 
                                         {/* Price Range Filter */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Price Range
                                             </label>
                                             <select
                                                 value={filters.priceRange}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, priceRange: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                             >
                                                 <option value="">All Prices</option>
                                                 <option value="0-50">Under {currency.symbol}50</option>
@@ -585,13 +587,13 @@ export default function Index({ auth, products, currency }: Props) {
 
                                         {/* Stock Status Filter */}
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 Stock Status
                                             </label>
                                             <select
                                                 value={filters.stockStatus}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, stockStatus: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                                             >
                                                 <option value="">All Stock</option>
                                                 <option value="in-stock">In Stock</option>
@@ -603,8 +605,8 @@ export default function Index({ auth, products, currency }: Props) {
                                     </div>
 
                                     {/* Filter Actions */}
-                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                                        <div className="text-sm text-gray-600">
+                                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                        <div className="text-sm text-gray-600 dark:text-gray-400">
                                             {filteredProducts.length} of {products.length} products
                                         </div>
                                         <div className="flex items-center space-x-2">
@@ -613,7 +615,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={clearFilters}
-                                                    className="text-gray-600 hover:text-gray-800"
+                                                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border-gray-200 dark:border-gray-600"
                                                 >
                                                     Clear All Filters
                                                 </Button>
@@ -629,9 +631,9 @@ export default function Index({ auth, products, currency }: Props) {
                     {viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {filteredProducts.map((product) => (
-                                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/50 backdrop-blur-sm overflow-hidden">
+                                <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm overflow-hidden">
                                     {/* Product Image */}
-                                    <div className="relative h-48 bg-gray-100 overflow-hidden">
+                                    <div className="relative h-48 bg-gray-100 dark:bg-gray-700 overflow-hidden">
                                         {product.thumbnail_url ? (
                                             <img
                                                 src={product.thumbnail_url}
@@ -639,8 +641,8 @@ export default function Index({ auth, products, currency }: Props) {
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                                                <Package className="w-12 h-12 text-gray-400" />
+                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                                                <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
                                             </div>
                                         )}
                                         {/* Status Badge Overlay */}
@@ -651,9 +653,9 @@ export default function Index({ auth, products, currency }: Props) {
                                         </div>
                                         {/* Type Badge Overlay */}
                                         <div className="absolute top-3 left-3">
-                                            <div className="flex items-center space-x-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
+                                            <div className="flex items-center space-x-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full px-2 py-1">
                                                 {getTypeIcon(product.type)}
-                                                <span className="text-xs font-medium text-gray-700">
+                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                                     {getTypeLabel(product.type)}
                                                 </span>
                                             </div>
@@ -663,7 +665,7 @@ export default function Index({ auth, products, currency }: Props) {
                                             <Checkbox
                                                 checked={selectedProducts.includes(product.id)}
                                                 onCheckedChange={() => toggleSelect(product.id)}
-                                                className="bg-white/90 backdrop-blur-sm"
+                                                className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
                                             />
                                         </div>
                                     </div>
@@ -671,10 +673,10 @@ export default function Index({ auth, products, currency }: Props) {
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 text-sm">
+                                                <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 text-sm">
                                                     {product.name}
                                                 </h3>
-                                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                                                     {product.description}
                                                 </p>
                                             </div>
@@ -707,7 +709,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                     )}
                                                     <DropdownMenuItem 
                                                         onClick={() => handleDelete(product.id)}
-                                                        className="text-red-600"
+                                                        className="text-red-600 dark:text-red-400"
                                                     >
                                                         <Trash2 className="w-4 h-4 mr-2" />
                                                         Delete
@@ -720,17 +722,17 @@ export default function Index({ auth, products, currency }: Props) {
                                         <div className="space-y-3">
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">SKU</span>
-                                                    <span className="text-xs font-mono text-gray-700">{product.sku || 'N/A'}</span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">SKU</span>
+                                                    <span className="text-xs font-mono text-gray-700 dark:text-gray-300">{product.sku || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">Category</span>
-                                                    <Badge variant="outline" className="text-xs bg-gray-50">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">Category</span>
+                                                    <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                                                         {product.category}
                                                     </Badge>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">Stock</span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">Stock</span>
                                                     <div className="text-xs">
                                                         {getStockStatus(product.stock_quantity, product.type)}
                                                     </div>
@@ -741,8 +743,8 @@ export default function Index({ auth, products, currency }: Props) {
                                                     if (variantInfo) {
                                                         return (
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-xs text-gray-500">Variants</span>
-                                                                <Badge variant="secondary" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                                                <span className="text-xs text-gray-500 dark:text-gray-400">Variants</span>
+                                                                <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
                                                                     {variantInfo.count} {variantInfo.attributes.join(', ')}
                                                                 </Badge>
                                                             </div>
@@ -752,9 +754,9 @@ export default function Index({ auth, products, currency }: Props) {
                                                 })()}
                                             </div>
 
-                                            <div className="pt-2 border-t border-gray-100">
+                                            <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                                                 <div className="flex items-center justify-between mb-3">
-                                                    <span className="text-lg font-bold text-gray-900">
+                                                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                                         {formatCurrency(product.price, currency.symbol)}
                                                     </span>
                                                 </div>
@@ -779,11 +781,11 @@ export default function Index({ auth, products, currency }: Props) {
                             ))}
                         </div>
                     ) : (
-                        <Card className="shadow-sm border-0 bg-white/50 backdrop-blur-sm">
+                        <Card className="shadow-sm border-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
                             <CardContent className="p-0">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-gray-50/50">
+                                        <TableRow className="bg-gray-50/50 dark:bg-gray-700/50">
                                             <TableHead className="w-12">
                                                 <Checkbox
                                                     checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
@@ -803,7 +805,7 @@ export default function Index({ auth, products, currency }: Props) {
                                     </TableHeader>
                                     <TableBody>
                                         {filteredProducts.map((product) => (
-                                            <TableRow key={product.id} className="hover:bg-gray-50/50">
+                                            <TableRow key={product.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
                                                 <TableCell>
                                                     <Checkbox
                                                         checked={selectedProducts.includes(product.id)}
@@ -811,7 +813,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                                                         {product.thumbnail_url ? (
                                                             <img
                                                                 src={product.thumbnail_url}
@@ -819,21 +821,21 @@ export default function Index({ auth, products, currency }: Props) {
                                                                 className="w-full h-full object-cover"
                                                             />
                                                         ) : (
-                                                            <Package className="w-6 h-6 text-gray-400" />
+                                                            <Package className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                                                         )}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div>
-                                                        <div className="font-medium text-gray-900">{product.name}</div>
-                                                        <div className="text-sm text-gray-500 line-clamp-1">{product.description}</div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{product.description}</div>
                                                         {/* Variant Indicator */}
                                                         {(() => {
                                                             const variantInfo = getVariantInfo(product);
                                                             if (variantInfo) {
                                                                 return (
                                                                     <div className="mt-1">
-                                                                        <Badge variant="secondary" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                                                        <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
                                                                             {variantInfo.count} variants ({variantInfo.attributes.join(', ')})
                                                                         </Badge>
                                                                     </div>
@@ -843,19 +845,19 @@ export default function Index({ auth, products, currency }: Props) {
                                                         })()}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="font-mono text-sm">{product.sku || '-'}</TableCell>
+                                                <TableCell className="font-mono text-sm text-gray-900 dark:text-gray-100">{product.sku || '-'}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline" className="bg-gray-50">
+                                                    <Badge variant="outline" className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                                                         {product.category}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         {getTypeIcon(product.type)}
-                                                        <span className="text-sm">{getTypeLabel(product.type)}</span>
+                                                        <span className="text-sm text-gray-900 dark:text-gray-100">{getTypeLabel(product.type)}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="font-semibold">{formatCurrency(product.price, currency.symbol)}</TableCell>
+                                                <TableCell className="font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(product.price, currency.symbol)}</TableCell>
                                                 <TableCell>
                                                     {getStockStatus(product.stock_quantity, product.type)}
                                                 </TableCell>
@@ -875,7 +877,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                                 product.stock_quantity !== undefined && 
                                                                 product.stock_quantity <= 0
                                                             }
-                                                            className="h-8"
+                                                            className="h-8 border-gray-200 dark:border-gray-600"
                                                         >
                                                             <ShoppingCart className="w-3 h-3 mr-1" />
                                                             {getVariantInfo(product) ? 'Select' : 'Add'}
@@ -909,7 +911,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                                 )}
                                                                 <DropdownMenuItem 
                                                                     onClick={() => handleDelete(product.id)}
-                                                                    className="text-red-600"
+                                                                    className="text-red-600 dark:text-red-400"
                                                                 >
                                                                     <Trash2 className="w-4 h-4 mr-2" />
                                                                     Delete
@@ -927,11 +929,11 @@ export default function Index({ auth, products, currency }: Props) {
                     )}
 
                     {filteredProducts.length === 0 && (
-                        <Card className="text-center py-12 bg-white/50 backdrop-blur-sm">
+                        <Card className="text-center py-12 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
                             <CardContent>
-                                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                                <Package className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No products found</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                                     {search ? 'Try adjusting your search terms to find more products.' : 'Get started by creating your first product to build your catalog.'}
                                 </p>
                                 {!search && (
