@@ -128,6 +128,14 @@ export default function Member({ member, challenges, events, pages, contacts, up
     const [showCart, setShowCart] = useState(false);
     const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
     const [variantErrors, setVariantErrors] = useState<Record<number, string>>({});
+    const [marketplaceFilters, setMarketplaceFilters] = useState({
+        category: '',
+        type: '',
+        priceRange: '',
+        availability: '',
+        search: ''
+    });
+    const [showFilters, setShowFilters] = useState(false);
 
     const menuItems = [
         { id: 'updates', label: 'Updates', icon: 'M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m10-4H7a2 2 0 00-2 2v0a2 2 0 002 2h10a2 2 0 002-2v0a2 2 0 00-2-2z' },
@@ -490,6 +498,81 @@ export default function Member({ member, challenges, events, pages, contacts, up
         });
     };
 
+    // Filter functions
+    const getFilteredProducts = () => {
+        return products.filter(product => {
+            // Search filter
+            if (marketplaceFilters.search && !product.name.toLowerCase().includes(marketplaceFilters.search.toLowerCase()) && 
+                !product.description.toLowerCase().includes(marketplaceFilters.search.toLowerCase())) {
+                return false;
+            }
+
+            // Category filter
+            if (marketplaceFilters.category && product.category !== marketplaceFilters.category) {
+                return false;
+            }
+
+            // Type filter
+            if (marketplaceFilters.type && product.type !== marketplaceFilters.type) {
+                return false;
+            }
+
+            // Availability filter
+            if (marketplaceFilters.availability) {
+                const isInStock = getEffectiveStock(product, selectedVariants[product.id]) > 0;
+                if (marketplaceFilters.availability === 'in_stock' && !isInStock) {
+                    return false;
+                }
+                if (marketplaceFilters.availability === 'out_of_stock' && isInStock) {
+                    return false;
+                }
+            }
+
+            // Price range filter
+            if (marketplaceFilters.priceRange) {
+                const price = parseFloat(getEffectivePrice(product, selectedVariants[product.id]).replace(/[^0-9.]/g, ''));
+                switch (marketplaceFilters.priceRange) {
+                    case 'under_10':
+                        if (price >= 10) return false;
+                        break;
+                    case '10_50':
+                        if (price < 10 || price >= 50) return false;
+                        break;
+                    case '50_100':
+                        if (price < 50 || price >= 100) return false;
+                        break;
+                    case 'over_100':
+                        if (price < 100) return false;
+                        break;
+                }
+            }
+
+            return true;
+        });
+    };
+
+    const getUniqueCategories = () => {
+        return [...new Set(products.map(product => product.category))].filter(Boolean);
+    };
+
+    const getUniqueTypes = () => {
+        return [...new Set(products.map(product => product.type))].filter(Boolean);
+    };
+
+    const clearFilters = () => {
+        setMarketplaceFilters({
+            category: '',
+            type: '',
+            priceRange: '',
+            availability: '',
+            search: ''
+        });
+    };
+
+    const hasActiveFilters = () => {
+        return Object.values(marketplaceFilters).some(value => value !== '');
+    };
+
     const renderContent = () => {
         switch (activeSection) {
             case 'updates':
@@ -505,9 +588,9 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                     <p className="text-sm">Check back later for new updates</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
                                     {updates.map(update => (
-                                        <div key={update.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                                        <div key={update.id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 break-inside-avoid mb-6">
                                             {/* Post Header */}
                                             <div className="p-4 pb-2">
                                                 <div className="flex items-center gap-3">
@@ -552,7 +635,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                             </div>
 
                                             {/* Post Content */}
-                                            <div className="px-4 pb-3">
+                                            <div className="px-4 pb-3 flex-1">
                                                 <div className="text-gray-700 text-sm leading-relaxed" 
                                                      dangerouslySetInnerHTML={{ 
                                                          __html: expandedUpdates.has(update.id) || update.content.length <= 300
@@ -572,7 +655,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                             {/* Post Image */}
                                             {update.featured_image && (
-                                                <div>
+                                                <div className="mt-auto">
                                                     <img 
                                                         src={update.featured_image} 
                                                         alt={update.title} 
@@ -857,8 +940,24 @@ export default function Member({ member, challenges, events, pages, contacts, up
                     <div className="bg-white rounded-xl shadow-sm p-8">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
                             <h2 className="text-lg font-semibold text-gray-900">Marketplace</h2>
-                            {getCartItemCount() > 0 && (
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                {/* Filter Toggle Button */}
+                                <button
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+                                    </svg>
+                                    Filters
+                                    {hasActiveFilters() && (
+                                        <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-xs rounded-full">
+                                            {Object.values(marketplaceFilters).filter(v => v !== '').length}
+                                        </span>
+                                    )}
+                                </button>
+                                
+                                {getCartItemCount() > 0 && (
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                         <div className="flex items-center justify-between sm:justify-start">
                                             <span className="text-sm text-gray-600">
@@ -868,31 +967,143 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                 Total: {formatPrice(getCartTotal())}
                                             </span>
                                         </div>
+                                        <button
+                                            onClick={handleCheckout}
+                                            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
+                                            </svg>
+                                            Checkout
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={handleCheckout}
-                                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                    >
-                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                                        </svg>
-                                        Checkout
-                                    </button>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
-                        {products.length === 0 ? (
+
+                        {/* Filter Panel */}
+                        {showFilters && (
+                            <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                                    {/* Search */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Search products..."
+                                            value={marketplaceFilters.search}
+                                            onChange={(e) => setMarketplaceFilters(prev => ({ ...prev, search: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        />
+                                    </div>
+
+                                    {/* Category */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                        <select
+                                            value={marketplaceFilters.category}
+                                            onChange={(e) => setMarketplaceFilters(prev => ({ ...prev, category: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        >
+                                            <option value="">All Categories</option>
+                                            {getUniqueCategories().map(category => (
+                                                <option key={category} value={category}>{category}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Type */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                                        <select
+                                            value={marketplaceFilters.type}
+                                            onChange={(e) => setMarketplaceFilters(prev => ({ ...prev, type: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        >
+                                            <option value="">All Types</option>
+                                            {getUniqueTypes().map(type => (
+                                                <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Price Range */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                                        <select
+                                            value={marketplaceFilters.priceRange}
+                                            onChange={(e) => setMarketplaceFilters(prev => ({ ...prev, priceRange: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        >
+                                            <option value="">All Prices</option>
+                                            <option value="under_10">Under {member.app_currency?.symbol || '$'}10</option>
+                                            <option value="10_50">{member.app_currency?.symbol || '$'}10 - {member.app_currency?.symbol || '$'}50</option>
+                                            <option value="50_100">{member.app_currency?.symbol || '$'}50 - {member.app_currency?.symbol || '$'}100</option>
+                                            <option value="over_100">Over {member.app_currency?.symbol || '$'}100</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Availability */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                                        <select
+                                            value={marketplaceFilters.availability}
+                                            onChange={(e) => setMarketplaceFilters(prev => ({ ...prev, availability: e.target.value }))}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                        >
+                                            <option value="">All Items</option>
+                                            <option value="in_stock">In Stock</option>
+                                            <option value="out_of_stock">Out of Stock</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Filter Actions */}
+                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                    <div className="text-sm text-gray-600">
+                                        Showing {getFilteredProducts().length} of {products.length} products
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {hasActiveFilters() && (
+                                            <button
+                                                onClick={clearFilters}
+                                                className="inline-flex items-center px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm font-medium"
+                                            >
+                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Clear All
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {getFilteredProducts().length === 0 ? (
                             <div className="text-center text-gray-500 py-12">
                                 <svg className="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
-                                <p className="text-lg font-medium">No products available</p>
-                                <p className="text-sm">Check back later for new products</p>
+                                <p className="text-lg font-medium">
+                                    {hasActiveFilters() ? 'No products match your filters' : 'No products available'}
+                                </p>
+                                <p className="text-sm">
+                                    {hasActiveFilters() ? 'Try adjusting your filters or clear them to see all products' : 'Check back later for new products'}
+                                </p>
+                                {hasActiveFilters() && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    >
+                                        Clear Filters
+                                    </button>
+                                )}
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {products.map((product) => (
-                                    <div key={product.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200">
+                            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                                {getFilteredProducts().map((product) => (
+                                    <div key={product.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200 break-inside-avoid mb-6">
                                         {/* Product Image */}
                                         <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
                                             {product.thumbnail_url ? (
