@@ -6,10 +6,11 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useState } from 'react';
-import { PlusIcon, XIcon } from 'lucide-react';
+import { PlusIcon, XIcon, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Separator } from '@/Components/ui/separator';
+import { Badge } from '@/Components/ui/badge';
 
 interface IdNumber {
     id?: number;
@@ -185,48 +186,73 @@ export default function Edit({ auth, contact }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Edit Contact
-                </h2>
+                <div className="relative overflow-hidden p-6">
+                    {/* Background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 dark:from-blue-900 dark:via-purple-900 dark:to-indigo-900 opacity-10 dark:opacity-20"></div>
+                    
+                    <div className="relative flex items-center space-x-4">
+                        <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 rounded-xl shadow-lg">
+                            <Edit3 className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                                Edit Contact
+                            </h2>
+                            <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                Update contact information
+                            </p>
+                        </div>
+                    </div>
+                </div>
             }
         >
             <Head title="Edit Contact" />
 
-            <div className="py-12">
+            <div className="py-8">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <Card className="bg-white dark:bg-gray-800/40 shadow-lg backdrop-blur-sm">
-                        <CardHeader>
-                            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Contact Information</CardTitle>
+                    <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl">
+                        <CardHeader className="pb-6">
+                            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                                Edit Contact Information
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 {/* ID Picture Section */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Profile Picture</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                        Profile Picture
+                                    </h3>
                                     <Separator className="my-4" />
                                     <div className="flex items-center gap-6">
                                         {previewUrl ? (
-                                            <img 
-                                                src={previewUrl} 
-                                                alt="ID Preview" 
-                                                className="w-32 h-32 object-cover rounded-lg ring-2 ring-gray-200 dark:ring-gray-700"
-                                            />
+                                            <div className="relative group">
+                                                <img 
+                                                    src={previewUrl} 
+                                                    alt="ID Preview" 
+                                                    className="w-32 h-32 object-cover rounded-lg ring-2 ring-gray-200 dark:ring-gray-700 shadow-lg group-hover:ring-blue-500 dark:group-hover:ring-blue-400 transition-all duration-200"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            </div>
                                         ) : (
-                                            <div className="w-32 h-32 bg-gray-100 dark:bg-gray-800 rounded-lg ring-2 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
-                                                <span className="text-gray-500 dark:text-gray-400">No Image</span>
+                                            <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-lg ring-2 ring-gray-200 dark:ring-gray-700 shadow-lg flex items-center justify-center">
+                                                <span className="text-gray-500 dark:text-gray-400 font-medium">No Image</span>
                                             </div>
                                         )}
                                         <div className="flex-1 space-y-2">
-                                            <Label htmlFor="id_picture" className="text-gray-700 dark:text-gray-300">Upload Photo</Label>
+                                            <Label htmlFor="id_picture" className="text-gray-700 dark:text-gray-300 font-medium">Upload Photo</Label>
                                             <Input
                                                 id="id_picture"
                                                 type="file"
                                                 accept="image/*"
                                                 onChange={handleImageChange}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {(errors.id_picture || fileError) && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{fileError || errors.id_picture}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                                                    {fileError || errors.id_picture}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -234,95 +260,110 @@ export default function Edit({ auth, contact }: Props) {
 
                                 {/* Personal Information Section */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                        <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                                        Personal Information
+                                    </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300">First Name</Label>
+                                            <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300 font-medium">First Name</Label>
                                             <Input
                                                 id="first_name"
                                                 value={data.first_name}
                                                 onChange={e => setData('first_name', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.first_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.first_name}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.first_name}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="middle_name" className="text-gray-700 dark:text-gray-300">Middle Name</Label>
+                                            <Label htmlFor="middle_name" className="text-gray-700 dark:text-gray-300 font-medium">Middle Name</Label>
                                             <Input
                                                 id="middle_name"
                                                 value={data.middle_name}
                                                 onChange={e => setData('middle_name', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.middle_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.middle_name}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.middle_name}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300">Last Name</Label>
+                                            <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300 font-medium">Last Name</Label>
                                             <Input
                                                 id="last_name"
                                                 value={data.last_name}
                                                 onChange={e => setData('last_name', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.last_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.last_name}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.last_name}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300">Gender</Label>
+                                            <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300 font-medium">Gender</Label>
                                             <Select
                                                 value={data.gender}
                                                 onValueChange={(value: 'male' | 'female' | 'other') => setData('gender', value)}
                                             >
-                                                <SelectTrigger id="gender" className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                                                <SelectTrigger id="gender" className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200">
                                                     <SelectValue placeholder="Select gender" />
                                                 </SelectTrigger>
-                                                <SelectContent>
+                                                <SelectContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
                                                     <SelectItem value="male">Male</SelectItem>
                                                     <SelectItem value="female">Female</SelectItem>
                                                     <SelectItem value="other">Other</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             {errors.gender && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.gender}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.gender}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="date_of_birth" className="text-gray-700 dark:text-gray-300">Date of Birth</Label>
+                                            <Label htmlFor="date_of_birth" className="text-gray-700 dark:text-gray-300 font-medium">Date of Birth</Label>
                                             <Input
                                                 id="date_of_birth"
                                                 type="date"
                                                 value={data.date_of_birth}
                                                 onChange={e => setData('date_of_birth', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.date_of_birth && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.date_of_birth}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.date_of_birth}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email</Label>
+                                            <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium">Email</Label>
                                             <Input
                                                 id="email"
                                                 type="email"
                                                 value={data.email}
                                                 onChange={e => setData('email', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.email && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.email}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.email}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -330,34 +371,41 @@ export default function Edit({ auth, contact }: Props) {
 
                                 {/* Family Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Family Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                                        Family Information
+                                    </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="fathers_name" className="text-gray-700 dark:text-gray-300">Father's Name</Label>
+                                            <Label htmlFor="fathers_name" className="text-gray-700 dark:text-gray-300 font-medium">Father's Name</Label>
                                             <Input
                                                 id="fathers_name"
                                                 value={data.fathers_name}
                                                 onChange={e => setData('fathers_name', e.target.value)}
                                                 placeholder="Full name of father"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.fathers_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.fathers_name}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.fathers_name}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="mothers_maiden_name" className="text-gray-700 dark:text-gray-300">Mother's Maiden Name</Label>
+                                            <Label htmlFor="mothers_maiden_name" className="text-gray-700 dark:text-gray-300 font-medium">Mother's Maiden Name</Label>
                                             <Input
                                                 id="mothers_maiden_name"
                                                 value={data.mothers_maiden_name}
                                                 onChange={e => setData('mothers_maiden_name', e.target.value)}
                                                 placeholder="Mother's full name before marriage"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.mothers_maiden_name && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.mothers_maiden_name}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.mothers_maiden_name}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -365,48 +413,57 @@ export default function Edit({ auth, contact }: Props) {
 
                                 {/* Contact Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Contact Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                        <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></div>
+                                        Contact Information
+                                    </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-3 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="call_number" className="text-gray-700 dark:text-gray-300">Call Number</Label>
+                                            <Label htmlFor="call_number" className="text-gray-700 dark:text-gray-300 font-medium">Call Number</Label>
                                             <Input
                                                 id="call_number"
                                                 value={data.call_number}
                                                 onChange={e => setData('call_number', e.target.value)}
                                                 placeholder="e.g. +1234567890"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.call_number && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.call_number}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.call_number}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="sms_number" className="text-gray-700 dark:text-gray-300">SMS Number</Label>
+                                            <Label htmlFor="sms_number" className="text-gray-700 dark:text-gray-300 font-medium">SMS Number</Label>
                                             <Input
                                                 id="sms_number"
                                                 value={data.sms_number}
                                                 onChange={e => setData('sms_number', e.target.value)}
                                                 placeholder="e.g. +1234567890"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.sms_number && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.sms_number}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.sms_number}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="whatsapp" className="text-gray-700 dark:text-gray-300">WhatsApp</Label>
+                                            <Label htmlFor="whatsapp" className="text-gray-700 dark:text-gray-300 font-medium">WhatsApp</Label>
                                             <Input
                                                 id="whatsapp"
                                                 value={data.whatsapp}
                                                 onChange={e => setData('whatsapp', e.target.value)}
                                                 placeholder="e.g. +1234567890"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.whatsapp && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.whatsapp}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.whatsapp}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -414,62 +471,73 @@ export default function Edit({ auth, contact }: Props) {
 
                                 {/* Social Media */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Social Media</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                        <div className="w-2 h-2 bg-pink-500 rounded-full mr-3"></div>
+                                        Social Media
+                                    </h3>
                                     <Separator className="my-4" />
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="facebook" className="text-gray-700 dark:text-gray-300">Facebook URL</Label>
+                                            <Label htmlFor="facebook" className="text-gray-700 dark:text-gray-300 font-medium">Facebook URL</Label>
                                             <Input
                                                 id="facebook"
                                                 value={data.facebook}
                                                 onChange={e => setData('facebook', e.target.value)}
                                                 placeholder="e.g. https://facebook.com/username"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.facebook && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.facebook}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.facebook}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="instagram" className="text-gray-700 dark:text-gray-300">Instagram URL</Label>
+                                            <Label htmlFor="instagram" className="text-gray-700 dark:text-gray-300 font-medium">Instagram URL</Label>
                                             <Input
                                                 id="instagram"
                                                 value={data.instagram}
                                                 onChange={e => setData('instagram', e.target.value)}
                                                 placeholder="e.g. https://instagram.com/username"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.instagram && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.instagram}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.instagram}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="twitter" className="text-gray-700 dark:text-gray-300">Twitter/X URL</Label>
+                                            <Label htmlFor="twitter" className="text-gray-700 dark:text-gray-300 font-medium">Twitter/X URL</Label>
                                             <Input
                                                 id="twitter"
                                                 value={data.twitter}
                                                 onChange={e => setData('twitter', e.target.value)}
                                                 placeholder="e.g. https://twitter.com/username"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.twitter && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.twitter}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.twitter}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="linkedin" className="text-gray-700 dark:text-gray-300">LinkedIn URL</Label>
+                                            <Label htmlFor="linkedin" className="text-gray-700 dark:text-gray-300 font-medium">LinkedIn URL</Label>
                                             <Input
                                                 id="linkedin"
                                                 value={data.linkedin}
                                                 onChange={e => setData('linkedin', e.target.value)}
                                                 placeholder="e.g. https://linkedin.com/in/username"
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:focus:ring-pink-400 focus:border-transparent transition-all duration-200"
                                             />
                                             {errors.linkedin && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.linkedin}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.linkedin}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -477,34 +545,40 @@ export default function Edit({ auth, contact }: Props) {
 
                                 {/* Additional Information */}
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Additional Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                        <div className="w-2 h-2 bg-amber-500 rounded-full mr-3"></div>
+                                        Additional Information
+                                    </h3>
                                     <Separator className="my-4" />
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="address" className="text-gray-700 dark:text-gray-300">Address</Label>
+                                            <Label htmlFor="address" className="text-gray-700 dark:text-gray-300 font-medium">Address</Label>
                                             <Textarea
                                                 id="address"
                                                 value={data.address}
                                                 onChange={e => setData('address', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 min-h-[100px]"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent transition-all duration-200 min-h-[100px]"
                                             />
                                             {errors.address && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.address}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.address}
+                                                </p>
                                             )}
                                         </div>
 
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
-                                                <Label htmlFor="group" className="text-gray-700 dark:text-gray-300">Groups</Label>
+                                                <Label htmlFor="group" className="text-gray-700 dark:text-gray-300 font-medium">Groups</Label>
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={addGroup}
-                                                    className="text-xs"
+                                                    className="text-xs relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-900 transition-all duration-200"
                                                 >
-                                                    <PlusIcon className="h-4 w-4 mr-1" />
-                                                    Add Group
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                                    <PlusIcon className="h-4 w-4 mr-1 relative z-10" />
+                                                    <span className="relative z-10">Add Group</span>
                                                 </Button>
                                             </div>
                                             <div className="space-y-2">
@@ -515,35 +589,34 @@ export default function Edit({ auth, contact }: Props) {
                                                             value={group}
                                                             onChange={(e) => updateGroup(index, e.target.value)}
                                                             placeholder="Enter group name"
-                                                            className="flex-1 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                            className="flex-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent transition-all duration-200"
                                                         />
                                                         <Button
                                                             type="button"
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() => removeGroup(index)}
-                                                            className="text-red-500 hover:text-red-600"
+                                                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
                                                         >
                                                             <XIcon className="h-4 w-4" />
                                                         </Button>
                                                     </div>
                                                 ))}
                                             </div>
-                                            {errors.group && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.group}</p>
-                                            )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300">Notes</Label>
+                                            <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300 font-medium">Notes</Label>
                                             <Textarea
                                                 id="notes"
                                                 value={data.notes}
                                                 onChange={e => setData('notes', e.target.value)}
-                                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 min-h-[100px]"
+                                                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 focus:border-transparent transition-all duration-200 min-h-[100px]"
                                             />
                                             {errors.notes && (
-                                                <p className="text-sm text-red-600 dark:text-red-400">{errors.notes}</p>
+                                                <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                                    {errors.notes}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -552,34 +625,38 @@ export default function Edit({ auth, contact }: Props) {
                                 {/* ID Numbers Section */}
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">ID Numbers</h3>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                                            <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                                            ID Numbers
+                                        </h3>
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
                                             onClick={addIdNumber}
-                                            className="border-gray-300 dark:border-gray-700"
+                                            className="relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-900 transition-all duration-200"
                                         >
-                                            <PlusIcon className="w-4 h-4 mr-2" />
-                                            Add ID Number
+                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                            <PlusIcon className="w-4 h-4 mr-2 relative z-10" />
+                                            <span className="relative z-10">Add ID Number</span>
                                         </Button>
                                     </div>
                                     <Separator className="my-4" />
                                     
                                     {data.id_numbers.map((idNumber: IdNumber, index: number) => (
-                                        <div key={index} className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-lg space-y-4 border border-gray-200 dark:border-gray-700">
+                                        <div key={index} className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-lg space-y-4 border border-emerald-200 dark:border-emerald-700">
                                             <div className="flex justify-between items-start">
                                                 <div className="grid grid-cols-2 gap-6 flex-1">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor={`id_type_${index}`} className="text-gray-700 dark:text-gray-300">ID Type</Label>
+                                                        <Label htmlFor={`id_type_${index}`} className="text-gray-700 dark:text-gray-300 font-medium">ID Type</Label>
                                                         <Select
                                                             value={idNumber.type}
                                                             onValueChange={(value) => updateIdNumber(index, 'type', value)}
                                                         >
-                                                            <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700">
+                                                            <SelectTrigger className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent transition-all duration-200">
                                                                 <SelectValue placeholder="Select ID type" />
                                                             </SelectTrigger>
-                                                            <SelectContent>
+                                                            <SelectContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
                                                                 <SelectItem value="SSS">SSS</SelectItem>
                                                                 <SelectItem value="TIN">TIN</SelectItem>
                                                                 <SelectItem value="GSIS">GSIS</SelectItem>
@@ -590,13 +667,13 @@ export default function Edit({ auth, contact }: Props) {
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor={`id_number_${index}`} className="text-gray-700 dark:text-gray-300">ID Number</Label>
+                                                        <Label htmlFor={`id_number_${index}`} className="text-gray-700 dark:text-gray-300 font-medium">ID Number</Label>
                                                         <Input
                                                             id={`id_number_${index}`}
                                                             value={idNumber.number}
                                                             onChange={(e) => updateIdNumber(index, 'number', e.target.value)}
                                                             placeholder="Enter ID number"
-                                                            className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent transition-all duration-200"
                                                         />
                                                     </div>
                                                 </div>
@@ -605,35 +682,40 @@ export default function Edit({ auth, contact }: Props) {
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => removeIdNumber(index)}
-                                                    className="ml-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+                                                    className="ml-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
                                                 >
                                                     <XIcon className="w-4 h-4" />
                                                 </Button>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor={`id_notes_${index}`} className="text-gray-700 dark:text-gray-300">Notes</Label>
+                                                <Label htmlFor={`id_notes_${index}`} className="text-gray-700 dark:text-gray-300 font-medium">Notes</Label>
                                                 <Input
                                                     id={`id_notes_${index}`}
                                                     value={idNumber.notes}
                                                     onChange={(e) => updateIdNumber(index, 'notes', e.target.value)}
                                                     placeholder="Additional notes about this ID (optional)"
-                                                    className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                                                    className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-transparent transition-all duration-200"
                                                 />
                                             </div>
                                         </div>
                                     ))}
                                     {errors.id_numbers && (
-                                        <p className="text-sm text-red-600 dark:text-red-400">{errors.id_numbers}</p>
+                                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded border border-red-200 dark:border-red-800">
+                                            {errors.id_numbers}
+                                        </p>
                                     )}
                                 </div>
 
-                                <div className="flex justify-end pt-6">
+                                <div className="flex justify-end pt-8">
                                     <Button 
                                         type="submit" 
                                         disabled={processing}
-                                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                        className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                                     >
-                                        Update Contact
+                                        <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <span className="relative z-10 font-semibold">
+                                            {processing ? 'Updating...' : 'Update Contact'}
+                                        </span>
                                     </Button>
                                 </div>
                             </form>
