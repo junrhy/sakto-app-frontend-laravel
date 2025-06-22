@@ -27,6 +27,8 @@ interface PageProps {
         max_participants: number;
         registration_deadline: string;
         is_public: boolean;
+        is_paid_event: boolean;
+        event_price: number | null;
         category: string;
         image: string | null;
         status: 'draft' | 'published' | 'cancelled';
@@ -568,44 +570,46 @@ export default function Member({ member, challenges, events, pages, contacts, up
                         <h2 className="text-lg font-semibold text-gray-900 mb-6">Your Profile</h2>
                         <div className="max-w-2xl">
                             {/* Profile Header */}
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                                        <span className="text-2xl font-bold text-white">
-                                            {(() => {
-                                                const authData = localStorage.getItem(`visitor_auth_${member.id}`);
-                                                if (authData) {
-                                                    try {
-                                                        const { visitorInfo } = JSON.parse(authData);
-                                                        return visitorInfo?.firstName?.charAt(0).toUpperCase() || 'U';
-                                                    } catch (error) {
-                                                        return 'U';
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 mb-8">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                                            <span className="text-lg sm:text-2xl font-bold text-white">
+                                                {(() => {
+                                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                                    if (authData) {
+                                                        try {
+                                                            const { visitorInfo } = JSON.parse(authData);
+                                                            return visitorInfo?.firstName?.charAt(0).toUpperCase() || 'U';
+                                                        } catch (error) {
+                                                            return 'U';
+                                                        }
                                                     }
-                                                }
-                                                return 'U';
-                                            })()}
-                                        </span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                                            {(() => {
-                                                const authData = localStorage.getItem(`visitor_auth_${member.id}`);
-                                                if (authData) {
-                                                    try {
-                                                        const { visitorInfo } = JSON.parse(authData);
-                                                        return `${visitorInfo?.firstName || 'User'} ${visitorInfo?.lastName || ''}`;
-                                                    } catch (error) {
-                                                        return 'User Profile';
+                                                    return 'U';
+                                                })()}
+                                            </span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 truncate">
+                                                {(() => {
+                                                    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                                    if (authData) {
+                                                        try {
+                                                            const { visitorInfo } = JSON.parse(authData);
+                                                            return `${visitorInfo?.firstName || 'User'} ${visitorInfo?.lastName || ''}`;
+                                                        } catch (error) {
+                                                            return 'User Profile';
+                                                        }
                                                     }
-                                                }
-                                                return 'User Profile';
-                                            })()}
-                                        </h3>
-                                        <p className="text-gray-600">Visitor Profile</p>
+                                                    return 'User Profile';
+                                                })()}
+                                            </h3>
+                                            <p className="text-sm text-gray-600">Visitor Profile</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <div className="flex items-center justify-start sm:justify-end">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
                                             Active Session
@@ -615,11 +619,11 @@ export default function Member({ member, challenges, events, pages, contacts, up
                             </div>
 
                             {/* Profile Information */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                                 {/* Personal Information */}
                                 <div className="space-y-4">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                        <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 mr-2 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                         Personal Information
@@ -628,14 +632,14 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                     <div className="space-y-4">
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                     </svg>
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-gray-500 mb-1">First Name</p>
-                                                    <p className="text-gray-900 font-medium">
+                                                    <p className="text-gray-900 font-medium truncate">
                                                         {(() => {
                                                             const authData = localStorage.getItem(`visitor_auth_${member.id}`);
                                                             if (authData) {
@@ -655,14 +659,14 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                     </svg>
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-gray-500 mb-1">Last Name</p>
-                                                    <p className="text-gray-900 font-medium">
+                                                    <p className="text-gray-900 font-medium truncate">
                                                         {(() => {
                                                             const authData = localStorage.getItem(`visitor_auth_${member.id}`);
                                                             if (authData) {
@@ -685,7 +689,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                 {/* Contact Information */}
                                 <div className="space-y-4">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                        <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 mr-2 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                         </svg>
                                         Contact Information
@@ -694,14 +698,14 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                     <div className="space-y-4">
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                     </svg>
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-gray-500 mb-1">Email Address</p>
-                                                    <p className="text-gray-900 font-medium">
+                                                    <p className="text-gray-900 font-medium truncate">
                                                         {(() => {
                                                             const authData = localStorage.getItem(`visitor_auth_${member.id}`);
                                                             if (authData) {
@@ -721,14 +725,14 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                         <div className="bg-gray-50 rounded-lg p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                                     </svg>
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-gray-500 mb-1">Phone Number</p>
-                                                    <p className="text-gray-900 font-medium">
+                                                    <p className="text-gray-900 font-medium truncate">
                                                         {(() => {
                                                             const authData = localStorage.getItem(`visitor_auth_${member.id}`);
                                                             if (authData) {
@@ -752,37 +756,37 @@ export default function Member({ member, challenges, events, pages, contacts, up
                             {/* Session Information */}
                             <div className="space-y-4 mb-8">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                    <svg className="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 mr-2 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     Session Information
                                 </h4>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <div className="bg-gray-50 rounded-lg p-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
                                                 </svg>
                                             </div>
-                                            <div className="flex-1">
+                                            <div className="flex-1 min-w-0">
                                                 <p className="text-sm text-gray-500 mb-1">Accessing</p>
-                                                <p className="text-gray-900 font-medium">{member.name}'s Page</p>
+                                                <p className="text-gray-900 font-medium truncate">{member.name}'s Page</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="bg-gray-50 rounded-lg p-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                                 <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                             </div>
-                                            <div className="flex-1">
+                                            <div className="flex-1 min-w-0">
                                                 <p className="text-sm text-gray-500 mb-1">Session Started</p>
-                                                <p className="text-gray-900 font-medium">
+                                                <p className="text-gray-900 font-medium text-sm">
                                                     {(() => {
                                                         const authData = localStorage.getItem(`visitor_auth_${member.id}`);
                                                         if (authData) {
@@ -1331,24 +1335,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                         className="w-full h-full object-cover"
                                                     />
                                                     <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                                                    <div className="absolute top-4 right-4">
-                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                                            event.status === 'published' ? 'text-green-700 bg-green-100' :
-                                                            event.status === 'draft' ? 'text-blue-700 bg-blue-100' :
-                                                            'text-gray-700 bg-gray-100'
-                                                        }`}>
-                                                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                                {event.status === 'published' ? (
-                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                                ) : event.status === 'draft' ? (
-                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                                                                ) : (
-                                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                                )}
-                                                            </svg>
-                                                            {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                                        </span>
-                                                    </div>
                                                 </div>
                                             )}
 
@@ -1359,26 +1345,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                     <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 mb-2">
                                                         {event.title}
                                                     </h3>
-                                                    {!event.image && (
-                                                        <div className="flex justify-end">
-                                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                                                event.status === 'published' ? 'text-green-700 bg-green-100' :
-                                                                event.status === 'draft' ? 'text-blue-700 bg-blue-100' :
-                                                                'text-gray-700 bg-gray-100'
-                                                            }`}>
-                                                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                                    {event.status === 'published' ? (
-                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                                    ) : event.status === 'draft' ? (
-                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                                                                    ) : (
-                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                                    )}
-                                                                </svg>
-                                                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                                            </span>
-                                                        </div>
-                                                    )}
                                                 </div>
 
                                                 {/* Event Details */}
@@ -1421,12 +1387,24 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                             <span className="font-medium text-gray-900">{event.category}</span>
                                                         </div>
                                                     )}
+
+                                                    {event.is_paid_event && event.event_price && (
+                                                        <div className="flex items-center text-sm text-gray-600">
+                                                            <svg className="w-5 h-5 mr-3 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                            </svg>
+                                                            <span className="font-medium text-gray-900">
+                                                                {formatPrice(event.event_price)}
+                                                            </span>
+                                                            <span className="text-gray-500 ml-1">per person</span>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Event Description */}
-                                                <p className="text-gray-700 text-sm leading-relaxed mb-6 line-clamp-3">
+                                                <div className="text-gray-700 text-sm leading-relaxed mb-6 whitespace-pre-wrap">
                                                     {event.description}
-                                                </p>
+                                                </div>
 
                                                 {/* Event Stats */}
                                                 <div className="flex items-center justify-between mb-6">
