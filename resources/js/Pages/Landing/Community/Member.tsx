@@ -1,7 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
 
 interface PageProps {
     member: {
@@ -124,10 +123,20 @@ export default function Member({ member, challenges, events, pages, contacts, up
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [expandedUpdates, setExpandedUpdates] = useState<Set<number>>(new Set());
+    const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [showCart, setShowCart] = useState(false);
     const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
     const [variantErrors, setVariantErrors] = useState<Record<number, string>>({});
+
+    const menuItems = [
+        { id: 'updates', label: 'Updates', icon: 'M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m10-4H7a2 2 0 00-2 2v0a2 2 0 002 2h10a2 2 0 002-2v0a2 2 0 00-2-2z' },
+        { id: 'profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+        { id: 'products', label: 'Marketplace', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+        { id: 'community', label: 'Resources', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
+        { id: 'challenges', label: 'Challenges', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+        { id: 'events', label: 'Events', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
+    ];
 
     // Helper function to format datetime for display (handles timezone properly)
     const formatDateTimeForDisplay = (dateTimeString: string | null | undefined, options?: Intl.DateTimeFormatOptions) => {
@@ -236,6 +245,13 @@ export default function Member({ member, challenges, events, pages, contacts, up
         };
 
         checkAuthorization();
+
+        // Check for URL parameters to set active section
+        const urlParams = new URLSearchParams(window.location.search);
+        const section = urlParams.get('section');
+        if (section && menuItems.some(item => item.id === section)) {
+            setActiveSection(section);
+        }
     }, [member.id]);
 
     useEffect(() => {
@@ -255,10 +271,10 @@ export default function Member({ member, challenges, events, pages, contacts, up
         setIsSubmitting(true);
         setError('');
 
-        // Check if visitor is in contacts list
+        // Check if visitor is in contacts list - require BOTH email AND phone to match
         const isInContacts = contacts.some(contact => 
-            contact.email.toLowerCase() === visitorInfo.email.toLowerCase() ||
-            (contact.call_number && contact.call_number === visitorInfo.phone)
+            contact.email.toLowerCase() === visitorInfo.email.toLowerCase() &&
+            contact.call_number && contact.call_number === visitorInfo.phone
         );
 
         if (isInContacts) {
@@ -278,7 +294,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
             
             setIsAuthorized(true);
         } else {
-            setError('We could not find your information in our records. Please verify your details or contact the administrator for access.');
+            setError('We could not find your information in our records. Please verify both your email and phone number are correct, or contact the administrator for access.');
         }
         setIsSubmitting(false);
     };
@@ -304,6 +320,23 @@ export default function Member({ member, challenges, events, pages, contacts, up
             }
             return newSet;
         });
+    };
+
+    const expandEventDescription = (eventId: number) => {
+        setExpandedEvents(prev => {
+            const newSet = new Set(prev);
+            newSet.add(eventId);
+            return newSet;
+        });
+    };
+
+    const handleMenuClick = (sectionId: string) => {
+        setActiveSection(sectionId);
+        
+        // Update URL with section parameter
+        const url = new URL(window.location.href);
+        url.searchParams.set('section', sectionId);
+        window.history.pushState({}, '', url.toString());
     };
 
     // Helper function to format price
@@ -456,15 +489,6 @@ export default function Member({ member, challenges, events, pages, contacts, up
             client_identifier: member.identifier || member.id.toString()
         });
     };
-
-    const menuItems = [
-        { id: 'updates', label: 'Updates', icon: 'M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m10-4H7a2 2 0 00-2 2v0a2 2 0 002 2h10a2 2 0 002-2v0a2 2 0 00-2-2z' },
-        { id: 'profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-        { id: 'products', label: 'Marketplace', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-        { id: 'community', label: 'Resources', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
-        { id: 'challenges', label: 'Challenges', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
-        { id: 'events', label: 'Events', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-    ];
 
     const renderContent = () => {
         switch (activeSection) {
@@ -1402,8 +1426,18 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                                 </div>
 
                                                 {/* Event Description */}
-                                                <div className="text-gray-700 text-sm leading-relaxed mb-6 whitespace-pre-wrap">
-                                                    {event.description}
+                                                <div className="text-gray-700 text-sm leading-relaxed mb-6">
+                                                    <div className={`whitespace-pre-wrap ${!expandedEvents.has(event.id) ? 'line-clamp-3' : ''}`}>
+                                                        {event.description}
+                                                    </div>
+                                                    {!expandedEvents.has(event.id) && event.description.length > 150 && (
+                                                        <button 
+                                                            onClick={() => expandEventDescription(event.id)}
+                                                            className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 transition-colors"
+                                                        >
+                                                            See more
+                                                        </button>
+                                                    )}
                                                 </div>
 
                                                 {/* Event Stats */}
@@ -1598,7 +1632,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
                                         {menuItems.map((item) => (
                                             <button
                                                 key={item.id}
-                                                onClick={() => setActiveSection(item.id)}
+                                                onClick={() => handleMenuClick(item.id)}
                                                 className={`flex items-center px-2 sm:px-3 py-1 rounded-md transition-colors text-xs sm:text-sm font-medium whitespace-nowrap ${
                                                     activeSection === item.id
                                                         ? 'bg-white text-blue-600'
