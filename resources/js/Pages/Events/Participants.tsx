@@ -19,6 +19,7 @@ interface Event {
     title: string;
     start_date: string;
     end_date: string;
+    location: string;
     max_participants: number;
     current_participants: number;
     is_paid_event: boolean;
@@ -183,13 +184,13 @@ export default function Participants({ auth, event, participants }: Props) {
     const getPaymentStatusBadge = (status: string) => {
         switch (status) {
             case 'paid':
-                return <Badge className="bg-green-100 text-green-800 border-green-200">Paid</Badge>;
+                return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700">Paid</Badge>;
             case 'pending':
-                return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Pending</Badge>;
+                return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700">Pending</Badge>;
             case 'cancelled':
-                return <Badge className="bg-red-100 text-red-800 border-red-200">Cancelled</Badge>;
+                return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700">Cancelled</Badge>;
             default:
-                return <Badge variant="secondary">Unknown</Badge>;
+                return <Badge variant="secondary" className="dark:bg-gray-700 dark:text-gray-300">Unknown</Badge>;
         }
     };
 
@@ -200,472 +201,364 @@ export default function Participants({ auth, event, participants }: Props) {
     };
 
     const exportToCSV = () => {
-        // Define CSV headers
-        const headers = [
-            'Name',
-            'Email',
-            'Phone',
-            'Notes',
-            'Check-in Status',
-            'Registration Date'
-        ];
+        const headers = ['Name', 'Email', 'Phone', 'Notes', 'Checked In', 'Payment Status', 'Amount Paid', 'Payment Date', 'Payment Method', 'Transaction ID', 'Registration Date'];
+        const csvData = participants.map(p => [
+            p.name,
+            p.email,
+            p.phone || '',
+            p.notes || '',
+            p.checked_in ? 'Yes' : 'No',
+            p.payment_status,
+            p.amount_paid || '',
+            p.payment_date ? format(new Date(p.payment_date), 'yyyy-MM-dd HH:mm') : '',
+            p.payment_method || '',
+            p.transaction_id || '',
+            format(new Date(p.created_at), 'yyyy-MM-dd HH:mm')
+        ]);
 
-        // Add payment-related headers for paid events
-        if (event.is_paid_event) {
-            headers.push('Payment Status', 'Amount Paid', 'Payment Method', 'Transaction ID', 'Payment Notes', 'Payment Date');
-        }
-
-        // Convert participants data to CSV rows
-        const csvRows = [headers.join(',')];
-
-        filteredParticipants.forEach(participant => {
-            const row = [
-                `"${participant.name}"`,
-                `"${participant.email}"`,
-                `"${participant.phone || ''}"`,
-                `"${participant.notes || ''}"`,
-                `"${participant.checked_in ? 'Checked In' : 'Not Checked In'}"`,
-                `"${format(new Date(participant.created_at), 'MMM d, yyyy')}"`
-            ];
-
-            // Add payment data for paid events
-            if (event.is_paid_event) {
-                row.push(
-                    `"${participant.payment_status}"`,
-                    `"${participant.amount_paid ? formatAmount(participant.amount_paid, event.currency) : ''}"`,
-                    `"${participant.payment_method || ''}"`,
-                    `"${participant.transaction_id || ''}"`,
-                    `"${participant.payment_notes || ''}"`,
-                    `"${participant.payment_date ? format(new Date(participant.payment_date), 'MMM d, yyyy') : ''}"`
-                );
-            }
-
-            csvRows.push(row.join(','));
-        });
-
-        // Create and download CSV file
-        const csvContent = csvRows.join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_participants_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            toast.success('Participants data exported successfully!');
-        } else {
-            toast.error('Export not supported in this browser');
-        }
+        const csvContent = [headers, ...csvData].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `event-${event.id}-participants-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Participants exported successfully');
     };
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Event Participants</h2>}
+            auth={auth}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Event Participants</h2>}
         >
-            <Head title="Event Participants" />
+            <Head title={`Participants - ${event.title}`} />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    {/* Event Info Header */}
-                    <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50">
-                        <CardContent className="p-6">
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-800 mb-2">{event.title}</h1>
-                                    <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                        <div className="flex items-center space-x-1">
-                                            <Calendar className="w-4 h-4" />
-                                            <span>{format(new Date(event.start_date), 'MMM d, yyyy')}</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                            <Users className="w-4 h-4" />
-                                            <span>{event.current_participants} / {event.max_participants || '∞'} participants</span>
-                                        </div>
-                                        {event.is_paid_event && (
-                                            <div className="flex items-center space-x-1">
-                                                <CreditCard className="w-4 h-4" />
-                                                <span>{event.currency} {event.event_price}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Badge variant="outline" className="text-sm">
-                                        {filteredParticipants.length} of {participants.length} shown
-                                    </Badge>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={exportToCSV}
-                                        className="flex items-center space-x-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        <span>Export CSV</span>
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Registration Form */}
-                    <Card className="mb-8 border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
-                            <CardTitle className="flex items-center text-lg">
-                                <UserPlus className="w-5 h-5 mr-2 text-green-600" />
-                                Register New Participant
-                            </CardTitle>
+                    {/* Event Info Card */}
+                    <Card className="mb-8 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        <CardHeader>
+                            <CardTitle className="text-gray-900 dark:text-gray-100">{event.title}</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Name *</Label>
-                                        <Input
-                                            id="name"
-                                            value={formData.name}
-                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            required
-                                            className="h-11"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email *</Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                            required
-                                            className="h-11"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone">Phone</Label>
-                                        <Input
-                                            id="phone"
-                                            value={formData.phone}
-                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                            className="h-11"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="notes">Notes</Label>
-                                        <Textarea
-                                            id="notes"
-                                            value={formData.notes}
-                                            onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                                            className="h-11 resize-none"
-                                        />
-                                    </div>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>{format(new Date(event.start_date), 'MMM d, yyyy')}</span>
                                 </div>
-
-                                <div className="flex justify-end">
-                                    <Button type="submit" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                                        Register Participant
-                                    </Button>
+                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{event.location}</span>
                                 </div>
-                            </form>
-                        </CardContent>
-                    </Card>
-
-                    {/* Filters Section */}
-                    <Card className="mb-8 border-0 shadow-md">
-                        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center text-lg">
-                                    <Filter className="w-5 h-5 mr-2 text-blue-600" />
-                                    Filters & Search
-                                </CardTitle>
-                                <div className="flex items-center space-x-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={exportToCSV}
-                                        className="flex items-center space-x-1 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-700 hover:from-green-100 hover:to-emerald-100"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        <span>Export</span>
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={clearFilters}
-                                        className="flex items-center space-x-1"
-                                    >
-                                        <XCircle className="w-4 h-4" />
-                                        <span>Clear All</span>
-                                    </Button>
+                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                    <Users className="w-4 h-4" />
+                                    <span>{event.current_participants}/{event.max_participants || '∞'} participants</span>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                {/* Search Filter */}
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Search Participants</Label>
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                        <Input
-                                            placeholder="Name, email, phone..."
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-10 h-11"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Payment Status Filter */}
                                 {event.is_paid_event && (
-                                    <div className="space-y-2">
-                                        <Label className="text-sm font-medium">Payment Status</Label>
-                                        <Select
-                                            value={paymentStatusFilter}
-                                            onValueChange={setPaymentStatusFilter}
-                                        >
-                                            <SelectTrigger className="h-11">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">All ({filterCounts.total})</SelectItem>
-                                                <SelectItem value="paid">Paid ({filterCounts.paid})</SelectItem>
-                                                <SelectItem value="pending">Pending ({filterCounts.pending})</SelectItem>
-                                                <SelectItem value="cancelled">Cancelled ({filterCounts.cancelled})</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                        <CreditCard className="w-4 h-4" />
+                                        <span>{formatAmount(event.event_price, event.currency)}</span>
                                     </div>
                                 )}
-
-                                {/* Check-in Status Filter */}
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Check-in Status</Label>
-                                    <Select
-                                        value={checkInFilter}
-                                        onValueChange={setCheckInFilter}
-                                    >
-                                        <SelectTrigger className="h-11">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All ({filterCounts.total})</SelectItem>
-                                            <SelectItem value="checked_in">Checked In ({filterCounts.checkedIn})</SelectItem>
-                                            <SelectItem value="not_checked_in">Not Checked In ({filterCounts.notCheckedIn})</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Quick Stats */}
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Quick Stats</Label>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
-                                            <div className="flex items-center space-x-2">
-                                                <CheckCircle className="w-4 h-4 text-green-600" />
-                                                <span className="text-sm font-medium">Checked In</span>
-                                            </div>
-                                            <Badge variant="outline" className="bg-green-100 text-green-800">
-                                                {filterCounts.checkedIn}
-                                            </Badge>
-                                        </div>
-                                        {event.is_paid_event && (
-                                            <div className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
-                                                <div className="flex items-center space-x-2">
-                                                    <Clock className="w-4 h-4 text-yellow-600" />
-                                                    <span className="text-sm font-medium">Pending Payment</span>
-                                                </div>
-                                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-                                                    {filterCounts.pending}
-                                                </Badge>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Participants Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {filteredParticipants.map((participant) => (
-                            <Card key={participant.id} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-md">
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        {/* Main Content */}
+                        <div className="lg:col-span-3 space-y-6">
+                            {/* Filters and Search */}
+                            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <CardHeader>
+                                    <CardTitle className="text-gray-900 dark:text-gray-100">Filters & Search</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex flex-col sm:flex-row gap-4">
                                         <div className="flex-1">
-                                            <CardTitle className="text-lg font-semibold text-gray-800 mb-2">
-                                                {participant.name}
-                                            </CardTitle>
-                                            <div className="flex items-center space-x-2 mb-2">
-                                                {participant.checked_in ? (
-                                                    <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center space-x-1">
-                                                        <UserCheck className="w-3 h-3" />
-                                                        <span>Checked In</span>
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="secondary" className="flex items-center space-x-1">
-                                                        <UserX className="w-3 h-3" />
-                                                        <span>Not Checked In</span>
-                                                    </Badge>
-                                                )}
-                                                {event.is_paid_event && getPaymentStatusBadge(participant.payment_status)}
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
+                                                <Input
+                                                    placeholder="Search participants..."
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="pl-10 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                />
                                             </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                                                <SelectTrigger className="w-40 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                                    <SelectValue placeholder="Payment Status" />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                                    <SelectItem value="all">All Status</SelectItem>
+                                                    <SelectItem value="paid">Paid</SelectItem>
+                                                    <SelectItem value="pending">Pending</SelectItem>
+                                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Select value={checkInFilter} onValueChange={setCheckInFilter}>
+                                                <SelectTrigger className="w-40 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                                    <SelectValue placeholder="Check-in Status" />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                                    <SelectItem value="all">All Status</SelectItem>
+                                                    <SelectItem value="checked_in">Checked In</SelectItem>
+                                                    <SelectItem value="not_checked_in">Not Checked In</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Button
+                                                variant="outline"
+                                                onClick={clearFilters}
+                                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                            >
+                                                <Filter className="w-4 h-4" />
+                                            </Button>
                                         </div>
                                     </div>
-                                </CardHeader>
-                                
-                                <CardContent className="pt-0">
-                                    <div className="space-y-3">
-                                        {/* Contact Information */}
-                                        <div className="space-y-2">
-                                            <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                                <Mail className="w-4 h-4" />
-                                                <span className="truncate">{participant.email}</span>
-                                            </div>
-                                            {participant.phone && (
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                                    <Phone className="w-4 h-4" />
-                                                    <span>{participant.phone}</span>
-                                                </div>
-                                            )}
+
+                                    {/* Filter Stats */}
+                                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
+                                        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <div className="font-semibold text-gray-900 dark:text-gray-100">{filterCounts.total}</div>
+                                            <div className="text-gray-600 dark:text-gray-400">Total</div>
                                         </div>
-
-                                        {/* Payment Information */}
-                                        {event.is_paid_event && (
-                                            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-medium text-gray-700">Amount Paid:</span>
-                                                    <span className="text-sm font-semibold">
-                                                        {participant.amount_paid ? formatAmount(participant.amount_paid, event.currency) : '-'}
-                                                    </span>
-                                                </div>
-                                                {participant.payment_method && (
-                                                    <div className="text-xs text-gray-500">
-                                                        Method: {participant.payment_method}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Notes */}
-                                        {participant.notes && (
-                                            <div className="p-3 bg-blue-50 rounded-lg">
-                                                <div className="text-sm text-gray-700">
-                                                    <span className="font-medium">Notes:</span> {participant.notes}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Registration Date */}
-                                        <div className="flex items-center space-x-2 text-xs text-gray-500">
-                                            <Calendar className="w-3 h-3" />
-                                            <span>Registered {format(new Date(participant.created_at), 'MMM d, yyyy')}</span>
+                                        <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                            <div className="font-semibold text-green-700 dark:text-green-300">{filterCounts.paid}</div>
+                                            <div className="text-green-600 dark:text-green-400">Paid</div>
                                         </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                            <div className="flex items-center space-x-2">
-                                                {event.is_paid_event && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => openPaymentModal(participant)}
-                                                        className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
-                                                    >
-                                                        <CreditCard className="w-4 h-4" />
-                                                        <span>Payment</span>
-                                                    </Button>
-                                                )}
-                                                {!participant.checked_in && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleCheckIn(participant.id)}
-                                                        className="flex items-center space-x-1 text-green-600 hover:text-green-700"
-                                                    >
-                                                        <UserCheck className="w-4 h-4" />
-                                                        <span>Check In</span>
-                                                    </Button>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center space-x-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleUnregister(participant.id)}
-                                                    className="text-red-600 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </div>
+                                        <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                                            <div className="font-semibold text-yellow-700 dark:text-yellow-300">{filterCounts.pending}</div>
+                                            <div className="text-yellow-600 dark:text-yellow-400">Pending</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                                            <div className="font-semibold text-red-700 dark:text-red-300">{filterCounts.cancelled}</div>
+                                            <div className="text-red-600 dark:text-red-400">Cancelled</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                            <div className="font-semibold text-blue-700 dark:text-blue-300">{filterCounts.checkedIn}</div>
+                                            <div className="text-blue-600 dark:text-blue-400">Checked In</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                            <div className="font-semibold text-gray-700 dark:text-gray-300">{filterCounts.notCheckedIn}</div>
+                                            <div className="text-gray-600 dark:text-gray-400">Not Checked In</div>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))}
-                    </div>
 
-                    {/* Empty State */}
-                    {filteredParticipants.length === 0 && (
-                        <Card className="border-0 shadow-md">
-                            <CardContent className="text-center py-12">
-                                <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No participants found</h3>
-                                <p className="text-gray-500 mb-6">
-                                    {searchQuery || paymentStatusFilter !== 'all' || checkInFilter !== 'all' 
-                                        ? 'Try adjusting your filters to see more results.' 
-                                        : 'No participants have registered for this event yet.'}
-                                </p>
-                                {!searchQuery && paymentStatusFilter === 'all' && checkInFilter === 'all' && (
-                                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                                        <UserPlus className="w-4 h-4 mr-2" />
-                                        Register First Participant
+                            {/* Participants List */}
+                            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <CardTitle className="text-gray-900 dark:text-gray-100">Participants ({filteredParticipants.length})</CardTitle>
+                                    <Button
+                                        variant="outline"
+                                        onClick={exportToCSV}
+                                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Export CSV
                                     </Button>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {filteredParticipants.map((participant) => (
+                                            <div
+                                                key={participant.id}
+                                                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center space-x-3 mb-2">
+                                                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">{participant.name}</h3>
+                                                            {participant.checked_in ? (
+                                                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                                                    Checked In
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                                    <Clock className="w-3 h-3 mr-1" />
+                                                                    Not Checked In
+                                                                </Badge>
+                                                            )}
+                                                            {getPaymentStatusBadge(participant.payment_status)}
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                                            <div className="flex items-center space-x-2">
+                                                                <Mail className="w-4 h-4" />
+                                                                <span>{participant.email}</span>
+                                                            </div>
+                                                            {participant.phone && (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <Phone className="w-4 h-4" />
+                                                                    <span>{participant.phone}</span>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex items-center space-x-2">
+                                                                <Calendar className="w-4 h-4" />
+                                                                <span>Registered {format(new Date(participant.created_at), 'MMM d, yyyy')}</span>
+                                                            </div>
+                                                        </div>
+                                                        {participant.notes && (
+                                                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                                                <strong>Notes:</strong> {participant.notes}
+                                                            </div>
+                                                        )}
+                                                        {participant.payment_status === 'paid' && (
+                                                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                                                <strong>Payment:</strong> {formatAmount(participant.amount_paid, event.currency)} 
+                                                                {participant.payment_date && ` on ${format(new Date(participant.payment_date), 'MMM d, yyyy')}`}
+                                                                {participant.payment_method && ` via ${participant.payment_method}`}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center space-x-2 ml-4">
+                                                        {!participant.checked_in && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleCheckIn(participant.id)}
+                                                                className="border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                                            >
+                                                                <UserCheck className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => openPaymentModal(participant)}
+                                                            className="border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                                        >
+                                                            <CreditCard className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleUnregister(participant.id)}
+                                                            className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {filteredParticipants.length === 0 && (
+                                            <div className="text-center py-8">
+                                                <Users className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No participants found</h3>
+                                                <p className="text-gray-500 dark:text-gray-400">
+                                                    {searchQuery || paymentStatusFilter !== 'all' || checkInFilter !== 'all' 
+                                                        ? 'Try adjusting your filters.' 
+                                                        : 'No participants have registered for this event yet.'}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Sidebar - Add Participant Form */}
+                        <div className="lg:col-span-1">
+                            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 sticky top-6">
+                                <CardHeader>
+                                    <CardTitle className="text-gray-900 dark:text-gray-100">Add Participant</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <form onSubmit={handleSubmit} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">Full Name</Label>
+                                            <Input
+                                                id="name"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                required
+                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                placeholder="Enter full name"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email Address</Label>
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                required
+                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                placeholder="Enter email address"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">Phone Number</Label>
+                                            <Input
+                                                id="phone"
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                placeholder="Enter phone number"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300">Notes</Label>
+                                            <Textarea
+                                                id="notes"
+                                                value={formData.notes}
+                                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                placeholder="Any additional notes"
+                                                rows={3}
+                                            />
+                                        </div>
+                                        <Button
+                                            type="submit"
+                                            className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <UserPlus className="w-4 h-4 mr-2 relative z-10" />
+                                            <span className="relative z-10 font-semibold">Add Participant</span>
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Payment Modal */}
             {paymentModal.isOpen && paymentModal.participant && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center">
-                            <CreditCard className="w-5 h-5 mr-2 text-green-600" />
-                            Update Payment - {paymentModal.participant.name}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                            Update Payment Status
                         </h3>
-                        
                         <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="payment_status">Payment Status</Label>
-                                <Select
-                                    value={paymentModal.paymentData.payment_status}
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 dark:text-gray-300">Payment Status</Label>
+                                <Select 
+                                    value={paymentModal.paymentData.payment_status} 
                                     onValueChange={(value) => setPaymentModal({
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, payment_status: value }
                                     })}
                                 >
-                                    <SelectTrigger className="h-11">
+                                    <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="paid">Paid</SelectItem>
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
-
-                            <div>
-                                <Label htmlFor="amount_paid">Amount Paid</Label>
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 dark:text-gray-300">Amount Paid</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -674,60 +567,61 @@ export default function Participants({ auth, event, participants }: Props) {
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, amount_paid: parseFloat(e.target.value) || 0 }
                                     })}
-                                    placeholder="0.00"
-                                    className="h-11"
+                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
                                 />
                             </div>
-
-                            <div>
-                                <Label htmlFor="payment_method">Payment Method</Label>
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 dark:text-gray-300">Payment Method</Label>
                                 <Input
                                     value={paymentModal.paymentData.payment_method}
                                     onChange={(e) => setPaymentModal({
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, payment_method: e.target.value }
                                     })}
-                                    placeholder="e.g., Bank Transfer, Cash, Online Payment"
-                                    className="h-11"
+                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    placeholder="e.g., Cash, Credit Card, Bank Transfer"
                                 />
                             </div>
-
-                            <div>
-                                <Label htmlFor="transaction_id">Transaction ID</Label>
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 dark:text-gray-300">Transaction ID</Label>
                                 <Input
                                     value={paymentModal.paymentData.transaction_id}
                                     onChange={(e) => setPaymentModal({
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, transaction_id: e.target.value }
                                     })}
-                                    placeholder="Transaction reference number"
-                                    className="h-11"
+                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    placeholder="Optional transaction reference"
                                 />
                             </div>
-
-                            <div>
-                                <Label htmlFor="payment_notes">Payment Notes</Label>
+                            <div className="space-y-2">
+                                <Label className="text-gray-700 dark:text-gray-300">Payment Notes</Label>
                                 <Textarea
                                     value={paymentModal.paymentData.payment_notes}
                                     onChange={(e) => setPaymentModal({
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, payment_notes: e.target.value }
                                     })}
-                                    placeholder="Additional payment notes..."
-                                    className="min-h-[80px] resize-none"
+                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    placeholder="Any additional payment notes"
+                                    rows={3}
                                 />
                             </div>
                         </div>
-
                         <div className="flex justify-end space-x-2 mt-6">
                             <Button
                                 variant="outline"
                                 onClick={() => setPaymentModal({ isOpen: false, participant: null, paymentData: { payment_status: 'pending', amount_paid: 0, payment_method: '', transaction_id: '', payment_notes: '' } })}
+                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={handlePaymentUpdate} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                                Update Payment
+                            <Button
+                                onClick={handlePaymentUpdate}
+                                className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                            >
+                                <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <span className="relative z-10 font-semibold">Update Payment</span>
                             </Button>
                         </div>
                     </div>

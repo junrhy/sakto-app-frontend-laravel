@@ -91,35 +91,35 @@ export default function Index({ auth, events }: Props) {
         const endDate = new Date(event.end_date);
         
         if (startDate > now) {
-            return { status: 'upcoming', color: 'bg-blue-100 text-blue-800' };
+            return { status: 'upcoming', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' };
         } else if (endDate < now) {
-            return { status: 'past', color: 'bg-gray-100 text-gray-800' };
+            return { status: 'past', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
         } else {
-            return { status: 'ongoing', color: 'bg-green-100 text-green-800' };
+            return { status: 'ongoing', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' };
         }
     };
 
     return (
         <AuthenticatedLayout
             auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Events</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Events</h2>}
         >
             <Head title="Events" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header Section */}
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-8 border border-gray-200 dark:border-gray-700">
                         <div className="p-6">
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
                                         <Input
                                             placeholder="Search events..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-10 w-80"
+                                            className="pl-10 w-80 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                         />
                                     </div>
                                     {selectedEvents.length > 0 && (
@@ -135,15 +135,16 @@ export default function Index({ auth, events }: Props) {
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <Link href="/events/calendar">
-                                        <Button variant="outline" className="flex items-center space-x-2">
+                                        <Button variant="outline" className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <Calendar className="w-4 h-4" />
                                             <span>Calendar View</span>
                                         </Button>
                                     </Link>
                                     <Link href="/events/create">
-                                        <Button className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
-                                            <Plus className="w-4 h-4" />
-                                            <span>New Event</span>
+                                        <Button className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <Plus className="w-4 h-4 mr-2 relative z-10" />
+                                            <span className="relative z-10 font-semibold">New Event</span>
                                         </Button>
                                     </Link>
                                 </div>
@@ -156,16 +157,16 @@ export default function Index({ auth, events }: Props) {
                         {filteredEvents.map((event) => {
                             const eventStatus = getEventStatus(event);
                             return (
-                                <Card key={event.id} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-md">
+                                <Card key={event.id} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-gray-200 dark:hover:shadow-gray-900">
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <CardTitle className="text-lg font-semibold text-gray-800 line-clamp-2 mb-2">
+                                                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 mb-2">
                                                     {event.title}
                                                 </CardTitle>
                                                 <div className="flex items-center space-x-2 mb-2">
-                                                    <Tag className="w-4 h-4 text-gray-500" />
-                                                    <Badge variant="outline" className="text-xs">
+                                                    <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                                    <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
                                                         {event.category}
                                                     </Badge>
                                                 </div>
@@ -173,7 +174,7 @@ export default function Index({ auth, events }: Props) {
                                             <div className="flex items-center space-x-2">
                                                 <input
                                                     type="checkbox"
-                                                    className="rounded border-gray-300"
+                                                    className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                                     checked={selectedEvents.includes(event.id)}
                                                     onChange={(e) => {
                                                         if (e.target.checked) {
@@ -201,22 +202,22 @@ export default function Index({ auth, events }: Props) {
 
                                         {/* Event Details */}
                                         <div className="space-y-3">
-                                            <p className="text-gray-600 text-sm line-clamp-2">
+                                            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
                                                 {event.description}
                                             </p>
 
                                             <div className="space-y-2">
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                                                     <Calendar className="w-4 h-4" />
                                                     <span>{format(new Date(event.start_date), 'MMM d, yyyy h:mm a')}</span>
                                                 </div>
                                                 
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                                                     <MapPin className="w-4 h-4" />
                                                     <span className="line-clamp-1">{event.location}</span>
                                                 </div>
 
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                                                     <Users className="w-4 h-4" />
                                                     <span>
                                                         {event.current_participants}
@@ -224,7 +225,7 @@ export default function Index({ auth, events }: Props) {
                                                     </span>
                                                 </div>
 
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                                                     <Clock className="w-4 h-4" />
                                                     <span>Registration until {format(new Date(event.registration_deadline), 'MMM d, yyyy')}</span>
                                                 </div>
@@ -237,12 +238,12 @@ export default function Index({ auth, events }: Props) {
                                                         {eventStatus.status.charAt(0).toUpperCase() + eventStatus.status.slice(1)}
                                                     </Badge>
                                                     {event.is_paid_event ? (
-                                                        <Badge className="bg-green-100 text-green-800 flex items-center space-x-1">
+                                                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 flex items-center space-x-1">
                                                             <CreditCard className="w-3 h-3" />
                                                             <span>{formatEventPrice(event.event_price, event.currency)}</span>
                                                         </Badge>
                                                     ) : (
-                                                        <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+                                                        <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                                                             Free
                                                         </Badge>
                                                     )}
@@ -250,16 +251,16 @@ export default function Index({ auth, events }: Props) {
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/events/${event.id}/public-register`}>
-                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                                             <UserPlus className="w-4 h-4" />
                                                             <span>Register</span>
                                                         </Button>
                                                     </Link>
                                                     <Link href={`/events/${event.id}/participants`}>
-                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                                             <Users className="w-4 h-4" />
                                                             <span>View</span>
                                                         </Button>
@@ -267,7 +268,7 @@ export default function Index({ auth, events }: Props) {
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/events/${event.id}/edit`}>
-                                                        <Button variant="ghost" size="sm">
+                                                        <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                                             Edit
                                                         </Button>
                                                     </Link>
@@ -275,7 +276,7 @@ export default function Index({ auth, events }: Props) {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => handleDelete(event.id)}
-                                                        className="text-red-600 hover:text-red-700"
+                                                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </Button>
@@ -292,16 +293,17 @@ export default function Index({ auth, events }: Props) {
                     {filteredEvents.length === 0 && (
                         <div className="text-center py-12">
                             <div className="max-w-md mx-auto">
-                                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
-                                <p className="text-gray-500 mb-6">
+                                <Calendar className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No events found</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mb-6">
                                     {searchQuery ? 'Try adjusting your search terms.' : 'Get started by creating your first event.'}
                                 </p>
                                 {!searchQuery && (
                                     <Link href="/events/create">
-                                        <Button className="flex items-center space-x-2 mx-auto">
-                                            <Plus className="w-4 h-4" />
-                                            <span>Create Event</span>
+                                        <Button className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                            <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            <Plus className="w-4 h-4 mr-2 relative z-10" />
+                                            <span className="relative z-10 font-semibold">Create Event</span>
                                         </Button>
                                     </Link>
                                 )}
