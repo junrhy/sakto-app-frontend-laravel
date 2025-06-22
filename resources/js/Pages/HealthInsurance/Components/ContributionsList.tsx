@@ -22,6 +22,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 interface Member {
     id: string;
     name: string;
+    contribution_frequency: string;
 }
 
 interface Contribution {
@@ -96,46 +97,90 @@ export default function ContributionsList({ contributions, members, appCurrency 
     };
 
     const sortedContributions = [...contributions].sort((a, b) => {
-        const aValue = a[sortField];
-        const bValue = b[sortField];
+        try {
+            const aValue = a[sortField];
+            const bValue = b[sortField];
 
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-            return sortDirection === 'asc'
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                return sortDirection === 'asc'
+                    ? aValue.localeCompare(bValue)
+                    : bValue.localeCompare(aValue);
+            }
+
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+
+            // Handle mixed types or invalid values
+            const aNum = Number(aValue) || 0;
+            const bNum = Number(bValue) || 0;
+            return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+        } catch (error) {
+            console.error('Error sorting contributions:', error);
+            return 0;
         }
-
-        if (typeof aValue === 'number' && typeof bValue === 'number') {
-            return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
-        }
-
-        return 0;
     });
 
     const filteredContributions = sortedContributions.filter(contribution => {
-        const searchLower = searchQuery.toLowerCase();
-        const memberName = getMemberName(contribution.member_id)?.toLowerCase() || '';
-        const paymentMethod = contribution.payment_method?.toLowerCase() || '';
-        const referenceNumber = contribution.reference_number?.toLowerCase() || '';
-        const paymentDate = new Date(contribution.payment_date);
-        
-        const matchesSearch = (
-            memberName.includes(searchLower) ||
-            paymentMethod.includes(searchLower) ||
-            referenceNumber.includes(searchLower)
-        );
+        try {
+            const searchLower = searchQuery.toLowerCase();
+            const memberName = getMemberName(contribution.member_id)?.toLowerCase() || '';
+            const paymentMethod = contribution.payment_method?.toLowerCase() || '';
+            const referenceNumber = contribution.reference_number?.toLowerCase() || '';
+            
+            const paymentDate = new Date(contribution.payment_date);
+            if (isNaN(paymentDate.getTime())) {
+                console.warn('Invalid payment date:', contribution.payment_date);
+                return false;
+            }
+            
+            const matchesSearch = (
+                memberName.includes(searchLower) ||
+                paymentMethod.includes(searchLower) ||
+                referenceNumber.includes(searchLower)
+            );
 
-        const matchesDateRange = (!startDate || paymentDate >= startDate) && 
-                                (!endDate || paymentDate <= endDate);
+            const matchesDateRange = (!startDate || paymentDate >= startDate) && 
+                                    (!endDate || paymentDate <= endDate);
 
-        return matchesSearch && matchesDateRange;
+            return matchesSearch && matchesDateRange;
+        } catch (error) {
+            console.error('Error filtering contribution:', error, contribution);
+            return false;
+        }
     });
 
     const renderCalendarView = () => {
         // Get all months from the earliest contribution date to current month
-        const earliestContributionDate = contributions.length > 0 
-            ? new Date(Math.min(...contributions.map(c => new Date(c.payment_date).getTime())))
-            : new Date();
+        let earliestContributionDate: Date;
+        
+        try {
+            if (contributions.length > 0) {
+                const validContributions = contributions.filter(c => {
+                    const date = new Date(c.payment_date);
+                    return !isNaN(date.getTime());
+                });
+                
+                if (validContributions.length > 0) {
+                    const timestamps = validContributions.map(c => new Date(c.payment_date).getTime());
+                    earliestContributionDate = new Date(Math.min(...timestamps));
+                } else {
+                    // Fallback to 1 year ago if no valid dates
+                    earliestContributionDate = new Date();
+                    earliestContributionDate.setFullYear(earliestContributionDate.getFullYear() - 1);
+                }
+            } else {
+                // Fallback to 1 year ago if no contributions
+                earliestContributionDate = new Date();
+                earliestContributionDate.setFullYear(earliestContributionDate.getFullYear() - 1);
+            }
+        } catch (error) {
+            console.error('Error calculating earliest contribution date:', error);
+            // Fallback to 1 year ago
+            earliestContributionDate = new Date();
+            earliestContributionDate.setFullYear(earliestContributionDate.getFullYear() - 1);
+        }
+
         const months = eachMonthOfInterval({
             start: startOfMonth(earliestContributionDate),
             end: endOfMonth(new Date())
@@ -149,14 +194,30 @@ export default function ContributionsList({ contributions, members, appCurrency 
         ).sort();
 
         const renderMonthlyTable = () => {
+            // Filter members to only show those with monthly or quarterly frequency
+            const monthlyMembers = members.filter(member => 
+                member.contribution_frequency.toLowerCase() === 'monthly' || 
+                member.contribution_frequency.toLowerCase() === 'quarterly'
+            );
+
+            if (monthlyMembers.length === 0) {
+                return (
+                    <div className="mb-8 p-4">
+                        <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Monthly/Quarterly Contributions</h3>
+                        <p className="text-gray-500 dark:text-gray-400">No members with monthly or quarterly contribution frequency found.</p>
+                    </div>
+                );
+            }
+
             return (
                 <div className="mb-8 p-4">
-                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Monthly Contributions</h3>
+                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Monthly/Quarterly Contributions</h3>
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow className="dark:border-gray-700">
                                     <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Member Name</TableHead>
+                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Frequency</TableHead>
                                     {months.map(month => (
                                         <TableHead key={month.toISOString()} className="min-w-[120px] dark:text-gray-300">
                                             {format(month, 'MMM yyyy')}
@@ -165,20 +226,39 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {members.map((member) => (
+                                {monthlyMembers.map((member) => (
                                     <TableRow key={member.id} className="dark:border-gray-700">
                                         <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-200">
                                             {member.name}
                                         </TableCell>
+                                        <TableCell className="capitalize sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">
+                                            {member.contribution_frequency}
+                                        </TableCell>
                                         {months.map(month => {
                                             const monthContributions = contributions.filter(contribution => {
-                                                const contributionDate = new Date(contribution.payment_date);
-                                                return (
-                                                    contribution.member_id === member.id &&
-                                                    contributionDate.getMonth() === month.getMonth() &&
-                                                    contributionDate.getFullYear() === month.getFullYear()
-                                                );
+                                                try {
+                                                    const contributionDate = new Date(contribution.payment_date);
+                                                    if (isNaN(contributionDate.getTime())) return false;
+                                                    
+                                                    return (
+                                                        contribution.member_id === member.id &&
+                                                        contributionDate.getMonth() === month.getMonth() &&
+                                                        contributionDate.getFullYear() === month.getFullYear()
+                                                    );
+                                                } catch (error) {
+                                                    console.error('Error processing contribution date:', error);
+                                                    return false;
+                                                }
                                             });
+                                            
+                                            const totalAmount = monthContributions.reduce((sum, c) => {
+                                                try {
+                                                    return sum + Number(c.amount || 0);
+                                                } catch (error) {
+                                                    console.error('Error calculating amount:', error);
+                                                    return sum;
+                                                }
+                                            }, 0);
                                             
                                             return (
                                                 <TableCell 
@@ -189,7 +269,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                                         <div className="space-y-1">
                                                             <div className="text-green-600 dark:text-green-400">✓</div>
                                                             <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                                {appCurrency.symbol}{monthContributions.reduce((sum, c) => sum + Number(c.amount), 0).toFixed(2)}
+                                                                {appCurrency.symbol}{totalAmount.toFixed(2)}
                                                             </div>
                                                             <div className="text-xs text-gray-500 dark:text-gray-400">
                                                                 {monthContributions.length} payment{monthContributions.length > 1 ? 's' : ''}
@@ -211,6 +291,20 @@ export default function ContributionsList({ contributions, members, appCurrency 
         };
 
         const renderAnnualTable = () => {
+            // Filter members to only show those with annual frequency
+            const annualMembers = members.filter(member => 
+                member.contribution_frequency.toLowerCase() === 'annually'
+            );
+
+            if (annualMembers.length === 0) {
+                return (
+                    <div className="mb-8 p-4">
+                        <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Annual Contributions</h3>
+                        <p className="text-gray-500 dark:text-gray-400">No members with annual contribution frequency found.</p>
+                    </div>
+                );
+            }
+
             return (
                 <div className="mb-8 p-4">
                     <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Annual Contributions</h3>
@@ -219,6 +313,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             <TableHeader>
                                 <TableRow className="dark:border-gray-700">
                                     <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Member Name</TableHead>
+                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Frequency</TableHead>
                                     {years.map(year => (
                                         <TableHead key={year} className="min-w-[120px] dark:text-gray-300">
                                             {year}
@@ -227,19 +322,38 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {members.map((member) => (
+                                {annualMembers.map((member) => (
                                     <TableRow key={member.id} className="dark:border-gray-700">
                                         <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-200">
                                             {member.name}
                                         </TableCell>
+                                        <TableCell className="capitalize sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">
+                                            {member.contribution_frequency}
+                                        </TableCell>
                                         {years.map(year => {
                                             const yearContributions = contributions.filter(contribution => {
-                                                const contributionDate = new Date(contribution.payment_date);
-                                                return (
-                                                    contribution.member_id === member.id &&
-                                                    contributionDate.getFullYear() === year
-                                                );
+                                                try {
+                                                    const contributionDate = new Date(contribution.payment_date);
+                                                    if (isNaN(contributionDate.getTime())) return false;
+                                                    
+                                                    return (
+                                                        contribution.member_id === member.id &&
+                                                        contributionDate.getFullYear() === year
+                                                    );
+                                                } catch (error) {
+                                                    console.error('Error processing contribution date:', error);
+                                                    return false;
+                                                }
                                             });
+                                            
+                                            const totalAmount = yearContributions.reduce((sum, c) => {
+                                                try {
+                                                    return sum + Number(c.amount || 0);
+                                                } catch (error) {
+                                                    console.error('Error calculating amount:', error);
+                                                    return sum;
+                                                }
+                                            }, 0);
                                             
                                             return (
                                                 <TableCell 
@@ -250,7 +364,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                                         <div className="space-y-1">
                                                             <div className="text-green-600 dark:text-green-400">✓</div>
                                                             <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                                {appCurrency.symbol}{yearContributions.reduce((sum, c) => sum + Number(c.amount), 0).toFixed(2)}
+                                                                {appCurrency.symbol}{totalAmount.toFixed(2)}
                                                             </div>
                                                             <div className="text-xs text-gray-500 dark:text-gray-400">
                                                                 {yearContributions.length} payment{yearContributions.length > 1 ? 's' : ''}
@@ -408,45 +522,55 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredContributions.map((contribution) => (
-                                <TableRow key={contribution.id} className="dark:border-gray-700">
-                                    <TableCell className="dark:text-gray-300">
-                                        {format(new Date(contribution.payment_date), 'MMM d, yyyy')}
-                                    </TableCell>
-                                    <TableCell className="font-medium dark:text-gray-200">
-                                        {getMemberName(contribution.member_id)}
-                                    </TableCell>
-                                    <TableCell className="dark:text-gray-300">
-                                        {appCurrency.symbol}{Number(contribution.amount).toFixed(2)}
-                                    </TableCell>
-                                    <TableCell className="capitalize dark:text-gray-300">
-                                        {contribution.payment_method.replace('_', ' ')}
-                                    </TableCell>
-                                    <TableCell className="dark:text-gray-300">
-                                        {contribution.reference_number}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleEdit(contribution)}
-                                                className="dark:text-gray-300 dark:hover:text-gray-100"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                                onClick={() => handleDelete(contribution.member_id, contribution.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {filteredContributions.map((contribution) => {
+                                try {
+                                    const paymentDate = new Date(contribution.payment_date);
+                                    const isValidDate = !isNaN(paymentDate.getTime());
+                                    
+                                    return (
+                                        <TableRow key={contribution.id} className="dark:border-gray-700">
+                                            <TableCell className="dark:text-gray-300">
+                                                {isValidDate ? format(paymentDate, 'MMM d, yyyy') : 'Invalid Date'}
+                                            </TableCell>
+                                            <TableCell className="font-medium dark:text-gray-200">
+                                                {getMemberName(contribution.member_id)}
+                                            </TableCell>
+                                            <TableCell className="dark:text-gray-300">
+                                                {appCurrency.symbol}{Number(contribution.amount || 0).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="capitalize dark:text-gray-300">
+                                                {(contribution.payment_method || '').replace('_', ' ')}
+                                            </TableCell>
+                                            <TableCell className="dark:text-gray-300">
+                                                {contribution.reference_number || '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleEdit(contribution)}
+                                                        className="dark:text-gray-300 dark:hover:text-gray-100"
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                        onClick={() => handleDelete(contribution.member_id, contribution.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                } catch (error) {
+                                    console.error('Error rendering contribution row:', error, contribution);
+                                    return null;
+                                }
+                            })}
                         </TableBody>
                     </Table>
                 ) : (
