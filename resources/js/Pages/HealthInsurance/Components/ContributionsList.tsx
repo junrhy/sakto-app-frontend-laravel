@@ -151,47 +151,24 @@ export default function ContributionsList({ contributions, members, appCurrency 
     });
 
     const renderCalendarView = () => {
-        // Get all months from the earliest contribution date to current month
-        let earliestContributionDate: Date;
-        
-        try {
-            if (contributions.length > 0) {
-                const validContributions = contributions.filter(c => {
-                    const date = new Date(c.payment_date);
-                    return !isNaN(date.getTime());
-                });
-                
-                if (validContributions.length > 0) {
-                    const timestamps = validContributions.map(c => new Date(c.payment_date).getTime());
-                    earliestContributionDate = new Date(Math.min(...timestamps));
-                } else {
-                    // Fallback to 1 year ago if no valid dates
-                    earliestContributionDate = new Date();
-                    earliestContributionDate.setFullYear(earliestContributionDate.getFullYear() - 1);
-                }
-            } else {
-                // Fallback to 1 year ago if no contributions
-                earliestContributionDate = new Date();
-                earliestContributionDate.setFullYear(earliestContributionDate.getFullYear() - 1);
-            }
-        } catch (error) {
-            console.error('Error calculating earliest contribution date:', error);
-            // Fallback to 1 year ago
-            earliestContributionDate = new Date();
-            earliestContributionDate.setFullYear(earliestContributionDate.getFullYear() - 1);
-        }
+        // Get all months from 10 years ago to current month
+        const currentDate = new Date();
+        const tenYearsAgo = new Date();
+        tenYearsAgo.setFullYear(currentDate.getFullYear() - 10);
 
         const months = eachMonthOfInterval({
-            start: startOfMonth(earliestContributionDate),
-            end: endOfMonth(new Date())
+            start: startOfMonth(tenYearsAgo),
+            end: endOfMonth(currentDate)
         });
 
-        // Get all years for annual view
-        const years = Array.from(
-            new Set(
-                months.map(month => month.getFullYear())
-            )
-        ).sort();
+        // Get all years for annual view - calculate from 10 years ago to current year
+        const currentYear = new Date().getFullYear();
+        const earliestYear = currentYear - 10; // Default to 10 years ago
+        const years: number[] = [];
+        
+        for (let year = earliestYear; year <= currentYear; year++) {
+            years.push(year);
+        }
 
         const renderMonthlyTable = () => {
             // Filter members to only show those with monthly or quarterly frequency
