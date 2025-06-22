@@ -4,12 +4,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/genealogy';
 import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaSitemap, FaUsers, FaChartPie, FaFileAlt } from 'react-icons/fa';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
+import { useTheme } from '@/Components/ThemeProvider';
 
 export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
-    const [isDarkMode, setIsDarkMode] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isManageRelationshipsModalOpen, setIsManageRelationshipsModalOpen] = useState(false);
@@ -47,11 +47,29 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     }>({});
     const [showDeathDate, setShowDeathDate] = useState(false);
     const [showEditDeathDate, setShowEditDeathDate] = useState(false);
+    const [focusedMemberId, setFocusedMemberId] = useState<number | null>(null);
+    const [newRelationship, setNewRelationship] = useState<{
+        relationship_type: string;
+        to_member_id: string;
+    }>({
+        relationship_type: '',
+        to_member_id: '',
+    });
 
-    const filteredMembers = familyMembers.filter((member: FamilyMember) => 
+    // Use global theme instead of local state
+    const { theme, setTheme } = useTheme();
+    const isDarkMode = theme === 'dark';
+
+    const filteredMembers = familyMembers.filter((member: FamilyMember) =>
         `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Helper to get member by ID
+    const getMemberById = (id: number): FamilyMember | undefined => {
+        return familyMembers.find((member: FamilyMember) => member.id === id);
+    };
+
+    // Helper to get relationship label
     const getRelationshipLabel = (type: RelationshipType): string => {
         const labels: Record<RelationshipType, string> = {
             parent: 'Parent of',
@@ -59,9 +77,10 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
             spouse: 'Spouse of',
             sibling: 'Sibling of'
         };
-        return labels[type];
+        return labels[type] || type;
     };
 
+    // Helper to calculate age
     const calculateAge = (birthDate: string, endDate: string | null): number => {
         const birth = new Date(birthDate);
         const end = endDate ? new Date(endDate) : new Date();
@@ -73,221 +92,101 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         return age;
     };
 
-    const getMemberById = (id: number): FamilyMember | undefined => {
-        return familyMembers.find((member: FamilyMember) => member.id === id);
-    };
-
-    const toggleFullscreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-            setIsFullscreen(true);
-        } else {
-            document.exitFullscreen();
-            setIsFullscreen(false);
-        }
-    };
-
-    const toggleDarkMode = () => {
-        setIsDarkMode(!isDarkMode);
-    };
-
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setNewMember(prev => ({ ...prev, photo: file }));
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreview(reader.result as string);
+    // Export functionality
+    const handleExport = () => {
+        try {
+            console.log('Exporting family data as JSON:', { memberCount: familyMembers.length });
+            
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                familyMembers: familyMembers.map(member => ({
+                    id: member.id,
+                    first_name: member.first_name,
+                    last_name: member.last_name,
+                    birth_date: member.birth_date,
+                    death_date: member.death_date,
+                    gender: member.gender,
+                    notes: member.notes,
+                    relationships: member.relationships
+                }))
             };
-            reader.readAsDataURL(file);
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `family-tree-${new Date().toISOString().split('T')[0]}.json`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            console.log('JSON export completed');
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 
-    const validateForm = (data: {
-        first_name: string;
-        last_name: string;
-        birth_date: string;
-        death_date?: string | null;
-        gender: 'male' | 'female' | 'other';
-        notes: string | null;
-        photo: File | string | null;
-    }) => {
-        const errors: typeof formErrors = {};
-
-        // First Name validation
-        if (!data.first_name.trim()) {
-            errors.first_name = 'First name is required';
-        } else if (data.first_name.length > 255) {
-            errors.first_name = 'First name must be less than 255 characters';
-        }
-
-        // Last Name validation
-        if (!data.last_name.trim()) {
-            errors.last_name = 'Last name is required';
-        } else if (data.last_name.length > 255) {
-            errors.last_name = 'Last name must be less than 255 characters';
-        }
-
-        // Birth Date validation
-        if (!data.birth_date) {
-            errors.birth_date = 'Birth date is required';
-        } else if (new Date(data.birth_date) > new Date()) {
-            errors.birth_date = 'Birth date cannot be in the future';
-        }
-
-        // Death Date validation
-        if (data.death_date) {
-            if (new Date(data.death_date) > new Date()) {
-                errors.death_date = 'Death date cannot be in the future';
-            }
-            if (new Date(data.death_date) < new Date(data.birth_date)) {
-                errors.death_date = 'Death date must be after birth date';
-            }
-        }
-
-        // Photo validation
-        if (data.photo && typeof data.photo !== 'string' && !(data.photo instanceof File)) {
-            errors.photo = 'Invalid photo format';
-        }
-
-        return errors;
-    };
-
-    const handleAddMember = async () => {
-        // Validate form before submission
-        const errors = validateForm(newMember);
-        setFormErrors(errors);
-
-        if (Object.keys(errors).length > 0) {
-            return; // Stop if there are validation errors
-        }
-
-        const formData = new FormData();
-        formData.append('first_name', newMember.first_name);
-        formData.append('last_name', newMember.last_name);
-        formData.append('birth_date', newMember.birth_date);
-        formData.append('death_date', newMember.death_date);
-        formData.append('gender', newMember.gender);
-        formData.append('notes', newMember.notes || '');
-        if (newMember.photo) {
-            formData.append('photo', newMember.photo);
-        }
+    // Import functionality
+    const handleImport = async () => {
+        if (!importFile) return;
 
         try {
-            const response = await fetch('/family-tree/members', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to add family member');
-            }
-
-            const result = await response.json();
+            console.log('Starting import:', { fileName: importFile.name, fileSize: importFile.size });
             
-            // Close modal and reset form
-            setIsAddModalOpen(false);
-            resetNewMember();
-            setFormErrors({});
-
-            // Show success message and refresh page
-            alert('Family member added successfully!');
-            window.location.reload();
-        } catch (error) {
-            console.error('Error adding family member:', error);
-            alert(error instanceof Error ? error.message : 'Failed to add family member. Please try again.');
-        }
-    };
-
-    // Add new relationship management functions
-    const handleAddRelationship = async (fromMemberId: number, toMemberId: number, relationshipType: RelationshipType) => {
-        try {
-            const response = await fetch('/family-tree/relationships', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify({
-                    from_member_id: fromMemberId,
-                    to_member_id: toMemberId,
-                    relationship_type: relationshipType,
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to add relationship');
-            }
-
-            const result = await response.json();
+            const fileContent = await importFile.text();
+            let importData;
             
-            // Update the managing member's relationships
-            if (managingMember) {
-                setManagingMember({
-                    ...managingMember,
-                    relationships: [...managingMember.relationships, result.data]
-                });
+            // Try to parse as JSON
+            try {
+                importData = JSON.parse(fileContent);
+                console.log('Successfully parsed JSON file');
+            } catch (parseError) {
+                throw new Error('Invalid JSON file format');
             }
 
-            alert('Relationship added successfully!');
+            // Validate the imported data structure
+            if (!importData.familyMembers || !Array.isArray(importData.familyMembers)) {
+                throw new Error('Invalid file format: missing or invalid familyMembers array');
+            }
+
+            // Validate each member has required fields
+            const requiredFields = ['id', 'first_name', 'last_name', 'birth_date', 'gender'];
+            const invalidMembers = importData.familyMembers.filter((member: any) => 
+                !requiredFields.every(field => member.hasOwnProperty(field))
+            );
+
+            if (invalidMembers.length > 0) {
+                throw new Error(`Invalid member data: ${invalidMembers.length} members missing required fields`);
+            }
+
+            console.log(`Import validation passed: ${importData.familyMembers.length} members found`);
+
+            // Send data to backend
+            const result = await importFamilyData(importData, importMode);
             
-            // Instead of returning the data, we'll just close the modal and refresh the page
-            setIsManageRelationshipsModalOpen(false);
-            setManagingMember(null);
-            window.location.reload();
+            // Show success message with stats
+            alert(`Import successful!\n\nFound ${importData.familyMembers.length} family members\nExport date: ${importData.exportDate || 'Unknown'}\n\nImport Stats:\n- Created: ${result.stats?.created || 0}\n- Updated: ${result.stats?.updated || 0}\n- Skipped: ${result.stats?.skipped || 0}\n- Relationships: ${result.stats?.relationships_created || 0}`);
+            
+            // Reset import state
+            setIsImporting(false);
+            setIsImportModalOpen(false);
+            setImportFile(null);
+            
+            // Refresh the page to show imported data
+            refreshData();
+            
         } catch (error) {
-            console.error('Error adding relationship:', error);
-            alert('Failed to add relationship. Please try again.');
+            console.error('Import failed:', error);
+            alert(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setIsImporting(false);
         }
     };
 
-    const handleRemoveRelationship = async (relationshipId: number) => {
-        if (!confirm('Are you sure you want to remove this relationship?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`/family-tree/relationships/${relationshipId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify({
-                    from_member_id: managingMember?.id,
-                    to_member_id: managingMember?.relationships.find(rel => rel.id === relationshipId)?.to_member_id
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to remove relationship');
-            }
-
-            // Update the managing member's relationships
-            if (managingMember) {
-                setManagingMember({
-                    ...managingMember,
-                    relationships: managingMember.relationships.filter(rel => rel.id !== relationshipId)
-                });
-            }
-
-            alert('Relationship removed successfully!');
-        } catch (error) {
-            console.error('Error removing relationship:', error);
-            alert('Failed to remove relationship. Please try again.');
-        }
-    };
-
-    const startManagingRelationships = (member: FamilyMember) => {
-        setManagingMember(member);
-        setIsManageRelationshipsModalOpen(true);
-    };
-
-    const resetNewMember = () => {
+    // Reset form function
+    const resetForm = () => {
         setNewMember({
             first_name: '',
             last_name: '',
@@ -299,773 +198,727 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         });
         setPhotoPreview(null);
         setShowDeathDate(false);
+        setShowEditDeathDate(false);
+        setFormErrors({});
     };
 
-    const handleEditMember = async () => {
-        if (!editingMember) return;
+    // Reset relationship form function
+    const resetRelationshipForm = () => {
+        setNewRelationship({
+            relationship_type: '',
+            to_member_id: '',
+        });
+    };
 
-        // Validate form before submission
-        const errors = validateForm(editingMember);
-        setFormErrors(errors);
+    // Populate edit form function
+    const populateEditForm = (member: FamilyMember) => {
+        setNewMember({
+            first_name: member.first_name,
+            last_name: member.last_name,
+            birth_date: member.birth_date,
+            death_date: member.death_date || '',
+            gender: member.gender,
+            notes: member.notes || '',
+            photo: null,
+        });
+        setShowEditDeathDate(!!member.death_date);
+        setPhotoPreview(null);
+        setFormErrors({});
+    };
 
-        if (Object.keys(errors).length > 0) {
-            return; // Stop if there are validation errors
-        }
-
-        const formData = new FormData();
-        formData.append('first_name', editingMember.first_name);
-        formData.append('last_name', editingMember.last_name);
-        formData.append('birth_date', editingMember.birth_date);
-        formData.append('death_date', editingMember.death_date || '');
-        formData.append('gender', editingMember.gender);
-        formData.append('notes', editingMember.notes || '');
-        if (editingMember.photo && typeof editingMember.photo !== 'string') {
-            formData.append('photo', editingMember.photo);
-        }
-
+    // Backend integration functions
+    const addMember = async (memberData: any) => {
         try {
-            const response = await fetch(`/family-tree/members/${editingMember.id}`, {
+            const formData = new FormData();
+            formData.append('first_name', memberData.first_name);
+            formData.append('last_name', memberData.last_name);
+            formData.append('birth_date', memberData.birth_date);
+            formData.append('gender', memberData.gender);
+            formData.append('notes', memberData.notes || '');
+            if (memberData.death_date) {
+                formData.append('death_date', memberData.death_date);
+            }
+            if (memberData.photo) {
+                formData.append('photo', memberData.photo);
+            }
+
+            const response = await fetch('/genealogy/members', {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                    'X-HTTP-Method-Override': 'PUT',
                 }
             });
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Failed to update family member');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add member');
             }
 
             const result = await response.json();
-
-            // Update the member in the list
-            const updatedFamilyMembers = familyMembers.map(member => 
-                member.id === editingMember.id ? result.data : member
-            );
-            window.location.reload(); // Refresh the page to update the tree visualization
-
-            setIsEditModalOpen(false);
-            setEditingMember(null);
-            setFormErrors({});
-            
-            // Show success message
-            alert('Family member updated successfully!');
+            return result;
         } catch (error) {
-            console.error('Error updating family member:', error);
-            alert(error instanceof Error ? error.message : 'Failed to update family member. Please try again.');
+            console.error('Error adding member:', error);
+            throw error;
         }
     };
 
-    const handleDeleteMember = async (memberId: number) => {
-        if (!confirm('Are you sure you want to delete this family member? This action cannot be undone.')) {
-            return;
-        }
-
+    const updateMember = async (memberId: number, memberData: any) => {
         try {
-            const response = await fetch(`/family-tree/members/${memberId}`, {
+            const formData = new FormData();
+            formData.append('_method', 'PUT');
+            formData.append('first_name', memberData.first_name);
+            formData.append('last_name', memberData.last_name);
+            formData.append('birth_date', memberData.birth_date);
+            formData.append('gender', memberData.gender);
+            formData.append('notes', memberData.notes || '');
+            if (memberData.death_date) {
+                formData.append('death_date', memberData.death_date);
+            }
+            if (memberData.photo) {
+                formData.append('photo', memberData.photo);
+            }
+
+            const response = await fetch(`/genealogy/members/${memberId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update member');
+            }
+
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error('Error updating member:', error);
+            throw error;
+        }
+    };
+
+    const deleteMember = async (memberId: number) => {
+        try {
+            const response = await fetch(`/genealogy/members/${memberId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'Content-Type': 'application/json',
                 }
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete family member');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete member');
             }
 
-            // Remove the member from the list and close any open modals
-            const updatedFamilyMembers = familyMembers.filter(member => member.id !== memberId);
-            window.location.reload(); // Refresh the page to update the tree visualization
-
-            setIsEditModalOpen(false);
-            setEditingMember(null);
-            setSelectedMember(null);
-            
-            // Show success message
-            alert('Family member deleted successfully!');
+            return true;
         } catch (error) {
-            console.error('Error deleting family member:', error);
-            alert('Failed to delete family member. Please try again.');
+            console.error('Error deleting member:', error);
+            throw error;
         }
     };
 
-    const startEditing = (member: FamilyMember) => {
-        // Format the birth date to YYYY-MM-DD for the date input
-        const formattedBirthDate = new Date(member.birth_date).toISOString().split('T')[0];
-        
-        // Format death date if it exists
-        let formattedDeathDate = '';
-        if (member.death_date) {
-            formattedDeathDate = new Date(member.death_date).toISOString().split('T')[0];
-        }
-        
-        setEditingMember({
-            ...member,
-            birth_date: formattedBirthDate,
-            death_date: formattedDeathDate,
-            photo: member.photo // Keep the existing photo URL as string
-        });
-        // Set showEditDeathDate to true if member has a death date
-        setShowEditDeathDate(!!member.death_date);
-        setIsEditModalOpen(true);
-    };
-
-    const handleExport = async () => {
+    const addRelationship = async (fromMemberId: number, toMemberId: number, relationshipType: string) => {
         try {
-            const response = await fetch('/genealogy/export', {
-                method: 'GET',
+            const response = await fetch('/genealogy/relationships', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    from_member_id: fromMemberId,
+                    to_member_id: toMemberId,
+                    relationship_type: relationshipType
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add relationship');
+            }
+
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error('Error adding relationship:', error);
+            throw error;
+        }
+    };
+
+    const removeRelationship = async (relationshipId: number) => {
+        try {
+            const response = await fetch(`/genealogy/relationships/${relationshipId}`, {
+                method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'Content-Type': 'application/json',
                 }
             });
 
             if (!response.ok) {
-                throw new Error('Failed to export family tree');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to remove relationship');
             }
 
-            // Get the filename from the Content-Disposition header if available
-            const contentDisposition = response.headers.get('Content-Disposition');
-            let filename = 'family-tree-export.json';
-            if (contentDisposition) {
-                const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition);
-                if (matches != null && matches[1]) {
-                    filename = matches[1].replace(/['"]/g, '');
-                }
-            }
-
-            // Create a blob from the response and trigger download
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            return true;
         } catch (error) {
-            console.error('Error exporting family tree:', error);
-            alert('Failed to export family tree. Please try again.');
+            console.error('Error removing relationship:', error);
+            throw error;
         }
     };
 
-    const handleImport = async () => {
-        if (!importFile) {
-            alert('Please select a file to import');
-            return;
-        }
-
-        setIsImporting(true);
-
+    const importFamilyData = async (importData: any, importMode: string) => {
         try {
-            // Read the file content
-            const fileContent = await importFile.text();
-            
-            // Validate JSON format
-            let jsonData;
-            try {
-                jsonData = JSON.parse(fileContent);
-                console.log('Successfully parsed JSON:', jsonData); // Debug log
-            } catch (parseError) {
-                console.error('JSON Parse Error:', parseError);
-                throw new Error('Invalid JSON format. Please ensure the file contains valid JSON data.');
-            }
-
-            // Validate the file structure and version
-            if (!jsonData.version || !jsonData.familyMembers) {
-                console.error('Invalid file structure:', jsonData);
-                throw new Error('Invalid file format: Missing required data (version or family members)');
-            }
-
-            // Log the request that will be sent
-            const requestData = {
-                family_members: jsonData.familyMembers.map((member: {
-                    id: number;
-                    first_name: string;
-                    last_name: string;
-                    birth_date: string;
-                    death_date: string | null;
-                    gender: 'male' | 'female' | 'other';
-                    notes: string | null;
-                    photo: string | null;
-                    relationships?: Array<{
-                        id: number;
-                        to_member_id: number;
-                        relationship_type: RelationshipType;
-                    }>;
-                }) => ({
-                    import_id: member.id,
-                    first_name: member.first_name,
-                    last_name: member.last_name,
-                    birth_date: member.birth_date,
-                    death_date: member.death_date,
-                    gender: member.gender,
-                    notes: member.notes,
-                    photo: member.photo,
-                    relationships: member.relationships?.map((rel: {
-                        id: number;
-                        to_member_id: number;
-                        relationship_type: RelationshipType;
-                    }) => ({
-                        import_id: rel.id,
-                        to_member_import_id: rel.to_member_id,
-                        relationship_type: rel.relationship_type
-                    }))
-                })),
-                import_mode: importMode
-            };
-
-            console.log('Sending import request with data:', requestData);
-
-            // Get CSRF token from meta tag
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (!csrfToken) {
-                throw new Error('CSRF token not found. Please refresh the page and try again.');
-            }
-
             const response = await fetch('/genealogy/import', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
-                body: JSON.stringify(requestData)
+                body: JSON.stringify({
+                    family_members: importData.familyMembers,
+                    import_mode: importMode
+                })
             });
 
-            // Log the raw response for debugging
-            console.log('Raw response status:', response.status);
-            console.log('Raw response headers:', Object.fromEntries(response.headers.entries()));
-            
-            // Try to get the response content
-            const responseText = await response.text();
-            console.log('Raw response text:', responseText);
-
-            let result;
-            try {
-                result = JSON.parse(responseText);
-            } catch (error) {
-                console.error('Error parsing response:', error);
-                throw new Error('Server returned invalid JSON response. Please try again.');
-            }
-
             if (!response.ok) {
-                throw new Error(result.error || `Import failed with status ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to import data');
             }
 
-            // Close modal and reset state
-            setIsImportModalOpen(false);
-            setImportFile(null);
-            
-            // Show success message with stats
-            const stats = result.stats || {
-                total: 0,
-                created: 0,
-                updated: 0,
-                skipped: 0,
-                relationships_created: 0
-            };
-            
-            alert(`Family tree imported successfully!\n\nStats:\n` +
-                  `Total processed: ${stats.total}\n` +
-                  `Created: ${stats.created}\n` +
-                  `Updated: ${stats.updated}\n` +
-                  `Skipped: ${stats.skipped}\n` +
-                  `Relationships created: ${stats.relationships_created}`);
-            
-            window.location.reload();
+            const result = await response.json();
+            return result;
         } catch (error) {
-            console.error('Error importing family tree:', error);
-            alert(error instanceof Error ? error.message : 'Failed to import family tree. Please make sure the file is valid and try again.');
-        } finally {
-            setIsImporting(false);
+            console.error('Error importing data:', error);
+            throw error;
         }
     };
 
+    // Refresh page data
+    const refreshData = () => {
+        window.location.reload();
+    };
+
+    // ...rest of the component will be added in the next steps...
     return (
         <AuthenticatedLayout
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Members</h2>}
         >
             <Head title="Genealogy" />
-
-            <div className={`transition-colors duration-200 ${isDarkMode ? 'dark' : ''}`}>
-                <div className="w-full px-2 sm:px-4 md:px-6">
-                    {/* Toolbar */}
-                    <div className={`overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6 transition-colors duration-200 ${
-                        isDarkMode ? 'bg-gray-800' : 'bg-white'
-                    }`}>
-                        <div className="p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="w-full px-2 sm:px-4 md:px-6 py-4">
+                <div className={`overflow-hidden shadow-lg sm:rounded-xl mb-4 sm:mb-6 transition-all duration-300 ${
+                    isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                }`}>
+                    <div className="p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                            <button
+                                className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 justify-center shadow-md hover:shadow-lg transform hover:scale-105"
+                                onClick={() => setIsAddModalOpen(true)}
+                            >
+                                <FaUserPlus className="mr-2" />
+                                Add Member
+                            </button>
+                            <div className="relative export-dropdown">
                                 <button
-                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-200 justify-center"
-                                    onClick={() => setIsAddModalOpen(true)}
-                                >
-                                    <FaUserPlus className="mr-2" />
-                                    Add Member
-                                </button>
-                                <button
-                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors duration-200 justify-center"
+                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 justify-center shadow-md hover:shadow-lg transform hover:scale-105"
                                     onClick={handleExport}
                                 >
                                     <FaFileExport className="mr-2" />
                                     Export
                                 </button>
-                                <button
-                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors duration-200 justify-center"
-                                    onClick={() => setIsImportModalOpen(true)}
-                                >
-                                    <FaFileImport className="mr-2" />
-                                    Import
-                                </button>
-                                <a
-                                    href={`/genealogy/${auth.user.identifier}/full-view`}
-                                    className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
-                                    target="_blank"
-                                >
-                                    <FaSitemap />
-                                </a>
-                                <a
-                                    href={`/genealogy/${auth.user.identifier}/circular`}
-                                    className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
-                                    target="_blank"
-                                    title="Circular View"
-                                >
-                                    <FaChartPie />
-                                </a>
-                                <a
-                                    href={`/genealogy/${auth.user.identifier}/printable`}
-                                    className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
-                                    target="_blank"
-                                    title="Printable View"
-                                >
-                                    <FaFileAlt />
-                                </a>
-                                <a
-                                    href={`/genealogy/${auth.user.identifier}/members`}
-                                    className="p-2 rounded-lg bg-white hover:bg-gray-100 text-gray-700 shadow-lg"
-                                    target="_blank"
-                                    title="View Members Directory"
-                                >
-                                    <FaUsers />
-                                </a>
                             </div>
+                            <button
+                                className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-200 justify-center shadow-md hover:shadow-lg transform hover:scale-105"
+                                onClick={() => setIsImportModalOpen(true)}
+                            >
+                                <FaFileImport className="mr-2" />
+                                Import
+                            </button>
+                            <a
+                                href={`/genealogy/${auth.user.identifier}/full-view`}
+                                className={`p-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' 
+                                        : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                                target="_blank"
+                            >
+                                <FaSitemap />
+                            </a>
+                            <a
+                                href={`/genealogy/${auth.user.identifier}/circular`}
+                                className={`p-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' 
+                                        : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                                target="_blank"
+                                title="Circular View"
+                            >
+                                <FaChartPie />
+                            </a>
+                            <a
+                                href={`/genealogy/${auth.user.identifier}/printable`}
+                                className={`p-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' 
+                                        : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                                target="_blank"
+                                title="Printable View"
+                            >
+                                <FaFileAlt />
+                            </a>
+                            <a
+                                href={`/genealogy/${auth.user.identifier}/members`}
+                                className={`p-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                    isDarkMode 
+                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' 
+                                        : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                                target="_blank"
+                                title="View Members Directory"
+                            >
+                                <FaUsers />
+                            </a>
+                        </div>
 
-                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                                <div className="relative flex-1 sm:flex-none">
-                                    <FaSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
-                                        isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                                    }`} />
-                                    <input
-                                        type="text"
-                                        placeholder="Search members..."
-                                        className={`w-full sm:w-auto pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                                            isDarkMode 
-                                                ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400' 
-                                                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                                        }`}
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        className={`inline-flex items-center px-3 py-2 rounded-md transition-colors ${
-                                            isDarkMode 
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        }`}
-                                        onClick={toggleDarkMode}
-                                    >
-                                        {isDarkMode ? <FaSun /> : <FaMoon />}
-                                    </button>
-                                    <button
-                                        className={`inline-flex items-center px-3 py-2 rounded-md transition-colors ${
-                                            isDarkMode 
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        }`}
-                                        onClick={toggleFullscreen}
-                                    >
-                                        {isFullscreen ? <FaCompressAlt /> : <FaExpandAlt />}
-                                    </button>
-                                </div>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                            <div className="relative flex-1 sm:flex-none">
+                                <FaSearch className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
+                                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                }`} />
+                                <input
+                                    type="text"
+                                    placeholder="Search members..."
+                                    className={`w-full sm:w-auto pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 shadow-sm ${
+                                        isDarkMode 
+                                            ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:border-blue-500' 
+                                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                                    }`}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    className={`inline-flex items-center px-3 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                        isDarkMode 
+                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' 
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                    }`}
+                                    onClick={() => setIsFullscreen(!isFullscreen)}
+                                    title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                                >
+                                    {isFullscreen ? <FaCompressAlt /> : <FaExpandAlt />}
+                                </button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Statistics Section */}
-                    <div className={`overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6 transition-colors duration-200 ${
-                        isDarkMode ? 'bg-gray-800' : 'bg-white'
-                    }`}>
-                        <div className="p-4">
-                            <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                Family Statistics
-                            </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total Members</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                        {familyMembers.length}
-                                    </div>
-                                </div>
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Levels</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                        {(() => {
-                                            const getLevel = (member: FamilyMember, visited = new Set<number>()): number => {
-                                                if (visited.has(member.id)) return 0;
-                                                visited.add(member.id);
-                                                
-                                                const parentRelationships = member.relationships.filter(
-                                                    rel => rel.relationship_type === 'parent'
-                                                );
-                                                
-                                                if (parentRelationships.length === 0) return 1;
-                                                
-                                                return 1 + Math.max(...parentRelationships.map(rel => {
-                                                    const parent = familyMembers.find(m => m.id === rel.to_member_id);
-                                                    return parent ? getLevel(parent, visited) : 0;
-                                                }));
-                                            };
-
-                                            return Math.max(...familyMembers.map(member => getLevel(member)));
-                                        })()}
-                                    </div>
-                                </div>
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-blue-600'}`}>Male Members</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                                        {familyMembers.filter(member => member.gender === 'male').length}
-                                    </div>
-                                </div>
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-pink-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-pink-600'}`}>Female Members</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-pink-300' : 'text-pink-700'}`}>
-                                        {familyMembers.filter(member => member.gender === 'female').length}
-                                    </div>
-                                </div>
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-yellow-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-yellow-600'}`}>Children (&lt;18)</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
-                                        {familyMembers.filter(member => {
-                                            const birthDate = new Date(member.birth_date);
-                                            const endDate = member.death_date ? new Date(member.death_date) : new Date();
-                                            const age = endDate.getFullYear() - birthDate.getFullYear();
-                                            const monthDiff = endDate.getMonth() - birthDate.getMonth();
-                                            const adjustedAge = monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
-                                                ? age - 1 
-                                                : age;
-                                            return adjustedAge < 18;
-                                        }).length}
-                                    </div>
-                                </div>
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-green-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-green-600'}`}>Adults (18+)</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
-                                        {familyMembers.filter(member => {
-                                            const birthDate = new Date(member.birth_date);
-                                            const endDate = member.death_date ? new Date(member.death_date) : new Date();
-                                            const age = endDate.getFullYear() - birthDate.getFullYear();
-                                            const monthDiff = endDate.getMonth() - birthDate.getMonth();
-                                            const adjustedAge = monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
-                                                ? age - 1 
-                                                : age;
-                                            return adjustedAge >= 18;
-                                        }).length}
-                                    </div>
-                                </div>
-                                {/* Add new card for living members */}
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-emerald-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-emerald-600'}`}>Living Members</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
-                                        {familyMembers.filter(member => !member.death_date).length}
-                                    </div>
-                                </div>
-                                {/* Add new card for deceased members */}
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Deceased Members</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        {familyMembers.filter(member => !!member.death_date).length}
-                                    </div>
-                                </div>
-                                {/* Add new card for members without relationships */}
-                                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'}`}>
-                                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-red-600'}`}>Unconnected Members</div>
-                                    <div className={`text-2xl font-bold mt-1 ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>
-                                        {familyMembers.filter(member => member.relationships.length === 0).length}
-                                    </div>
+                {/* Statistics Section */}
+                <div className={`overflow-hidden shadow-lg sm:rounded-xl mb-4 sm:mb-6 transition-all duration-300 ${
+                    isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                }`}>
+                    <div className="p-4">
+                        <h3 className={`text-lg font-semibold mb-4 ${
+                            isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                        }`}>
+                            Family Statistics
+                        </h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {/* Total Members */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                }`}>Total Members</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                }`}>
+                                    {familyMembers.length}
                                 </div>
                             </div>
-
-                            {/* Add new section for listing unconnected members */}
-                            <div className={`mt-6 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-red-50'}`}>
-                                <div className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-red-600'}`}>
-                                    Members Without Relationships
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {familyMembers
-                                        .filter(member => member.relationships.length === 0)
-                                        .map(member => (
-                                            <div 
-                                                key={member.id} 
-                                                className={`p-3 rounded-md cursor-pointer ${
-                                                    isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-white hover:bg-red-100'
-                                                }`}
-                                                onClick={() => startManagingRelationships(member)}
-                                            >
-                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                                    <div className={`w-16 h-16 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                                        isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                                                    }`}>
-                                                        {member.photo ? (
-                                                            <img
-                                                                src={member.photo}
-                                                                alt={`${member.first_name} ${member.last_name}`}
-                                                                className="w-full h-full rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <span className={`text-sm ${
-                                                                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                                                            }`}>
-                                                                {member.first_name[0]}
-                                                                {member.last_name[0]}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className={`font-medium truncate ${
-                                                            isDarkMode ? 'text-gray-200' : 'text-gray-900'
-                                                        }`}>
-                                                            {member.first_name} {member.last_name}
-                                                        </h4>
-                                                        <p className={`text-sm break-words ${
-                                                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                                        }`}>
-                                                            Click to add relationships
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    {familyMembers.filter(member => member.relationships.length === 0).length === 0 && (
-                                        <div className={`col-span-full text-center p-4 ${
-                                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                        }`}>
-                                            All family members have relationships defined.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Age Distribution */}
-                            <div className={`mt-6 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-purple-50'}`}>
-                                <div className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-purple-600'}`}>
-                                    Age Distribution (5-year groups)
-                                </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {/* Levels */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                }`}>Levels</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                }`}>
                                     {(() => {
-                                        const ages = familyMembers.map(member => {
-                                            const birthDate = new Date(member.birth_date);
-                                            const endDate = member.death_date ? new Date(member.death_date) : new Date();
-                                            const age = endDate.getFullYear() - birthDate.getFullYear();
-                                            const monthDiff = endDate.getMonth() - birthDate.getMonth();
-                                            return monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
-                                                ? age - 1 
-                                                : age;
-                                        });
-                                        const minAge = Math.floor(Math.min(...ages) / 5) * 5;
-                                        const maxAge = Math.ceil(Math.max(...ages) / 5) * 5;
-                                        const groups: Record<string, number> = {};
-                                        
-                                        for (let i = minAge; i < maxAge; i += 5) {
-                                            const rangeLabel = `${i}-${i + 4}`;
-                                            groups[rangeLabel] = ages.filter(age => age >= i && age <= i + 4).length;
-                                        }
-
-                                        return Object.entries(groups)
-                                            .filter(([_, count]) => count > 0)
-                                            .map(([range, count]) => (
-                                                <div key={range} className={`p-3 rounded-md ${
-                                                    isDarkMode ? 'bg-gray-600' : 'bg-white'
-                                                }`}>
-                                                    <div className={`text-sm font-medium ${
-                                                        isDarkMode ? 'text-purple-300' : 'text-purple-600'
-                                                    }`}>{range} years</div>
-                                                    <div className={`text-xl font-bold ${
-                                                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
-                                                    }`}>{count}</div>
-                                                </div>
-                                            ));
+                                        const getLevel = (member: FamilyMember, visited = new Set<number>()): number => {
+                                            if (visited.has(member.id)) return 0;
+                                            visited.add(member.id);
+                                            const parentRelationships = member.relationships.filter(
+                                                rel => rel.relationship_type === 'parent'
+                                            );
+                                            if (parentRelationships.length === 0) return 1;
+                                            return 1 + Math.max(...parentRelationships.map(rel => {
+                                                const parent = familyMembers.find(m => m.id === rel.to_member_id);
+                                                return parent ? getLevel(parent, visited) : 0;
+                                            }));
+                                        };
+                                        return Math.max(...familyMembers.map(member => getLevel(member)));
                                     })()}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Main content area */}
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-                        {/* Family tree visualization */}
-                        <div className={`lg:col-span-3 overflow-hidden shadow-sm sm:rounded-lg transition-colors duration-200 order-2 lg:order-1 ${
-                            isDarkMode ? 'bg-gray-800' : 'bg-white'
-                        }`}>
-                            <div className="p-3 sm:p-4 md:p-6">
-                                <h3 className={`text-lg font-semibold mb-4 ${
-                                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                            {/* Male Members */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-blue-300' : 'text-blue-600'
+                                }`}>Male Members</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-blue-200' : 'text-blue-700'
                                 }`}>
-                                    Family Tree Visualization
-                                </h3>
-                                <div className={`relative h-[400px] sm:h-[500px] md:h-[600px] rounded-lg transition-colors duration-200 flex items-center justify-center ${
-                                    isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
+                                    {familyMembers.filter(member => member.gender === 'male').length}
+                                </div>
+                            </div>
+                            {/* Female Members */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-pink-900/30 border border-pink-700' : 'bg-pink-50 border border-pink-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-pink-300' : 'text-pink-600'
+                                }`}>Female Members</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-pink-200' : 'text-pink-700'
                                 }`}>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <FamilyTreeVisualization 
-                                            familyMembers={familyMembers}
-                                            onNodeClick={setSelectedMember}
-                                            isDarkMode={isDarkMode}
-                                        />
-                                    </div>
+                                    {familyMembers.filter(member => member.gender === 'female').length}
+                                </div>
+                            </div>
+                            {/* Children (<18) */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-yellow-300' : 'text-yellow-600'
+                                }`}>Children (&lt;18)</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-yellow-200' : 'text-yellow-700'
+                                }`}>
+                                    {familyMembers.filter(member => {
+                                        const birthDate = new Date(member.birth_date);
+                                        const endDate = member.death_date ? new Date(member.death_date) : new Date();
+                                        const age = endDate.getFullYear() - birthDate.getFullYear();
+                                        const monthDiff = endDate.getMonth() - birthDate.getMonth();
+                                        const adjustedAge = monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
+                                            ? age - 1 
+                                            : age;
+                                        return adjustedAge < 18;
+                                    }).length}
+                                </div>
+                            </div>
+                            {/* Adults (18+) */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-green-300' : 'text-green-600'
+                                }`}>Adults (18+)</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-green-200' : 'text-green-700'
+                                }`}>
+                                    {familyMembers.filter(member => {
+                                        const birthDate = new Date(member.birth_date);
+                                        const endDate = member.death_date ? new Date(member.death_date) : new Date();
+                                        const age = endDate.getFullYear() - birthDate.getFullYear();
+                                        const monthDiff = endDate.getMonth() - birthDate.getMonth();
+                                        const adjustedAge = monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
+                                            ? age - 1 
+                                            : age;
+                                        return adjustedAge >= 18;
+                                    }).length}
+                                </div>
+                            </div>
+                            {/* Living Members */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-emerald-300' : 'text-emerald-600'
+                                }`}>Living Members</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-emerald-200' : 'text-emerald-700'
+                                }`}>
+                                    {familyMembers.filter(member => !member.death_date).length}
+                                </div>
+                            </div>
+                            {/* Deceased Members */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>Deceased Members</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}>
+                                    {familyMembers.filter(member => !!member.death_date).length}
+                                </div>
+                            </div>
+                            {/* Unconnected Members */}
+                            <div className={`p-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                                isDarkMode ? 'bg-red-900/30 border border-red-700' : 'bg-red-50 border border-red-200'
+                            }`}>
+                                <div className={`text-sm font-medium ${
+                                    isDarkMode ? 'text-red-300' : 'text-red-600'
+                                }`}>Unconnected Members</div>
+                                <div className={`text-2xl font-bold mt-1 ${
+                                    isDarkMode ? 'text-red-200' : 'text-red-700'
+                                }`}>
+                                    {familyMembers.filter(member => member.relationships.length === 0).length}
                                 </div>
                             </div>
                         </div>
-
-                        {/* Member list and details */}
-                        <div className={`overflow-hidden shadow-sm sm:rounded-lg transition-colors duration-200 order-1 lg:order-2 ${
-                            isDarkMode ? 'bg-gray-800' : 'bg-white'
+                        {/* Age Distribution */}
+                        <div className={`mt-6 p-4 rounded-xl transition-all duration-200 shadow-md ${
+                            isDarkMode ? 'bg-purple-900/20 border border-purple-700/50' : 'bg-purple-50 border border-purple-200'
                         }`}>
-                            <div className="p-6">
-                                <h3 className={`text-lg font-semibold mb-4 ${
-                                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
-                                }`}>
-                                    Family Members
-                                </h3>
-                                <div className="space-y-4">
-                                    {filteredMembers.map((member: FamilyMember) => (
-                                        <div
-                                            key={member.id}
-                                            className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                            <div className={`text-sm font-medium mb-3 ${
+                                isDarkMode ? 'text-purple-300' : 'text-purple-600'
+                            }`}>
+                                Age Distribution (5-year groups)
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                                {(() => {
+                                    const ages = familyMembers.map(member => {
+                                        const birthDate = new Date(member.birth_date);
+                                        const endDate = member.death_date ? new Date(member.death_date) : new Date();
+                                        const age = endDate.getFullYear() - birthDate.getFullYear();
+                                        const monthDiff = endDate.getMonth() - birthDate.getMonth();
+                                        return monthDiff < 0 || (monthDiff === 0 && endDate.getDate() < birthDate.getDate()) 
+                                            ? age - 1 
+                                            : age;
+                                    });
+                                    const minAge = Math.floor(Math.min(...ages) / 5) * 5;
+                                    const maxAge = Math.ceil(Math.max(...ages) / 5) * 5;
+                                    const groups: Record<string, number> = {};
+                                    for (let i = minAge; i < maxAge; i += 5) {
+                                        const rangeLabel = `${i}-${i + 4}`;
+                                        groups[rangeLabel] = ages.filter(age => age >= i && age <= i + 4).length;
+                                    }
+                                    return Object.entries(groups)
+                                        .filter(([_, count]) => count > 0)
+                                        .map(([range, count]) => (
+                                            <div key={range} className={`p-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white border border-gray-200'
+                                            }`}>
+                                                <div className={`text-sm font-medium ${
+                                                    isDarkMode ? 'text-purple-300' : 'text-purple-600'
+                                                }`}>{range} years</div>
+                                                <div className={`text-xl font-bold ${
+                                                    isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                                }`}>{count}</div>
+                                            </div>
+                                        ));
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main content area */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+                    {/* Family tree visualization */}
+                    <div className={`lg:col-span-3 overflow-hidden shadow-lg sm:rounded-xl transition-all duration-300 order-2 lg:order-1 ${
+                        isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                    }`}>
+                        <div className="p-3 sm:p-4 md:p-6">
+                            <h3 className={`text-lg font-semibold mb-4 ${
+                                isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                            }`}>
+                                Family Tree Visualization
+                            </h3>
+                            <div className={`relative h-[400px] sm:h-[500px] md:h-[600px] rounded-xl transition-all duration-300 flex items-center justify-center ${
+                                isDarkMode ? 'bg-gray-900 border border-gray-700' : 'bg-gray-50 border border-gray-200'
+                            }`}>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <FamilyTreeVisualization 
+                                        familyMembers={familyMembers}
+                                        onNodeClick={setSelectedMember}
+                                        isDarkMode={isDarkMode}
+                                        focusedMemberId={focusedMemberId}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Member list and details */}
+                    <div className={`overflow-hidden shadow-lg sm:rounded-xl transition-all duration-300 order-1 lg:order-2 ${
+                        isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                    }`}>
+                        <div className="p-4">
+                            <h3 className={`text-lg font-semibold mb-3 ${
+                                isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                            }`}>
+                                Family Members ({filteredMembers.length})
+                            </h3>
+                            <div className="space-y-2 h-[calc(100vh-300px)] min-h-[400px] max-h-[700px] overflow-y-auto pr-2">
+                                {filteredMembers.map((member: FamilyMember) => (
+                                    <div
+                                        key={member.id}
+                                    className={`p-3 rounded-lg cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                                 selectedMember?.id === member.id
                                                     ? isDarkMode 
-                                                        ? 'bg-blue-900/30 border-2 border-blue-700'
-                                                        : 'bg-blue-50 border-2 border-blue-200'
+                                                    ? 'bg-blue-900/30 border-2 border-blue-600 shadow-lg'
+                                                    : 'bg-blue-50 border-2 border-blue-200 shadow-lg'
+                                                    : focusedMemberId === member.id
+                                                    ? isDarkMode
+                                                    ? 'bg-green-900/30 border-2 border-green-600 shadow-lg'
+                                                    : 'bg-green-50 border-2 border-green-200 shadow-lg'
                                                     : isDarkMode
-                                                        ? 'bg-gray-700 hover:bg-gray-600'
-                                                        : 'bg-gray-50 hover:bg-gray-100'
+                                                    ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600'
+                                                    : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
                                             }`}
-                                            onClick={() => setSelectedMember(member)}
-                                        >
-                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                                <div className={`w-16 h-16 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                                    isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+                                    onClick={() => {
+                                        setSelectedMember(member);
+                                        setFocusedMemberId(member.id);
+                                    }}
+                                >
+                                    <div className="flex items-center gap-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                                        isDarkMode ? 'bg-gray-600 border border-gray-500' : 'bg-gray-300 border border-gray-400'
+                                        }`}>
+                                            {member.photo ? (
+                                                <img
+                                                    src={member.photo}
+                                                    alt={`${member.first_name} ${member.last_name}`}
+                                                    className="w-full h-full rounded-full object-cover"
+                                                />
+                                            ) : (
+                                            <span className={`text-xs font-medium ${
+                                                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
                                                 }`}>
-                                                    {member.photo ? (
-                                                        <img
-                                                            src={member.photo}
-                                                            alt={`${member.first_name} ${member.last_name}`}
-                                                            className="w-full h-full rounded-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <span className={`text-sm ${
-                                                            isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                                                        }`}>
-                                                            {member.first_name[0]}
-                                                            {member.last_name[0]}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className={`font-medium truncate ${
-                                                        isDarkMode ? 'text-gray-200' : 'text-gray-900'
-                                                    }`}>
-                                                        {member.first_name} {member.last_name}
-                                                    </h4>
-                                                    <p className={`text-sm break-words ${
-                                                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                                    }`}>
-                                                        Born: {new Date(member.birth_date).toLocaleDateString()} (Age: {calculateAge(member.birth_date, member.death_date || null)})
-                                                        {member.death_date && (
-                                                            <> • Died: {new Date(member.death_date).toLocaleDateString()}</>
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {selectedMember?.id === member.id && (
-                                                <div className="mt-4 space-y-3">
-                                                    <p className={`text-sm break-words ${
-                                                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                                    }`}>
-                                                        {member.notes}
-                                                    </p>
-                                                    <div className="mt-2">
-                                                        <h5 className={`text-sm font-medium mb-2 ${
-                                                            isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                                                        }`}>
-                                                            Relationships:
-                                                        </h5>
-                                                        <ul className={`text-sm space-y-1.5 ${
-                                                            isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                                                        }`}>
-                                                            {member.relationships.map((rel: FamilyRelationship) => {
-                                                                const relatedMember = getMemberById(rel.to_member_id);
-                                                                return (
-                                                                    <li key={rel.id} className="break-words">
-                                                                        {getRelationshipLabel(rel.relationship_type)}:{' '}
-                                                                        {relatedMember
-                                                                            ? `${relatedMember.first_name} ${relatedMember.last_name}`
-                                                                            : 'Unknown Member'}
-                                                                    </li>
-                                                                );
-                                                            })}
-                                                        </ul>
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-2 mt-4">
-                                                        <button
-                                                            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm rounded transition-colors duration-200 ${
-                                                                isDarkMode
-                                                                    ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-900/70'
-                                                                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                                            }`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                startEditing(member);
-                                                            }}
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm rounded transition-colors duration-200 ${
-                                                                isDarkMode
-                                                                    ? 'bg-purple-900/50 text-purple-300 hover:bg-purple-900/70'
-                                                                    : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                                                            }`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                startManagingRelationships(member);
-                                                            }}
-                                                        >
-                                                            Manage Relationships
-                                                        </button>
-                                                        <button
-                                                            className={`flex-1 sm:flex-none px-3 py-1.5 text-sm rounded transition-colors duration-200 ${
-                                                                isDarkMode
-                                                                    ? 'bg-red-900/50 text-red-300 hover:bg-red-900/70'
-                                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                                            }`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteMember(member.id);
-                                                            }}
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                                    {member.first_name[0]}
+                                                    {member.last_name[0]}
+                                                </span>
                                             )}
                                         </div>
-                                    ))}
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className={`font-medium truncate text-sm ${
+                                                isDarkMode ? 'text-gray-200' : 'text-gray-900'
+                                            }`}>
+                                                {member.first_name} {member.last_name}
+                                                {focusedMemberId === member.id && (
+                                                    <span className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                                                        isDarkMode ? 'bg-green-600 text-green-100' : 'bg-green-100 text-green-700'
+                                                    }`}>
+                                                        Focused
+                                                    </span>
+                                                )}
+                                            </h4>
+                                            <p className={`text-xs break-words ${
+                                                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                            }`}>
+                                                {new Date(member.birth_date).toLocaleDateString()} ({calculateAge(member.birth_date, member.death_date || null)})
+                                                {member.death_date && (
+                                                    <span className="text-red-500"> • Deceased</span>
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {selectedMember?.id === member.id && (
+                                        <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
+                                            {member.notes && (
+                                                <p className={`text-xs break-words mb-2 ${
+                                                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                                }`}>
+                                                    {member.notes}
+                                                </p>
+                                            )}
+                                            {member.relationships.length > 0 && (
+                                                <div className="mb-3">
+                                                    <h5 className={`text-xs font-medium mb-1 ${
+                                                        isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                                    }`}>
+                                                        Relationships:
+                                                    </h5>
+                                                    <ul className={`text-xs space-y-0.5 ${
+                                                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                                                    }`}>
+                                                    {member.relationships.slice(0, 3).map((rel: FamilyRelationship) => {
+                                                        const relatedMemberId = rel.to_member_id === member.id ? rel.from_member_id : rel.to_member_id;
+                                                        const relatedMember = getMemberById(relatedMemberId);
+                                                        return (
+                                                            <li key={rel.id}>
+                                                                {getRelationshipLabel(rel.relationship_type)} {relatedMember ? `${relatedMember.first_name} ${relatedMember.last_name}` : `Member ${relatedMemberId}`}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                    {member.relationships.length > 3 && (
+                                                        <li className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                            +{member.relationships.length - 3} more...
+                                                        </li>
+                                                    )}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            <div className="flex flex-wrap gap-1">
+                                                <button
+                                                className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                    isDarkMode ? 'bg-red-700 hover:bg-red-600 text-gray-200 border border-red-600' : 'bg-red-100 hover:bg-red-200 text-red-700 border border-red-300'
+                                                    }`}
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (confirm(`Are you sure you want to delete ${member.first_name} ${member.last_name}? This action cannot be undone.`)) {
+                                                            try {
+                                                                await deleteMember(member.id);
+                                                                alert(`Member deleted successfully!`);
+                                                                refreshData();
+                                                            } catch (error) {
+                                                                console.error('Failed to delete member:', error);
+                                                                alert(`Failed to delete member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    Delete
+                                                </button>
+                                                <button
+                                                className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                    isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                                    }`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                    setEditingMember(member);
+                                                    populateEditForm(member);
+                                                    setIsEditModalOpen(true);
+                                                    }}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                    isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                                    }`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                    setManagingMember(member);
+                                                    setIsManageRelationshipsModalOpen(true);
+                                                    }}
+                                                >
+                                                    Relationships
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+                            ))}
                             </div>
                         </div>
                     </div>
@@ -1074,8 +927,8 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
             {/* Add Member Modal */}
             {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl`}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl shadow-2xl`}>
                         <div className={`p-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
@@ -1084,9 +937,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 <button
                                     onClick={() => {
                                         setIsAddModalOpen(false);
-                                        resetNewMember();
+                                        resetForm();
                                     }}
-                                    className={`text-gray-400 hover:text-gray-500 transition-colors`}
+                                    className={`text-gray-400 hover:text-gray-500 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700`}
                                 >
                                     <span className="text-2xl">×</span>
                                 </button>
@@ -1096,8 +949,8 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 {/* Photo Upload */}
                                 <div className="flex justify-center">
                                     <div className="relative">
-                                        <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden ${
-                                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                                        <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden transition-all duration-200 shadow-lg ${
+                                            isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-200 border border-gray-300'
                                         }`}>
                                             {photoPreview ? (
                                                 <img
@@ -1114,7 +967,17 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={handlePhotoChange}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setNewMember(prev => ({ ...prev, photo: file }));
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setPhotoPreview(reader.result as string);
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         />
                                     </div>
@@ -1131,28 +994,15 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="text"
                                             value={newMember.first_name}
-                                            onChange={(e) => {
-                                                setNewMember(prev => ({ ...prev, first_name: e.target.value }));
-                                                setFormErrors(prev => ({ ...prev, first_name: undefined }));
-                                            }}
-                                            className={`w-full px-3 py-2 rounded-md border ${
-                                                formErrors.first_name 
-                                                    ? 'border-red-500'
-                                                    : isDarkMode 
-                                                        ? 'border-gray-600'
-                                                        : 'border-gray-300'
-                                            } ${
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, first_name: e.target.value }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 text-gray-200' 
-                                                    : 'bg-white text-gray-900'
-                                            } focus:outline-none focus:ring-2 ${
-                                                formErrors.first_name
-                                                    ? 'focus:ring-red-500'
-                                                    : 'focus:ring-blue-500'
-                                            }`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2 ${formErrors.first_name ? 'border-red-500' : ''}`}
                                         />
                                         {formErrors.first_name && (
-                                            <p className="mt-1 text-sm text-red-500">{formErrors.first_name}</p>
+                                            <p className="text-red-500 text-xs mt-1">{formErrors.first_name}</p>
                                         )}
                                     </div>
                                     <div>
@@ -1164,28 +1014,15 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="text"
                                             value={newMember.last_name}
-                                            onChange={(e) => {
-                                                setNewMember(prev => ({ ...prev, last_name: e.target.value }));
-                                                setFormErrors(prev => ({ ...prev, last_name: undefined }));
-                                            }}
-                                            className={`w-full px-3 py-2 rounded-md border ${
-                                                formErrors.last_name 
-                                                    ? 'border-red-500'
-                                                    : isDarkMode 
-                                                        ? 'border-gray-600'
-                                                        : 'border-gray-300'
-                                            } ${
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, last_name: e.target.value }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 text-gray-200' 
-                                                    : 'bg-white text-gray-900'
-                                            } focus:outline-none focus:ring-2 ${
-                                                formErrors.last_name
-                                                    ? 'focus:ring-red-500'
-                                                    : 'focus:ring-blue-500'
-                                            }`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2 ${formErrors.last_name ? 'border-red-500' : ''}`}
                                         />
                                         {formErrors.last_name && (
-                                            <p className="mt-1 text-sm text-red-500">{formErrors.last_name}</p>
+                                            <p className="text-red-500 text-xs mt-1">{formErrors.last_name}</p>
                                         )}
                                     </div>
                                 </div>
@@ -1200,28 +1037,15 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <input
                                             type="date"
                                             value={newMember.birth_date}
-                                            onChange={(e) => {
-                                                setNewMember(prev => ({ ...prev, birth_date: e.target.value }));
-                                                setFormErrors(prev => ({ ...prev, birth_date: undefined }));
-                                            }}
-                                            className={`w-full px-3 py-2 rounded-md border ${
-                                                formErrors.birth_date 
-                                                    ? 'border-red-500'
-                                                    : isDarkMode 
-                                                        ? 'border-gray-600'
-                                                        : 'border-gray-300'
-                                            } ${
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, birth_date: e.target.value }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 text-gray-200' 
-                                                    : 'bg-white text-gray-900'
-                                            } focus:outline-none focus:ring-2 ${
-                                                formErrors.birth_date
-                                                    ? 'focus:ring-red-500'
-                                                    : 'focus:ring-blue-500'
-                                            }`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2 ${formErrors.birth_date ? 'border-red-500' : ''}`}
                                         />
                                         {formErrors.birth_date && (
-                                            <p className="mt-1 text-sm text-red-500">{formErrors.birth_date}</p>
+                                            <p className="text-red-500 text-xs mt-1">{formErrors.birth_date}</p>
                                         )}
                                     </div>
                                     <div>
@@ -1236,7 +1060,9 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                         setNewMember(prev => ({ ...prev, death_date: '' }));
                                                     }
                                                 }}
-                                                className="mr-2"
+                                                className={`mr-2 rounded transition-all duration-200 ${
+                                                    isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                                }`}
                                             />
                                             <label
                                                 htmlFor="enableDeathDate"
@@ -1248,17 +1074,22 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             </label>
                                         </div>
                                         {showDeathDate && (
-                                            <input
-                                                type="date"
-                                                value={newMember.death_date}
-                                                onChange={(e) => setNewMember(prev => ({ ...prev, death_date: e.target.value }))}
-                                                min={newMember.birth_date}
-                                                className={`w-full px-3 py-2 rounded-md border ${
-                                                    isDarkMode 
-                                                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                        : 'bg-white border-gray-300 text-gray-900'
-                                                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                            />
+                                            <>
+                                                <input
+                                                    type="date"
+                                                    value={newMember.death_date}
+                                                    onChange={(e) => setNewMember(prev => ({ ...prev, death_date: e.target.value }))}
+                                                    min={newMember.birth_date}
+                                                    className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
+                                                        isDarkMode 
+                                                            ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                            : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                                    } focus:outline-none focus:ring-2 ${formErrors.death_date ? 'border-red-500' : ''}`}
+                                                />
+                                                {formErrors.death_date && (
+                                                    <p className="text-red-500 text-xs mt-1">{formErrors.death_date}</p>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>
@@ -1273,11 +1104,11 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         <select
                                             value={newMember.gender}
                                             onChange={(e) => setNewMember(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' }))}
-                                            className={`w-full px-3 py-2 rounded-md border ${
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2`}
                                         >
                                             <option value="male">Male</option>
                                             <option value="female">Female</option>
@@ -1297,11 +1128,11 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         value={newMember.notes}
                                         onChange={(e) => setNewMember(prev => ({ ...prev, notes: e.target.value }))}
                                         rows={3}
-                                        className={`w-full px-3 py-2 rounded-md border ${
+                                        className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                             isDarkMode 
-                                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                : 'bg-white border-gray-300 text-gray-900'
-                                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                        } focus:outline-none focus:ring-2`}
                                     />
                                 </div>
 
@@ -1310,23 +1141,63 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     <button
                                         onClick={() => {
                                             setIsAddModalOpen(false);
-                                            resetNewMember();
+                                            resetForm();
                                         }}
-                                        className={`px-4 py-2 rounded-md ${
+                                        className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                             isDarkMode
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        } transition-colors`}
+                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                        }`}
                                     >
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={handleAddMember}
-                                        className={`px-4 py-2 rounded-md ${
+                                        onClick={async () => {
+                                            // Add member logic
+                                            const errors: typeof formErrors = {};
+                                            
+                                            // Validation
+                                            if (!newMember.first_name.trim()) {
+                                                errors.first_name = 'First name is required';
+                                            }
+                                            if (!newMember.last_name.trim()) {
+                                                errors.last_name = 'Last name is required';
+                                            }
+                                            if (!newMember.birth_date) {
+                                                errors.birth_date = 'Birth date is required';
+                                            }
+                                            if (showDeathDate && newMember.death_date && new Date(newMember.death_date) <= new Date(newMember.birth_date)) {
+                                                errors.death_date = 'Death date must be after birth date';
+                                            }
+                                            
+                                            if (Object.keys(errors).length > 0) {
+                                                setFormErrors(errors);
+                                                return;
+                                            }
+                                            
+                                            try {
+                                                // Send data to backend
+                                                await addMember(newMember);
+                                                
+                                                // Show success message
+                                                alert(`Member added successfully!\n\nName: ${newMember.first_name} ${newMember.last_name}\nBirth Date: ${newMember.birth_date}\nGender: ${newMember.gender}`);
+                                                
+                                                // Reset form and close modal
+                                                resetForm();
+                                                setIsAddModalOpen(false);
+                                                
+                                                // Refresh the page to show new data
+                                                refreshData();
+                                            } catch (error) {
+                                                console.error('Failed to add member:', error);
+                                                alert(`Failed to add member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                             isDarkMode
-                                                ? 'bg-blue-600 hover:bg-blue-700'
-                                                : 'bg-blue-500 hover:bg-blue-600'
-                                        } text-white transition-colors`}
+                                                ? 'bg-blue-600 hover:bg-blue-700 border border-blue-500'
+                                                : 'bg-blue-500 hover:bg-blue-600 border border-blue-400'
+                                        } text-white`}
                                     >
                                         Add Member
                                     </button>
@@ -1339,8 +1210,8 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
             {/* Edit Member Modal */}
             {isEditModalOpen && editingMember && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl`}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl shadow-2xl`}>
                         <div className={`p-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
@@ -1351,7 +1222,7 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         setIsEditModalOpen(false);
                                         setEditingMember(null);
                                     }}
-                                    className={`text-gray-400 hover:text-gray-500 transition-colors`}
+                                    className={`text-gray-400 hover:text-gray-500 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700`}
                                 >
                                     <span className="text-2xl">×</span>
                                 </button>
@@ -1361,13 +1232,13 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                 {/* Photo Upload */}
                                 <div className="flex justify-center">
                                     <div className="relative">
-                                        <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden ${
-                                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                                        <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden transition-all duration-200 shadow-lg ${
+                                            isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-200 border border-gray-300'
                                         }`}>
-                                            {editingMember.photo ? (
+                                            {photoPreview ? (
                                                 <img
-                                                    src={typeof editingMember.photo === 'string' ? editingMember.photo : URL.createObjectURL(editingMember.photo as File)}
-                                                    alt={`${editingMember.first_name} ${editingMember.last_name}`}
+                                                    src={photoPreview}
+                                                    alt="Preview"
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
@@ -1382,10 +1253,12 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0];
                                                 if (file) {
-                                                    setEditingMember(prev => prev ? {
-                                                        ...prev,
-                                                        photo: file as unknown as string // Type assertion to match FamilyMember interface
-                                                    } : null);
+                                                    setNewMember(prev => ({ ...prev, photo: file }));
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setPhotoPreview(reader.result as string);
+                                                    };
+                                                    reader.readAsDataURL(file);
                                                 }
                                             }}
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -1403,17 +1276,17 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         </label>
                                         <input
                                             type="text"
-                                            value={editingMember.first_name}
-                                            onChange={(e) => setEditingMember(prev => prev ? ({
-                                                ...prev,
-                                                first_name: e.target.value
-                                            }) : null)}
-                                            className={`w-full px-3 py-2 rounded-md border ${
+                                            value={newMember.first_name}
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, first_name: e.target.value }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2 ${formErrors.first_name ? 'border-red-500' : ''}`}
                                         />
+                                        {formErrors.first_name && (
+                                            <p className="text-red-500 text-xs mt-1">{formErrors.first_name}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className={`block text-sm font-medium mb-1 ${
@@ -1423,17 +1296,17 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         </label>
                                         <input
                                             type="text"
-                                            value={editingMember.last_name}
-                                            onChange={(e) => setEditingMember(prev => prev ? ({
-                                                ...prev,
-                                                last_name: e.target.value
-                                            }) : null)}
-                                            className={`w-full px-3 py-2 rounded-md border ${
+                                            value={newMember.last_name}
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, last_name: e.target.value }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2 ${formErrors.last_name ? 'border-red-500' : ''}`}
                                         />
+                                        {formErrors.last_name && (
+                                            <p className="text-red-500 text-xs mt-1">{formErrors.last_name}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -1446,37 +1319,36 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         </label>
                                         <input
                                             type="date"
-                                            value={editingMember.birth_date}
-                                            onChange={(e) => setEditingMember(prev => prev ? ({
-                                                ...prev,
-                                                birth_date: e.target.value
-                                            }) : null)}
-                                            className={`w-full px-3 py-2 rounded-md border ${
+                                            value={newMember.birth_date}
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, birth_date: e.target.value }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2 ${formErrors.birth_date ? 'border-red-500' : ''}`}
                                         />
+                                        {formErrors.birth_date && (
+                                            <p className="text-red-500 text-xs mt-1">{formErrors.birth_date}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <div className="flex items-center mb-2">
                                             <input
                                                 type="checkbox"
-                                                id="enableEditDeathDate"
-                                                checked={showEditDeathDate}
+                                                id="enableDeathDate"
+                                                checked={showDeathDate}
                                                 onChange={(e) => {
-                                                    setShowEditDeathDate(e.target.checked);
-                                                    if (!e.target.checked && editingMember) {
-                                                        setEditingMember(prev => prev ? ({
-                                                            ...prev,
-                                                            death_date: ''
-                                                        }) : null);
+                                                    setShowDeathDate(e.target.checked);
+                                                    if (!e.target.checked) {
+                                                        setNewMember(prev => ({ ...prev, death_date: '' }));
                                                     }
                                                 }}
-                                                className="mr-2"
+                                                className={`mr-2 rounded transition-all duration-200 ${
+                                                    isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
+                                                }`}
                                             />
                                             <label
-                                                htmlFor="enableEditDeathDate"
+                                                htmlFor="enableDeathDate"
                                                 className={`text-sm font-medium ${
                                                     isDarkMode ? 'text-gray-300' : 'text-gray-700'
                                                 }`}
@@ -1484,21 +1356,23 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                 Add Death Date
                                             </label>
                                         </div>
-                                        {showEditDeathDate && (
-                                            <input
-                                                type="date"
-                                                value={editingMember.death_date || ''}
-                                                onChange={(e) => setEditingMember(prev => prev ? ({
-                                                    ...prev,
-                                                    death_date: e.target.value
-                                                }) : null)}
-                                                min={editingMember.birth_date}
-                                                className={`w-full px-3 py-2 rounded-md border ${
-                                                    isDarkMode 
-                                                        ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                        : 'bg-white border-gray-300 text-gray-900'
-                                                } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                            />
+                                        {showDeathDate && (
+                                            <>
+                                                <input
+                                                    type="date"
+                                                    value={newMember.death_date}
+                                                    onChange={(e) => setNewMember(prev => ({ ...prev, death_date: e.target.value }))}
+                                                    min={newMember.birth_date}
+                                                    className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
+                                                        isDarkMode 
+                                                            ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                            : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                                    } focus:outline-none focus:ring-2 ${formErrors.death_date ? 'border-red-500' : ''}`}
+                                                />
+                                                {formErrors.death_date && (
+                                                    <p className="text-red-500 text-xs mt-1">{formErrors.death_date}</p>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>
@@ -1511,16 +1385,13 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             Gender
                                         </label>
                                         <select
-                                            value={editingMember.gender}
-                                            onChange={(e) => setEditingMember(prev => prev ? ({
-                                                ...prev,
-                                                gender: e.target.value as 'male' | 'female' | 'other'
-                                            }) : null)}
-                                            className={`w-full px-3 py-2 rounded-md border ${
+                                            value={newMember.gender}
+                                            onChange={(e) => setNewMember(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' }))}
+                                            className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                                 isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                    ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                            } focus:outline-none focus:ring-2`}
                                         >
                                             <option value="male">Male</option>
                                             <option value="female">Female</option>
@@ -1537,17 +1408,14 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         Notes
                                     </label>
                                     <textarea
-                                        value={editingMember.notes || ''}
-                                        onChange={(e) => setEditingMember(prev => prev ? ({
-                                            ...prev,
-                                            notes: e.target.value
-                                        }) : null)}
+                                        value={newMember.notes}
+                                        onChange={(e) => setNewMember(prev => ({ ...prev, notes: e.target.value }))}
                                         rows={3}
-                                        className={`w-full px-3 py-2 rounded-md border ${
+                                        className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
                                             isDarkMode 
-                                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                : 'bg-white border-gray-300 text-gray-900'
-                                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                                                ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                        } focus:outline-none focus:ring-2`}
                                     />
                                 </div>
 
@@ -1558,23 +1426,66 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                             setIsEditModalOpen(false);
                                             setEditingMember(null);
                                         }}
-                                        className={`px-4 py-2 rounded-md ${
+                                        className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                             isDarkMode
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        } transition-colors`}
+                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                        }`}
                                     >
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={handleEditMember}
-                                        className={`px-4 py-2 rounded-md ${
+                                        onClick={async () => {
+                                            // Edit member logic
+                                            const errors: typeof formErrors = {};
+                                            
+                                            // Validation
+                                            if (!newMember.first_name.trim()) {
+                                                errors.first_name = 'First name is required';
+                                            }
+                                            if (!newMember.last_name.trim()) {
+                                                errors.last_name = 'Last name is required';
+                                            }
+                                            if (!newMember.birth_date) {
+                                                errors.birth_date = 'Birth date is required';
+                                            }
+                                            if (showDeathDate && newMember.death_date && new Date(newMember.death_date) <= new Date(newMember.birth_date)) {
+                                                errors.death_date = 'Death date must be after birth date';
+                                            }
+                                            
+                                            if (Object.keys(errors).length > 0) {
+                                                setFormErrors(errors);
+                                                return;
+                                            }
+                                            
+                                            if (!editingMember) return;
+                                            
+                                            try {
+                                                // Send data to backend
+                                                await updateMember(editingMember.id, newMember);
+                                                
+                                                // Show success message
+                                                alert(`Member updated successfully!\n\nName: ${newMember.first_name} ${newMember.last_name}\nBirth Date: ${newMember.birth_date}\nGender: ${newMember.gender}`);
+                                                
+                                                // Reset form and close modal
+                                                resetForm();
+                                                setIsEditModalOpen(false);
+                                                setEditingMember(null);
+                                                
+                                                // Refresh the page to show updated data
+                                                refreshData();
+                                            } catch (error) {
+                                                console.error('Failed to update member:', error);
+                                                alert(`Failed to update member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                             isDarkMode
-                                                ? 'bg-blue-600 hover:bg-blue-700'
-                                                : 'bg-blue-500 hover:bg-blue-600'
-                                        } text-white transition-colors`}
+                                                ? 'bg-blue-600 hover:bg-blue-700 border border-blue-500'
+                                                : 'bg-blue-500 hover:bg-blue-600 border border-blue-400'
+                                        } text-white`}
                                     >
-                                        Save Changes
+                                        Update Member
                                     </button>
                                 </div>
                             </div>
@@ -1585,10 +1496,10 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
             {/* Manage Relationships Modal */}
             {isManageRelationshipsModalOpen && managingMember && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl max-h-[90vh] flex flex-col`}>
-                        <div className={`p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <div className="flex justify-between items-center">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className={`w-full max-4xl ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl shadow-2xl`}>
+                        <div className={`p-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <div className="flex justify-between items-center mb-6">
                                 <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                     Manage Relationships for {managingMember.first_name} {managingMember.last_name}
                                 </h3>
@@ -1596,142 +1507,179 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                     onClick={() => {
                                         setIsManageRelationshipsModalOpen(false);
                                         setManagingMember(null);
+                                        resetRelationshipForm();
                                     }}
-                                    className={`text-gray-400 hover:text-gray-500 transition-colors`}
+                                    className={`text-gray-400 hover:text-gray-500 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700`}
                                 >
                                     <span className="text-2xl">×</span>
                                 </button>
                             </div>
-                        </div>
 
-                        <div className="flex-1 overflow-y-auto p-6">
-                            <div className="space-y-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Current Relationships */}
                                 <div>
-                                    <h4 className={`text-lg font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    <h4 className={`text-lg font-medium mb-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                         Current Relationships
                                     </h4>
-                                    <div className="space-y-2 px-6 pt-2">
-                                        {managingMember.relationships.map((rel) => {
-                                            const relatedMember = getMemberById(rel.to_member_id);
-                                            return (
-                                                <div key={rel.id} className={`flex items-center justify-between p-2 rounded-md ${
-                                                    isDarkMode ? 'bg-gray-700' : 'bg-gray-50'
-                                                }`}>
-                                                    <span className={isDarkMode ? 'text-gray-200' : 'text-gray-700'}>
-                                                        {getRelationshipLabel(rel.relationship_type)}: {relatedMember?.first_name} {relatedMember?.last_name}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => handleRemoveRelationship(rel.id)}
-                                                        className="text-red-500 hover:text-red-700"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                        {managingMember.relationships.length === 0 && (
+                                    <div className="space-y-3">
+                                        {managingMember.relationships.length === 0 ? (
                                             <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                No relationships added yet.
+                                                No relationships defined yet.
                                             </p>
+                                        ) : (
+                                            managingMember.relationships.map((rel: FamilyRelationship) => {
+                                                const relatedMemberId = rel.to_member_id === managingMember.id ? rel.from_member_id : rel.to_member_id;
+                                                const relatedMember = getMemberById(relatedMemberId);
+                                                return (
+                                                    <div
+                                                        key={rel.id}
+                                                        className={`p-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                            isDarkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'
+                                                        }`}
+                                                    >
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <p className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                                    {relatedMember ? `${relatedMember.first_name} ${relatedMember.last_name}` : 'Unknown Member'}
+                                                                </p>
+                                                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                    {getRelationshipLabel(rel.relationship_type)}
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    // Delete relationship logic
+                                                                    if (confirm(`Are you sure you want to remove the relationship between ${managingMember.first_name} ${managingMember.last_name} and ${relatedMember ? `${relatedMember.first_name} ${relatedMember.last_name}` : 'this member'}?`)) {
+                                                                        try {
+                                                                            await removeRelationship(rel.id);
+                                                                            alert(`Relationship removed successfully!`);
+                                                                            refreshData();
+                                                                        } catch (error) {
+                                                                            console.error('Failed to remove relationship:', error);
+                                                                            alert(`Failed to remove relationship: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                className={`text-red-500 hover:text-red-700 transition-colors p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20`}
+                                                                title="Remove Relationship"
+                                                            >
+                                                                <span className="text-lg">×</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Add New Relationship */}
-                                <div className="px-6">
-                                    <h4 className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                <div>
+                                    <h4 className={`text-lg font-medium mb-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
                                         Add New Relationship
                                     </h4>
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                        <select
-                                            name="member"
-                                            className={`w-full sm:flex-1 px-3 py-2 rounded-md border ${
-                                                isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                        >
-                                            <option value="">Select a member...</option>
-                                            {familyMembers
-                                                .filter(m => m.id !== managingMember.id)
-                                                .map(member => (
-                                                    <option key={member.id} value={member.id}>
-                                                        {member.first_name} {member.last_name}
-                                                    </option>
-                                                ))
-                                            }
-                                        </select>
-                                        <select
-                                            name="relationship"
-                                            className={`w-full sm:w-40 px-3 py-2 rounded-md border ${
-                                                isDarkMode 
-                                                    ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                    : 'bg-white border-gray-300 text-gray-900'
-                                            } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                        >
-                                            <option value="">Select type...</option>
-                                            <option value="parent">Parent</option>
-                                            <option value="child">Child</option>
-                                            <option value="spouse">Spouse</option>
-                                            <option value="sibling">Sibling</option>
-                                            <option value="grandparent">Grandparent</option>
-                                            <option value="great-grandparent">Great Grandparent</option>
-                                            <option value="ancestor">Ancestor</option>
-                                            <option value="grandchild">Grandchild</option>
-                                            <option value="great-grandchild">Great Grandchild</option>
-                                            <option value="descendant">Descendant</option>
-                                        </select>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className={`block text-sm font-medium mb-1 ${
+                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                            }`}>
+                                                Relationship Type
+                                            </label>
+                                            <select
+                                                value={newRelationship.relationship_type}
+                                                onChange={(e) => setNewRelationship(prev => ({ ...prev, relationship_type: e.target.value }))}
+                                                className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                        : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                                } focus:outline-none focus:ring-2`}
+                                            >
+                                                <option value="">Select relationship type</option>
+                                                <option value="parent">Parent</option>
+                                                <option value="child">Child</option>
+                                                <option value="spouse">Spouse</option>
+                                                <option value="sibling">Sibling</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className={`block text-sm font-medium mb-1 ${
+                                                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                                            }`}>
+                                                Related Member
+                                            </label>
+                                            <select
+                                                value={newRelationship.to_member_id}
+                                                onChange={(e) => setNewRelationship(prev => ({ ...prev, to_member_id: e.target.value }))}
+                                                className={`w-full px-3 py-2 rounded-lg border transition-all duration-200 shadow-sm ${
+                                                    isDarkMode 
+                                                        ? 'bg-gray-700 border-gray-600 text-gray-200 focus:border-blue-500 focus:ring-blue-500' 
+                                                        : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+                                                } focus:outline-none focus:ring-2`}
+                                            >
+                                                <option value="">Select a family member</option>
+                                                {familyMembers
+                                                    .filter(member => member.id !== managingMember?.id)
+                                                    .map(member => (
+                                                        <option key={member.id} value={member.id}>
+                                                            {member.first_name} {member.last_name}
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                        </div>
                                         <button
                                             onClick={async () => {
-                                                const memberSelect = document.querySelector('select[name="member"]') as HTMLSelectElement;
-                                                const relationshipSelect = document.querySelector('select[name="relationship"]') as HTMLSelectElement;
-                                                
-                                                if (memberSelect && relationshipSelect) {
-                                                    const toMemberId = parseInt(memberSelect.value);
-                                                    const relationshipType = relationshipSelect.value as RelationshipType;
-                                                    
-                                                    if (!toMemberId || !relationshipType) {
-                                                        alert('Please select both a member and a relationship type.');
-                                                        return;
-                                                    }
+                                                if (!newRelationship.relationship_type || !newRelationship.to_member_id || !managingMember) {
+                                                    alert('Please select both relationship type and related member.');
+                                                    return;
+                                                }
 
-                                                    await handleAddRelationship(managingMember.id, toMemberId, relationshipType);
-                                                    // Reset selects
-                                                    memberSelect.value = '';
-                                                    relationshipSelect.value = '';
+                                                try {
+                                                    await addRelationship(
+                                                        managingMember.id,
+                                                        parseInt(newRelationship.to_member_id),
+                                                        newRelationship.relationship_type
+                                                    );
+                                                    
+                                                    alert('Relationship added successfully!');
+                                                    
+                                                    // Reset form
+                                                    resetRelationshipForm();
+                                                    
+                                                    // Refresh data
+                                                    refreshData();
+                                                } catch (error) {
+                                                    console.error('Failed to add relationship:', error);
+                                                    alert(`Failed to add relationship: ${error instanceof Error ? error.message : 'Unknown error'}`);
                                                 }
                                             }}
-                                            className={`w-full sm:w-auto px-4 py-2 rounded-md ${
+                                            className={`w-full px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                                 isDarkMode
-                                                    ? 'bg-blue-600 hover:bg-blue-700'
-                                                    : 'bg-blue-500 hover:bg-blue-600'
-                                            } text-white transition-colors`}
+                                                    ? 'bg-blue-600 hover:bg-blue-700 border border-blue-500'
+                                                    : 'bg-blue-500 hover:bg-blue-600 border border-blue-400'
+                                            } text-white`}
                                         >
-                                            Add
+                                            Add Relationship
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Footer with close button */}
-                        <div className={`p-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <div className="flex justify-end">
+                            {/* Action Buttons */}
+                            <div className="flex justify-end gap-4 mt-6">
                                 <button
                                     onClick={() => {
                                         setIsManageRelationshipsModalOpen(false);
                                         setManagingMember(null);
-                                        // Reload the page after closing the relationships modal
-                                        window.location.reload();
+                                        resetRelationshipForm();
                                     }}
-                                    className={`px-4 py-2 rounded-md ${
+                                    className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                         isDarkMode
-                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                    } transition-colors`}
+                                            ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                    }`}
                                 >
-                                    Done
+                                    Close
                                 </button>
                             </div>
                         </div>
@@ -1741,72 +1689,190 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
 
             {/* Import Modal */}
             {isImportModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className={`w-full max-w-md ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl`}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className={`w-full max-w-2xl ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'} rounded-xl shadow-2xl`}>
                         <div className={`p-6 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                    Import Family Tree
+                                    Import Family Data
                                 </h3>
                                 <button
                                     onClick={() => {
                                         setIsImportModalOpen(false);
                                         setImportFile(null);
+                                        setIsImporting(false);
                                     }}
-                                    className={`text-gray-400 hover:text-gray-500 transition-colors`}
+                                    className={`text-gray-400 hover:text-gray-500 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700`}
                                 >
                                     <span className="text-2xl">×</span>
                                 </button>
                             </div>
 
                             <div className="space-y-6">
+                                {/* File Upload */}
                                 <div>
                                     <label className={`block text-sm font-medium mb-2 ${
                                         isDarkMode ? 'text-gray-300' : 'text-gray-700'
                                     }`}>
-                                        Select JSON File
+                                        Select File (JSON)
                                     </label>
-                                    <input
-                                        type="file"
-                                        accept=".json"
-                                        onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                                        className={`w-full px-3 py-2 rounded-md border ${
-                                            isDarkMode 
-                                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                : 'bg-white border-gray-300 text-gray-900'
-                                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                    />
-                                    <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        Please select a JSON file exported from a family tree.
-                                    </p>
+                                    <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
+                                        isDarkMode 
+                                            ? 'border-gray-600 hover:border-gray-500 bg-gray-700/50' 
+                                            : 'border-gray-300 hover:border-gray-400 bg-gray-50'
+                                    }`}>
+                                        {importFile ? (
+                                            <div>
+                                                <p className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                    {importFile.name}
+                                                </p>
+                                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {(importFile.size / 1024).toFixed(1)} KB
+                                                </p>
+                                                <button
+                                                    onClick={() => setImportFile(null)}
+                                                    className={`mt-2 text-red-500 hover:text-red-700 transition-colors`}
+                                                >
+                                                    Remove File
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <FaFileImport className={`mx-auto w-8 h-8 mb-2 ${
+                                                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                                                }`} />
+                                                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Supports JSON format only
+                                                </p>
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept=".json"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setImportFile(file);
+                                                }
+                                            }}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Import Options */}
+                                {/* Import Mode Selection */}
                                 <div>
                                     <label className={`block text-sm font-medium mb-2 ${
                                         isDarkMode ? 'text-gray-300' : 'text-gray-700'
                                     }`}>
-                                        How to handle existing members?
+                                        Import Mode
                                     </label>
-                                    <select
-                                        value={importMode}
-                                        onChange={(e) => setImportMode(e.target.value as 'skip' | 'update' | 'duplicate')}
-                                        className={`w-full px-3 py-2 rounded-md border ${
-                                            isDarkMode 
-                                                ? 'bg-gray-700 border-gray-600 text-gray-200' 
-                                                : 'bg-white border-gray-300 text-gray-900'
-                                        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                    >
-                                        <option value="skip">Skip existing members</option>
-                                        <option value="update">Update existing members</option>
-                                        <option value="duplicate">Create as new members</option>
-                                    </select>
-                                    <p className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {importMode === 'skip' && 'Existing members will be skipped during import.'}
-                                        {importMode === 'update' && 'Existing members will be updated with new data.'}
-                                        {importMode === 'duplicate' && 'All members will be created as new entries.'}
-                                    </p>
+                                    <div className="space-y-2">
+                                        <label className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                                            importMode === 'skip' 
+                                                ? isDarkMode 
+                                                    ? 'bg-blue-900/30 border border-blue-600' 
+                                                    : 'bg-blue-50 border border-blue-200'
+                                                : isDarkMode 
+                                                    ? 'bg-gray-700 border border-gray-600 hover:bg-gray-600' 
+                                                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                        }`}>
+                                            <input
+                                                type="radio"
+                                                name="importMode"
+                                                value="skip"
+                                                checked={importMode === 'skip'}
+                                                onChange={(e) => setImportMode(e.target.value as 'skip' | 'update' | 'duplicate')}
+                                                className="mr-3"
+                                            />
+                                            <div>
+                                                <div className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                    Skip Duplicates
+                                                </div>
+                                                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    Only import new members, skip existing ones
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                                            importMode === 'update' 
+                                                ? isDarkMode 
+                                                    ? 'bg-blue-900/30 border border-blue-600' 
+                                                    : 'bg-blue-50 border border-blue-200'
+                                                : isDarkMode 
+                                                    ? 'bg-gray-700 border border-gray-600 hover:bg-gray-600' 
+                                                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                        }`}>
+                                            <input
+                                                type="radio"
+                                                name="importMode"
+                                                value="update"
+                                                checked={importMode === 'update'}
+                                                onChange={(e) => setImportMode(e.target.value as 'skip' | 'update' | 'duplicate')}
+                                                className="mr-3"
+                                            />
+                                            <div>
+                                                <div className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                    Update Existing
+                                                </div>
+                                                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    Update existing members with new data
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                                            importMode === 'duplicate' 
+                                                ? isDarkMode 
+                                                    ? 'bg-blue-900/30 border border-blue-600' 
+                                                    : 'bg-blue-50 border border-blue-200'
+                                                : isDarkMode 
+                                                    ? 'bg-gray-700 border border-gray-600 hover:bg-gray-600' 
+                                                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                        }`}>
+                                            <input
+                                                type="radio"
+                                                name="importMode"
+                                                value="duplicate"
+                                                checked={importMode === 'duplicate'}
+                                                onChange={(e) => setImportMode(e.target.value as 'skip' | 'update' | 'duplicate')}
+                                                className="mr-3"
+                                            />
+                                            <div>
+                                                <div className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                                    Allow Duplicates
+                                                </div>
+                                                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    Import all data, including duplicates
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
+
+                                {/* Import Progress */}
+                                {isImporting && (
+                                    <div className={`p-4 rounded-lg ${
+                                        isDarkMode ? 'bg-blue-900/20 border border-blue-700/50' : 'bg-blue-50 border border-blue-200'
+                                    }`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className={`text-sm font-medium ${
+                                                isDarkMode ? 'text-blue-300' : 'text-blue-600'
+                                            }`}>
+                                                Importing...
+                                            </span>
+                                            <span className={`text-sm ${
+                                                isDarkMode ? 'text-blue-400' : 'text-blue-500'
+                                            }`}>
+                                                50%
+                                            </span>
+                                        </div>
+                                        <div className={`w-full bg-gray-200 rounded-full h-2 ${
+                                            isDarkMode ? 'bg-gray-700' : 'bg-gray-200'
+                                        }`}>
+                                            <div className={`bg-blue-600 h-2 rounded-full transition-all duration-300`} style={{ width: '50%' }}></div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Action Buttons */}
                                 <div className="flex justify-end gap-4 mt-6">
@@ -1814,28 +1880,35 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                         onClick={() => {
                                             setIsImportModalOpen(false);
                                             setImportFile(null);
+                                            setIsImporting(false);
                                         }}
-                                        className={`px-4 py-2 rounded-md ${
+                                        className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                             isDarkMode
-                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                        } transition-colors`}
-                                        disabled={isImporting}
+                                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                        }`}
                                     >
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={handleImport}
+                                        onClick={() => {
+                                            if (importFile) {
+                                                setIsImporting(true);
+                                                handleImport();
+                                            }
+                                        }}
                                         disabled={!importFile || isImporting}
-                                        className={`px-4 py-2 rounded-md ${
-                                            isDarkMode
-                                                ? 'bg-blue-600 hover:bg-blue-700'
-                                                : 'bg-blue-500 hover:bg-blue-600'
-                                        } text-white transition-colors ${
-                                            (!importFile || isImporting) ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
+                                        className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                            !importFile || isImporting
+                                                ? isDarkMode
+                                                    ? 'bg-gray-600 text-gray-400 border border-gray-600 cursor-not-allowed'
+                                                    : 'bg-gray-300 text-gray-500 border border-gray-300 cursor-not-allowed'
+                                                : isDarkMode
+                                                    ? 'bg-blue-600 hover:bg-blue-700 border border-blue-500'
+                                                    : 'bg-blue-500 hover:bg-blue-600 border border-blue-400'
+                                        } text-white`}
                                     >
-                                        {isImporting ? 'Importing...' : 'Import'}
+                                        {isImporting ? 'Importing...' : 'Import Data'}
                                     </button>
                                 </div>
                             </div>

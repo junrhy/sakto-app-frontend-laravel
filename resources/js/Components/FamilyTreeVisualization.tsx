@@ -9,6 +9,7 @@ interface Props {
     onNodeClick: (member: FamilyMember) => void;
     isDarkMode?: boolean;
     isFullPage?: boolean;
+    focusedMemberId?: number | null;
 }
 
 interface TreeNode {
@@ -25,7 +26,7 @@ interface TreeNode {
     children?: TreeNode[];
 }
 
-export default function FamilyTreeVisualization({ familyMembers, onNodeClick, isDarkMode = false, isFullPage = false }: Props) {
+export default function FamilyTreeVisualization({ familyMembers, onNodeClick, isDarkMode = false, isFullPage = false, focusedMemberId }: Props) {
     const [zoom, setZoom] = useState(1);
     const [translate, setTranslate] = useState({ x: 0, y: 0 });
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -86,6 +87,19 @@ export default function FamilyTreeVisualization({ familyMembers, onNodeClick, is
 
         setIsInitialized(true);
     }, [familyMembers, isFullPage, containerRef.current, isInitialized]);
+
+    // Handle focused member changes
+    useEffect(() => {
+        if (focusedMemberId && familyMembers.some(member => member.id === focusedMemberId)) {
+            setSelectedRootMember(focusedMemberId);
+            // Reset zoom and position to focus on the new member
+            if (containerRef.current) {
+                const { width, height } = containerRef.current.getBoundingClientRect();
+                setTranslate({ x: width / 2, y: isFullPage ? height / 4 : 50 });
+                setZoom(isFullPage ? 0.6 : 0.8);
+            }
+        }
+    }, [focusedMemberId, familyMembers, isFullPage]);
 
     // Function to update URL with current position
     const updatePositionInURL = useCallback((newTranslate: { x: number, y: number }, newZoom: number) => {
