@@ -860,7 +860,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                         </span>
                                                     </p>
                                                     <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded-full">
-                                                        {loan.frequency.charAt(0).toUpperCase() + loan.frequency.slice(1)}
+                                                        {loan.frequency ? loan.frequency.charAt(0).toUpperCase() + loan.frequency.slice(1) : 'Unknown'}
                                                     </span>
                                                 </div>
                                                 {loan.installment_frequency && loan.installment_amount && (
@@ -943,7 +943,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                         <div className="font-medium">Calculation Details:</div>
                                                         <div>Principal: {formatAmount(loan.amount, appCurrency)}</div>
                                                         <div>Interest Rate: {loan.interest_rate}% {loan.interest_type === 'fixed' ? '(Fixed)' : '(Compounding)'}</div>
-                                                        <div>Frequency: {loan.frequency.charAt(0).toUpperCase() + loan.frequency.slice(1)}</div>
+                                                        <div>Frequency: {loan.frequency ? loan.frequency.charAt(0).toUpperCase() + loan.frequency.slice(1) : 'Unknown'}</div>
                                                         <div>Duration: {calculateLoanDetails(loan).days} days</div>
                                                         <div className="pt-1">
                                                             <div className="font-medium">Interest Calculation:</div>
@@ -1506,7 +1506,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                         };
 
                                         const status = bill.status || 'pending';
-                                        const StatusIcon = statusConfig[status].icon;
+                                        const StatusIcon = statusConfig[status]?.icon || AlertCircle;
 
                                         // Format the created_at date
                                         const createdDate = new Date(bill.created_at);
@@ -1538,7 +1538,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="text-sm">
-                                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                        {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -1605,7 +1605,7 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     <div>
                                         <Label>Status</Label>
                                         <div className="mt-1">
-                                            {selectedBill.status.charAt(0).toUpperCase() + selectedBill.status.slice(1)}
+                                            {selectedBill.status ? selectedBill.status.charAt(0).toUpperCase() + selectedBill.status.slice(1) : 'Unknown'}
                                         </div>
                                     </div>
                                     <div>
@@ -1674,11 +1674,11 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     </Button>
                                     <Button 
                                         onClick={() => handleBillStatusUpdate(selectedBill.id, { 
-                                            status: selectedBill.status === 'pending' ? 'paid' : 'pending',
+                                            status: (selectedBill.status || 'pending') === 'pending' ? 'paid' : 'pending',
                                             note: billNote 
                                         })}
                                     >
-                                        Mark as {selectedBill.status === 'pending' ? 'Paid' : 'Pending'}
+                                        Mark as {(selectedBill.status || 'pending') === 'pending' ? 'Paid' : 'Pending'}
                                     </Button>
                                 </DialogFooter>
                             </div>
