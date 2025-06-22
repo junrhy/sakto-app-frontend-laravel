@@ -116,9 +116,9 @@ export default function PublicRegister({ event }: Props) {
 
         if (isMultipleRegistration) {
             // Validate multiple registrants
-            const validRegistrants = multipleRegistrants.filter(r => r.name.trim() && r.email.trim());
+            const validRegistrants = multipleRegistrants.filter(r => r.name.trim() && r.email.trim() && r.phone.trim());
             if (validRegistrants.length === 0) {
-                toast.error('Please add at least one registrant');
+                toast.error('Please add at least one registrant with complete information');
                 return;
             }
 
@@ -141,6 +141,11 @@ export default function PublicRegister({ event }: Props) {
             });
         } else {
             // Single registration
+            if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+                toast.error('Please fill in all required fields');
+                return;
+            }
+
             router.post(`/events/${eventData?.id}/public-register`, formData, {
                 onSuccess: () => {
                     toast.success('You have successfully registered for this event');
@@ -162,7 +167,7 @@ export default function PublicRegister({ event }: Props) {
     const getTotalPrice = () => {
         if (!eventData?.is_paid_event || !eventData?.event_price) return 0;
         const price = typeof eventData.event_price === 'number' ? eventData.event_price : parseFloat(eventData.event_price) || 0;
-        const registrantCount = isMultipleRegistration ? multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length : 1;
+        const registrantCount = isMultipleRegistration ? multipleRegistrants.filter(r => r.name.trim() && r.email.trim() && r.phone.trim()).length : 1;
         return price * registrantCount;
     };
 
@@ -276,7 +281,7 @@ export default function PublicRegister({ event }: Props) {
                                                                 <h3 className="font-semibold text-slate-900 mb-2">Payment Required</h3>
                                                                 <div className="text-2xl font-bold text-amber-700 mb-2">
                                                                     {isMultipleRegistration 
-                                                                        ? `${formatPrice(getTotalPrice(), eventData?.currency)} (${multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length} × ${formatPrice(eventData?.event_price, eventData?.currency)})`
+                                                                        ? `${formatPrice(getTotalPrice(), eventData?.currency)} (${multipleRegistrants.filter(r => r.name.trim() && r.email.trim() && r.phone.trim()).length} × ${formatPrice(eventData?.event_price, eventData?.currency)})`
                                                                         : formatPrice(eventData?.event_price, eventData?.currency)
                                                                     }
                                                                 </div>
@@ -350,13 +355,14 @@ export default function PublicRegister({ event }: Props) {
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2 md:col-span-2">
-                                                                            <Label htmlFor={`phone-${index}`} className="text-slate-700 font-medium">Phone Number</Label>
+                                                                            <Label htmlFor={`phone-${index}`} className="text-slate-700 font-medium">Phone Number *</Label>
                                                                             <Input
                                                                                 id={`phone-${index}`}
                                                                                 value={registrant.phone}
                                                                                 onChange={e => updateRegistrant(index, 'phone', e.target.value)}
+                                                                                required
                                                                                 className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                                                placeholder="Enter phone number (optional)"
+                                                                                placeholder="Enter phone number"
                                                                             />
                                                                         </div>
                                                                     </div>
@@ -404,13 +410,14 @@ export default function PublicRegister({ event }: Props) {
                                                             </div>
 
                                                             <div className="space-y-2">
-                                                                <Label htmlFor="phone" className="text-slate-700 font-medium">Phone Number</Label>
+                                                                <Label htmlFor="phone" className="text-slate-700 font-medium">Phone Number *</Label>
                                                                 <Input
                                                                     id="phone"
                                                                     value={formData.phone}
                                                                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                                    required
                                                                     className="border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 bg-white/50 backdrop-blur-sm"
-                                                                    placeholder="Enter your phone number (optional)"
+                                                                    placeholder="Enter your phone number"
                                                                 />
                                                             </div>
 
@@ -448,7 +455,7 @@ export default function PublicRegister({ event }: Props) {
                                                         >
                                                             <UserPlus className="w-4 h-4 mr-2" />
                                                             {isMultipleRegistration 
-                                                                ? `Register ${multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length} Person(s)`
+                                                                ? `Register ${multipleRegistrants.filter(r => r.name.trim() && r.email.trim() && r.phone.trim()).length} Person(s)`
                                                                 : 'Register for Event'
                                                             }
                                                         </Button>
@@ -529,7 +536,7 @@ export default function PublicRegister({ event }: Props) {
                                                     <div className="text-slate-600">
                                                         <div className="text-lg font-bold text-amber-700 mb-1">
                                                             {isMultipleRegistration 
-                                                                ? `${formatPrice(getTotalPrice(), eventData?.currency)} (${multipleRegistrants.filter(r => r.name.trim() && r.email.trim()).length} × ${formatPrice(eventData?.event_price, eventData?.currency)})`
+                                                                ? `${formatPrice(getTotalPrice(), eventData?.currency)} (${multipleRegistrants.filter(r => r.name.trim() && r.email.trim() && r.phone.trim()).length} × ${formatPrice(eventData?.event_price, eventData?.currency)})`
                                                                 : formatPrice(eventData?.event_price, eventData?.currency)
                                                             }
                                                         </div>
