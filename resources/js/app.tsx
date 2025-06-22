@@ -29,7 +29,7 @@ interface InertiaProps {
 const appName = 'Sakto Solutions'; // Default fallback
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${title}`,
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.tsx`,

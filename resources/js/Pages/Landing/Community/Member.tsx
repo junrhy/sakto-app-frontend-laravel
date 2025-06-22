@@ -1783,7 +1783,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
     return (
         <>
             <Head>
-                <title>{member?.name ? `${member.name} - Sakto App` : 'Member Profile - Sakto App'}</title>
+                <title>{member?.name ? `${member.name}` : 'Member Profile'}</title>
                 <meta name="description" content={member?.name ? `Profile page of ${member.name}` : 'Member Profile Page'} />
             </Head>
             

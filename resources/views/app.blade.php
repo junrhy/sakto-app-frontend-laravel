@@ -5,7 +5,38 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title inertia>{{ config('app.name', 'Sakto') }}</title>
+        <title inertia>
+            @php
+                $routeName = request()->route()->getName();
+                $title = config('app.name', 'Sakto');
+    
+                // Get user slug name for community member routes
+                if (in_array($routeName, ['community.member', 'member.short'])) {
+                    $identifier = request()->route('identifier');
+                    if ($identifier) {
+                        // Check if identifier is numeric (ID) or string (slug)
+                        $member = null;
+                        
+                        if (is_numeric($identifier)) {
+                            // Search by ID
+                            $member = \App\Models\User::where('project_identifier', 'community')
+                                ->where('id', $identifier)
+                                ->first();
+                        } else {
+                            // Search by slug
+                            $member = \App\Models\User::where('project_identifier', 'community')
+                                ->where('slug', $identifier)
+                                ->first();
+                        }
+                        
+                        if ($member) {
+                            $title = $member->name;
+                        }
+                    }
+                }
+            @endphp
+            {{ $title }}
+        </title>
 
         <!-- Add these lines for favicon support -->
         <link rel="icon" type="image" href="{{ asset('images/tetris-white-bg.png') }}" media="(prefers-color-scheme: light)">
