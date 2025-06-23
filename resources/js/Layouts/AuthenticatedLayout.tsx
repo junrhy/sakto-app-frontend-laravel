@@ -747,9 +747,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/clinic?app=${appParam}`}>
                                                         Clinic
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/clinic/settings?app=${appParam}`}>
-                                                        Settings
-                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -787,9 +784,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/loan/cbu?app=${appParam}`}>
                                                         CBU
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/loan/settings?app=${appParam}`}>
-                                                        Settings
-                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -823,9 +817,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/payroll?app=${appParam}`}>
                                                         Payroll
-                                                    </Dropdown.Link>
-                                                    <Dropdown.Link href={`/payroll/settings?app=${appParam}`}>
-                                                        Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
@@ -895,14 +886,8 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 </Dropdown.Trigger>
 
                                                 <Dropdown.Content>
-                                                    <Dropdown.Link href={`/sms-twilio?app=${appParam}`}>
-                                                        Twilio SMS
-                                                    </Dropdown.Link>
                                                     <Dropdown.Link href={`/sms-semaphore?app=${appParam}`}>
                                                         Semaphore SMS
-                                                    </Dropdown.Link>
-                                                    <Dropdown.Link href={`/sms/settings?app=${appParam}`}>
-                                                        Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
@@ -941,9 +926,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/email/templates?app=${appParam}`}>
                                                         Email Templates
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/email/settings?app=${appParam}`}>
-                                                        Settings
-                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -977,9 +959,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/contacts?app=${appParam}`}>
                                                         Contacts
-                                                    </Dropdown.Link>
-                                                    <Dropdown.Link href={`/contacts/settings?app=${appParam}`}>
-                                                        Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
@@ -1067,9 +1046,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/events?app=${appParam}`}>
                                                         Events
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/events/settings?app=${appParam}`}>
-                                                        Settings
-                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -1103,9 +1079,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/challenges?app=${appParam}`}>
                                                         Challenges
-                                                    </Dropdown.Link>
-                                                    <Dropdown.Link href={`/challenges/settings?app=${appParam}`}>
-                                                        Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
@@ -1141,9 +1114,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/content-creator?app=${appParam}`}>
                                                         Content Creator
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/content-creator/settings?app=${appParam}`}>
-                                                        Settings
-                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -1178,9 +1148,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/products?app=${appParam}`}>
                                                         Products
                                                     </Dropdown.Link>
-                                                    <Dropdown.Link href={`/products/settings?app=${appParam}`}>
-                                                        Settings
-                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -1214,9 +1181,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/pages?app=${appParam}`}>
                                                         Pages
-                                                    </Dropdown.Link>
-                                                    <Dropdown.Link href={`/pages/settings?app=${appParam}`}>
-                                                        Settings
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
