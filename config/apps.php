@@ -43,7 +43,7 @@ return [
         'categories' => ['Finance', 'Business', 'Payments'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['pro-plan', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
     ],
     [
         'title' => 'Rental',
@@ -114,11 +114,11 @@ return [
     [
         'title' => 'SMS',
         'route' => '/dashboard?app=sms',
-        'visible' => false,
+        'visible' => true,
         'description' => 'Send SMS to your customers and clients. Supports Twilio and Semaphore. Easily integrate with your existing apps.',
         'price' => 149,
         'categories' => ['Communication', 'Marketing', 'Business'],
-        'comingSoon' => true,
+        'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['pro-plan', 'annual-pro']
     ],

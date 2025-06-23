@@ -346,47 +346,14 @@ export default function Apps() {
                             <div className="lg:col-span-4 bg-gray-50/50 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-sm sm:rounded-lg p-4 md:p-6">
                                 {/* Search and Filter Section */}
                                 <div className="mb-6">
-                                    <div className="flex flex-col sm:flex-row gap-3 mb-3">
-                                        <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
-                                            <Input
-                                                placeholder="Search apps..."
-                                                className="pl-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                        </div>
-                                        <Button 
-                                            variant="outline" 
-                                            className="bg-white/80 hover:bg-slate-50 dark:bg-gray-800/80 dark:hover:bg-gray-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
-                                            onClick={() => setSelectedCategory(null)}
-                                        >
-                                            All Categories
-                                        </Button>
-                                    </div>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {visibleCategories.map((category) => (
-                                            <Badge 
-                                                key={category}
-                                                variant="secondary" 
-                                                className={`cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 ${
-                                                    selectedCategory === category ? 'ring-2 ring-slate-500 dark:ring-slate-400' : ''
-                                                }`}
-                                                onClick={() => setSelectedCategory(category)}
-                                            >
-                                                {category}
-                                            </Badge>
-                                        ))}
-                                        {allCategories.length > 5 && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                                                onClick={() => setShowAllCategories(!showAllCategories)}
-                                            >
-                                                {showAllCategories ? 'Show Less' : `Show ${allCategories.length - 5} More`}
-                                            </Button>
-                                        )}
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
+                                        <Input
+                                            placeholder="Search apps..."
+                                            className="pl-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
                                     </div>
                                 </div>
 

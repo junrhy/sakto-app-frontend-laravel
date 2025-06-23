@@ -887,7 +887,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
 
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/sms-semaphore?app=${appParam}`}>
-                                                        Semaphore SMS
+                                                        Send Message
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
