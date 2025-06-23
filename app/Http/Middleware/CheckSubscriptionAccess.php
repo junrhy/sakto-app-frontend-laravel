@@ -80,7 +80,8 @@ class CheckSubscriptionAccess
             'content-creator' => 'Content Creator',
             'products' => 'Products',
             'pages' => 'Pages',
-            'healthcare' => 'Healthcare'
+            'healthcare' => 'Healthcare',
+            'mortuary' => 'Mortuary'
         ];
 
         // Check route prefix
@@ -113,7 +114,8 @@ class CheckSubscriptionAccess
                 'content-creator' => 'Content Creator',
                 'products' => 'Products',
                 'pages' => 'Pages',
-                'healthcare' => 'Healthcare'
+                'healthcare' => 'Healthcare',
+                'mortuary' => 'Mortuary'
             ];
 
             return $appParamToNameMap[$appParam] ?? null;

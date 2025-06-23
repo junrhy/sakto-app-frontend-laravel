@@ -220,5 +220,16 @@ return [
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+    ],
+    [
+        'title' => 'Mortuary',
+        'route' => '/dashboard?app=mortuary',
+        'visible' => true,
+        'description' => 'Manage and track mortuary, including members, contributions, and claims.',
+        'price' => 149,
+        'categories' => ['Mortuary', 'Funeral'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
     ]
 ]; 

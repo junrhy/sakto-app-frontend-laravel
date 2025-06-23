@@ -40,6 +40,7 @@ class DashboardSeeder extends Seeder
                 ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'products'],
                 ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'pages'],
                 ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'healthcare'],
+                ['name' => 'Your Dashboard', 'user_id' => $user->id, 'is_default' => true, 'app' => 'mortuary'],
             ];
 
             foreach ($dashboards as $dashboard) {
