@@ -1841,7 +1841,7 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                 <div>
                                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone Number
+                                        Mobile Number
                                     </label>
                                     <input
                                         type="tel"

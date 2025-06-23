@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/genealogy';
-import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaSun, FaMoon, FaCamera, FaSitemap, FaUsers, FaChartPie, FaFileAlt } from 'react-icons/fa';
+import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompressAlt, FaCamera, FaSitemap, FaUsers, FaChartPie, FaFileAlt } from 'react-icons/fa';
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 import { useTheme } from '@/Components/ThemeProvider';
 
@@ -59,6 +59,33 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
     // Use global theme instead of local state
     const { theme, setTheme } = useTheme();
     const isDarkMode = theme === 'dark';
+
+    // Automatic time-based theme switching
+    useEffect(() => {
+        const updateThemeBasedOnTime = () => {
+            const now = new Date();
+            const hour = now.getHours();
+            
+            // Dark mode from 6 PM (18:00) to 6 AM (06:00)
+            // Light mode from 6 AM (06:00) to 6 PM (18:00)
+            const shouldBeDark = hour >= 18 || hour < 6;
+            
+            if (shouldBeDark && theme !== 'dark') {
+                setTheme('dark');
+            } else if (!shouldBeDark && theme !== 'light') {
+                setTheme('light');
+            }
+        };
+
+        // Update theme immediately
+        updateThemeBasedOnTime();
+
+        // Set up interval to check every minute
+        const interval = setInterval(updateThemeBasedOnTime, 60000);
+
+        // Cleanup interval on unmount
+        return () => clearInterval(interval);
+    }, [theme, setTheme]);
 
     const filteredMembers = familyMembers.filter((member: FamilyMember) =>
         `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
