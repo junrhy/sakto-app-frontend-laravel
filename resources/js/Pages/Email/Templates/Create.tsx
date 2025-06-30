@@ -6,7 +6,7 @@ import Form from './Form';
 export default function Create() {
     return (
         <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Create Email Template</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Create Email Template</h2>}
         >
             <Head title="Create Email Template" />
 

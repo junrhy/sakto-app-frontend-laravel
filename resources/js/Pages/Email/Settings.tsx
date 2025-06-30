@@ -55,7 +55,7 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="font-semibold text-xl text-white leading-tight">
+                <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                     Notification Settings
                 </h2>
             }
@@ -78,7 +78,7 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
                                                 <Label>Email Notifications</Label>
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                                     Receive notifications via email
                                                 </div>
                                             </div>

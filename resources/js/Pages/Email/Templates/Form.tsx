@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { useTheme } from "@/Components/ThemeProvider";
 
 interface EmailTemplate {
     id?: number;
@@ -19,6 +20,8 @@ interface Props {
 }
 
 export default function Form({ template, mode }: Props) {
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
     const [previewData, setPreviewData] = useState<Record<string, string>>({});
     const [preview, setPreview] = useState<{ subject: string; body: string } | null>(null);
 
@@ -76,11 +79,11 @@ export default function Form({ template, mode }: Props) {
 
     return (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="p-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Template Name
                             </label>
                             <input
@@ -88,14 +91,14 @@ export default function Form({ template, mode }: Props) {
                                 id="name"
                                 value={data.name}
                                 onChange={e => setData('name', e.target.value)}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm"
                                 required
                             />
-                            {errors.name && <div className="text-red-500 text-sm mt-1">{errors.name}</div>}
+                            {errors.name && <div className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</div>}
                         </div>
 
                         <div>
-                            <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Subject
                             </label>
                             <input
@@ -103,14 +106,14 @@ export default function Form({ template, mode }: Props) {
                                 id="subject"
                                 value={data.subject}
                                 onChange={e => setData('subject', e.target.value)}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm"
                                 required
                             />
-                            {errors.subject && <div className="text-red-500 text-sm mt-1">{errors.subject}</div>}
+                            {errors.subject && <div className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.subject}</div>}
                         </div>
 
                         <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Category
                             </label>
                             <input
@@ -118,13 +121,13 @@ export default function Form({ template, mode }: Props) {
                                 id="category"
                                 value={data.category}
                                 onChange={e => setData('category', e.target.value)}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm"
                             />
-                            {errors.category && <div className="text-red-500 text-sm mt-1">{errors.category}</div>}
+                            {errors.category && <div className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.category}</div>}
                         </div>
 
                         <div>
-                            <label htmlFor="body" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="body" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Body
                             </label>
                             <textarea
@@ -132,21 +135,21 @@ export default function Form({ template, mode }: Props) {
                                 value={data.body}
                                 onChange={e => setData('body', e.target.value)}
                                 rows={10}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 sm:text-sm"
                                 required
                             />
-                            {errors.body && <div className="text-red-500 text-sm mt-1">{errors.body}</div>}
+                            {errors.body && <div className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.body}</div>}
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between">
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Variables
                                 </label>
                                 <button
                                     type="button"
                                     onClick={addVariable}
-                                    className="text-sm text-indigo-600 hover:text-indigo-900"
+                                    className="text-sm text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                 >
                                     Add Variable
                                 </button>
@@ -154,13 +157,13 @@ export default function Form({ template, mode }: Props) {
                             <div className="mt-2 space-y-2">
                                 {data.variables.map((variable, index) => (
                                     <div key={index} className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-500">{`{{${variable}}}`}</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">{`{{${variable}}}`}</span>
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 setData('variables', data.variables.filter((_, i) => i !== index));
                                             }}
-                                            className="text-red-600 hover:text-red-900"
+                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                         >
                                             Remove
                                         </button>
@@ -175,9 +178,9 @@ export default function Form({ template, mode }: Props) {
                                     type="checkbox"
                                     checked={data.is_active}
                                     onChange={e => setData('is_active', e.target.checked)}
-                                    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">Active</span>
+                                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Active</span>
                             </label>
                         </div>
 
@@ -185,7 +188,7 @@ export default function Form({ template, mode }: Props) {
                             <button
                                 type="button"
                                 onClick={handlePreview}
-                                className="inline-flex items-center px-4 py-2 bg-gray-100 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 focus:bg-gray-200 active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                className="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-600 focus:bg-gray-200 dark:focus:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
                                 Preview
                             </button>
@@ -200,16 +203,16 @@ export default function Form({ template, mode }: Props) {
                     </form>
 
                     {preview && (
-                        <div className="mt-8 border-t pt-8">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4">Preview</h3>
-                            <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview</h3>
+                            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                                 <div className="mb-4">
-                                    <h4 className="text-sm font-medium text-gray-700">Subject:</h4>
-                                    <p className="mt-1 text-sm text-gray-900">{preview.subject}</p>
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Subject:</h4>
+                                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{preview.subject}</p>
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-medium text-gray-700">Body:</h4>
-                                    <div className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{preview.body}</div>
+                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Body:</h4>
+                                    <div className="mt-1 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{preview.body}</div>
                                 </div>
                             </div>
                         </div>

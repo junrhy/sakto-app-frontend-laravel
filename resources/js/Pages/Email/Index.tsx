@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { useTheme } from "@/Components/ThemeProvider";
 
 interface User {
     name: string;
@@ -34,6 +35,8 @@ interface Props {
 }
 
 export default function Index({ auth }: Props) {
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCcBcc, setShowCcBcc] = useState(false);
     const [showContactSelector, setShowContactSelector] = useState(false);
@@ -274,42 +277,42 @@ export default function Index({ auth }: Props) {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Email Sender</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Email Sender</h2>}
         >
             <Head title="Email Sender" />
 
-            <div className="py-12 bg-gray-50">
+            <div className="py-12 bg-gray-50 dark:bg-gray-900">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-lg sm:rounded-lg border border-gray-100">
+                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg sm:rounded-lg border border-gray-100 dark:border-gray-700">
                         <div className="p-8">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-6">Compose Email</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Compose Email</h3>
                             <form onSubmit={handleSubmit} className="space-y-8">
                                 {/* Recipients Section */}
-                                <div className="space-y-6 bg-gray-50 p-6 rounded-lg">
+                                <div className="space-y-6 bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
-                                            <label className="block text-sm font-semibold text-gray-700">
+                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                                 To <span className="text-red-500">*</span>
                                             </label>
                                             <div className="flex gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowContactSelector(true)}
-                                                    className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none transition-colors"
                                                 >
                                                     Select from Contacts
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowTemplateSelector(true)}
-                                                    className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none transition-colors"
                                                 >
                                                     Load Template
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowCcBcc(!showCcBcc)}
-                                                    className="text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none transition-colors"
+                                                    className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none transition-colors"
                                                 >
                                                     {showCcBcc ? 'Hide CC/BCC' : 'Show CC/BCC'}
                                                 </button>
@@ -321,7 +324,7 @@ export default function Index({ auth }: Props) {
                                                 value={toInput}
                                                 onChange={e => setToInput(e.target.value)}
                                                 onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRecipient('to', toInput))}
-                                                className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                                className="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 transition-colors"
                                                 placeholder="recipient@example.com"
                                             />
                                             <button
@@ -334,12 +337,12 @@ export default function Index({ auth }: Props) {
                                         </div>
                                         <div className="mt-2 flex flex-wrap gap-2">
                                             {data.to.map((email, index) => (
-                                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 transition-colors hover:bg-indigo-200">
+                                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-800">
                                                     {email}
                                                     <button
                                                         type="button"
                                                         onClick={() => removeRecipient('to', index)}
-                                                        className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                                                        className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none"
                                                     >
                                                         ×
                                                     </button>
@@ -347,21 +350,21 @@ export default function Index({ auth }: Props) {
                                             ))}
                                         </div>
                                         {data._errors?.to && (
-                                            <p className="mt-2 text-sm text-red-600">{data._errors.to}</p>
+                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{data._errors.to}</p>
                                         )}
                                     </div>
 
                                     {showCcBcc && (
-                                        <div className="space-y-6 border-t border-gray-200 pt-6">
+                                        <div className="space-y-6 border-t border-gray-200 dark:border-gray-600 pt-6">
                                             <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">CC</label>
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">CC</label>
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="email"
                                                         value={ccInput}
                                                         onChange={e => setCcInput(e.target.value)}
                                                         onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRecipient('cc', ccInput))}
-                                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                                        className="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 transition-colors"
                                                         placeholder="cc@example.com"
                                                     />
                                                     <button
@@ -374,12 +377,12 @@ export default function Index({ auth }: Props) {
                                                 </div>
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {data.cc.map((email, index) => (
-                                                        <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 transition-colors hover:bg-indigo-200">
+                                                        <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-800">
                                                             {email}
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeRecipient('cc', index)}
-                                                                className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                                                                className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none"
                                                             >
                                                                 ×
                                                             </button>
@@ -389,14 +392,14 @@ export default function Index({ auth }: Props) {
                                             </div>
 
                                             <div>
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2">BCC</label>
+                                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">BCC</label>
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="email"
                                                         value={bccInput}
                                                         onChange={e => setBccInput(e.target.value)}
                                                         onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRecipient('bcc', bccInput))}
-                                                        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors"
+                                                        className="block w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 transition-colors"
                                                         placeholder="bcc@example.com"
                                                     />
                                                     <button
@@ -409,12 +412,12 @@ export default function Index({ auth }: Props) {
                                                 </div>
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {data.bcc.map((email, index) => (
-                                                        <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 transition-colors hover:bg-indigo-200">
+                                                        <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-800">
                                                             {email}
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeRecipient('bcc', index)}
-                                                                className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 focus:outline-none"
+                                                                className="ml-2 inline-flex text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none"
                                                             >
                                                                 ×
                                                             </button>
@@ -429,7 +432,7 @@ export default function Index({ auth }: Props) {
                                 {/* Email Content Section */}
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                             Subject <span className="text-red-500">*</span>
                                         </label>
                                         <input
@@ -437,17 +440,17 @@ export default function Index({ auth }: Props) {
                                             value={data.subject}
                                             onChange={e => setData('subject', e.target.value)}
                                             className={`block w-full rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors ${
-                                                data._errors?.subject ? 'border-red-300' : 'border-gray-300'
-                                            }`}
+                                                data._errors?.subject ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                                            } dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400`}
                                             placeholder="Email subject"
                                         />
                                         {data._errors?.subject && (
-                                            <p className="mt-2 text-sm text-red-600">{data._errors.subject}</p>
+                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{data._errors.subject}</p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                             Message <span className="text-red-500">*</span>
                                         </label>
                                         <textarea
@@ -455,36 +458,36 @@ export default function Index({ auth }: Props) {
                                             onChange={e => setData('message', e.target.value)}
                                             rows={8}
                                             className={`block w-full rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-colors ${
-                                                data._errors?.message ? 'border-red-300' : 'border-gray-300'
-                                            }`}
+                                                data._errors?.message ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
+                                            } dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400`}
                                             placeholder="Type your message here..."
                                         />
-                                        <p className="mt-2 text-sm text-gray-500">HTML formatting is supported (e.g. &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;a&gt;links&lt;/a&gt;)</p>
+                                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">HTML formatting is supported (e.g. &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;a&gt;links&lt;/a&gt;)</p>
                                         {data._errors?.message && (
-                                            <p className="mt-2 text-sm text-red-600">{data._errors.message}</p>
+                                            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{data._errors.message}</p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Attachments</label>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Attachments</label>
                                         <div className="mt-1">
                                             <input
                                                 type="file"
                                                 ref={fileInputRef}
                                                 onChange={handleFileChange}
                                                 multiple
-                                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors cursor-pointer"
+                                                className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 dark:file:bg-indigo-900 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800 transition-colors cursor-pointer"
                                             />
                                         </div>
                                         {data.attachments.length > 0 && (
                                             <div className="mt-4 space-y-2">
                                                 {data.attachments.map((file, index) => (
-                                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                                        <span className="text-sm text-gray-600">{file.name}</span>
+                                                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                                        <span className="text-sm text-gray-600 dark:text-gray-300">{file.name}</span>
                                                         <button
                                                             type="button"
                                                             onClick={() => removeAttachment(index)}
-                                                            className="text-gray-400 hover:text-red-500 focus:outline-none transition-colors"
+                                                            className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 focus:outline-none transition-colors"
                                                         >
                                                             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                                                                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -494,12 +497,12 @@ export default function Index({ auth }: Props) {
                                                 ))}
                                             </div>
                                         )}
-                                        {errors.attachments && <p className="mt-2 text-sm text-red-600">{errors.attachments}</p>}
+                                        {errors.attachments && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.attachments}</p>}
                                     </div>
                                 </div>
 
                                 <div className="pt-6">
-                                    <p className="text-sm text-gray-600 mb-4 text-center">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-center">
                                         Sending this email will cost 1 credit from your balance
                                     </p>
                                     <button
@@ -529,12 +532,12 @@ export default function Index({ auth }: Props) {
             {/* Contact Selector Modal */}
             {showContactSelector && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                    <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                    <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Select Contacts</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Select Contacts</h3>
                             <button
                                 onClick={() => setShowContactSelector(false)}
-                                className="text-gray-400 hover:text-gray-500"
+                                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
                             >
                                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -549,7 +552,7 @@ export default function Index({ auth }: Props) {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search contacts..."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
                             </div>
                             <div className="flex gap-2">
@@ -557,7 +560,7 @@ export default function Index({ auth }: Props) {
                                     <select
                                         value={groupFilter}
                                         onChange={(e) => setGroupFilter(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                                     >
                                         <option value="all">All Groups</option>
                                         {Array.from(new Set(contacts.flatMap(contact => contact.group || []))).map(group => (
@@ -592,33 +595,33 @@ export default function Index({ auth }: Props) {
                         </div>
 
                         <div className="max-h-96 overflow-y-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Select
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Name
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Email
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {filteredContacts.map((contact) => (
-                                        <tr key={contact.id} className="hover:bg-gray-50">
+                                        <tr key={contact.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedContacts.some(c => c.id === contact.id)}
                                                     onChange={() => toggleContactSelection(contact)}
-                                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
                                                 />
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                     {contact.first_name} {contact.last_name}
                                                 </div>
                                                 {contact.group && contact.group.length > 0 && (
@@ -626,7 +629,7 @@ export default function Index({ auth }: Props) {
                                                         {contact.group.map((group, index) => (
                                                             <span
                                                                 key={index}
-                                                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                                                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200"
                                                             >
                                                                 {group}
                                                             </span>
@@ -635,7 +638,7 @@ export default function Index({ auth }: Props) {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">{contact.email}</div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">{contact.email}</div>
                                             </td>
                                         </tr>
                                     ))}
@@ -649,12 +652,12 @@ export default function Index({ auth }: Props) {
             {/* Template Selector Modal */}
             {showTemplateSelector && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                    <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+                    <div className="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Select Template</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Select Template</h3>
                             <button
                                 onClick={() => setShowTemplateSelector(false)}
-                                className="text-gray-400 hover:text-gray-500"
+                                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
                             >
                                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -668,54 +671,54 @@ export default function Index({ auth }: Props) {
                                 value={templateSearchQuery}
                                 onChange={(e) => setTemplateSearchQuery(e.target.value)}
                                 placeholder="Search templates..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                             />
                         </div>
 
                         <div className="max-h-96 overflow-y-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Name
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Subject
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Category
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Action
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {filteredTemplates.map((template) => (
-                                        <tr key={template.id} className="hover:bg-gray-50">
+                                        <tr key={template.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                     {template.name}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                                     {template.subject}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                                     {template.category || 'Uncategorized'}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                                     template.is_active
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-red-100 text-red-800'
+                                                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                                        : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                                                 }`}>
                                                     {template.is_active ? 'Active' : 'Inactive'}
                                                 </span>
@@ -723,7 +726,7 @@ export default function Index({ auth }: Props) {
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button
                                                     onClick={() => loadTemplate(template)}
-                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                    className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                 >
                                                     Load
                                                 </button>
