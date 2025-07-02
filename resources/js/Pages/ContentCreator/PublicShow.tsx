@@ -1,6 +1,6 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
-import { Content } from '@/types/content';
+import { Content, YouTubeVideo } from '@/types/content';
 import { format } from 'date-fns';
 import { Calendar, User, Share2, Facebook, Copy } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
@@ -11,9 +11,10 @@ import { toast, Toaster } from 'sonner';
 interface Props {
     content: Content;
     suggestedContent: Content[];
+    youtubeVideos?: YouTubeVideo[];
 }
 
-export default function PublicShow({ content, suggestedContent }: Props) {
+export default function PublicShow({ content, suggestedContent, youtubeVideos = [] }: Props) {
     const shareUrl = window.location.href;
     const shareText = `${content.title} - ${content.excerpt || 'Read this amazing post'}`;
 
@@ -91,6 +92,40 @@ export default function PublicShow({ content, suggestedContent }: Props) {
                                     loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* YouTube Videos */}
+                    {youtubeVideos && youtubeVideos.length > 0 && (
+                        <div className="mb-12">
+                            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border-0">
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 text-center">
+                                    Featured Videos
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {youtubeVideos.map((video, index) => (
+                                        <div key={video.id} className="relative group">
+                                            <div className="relative w-full bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                                                <iframe
+                                                    src={video.embedUrl}
+                                                    title={`YouTube video ${index + 1}`}
+                                                    className="absolute top-0 left-0 w-full h-full rounded-lg transition-transform duration-300 group-hover:scale-[1.02]"
+                                                    frameBorder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                    loading="lazy"
+                                                />
+                                                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300 pointer-events-none rounded-lg"></div>
+                                            </div>
+                                            <div className="mt-3 text-center">
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Video {index + 1} of {youtubeVideos.length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}

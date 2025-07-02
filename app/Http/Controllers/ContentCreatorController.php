@@ -303,7 +303,7 @@ class ContentCreatorController extends Controller
                 abort(404, 'Post not found');
             }
 
-                        $responseData = $response->json();
+            $responseData = $response->json();
             $content = $responseData['content'];
             $suggestedContent = $responseData['suggestedContent'] ?? [];
 
@@ -312,9 +312,16 @@ class ContentCreatorController extends Controller
                 abort(404, 'Post not found');
             }
 
+            // Extract YouTube video IDs from content
+            $youtubeVideos = $this->extractYouTubeVideos($content['content']);
+            
+            // Hide YouTube links in the content
+            $content['content'] = $this->hideYouTubeLinks($content['content'], false); // false = completely remove links
+
             return Inertia::render('ContentCreator/PublicShow', [
                 'content' => $content,
-                'suggestedContent' => $suggestedContent
+                'suggestedContent' => $suggestedContent,
+                'youtubeVideos' => $youtubeVideos
             ]);
         } catch (\Exception $e) {
             Log::error('Exception in content public show', [
@@ -324,5 +331,94 @@ class ContentCreatorController extends Controller
             
             abort(404, 'Post not found');
         }
+    }
+
+    /**
+     * Extract YouTube video IDs from content
+     */
+    private function extractYouTubeVideos($content)
+    {
+        $videos = [];
+        
+        // YouTube URL patterns
+        $patterns = [
+            // youtube.com/watch?v=VIDEO_ID
+            '/youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/',
+            // youtu.be/VIDEO_ID
+            '/youtu\.be\/([a-zA-Z0-9_-]{11})/',
+            // youtube.com/embed/VIDEO_ID
+            '/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/',
+            // youtube.com/v/VIDEO_ID
+            '/youtube\.com\/v\/([a-zA-Z0-9_-]{11})/',
+            // youtube.com/watch?v=VIDEO_ID&other_params
+            '/youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/',
+            // youtube.com/embed/VIDEO_ID?other_params
+            '/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})\?/'
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match_all($pattern, $content, $matches)) {
+                foreach ($matches[1] as $videoId) {
+                    if (!in_array($videoId, array_column($videos, 'id'))) {
+                        $videos[] = [
+                            'id' => $videoId,
+                            'embedUrl' => "https://www.youtube.com/embed/{$videoId}?autoplay=1&mute=1&rel=0&modestbranding=1"
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $videos;
+    }
+
+    /**
+     * Hide YouTube links in content by removing them or replacing with placeholder text
+     */
+    private function hideYouTubeLinks($content, $showPlaceholder = false)
+    {
+        // YouTube URL patterns to hide
+        $patterns = [
+            // youtube.com/watch?v=VIDEO_ID
+            '/https?:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})([&\w=]*)/',
+            // youtu.be/VIDEO_ID
+            '/https?:\/\/youtu\.be\/([a-zA-Z0-9_-]{11})/',
+            // youtube.com/embed/VIDEO_ID
+            '/https?:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/',
+            // youtube.com/v/VIDEO_ID
+            '/https?:\/\/www\.youtube\.com\/v\/([a-zA-Z0-9_-]{11})/',
+            // youtube.com/embed/VIDEO_ID with parameters
+            '/https?:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})\?[^"\s]*/'
+        ];
+
+        if ($showPlaceholder) {
+            // Replace YouTube links with a subtle placeholder
+            $placeholder = '<span class="text-gray-400 dark:text-gray-600 text-sm italic">[Video content available above]</span>';
+            foreach ($patterns as $pattern) {
+                $content = preg_replace($pattern, $placeholder, $content);
+            }
+        } else {
+            // Replace YouTube links with empty string
+            foreach ($patterns as $pattern) {
+                $content = preg_replace($pattern, '', $content);
+            }
+        }
+
+        // Remove anchor tags that contain only YouTube links
+        $content = preg_replace('/<a[^>]*href\s*=\s*["\']?https?:\/\/(www\.)?youtube\.com[^"\']*["\']?[^>]*>.*?<\/a>/i', '', $content);
+        $content = preg_replace('/<a[^>]*href\s*=\s*["\']?https?:\/\/youtu\.be[^"\']*["\']?[^>]*>.*?<\/a>/i', '', $content);
+
+        // Clean up any empty paragraphs, divs, or spans that might be left
+        $content = preg_replace('/<p>\s*<\/p>/', '', $content);
+        $content = preg_replace('/<div>\s*<\/div>/', '', $content);
+        $content = preg_replace('/<span>\s*<\/span>/', '', $content);
+        $content = preg_replace('/<p>\s*&nbsp;\s*<\/p>/', '', $content);
+        $content = preg_replace('/<div>\s*&nbsp;\s*<\/div>/', '', $content);
+        $content = preg_replace('/<span>\s*&nbsp;\s*<\/span>/', '', $content);
+
+        // Clean up multiple consecutive empty lines
+        $content = preg_replace('/\n\s*\n\s*\n/', "\n\n", $content);
+
+        return $content;
     }
 }

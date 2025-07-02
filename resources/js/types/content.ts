@@ -18,6 +18,11 @@ export interface Content {
     updated_at: string;
 }
 
+export interface YouTubeVideo {
+    id: string;
+    embedUrl: string;
+}
+
 export interface ContentSettings {
     default_status: 'draft' | 'published' | 'archived';
     default_type: 'article' | 'page' | 'post';
