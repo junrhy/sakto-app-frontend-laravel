@@ -727,7 +727,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 <Button 
                                                     type="submit" 
                                                     disabled={isSubmitting || !selectedPlan}
-                                                    className="min-w-[150px]"
+                                                    className="min-w-[150px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 border-0"
                                                 >
                                                     {isSubmitting ? 'Processing...' : 'Subscribe Now'}
                                                 </Button>

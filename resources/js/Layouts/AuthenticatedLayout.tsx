@@ -35,6 +35,12 @@ const formatNumber = (num: number | undefined | null) => {
 };
 
 const getHeaderColorClass = (url: string): string => {
+    if (url.includes('subscriptions')) {
+        return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700';
+    }
+    if (url.includes('credits')) {
+        return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
+    }
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700';
 };
 
