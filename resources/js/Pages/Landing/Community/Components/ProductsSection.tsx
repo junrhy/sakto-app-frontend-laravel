@@ -67,17 +67,24 @@ export default function ProductsSection({ products, appCurrency }: ProductsSecti
   const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
 
   // Utility functions
-  const formatPrice = (price: number | string): string => {
-    const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
+  const formatPrice = (price: number | string | null | undefined): string => {
+    if (price === null || price === undefined) {
+      const symbol = appCurrency?.symbol || '$';
+      return `${symbol}0.00`;
+    }
+    const numericPrice = typeof price === 'string' ? parseFloat(price) || 0 : price;
     const symbol = appCurrency?.symbol || '$';
     return `${symbol}${numericPrice.toFixed(2)}`;
   };
 
-  const getEffectivePrice = (product: Product, variant?: any) => {
-    if (variant?.price !== undefined) {
-      return variant.price;
+  const getEffectivePrice = (product: Product, variant?: any): number => {
+    if (variant?.price !== undefined && variant?.price !== null) {
+      return typeof variant.price === 'string' ? parseFloat(variant.price) || 0 : variant.price;
     }
-    return typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+    if (product.price === null || product.price === undefined) {
+      return 0;
+    }
+    return typeof product.price === 'string' ? parseFloat(product.price) || 0 : product.price;
   };
 
   const getEffectiveStock = (product: Product, variant?: any) => {
@@ -348,6 +355,7 @@ export default function ProductsSection({ products, appCurrency }: ProductsSecti
           getCartTotal={getCartTotal}
           getCartItemCount={getCartItemCount}
           clearCart={clearCart}
+          removeFromCart={removeFromCart}
         />
       </div>
     );

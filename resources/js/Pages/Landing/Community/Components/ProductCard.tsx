@@ -50,7 +50,7 @@ interface ProductCardProps {
   getAvailableAttributes: (product: Product) => Record<string, string[]>;
   findMatchingVariant: (product: Product, selectedAttributes: Record<string, string>) => any;
   isVariantComplete: (product: Product, selectedAttributes: Record<string, string>) => boolean;
-  formatPrice: (price: number | string) => string;
+  formatPrice: (price: number | string | null | undefined) => string;
   setVariantErrors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
 }
 
@@ -239,6 +239,43 @@ export default function ProductCard({
           </div>
         )}
 
+        {/* Variant Selection */}
+        {product.active_variants && product.active_variants.length > 0 && (
+          <div className="mb-4">
+            {Object.entries(getAvailableAttributes(product)).map(([attributeKey, options]) => {
+              const selectedAttributes = selectedVariants[product.id]?.attributes || {};
+              const isSelected = (option: string) => selectedAttributes[attributeKey] === option;
+              return (
+                <div key={attributeKey} className="mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1 capitalize">{attributeKey}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {options.map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${isSelected(option) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'}`}
+                        onClick={() => {
+                          const newAttributes = { ...selectedAttributes, [attributeKey]: option };
+                          const matchingVariant = findMatchingVariant(product, newAttributes);
+                          handleVariantSelection(product.id, matchingVariant);
+                        }}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            {/* Variant Error */}
+            {variantErrors[product.id] && (
+              <div className="text-red-600 text-xs mt-1">
+                {variantErrors[product.id]}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Product Price and Action */}
         <div className="flex items-center justify-between">
           <div className="flex items-baseline">
@@ -282,7 +319,9 @@ export default function ProductCard({
           ) : (
             <button
               onClick={() => addToCart(product, selectedVariant, 1)}
-              className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm hover:shadow-md"
+              className={`inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm hover:shadow-md ${product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {}) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {})}
+              title={product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {}) ? 'Please select all variant options' : ''}
             >
               Add to Cart
             </button>

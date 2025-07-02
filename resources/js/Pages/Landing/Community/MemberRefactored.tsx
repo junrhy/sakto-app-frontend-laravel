@@ -32,7 +32,16 @@ interface PageProps {
 }
 
 export default function MemberRefactored({ member, challenges, events, pages, contacts, updates, products }: PageProps) {
-    const [activeSection, setActiveSection] = useState('updates');
+    // Get initial tab from URL
+    const getInitialTab = () => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+            if (tab) return tab;
+        }
+        return 'updates';
+    };
+    const [activeSection, setActiveSection] = useState(getInitialTab());
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [showVisitorForm, setShowVisitorForm] = useState(false);
     const [visitorInfo, setVisitorInfo] = useState({
@@ -88,7 +97,26 @@ export default function MemberRefactored({ member, challenges, events, pages, co
 
     const handleMenuClick = (sectionId: string) => {
         setActiveSection(sectionId);
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            params.set('tab', sectionId);
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+        }
     };
+
+    // Listen for browser navigation (back/forward) to sync tab
+    useEffect(() => {
+        const onPopState = () => {
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab');
+            if (tab && tab !== activeSection) {
+                setActiveSection(tab);
+            }
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+    }, [activeSection]);
 
     const formatPrice = (price: number | string): string => {
         const numericPrice = typeof price === 'string' ? parseFloat(price) : price;

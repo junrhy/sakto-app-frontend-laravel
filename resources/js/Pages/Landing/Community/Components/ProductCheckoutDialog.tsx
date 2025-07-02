@@ -49,6 +49,7 @@ interface ProductCheckoutDialogProps {
   getCartTotal: () => number;
   getCartItemCount: () => number;
   clearCart: () => void;
+  removeFromCart: (productId: number, variantId?: number) => void;
 }
 
 interface CheckoutForm {
@@ -73,7 +74,8 @@ export default function ProductCheckoutDialog({
   formatPrice,
   getCartTotal,
   getCartItemCount,
-  clearCart
+  clearCart,
+  removeFromCart
 }: ProductCheckoutDialogProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState<CheckoutForm>({
@@ -344,9 +346,22 @@ export default function ProductCheckoutDialog({
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium text-gray-900">{formatPrice(total)}</p>
-                          <p className="text-sm text-gray-500">{formatPrice(price)} each</p>
+                        <div className="text-right flex items-center space-x-3">
+                          <div>
+                            <p className="font-medium text-gray-900">{formatPrice(total)}</p>
+                            <p className="text-sm text-gray-500">{formatPrice(price)} each</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.id, item.variant?.id)}
+                            className="text-red-500 hover:text-red-700 transition-colors p-1"
+                            title="Remove item"
+                            disabled={isProcessing}
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     );

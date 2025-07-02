@@ -52,7 +52,7 @@ interface ProductGridProps {
   getAvailableAttributes: (product: Product) => Record<string, string[]>;
   findMatchingVariant: (product: Product, selectedAttributes: Record<string, string>) => any;
   isVariantComplete: (product: Product, selectedAttributes: Record<string, string>) => boolean;
-  formatPrice: (price: number | string) => string;
+  formatPrice: (price: number | string | null | undefined) => string;
   setVariantErrors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   hasActiveFilters: () => boolean;
   clearFilters: () => void;
