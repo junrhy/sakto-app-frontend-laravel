@@ -47,9 +47,13 @@ interface CartItem {
 interface ProductsSectionProps {
   products: Product[];
   appCurrency?: { code: string; symbol: string } | null;
+  member: {
+    id: number;
+    identifier?: string;
+  };
 }
 
-export default function ProductsSection({ products, appCurrency }: ProductsSectionProps) {
+export default function ProductsSection({ products, appCurrency, member }: ProductsSectionProps) {
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [marketplaceFilters, setMarketplaceFilters] = useState({
@@ -356,6 +360,8 @@ export default function ProductsSection({ products, appCurrency }: ProductsSecti
           getCartItemCount={getCartItemCount}
           clearCart={clearCart}
           removeFromCart={removeFromCart}
+          updateCartQuantity={updateCartQuantity}
+          member={member}
         />
       </div>
     );

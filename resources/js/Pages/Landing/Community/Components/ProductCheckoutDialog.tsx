@@ -1,5 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { router } from '@inertiajs/react';
+import { 
+  PHILIPPINE_SHIPPING_RATES, 
+  INTERNATIONAL_SHIPPING_RATES, 
+  getShippingMethods, 
+  calculateShippingFee,
+  type ShippingMethod 
+} from '@/config/shipping-rates';
 
 interface CartItem {
   id: number;
@@ -44,12 +51,17 @@ interface ProductCheckoutDialogProps {
   onClose: () => void;
   cartItems: CartItem[];
   products: Product[];
+  member: {
+    id: number;
+    identifier?: string;
+  };
   getEffectivePrice: (product: Product, variant?: any) => number;
   formatPrice: (price: number | string) => string;
   getCartTotal: () => number;
   getCartItemCount: () => number;
   clearCart: () => void;
   removeFromCart: (productId: number, variantId?: number) => void;
+  updateCartQuantity: (productId: number, quantity: number, variantId?: number) => void;
 }
 
 interface CheckoutForm {
@@ -63,6 +75,7 @@ interface CheckoutForm {
   zipCode: string;
   country: string;
   notes: string;
+  shippingMethod: string;
 }
 
 export default function ProductCheckoutDialog({
@@ -70,12 +83,14 @@ export default function ProductCheckoutDialog({
   onClose,
   cartItems,
   products,
+  member,
   getEffectivePrice,
   formatPrice,
   getCartTotal,
   getCartItemCount,
   clearCart,
-  removeFromCart
+  removeFromCart,
+  updateCartQuantity
 }: ProductCheckoutDialogProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState<CheckoutForm>({
@@ -87,9 +102,65 @@ export default function ProductCheckoutDialog({
     city: '',
     state: '',
     zipCode: '',
-    country: '',
-    notes: ''
+    country: 'Philippines',
+    notes: '',
+    shippingMethod: ''
   });
+
+  // Get available shipping methods based on selected location
+  const availableShippingMethods = useMemo(() => {
+    if (!formData.country || !formData.state || !formData.city) {
+      return [];
+    }
+    return getShippingMethods(formData.country, formData.state, formData.city);
+  }, [formData.country, formData.state, formData.city]);
+
+  // Calculate shipping fee
+  const shippingFee = useMemo(() => {
+    if (!formData.country || !formData.state || !formData.city || !formData.shippingMethod) {
+      return 0;
+    }
+    return calculateShippingFee(formData.country, formData.state, formData.city, formData.shippingMethod);
+  }, [formData.country, formData.state, formData.city, formData.shippingMethod]);
+
+  // Get available countries
+  const availableCountries = ['Philippines', 'United States', 'Canada', 'United Kingdom', 'Australia', 'Japan', 'Singapore', 'Malaysia'];
+
+  // Get available regions/states based on selected country
+  const availableRegions = useMemo(() => {
+    if (formData.country === 'Philippines') {
+      return [...new Set(PHILIPPINE_SHIPPING_RATES.map(rate => rate.province))];
+    }
+    return [];
+  }, [formData.country]);
+
+  // Get available cities based on selected country and region
+  const availableCities = useMemo(() => {
+    if (formData.country === 'Philippines' && formData.state) {
+      const rate = PHILIPPINE_SHIPPING_RATES.find(r => r.province === formData.state);
+      return rate ? rate.cities : [];
+    }
+    return [];
+  }, [formData.country, formData.state]);
+
+  // Reset dependent fields when country or state changes
+  useEffect(() => {
+    if (formData.country !== 'Philippines') {
+      setFormData(prev => ({ ...prev, state: '', city: '', shippingMethod: '' }));
+    }
+  }, [formData.country]);
+
+  useEffect(() => {
+    if (formData.state) {
+      setFormData(prev => ({ ...prev, city: '', shippingMethod: '' }));
+    }
+  }, [formData.state]);
+
+  useEffect(() => {
+    if (formData.city && availableShippingMethods.length > 0) {
+      setFormData(prev => ({ ...prev, shippingMethod: availableShippingMethods[0].id }));
+    }
+  }, [formData.city, availableShippingMethods]);
 
   if (!isOpen) return null;
 
@@ -102,26 +173,36 @@ export default function ProductCheckoutDialog({
     setIsProcessing(true);
 
     try {
-      // Prepare order data
+      // Prepare order data according to publicStore method expectations
       const orderData = {
-        customer: formData,
-        items: cartItems.map(item => {
+        customer_name: `${formData.firstName} ${formData.lastName}`,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        shipping_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
+        billing_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
+        order_items: cartItems.map(item => {
           const product = products.find(p => p.id === item.id);
           return {
             product_id: item.id,
+            name: product?.name || '',
             variant_id: item.variant?.id || null,
+            attributes: item.variant?.attributes || null,
             quantity: item.quantity,
             price: product ? getEffectivePrice(product, item.variant) : 0,
-            product_name: product?.name || '',
-            variant_attributes: item.variant?.attributes || null
           };
         }),
-        total: getCartTotal(),
-        item_count: getCartItemCount()
+        subtotal: getCartTotal(),
+        tax_amount: getCartTotal() * 0.12,
+        shipping_fee: shippingFee,
+        discount_amount: 0,
+        total_amount: getCartTotal() * 1.12 + shippingFee,
+        payment_method: 'cod', // Default to cash on delivery
+        notes: formData.notes,
+        client_identifier: member?.identifier || member?.id?.toString() || ''
       };
 
-      // Submit order to backend
-      await router.post('/api/orders', orderData as any, {
+      // Submit order to the correct endpoint
+      await router.post(route('member.public-checkout.store'), orderData as any, {
         onSuccess: () => {
           // Clear cart and close dialog
           clearCart();
@@ -242,27 +323,37 @@ export default function ProductCheckoutDialog({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       City *
                     </label>
-                    <input
-                      type="text"
-                      required
+                    <select
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={isProcessing}
-                    />
+                    >
+                      <option value="">Select a city</option>
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       State/Province *
                     </label>
-                    <input
-                      type="text"
-                      required
+                    <select
                       value={formData.state}
                       onChange={(e) => handleInputChange('state', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={isProcessing}
-                    />
+                    >
+                      <option value="">Select a state</option>
+                      {availableRegions.map((region) => (
+                        <option key={region} value={region}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -284,16 +375,45 @@ export default function ProductCheckoutDialog({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Country *
                     </label>
-                    <input
-                      type="text"
-                      required
+                    <select
                       value={formData.country}
                       onChange={(e) => handleInputChange('country', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={isProcessing}
-                    />
+                      required
+                    >
+                      <option value="">Select a country</option>
+                      {availableCountries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
+
+                {/* Shipping Method Selection */}
+                {formData.country && formData.state && formData.city && availableShippingMethods.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Shipping Method *
+                    </label>
+                    <select
+                      value={formData.shippingMethod}
+                      onChange={(e) => handleInputChange('shippingMethod', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isProcessing}
+                      required
+                    >
+                      <option value="">Select shipping method</option>
+                      {availableShippingMethods.map((method) => (
+                        <option key={method.id} value={method.id}>
+                          {method.name} - {formatPrice(method.price)} ({method.estimated_days})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -342,7 +462,30 @@ export default function ProductCheckoutDialog({
                                   {Object.entries(item.variant.attributes).map(([key, value]) => `${key}: ${value}`).join(', ')}
                                 </p>
                               )}
-                              <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                              <div className="flex items-center space-x-2 mt-2">
+                                <span className="text-sm text-gray-500">Qty:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => updateCartQuantity(item.id, item.quantity - 1, item.variant?.id)}
+                                  className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center text-xs"
+                                  disabled={isProcessing || item.quantity <= 1}
+                                  title="Decrease quantity"
+                                >
+                                  -
+                                </button>
+                                <span className="text-sm font-medium min-w-[2rem] text-center">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => updateCartQuantity(item.id, item.quantity + 1, item.variant?.id)}
+                                  className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center text-xs"
+                                  disabled={isProcessing}
+                                  title="Increase quantity"
+                                >
+                                  +
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -376,15 +519,17 @@ export default function ProductCheckoutDialog({
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping:</span>
-                    <span className="font-medium">Calculated at next step</span>
+                    <span className="font-medium">
+                      {formData.shippingMethod ? formatPrice(shippingFee) : 'Select shipping method'}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax:</span>
-                    <span className="font-medium">Calculated at next step</span>
+                    <span className="text-gray-600">Tax (12%):</span>
+                    <span className="font-medium">{formatPrice(getCartTotal() * 0.12)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-semibold border-t border-gray-200 pt-2">
                     <span>Total:</span>
-                    <span>{formatPrice(getCartTotal())}</span>
+                    <span>{formatPrice(getCartTotal() * 1.12 + shippingFee)}</span>
                   </div>
                 </div>
 
@@ -411,7 +556,7 @@ export default function ProductCheckoutDialog({
             </button>
             <button
               type="submit"
-              disabled={isProcessing || getCartItemCount() === 0}
+              disabled={isProcessing || getCartItemCount() === 0 || shippingFee === 0}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {isProcessing ? (
@@ -423,7 +568,7 @@ export default function ProductCheckoutDialog({
                   Processing...
                 </>
               ) : (
-                `Place Order (${formatPrice(getCartTotal())})`
+                `Place Order (${formatPrice(getCartTotal() * 1.12 + shippingFee)})`
               )}
             </button>
           </div>

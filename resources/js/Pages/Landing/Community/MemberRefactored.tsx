@@ -137,7 +137,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
             case 'contacts':
                 return <ContactsSection contacts={contacts} />;
             case 'products':
-                return <ProductsSection products={products} appCurrency={member.app_currency} />;
+                return <ProductsSection products={products} appCurrency={member.app_currency} member={member} />;
             case 'challenges':
                 return <ChallengesSection challenges={challenges} />;
             default:
