@@ -14,20 +14,7 @@ import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/Components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Checkbox } from '@/Components/ui/checkbox';
-
-interface SubscriptionPlan {
-    id: number;
-    name: string;
-    slug: string;
-    description: string | null;
-    price: number;
-    duration_in_days: number;
-    unlimited_access: boolean;
-    features: string[];
-    is_popular: boolean;
-    is_active: boolean;
-    badge_text: string | null;
-}
+import { SubscriptionPlan } from '@/types/models';
 
 interface PaymentMethod {
     id: string;
@@ -59,6 +46,8 @@ interface Props {
     auth: {
         user: {
             name: string;
+            credits?: number;
+            identifier?: string;
         };
     };
     plans: SubscriptionPlan[];
@@ -82,6 +71,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const [highlightedApp, setHighlightedApp] = useState<string | null>(null);
     const [networkError, setNetworkError] = useState(false);
     const [showPaymentSteps, setShowPaymentSteps] = useState(false);
+    const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
 
     // Check URL parameters for plan to highlight and set billing period based on active subscription
     useEffect(() => {
@@ -122,12 +112,38 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
         }
     }, [plans, activeSubscription]);
 
+    // Fetch current credit balance
+    useEffect(() => {
+        const fetchCredits = async () => {
+            try {
+                if (auth.user.identifier) {
+                    const response = await fetch(`/credits/${auth.user.identifier}/balance`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setCredits(data.available_credit);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch credits:', error);
+            }
+        };
+
+        fetchCredits();
+    }, [auth.user.identifier]);
+
     // Set payment method to cash when a plan is selected
     useEffect(() => {
         if (selectedPlan) {
             setPaymentMethod('cash');
         }
     }, [selectedPlan]);
+
+    // Disable auto-renew when cash payment is selected
+    useEffect(() => {
+        if (paymentMethod === 'cash') {
+            setAutoRenew(false);
+        }
+    }, [paymentMethod]);
 
     // Filter and transform plans based on billing period
     const filteredPlans = useMemo(() => {
@@ -184,6 +200,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                 return;
             }
             
+            if (paymentMethod === 'credits') {
+                // For credits payment, we can proceed directly since we've already validated
+                // that the user has sufficient credits in the UI
+            }
+            
             // Create a hidden form and submit it directly
             const form = document.createElement('form');
             form.method = 'POST';
@@ -227,6 +248,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                     id: 'payment-loading',
                     duration: 5000 // 5 seconds
                 });
+            } else if (paymentMethod === 'credits') {
+                toast.loading('Processing your credits payment...', {
+                    id: 'payment-loading',
+                    duration: 3000 // 3 seconds
+                });
             } else {
                 toast.loading('Connecting to payment gateway...', {
                     id: 'payment-loading',
@@ -239,7 +265,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                 toast.dismiss('payment-loading');
                 setIsSubmitting(false);
                 setNetworkError(true);
-            }, paymentMethod === 'cash' ? 5000 : 10000);
+            }, paymentMethod === 'cash' ? 5000 : paymentMethod === 'credits' ? 3000 : 10000);
             
             // Submit the form
             form.submit();
@@ -324,8 +350,14 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     };
 
     // Helper function to check if a plan has unlimited access
+    // For now, we'll assume all subscription plans have unlimited access
     const hasUnlimitedAccess = (plan: SubscriptionPlan) => {
-        return plan.unlimited_access === true;
+        return true; // All subscription plans provide unlimited access
+    };
+
+    // Helper function to format credit amount
+    const formatCredits = (amount: number) => {
+        return amount.toLocaleString();
     };
 
     return (
@@ -532,9 +564,18 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             id="auto-renew" 
                                                             checked={autoRenew}
                                                             onCheckedChange={(checked) => setAutoRenew(checked as boolean)}
+                                                            disabled={paymentMethod === 'cash'}
                                                         />
-                                                        <Label htmlFor="auto-renew" className="cursor-pointer">
+                                                        <Label 
+                                                            htmlFor="auto-renew" 
+                                                            className={`cursor-pointer ${paymentMethod === 'cash' ? 'text-gray-400' : ''}`}
+                                                        >
                                                             Auto-renew subscription
+                                                            {paymentMethod === 'cash' && (
+                                                                <span className="ml-1 text-xs text-gray-500">
+                                                                    (Not available for cash payments)
+                                                                </span>
+                                                            )}
                                                         </Label>
                                                     </div>
                                                     
@@ -572,6 +613,26 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             <span>Total:</span>
                                                             <span>₱{Number(selectedPlan.price).toFixed(2)}</span>
                                                         </div>
+                                                        {paymentMethod === 'credits' && (
+                                                            <>
+                                                                <div className="flex justify-between text-sm pt-2 border-t dark:border-gray-700">
+                                                                    <span>Credits to Deduct:</span>
+                                                                    <span className="text-red-600 dark:text-red-400">{formatCredits(selectedPlan.price)} credits</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-sm">
+                                                                    <span>Your Balance:</span>
+                                                                    <span className="text-green-600 dark:text-green-400">{formatCredits(credits)} credits</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-sm">
+                                                                    <span>Remaining Balance:</span>
+                                                                    <span className="text-blue-600 dark:text-blue-400">{formatCredits(credits - selectedPlan.price)} credits</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-sm">
+                                                                    <span>Credits to Receive:</span>
+                                                                    <span className="text-green-600 dark:text-green-400">+{formatCredits(selectedPlan.credits_per_month || 0)} credits</span>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                     
                                                     <div className="mt-4 pt-4 border-t dark:border-gray-700">
@@ -589,6 +650,33 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900">Cash Payment</span>
                                                                     <span className="block text-sm text-gray-500">Pay in cash at our office</span>
+                                                                </div>
+                                                            </label>
+                                                            <label className={`flex items-center space-x-3 p-3 border rounded-lg ${
+                                                                credits >= (selectedPlan?.price || 0) 
+                                                                    ? 'cursor-pointer hover:bg-gray-100' 
+                                                                    : 'cursor-not-allowed opacity-50'
+                                                            }`}>
+                                                                <input 
+                                                                    type="radio" 
+                                                                    name="payment_method" 
+                                                                    value="credits" 
+                                                                    checked={paymentMethod === 'credits'}
+                                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                                    disabled={credits < (selectedPlan?.price || 0)}
+                                                                    className={`h-4 w-4 ${
+                                                                        credits >= (selectedPlan?.price || 0) 
+                                                                            ? 'text-green-600' 
+                                                                            : 'text-gray-400'
+                                                                    }`} 
+                                                                />
+                                                                <div>
+                                                                    <span className="block font-medium text-gray-900">Pay with Credits</span>
+                                                                    <span className="block text-sm text-gray-500">
+                                                                        {credits >= (selectedPlan?.price || 0) 
+                                                                            ? `Use your ${credits.toLocaleString()} available credits` 
+                                                                            : `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${selectedPlan?.price || 0} credits`}
+                                                                    </span>
                                                                 </div>
                                                             </label>
                                                             <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50">

@@ -54,6 +54,11 @@ class SubscriptionController extends Controller
                 'description' => 'Pay in cash at our office',
             ],
             [
+                'id' => 'credits',
+                'name' => 'Pay with Credits',
+                'description' => 'Deduct amount from your available credits',
+            ],
+            [
                 'id' => 'maya',
                 'name' => 'Credit/Debit Card via Maya',
                 'description' => 'Secure online payment via Maya payment gateway (Coming soon)',
@@ -98,6 +103,8 @@ class SubscriptionController extends Controller
         switch ($validated['payment_method']) {
             case 'cash':
                 return $this->handleCashPayment($user, $plan, $validated);
+            case 'credits':
+                return $this->handleCreditsPayment($user, $plan, $validated);
             case 'maya':
                 return $this->handleMayaPayment($user, $plan, $validated);
             case 'stripe':
@@ -153,6 +160,115 @@ class SubscriptionController extends Controller
             
         } catch (\Exception $e) {
             Log::error('Cash payment subscription failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'exception' => $e
+            ]);
+            
+            return redirect()->back()->with('error', 'An error occurred while processing your subscription. Please try again later.');
+        }
+    }
+    
+    /**
+     * Handle credits payment for subscription.
+     */
+    protected function handleCreditsPayment($user, $plan, $validated)
+    {
+        try {
+            // Get user's current credit balance
+            $creditResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/credits/{$user->identifier}/balance");
+            
+            if (!$creditResponse->successful()) {
+                return redirect()->back()->with('error', 'Failed to check credit balance. Please try again later.');
+            }
+            
+            $creditData = $creditResponse->json();
+            $availableCredits = $creditData['available_credit'] ?? 0;
+            
+            // Check if user has sufficient credits
+            if ($availableCredits < $plan->price) {
+                return redirect()->back()->with('error', "Insufficient credits. You have {$availableCredits} credits but need {$plan->price} credits for this plan.");
+            }
+            
+            // Generate a unique reference number for the credits payment
+            $referenceNumber = 'CREDITS-' . strtoupper(uniqid());
+            
+            // Deduct credits from user's account
+            $deductResponse = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/credits/spend", [
+                    'client_identifier' => $user->identifier,
+                    'amount' => $plan->price,
+                    'purpose' => "Subscription payment for {$plan->name}",
+                    'reference_id' => $referenceNumber,
+                ]);
+            
+            if (!$deductResponse->successful()) {
+                return redirect()->back()->with('error', 'Failed to deduct credits. Please try again later.');
+            }
+            
+            // Check if user already has an active subscription
+            $activeSubscription = UserSubscription::where('user_identifier', $user->identifier)
+                ->where('status', 'active')
+                ->where('end_date', '>', now())
+                ->first();
+            
+            if ($activeSubscription) {
+                // Cancel the current subscription
+                $activeSubscription->cancel('Upgraded to a new plan');
+            }
+            
+            // Create an active subscription
+            $subscription = new UserSubscription([
+                'user_identifier' => $user->identifier,
+                'subscription_plan_id' => $plan->id,
+                'start_date' => now(),
+                'end_date' => now()->addDays($plan->duration_in_days),
+                'status' => 'active', // Set as active immediately since credits are deducted
+                'payment_method' => 'credits',
+                'payment_transaction_id' => $referenceNumber,
+                'amount_paid' => $plan->price,
+                'auto_renew' => $validated['auto_renew'] ?? false,
+            ]);
+            
+            $subscription->save();
+            
+            // Add credits to user's account based on the plan (subscription benefits)
+            try {
+                Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/credits/add", [
+                        'client_identifier' => $user->identifier,
+                        'amount' => $plan->credits_per_month,
+                        'source' => 'subscription',
+                        'reference_id' => $subscription->identifier,
+                    ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to add subscription credits: ' . $e->getMessage());
+            }
+            
+            // Log the credits payment
+            Log::info('Credits payment subscription created', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'reference' => $referenceNumber,
+                'amount' => $plan->price,
+                'credits_deducted' => $plan->price,
+                'credits_added' => $plan->credits_per_month,
+            ]);
+            
+            return Inertia::render('Subscriptions/PaymentStatus', [
+                'status' => 'success',
+                'message' => 'Your subscription has been activated successfully using your credits.',
+                'subscription' => $subscription,
+                'payment_details' => [
+                    'credits_deducted' => $plan->price,
+                    'credits_added' => $plan->credits_per_month,
+                    'reference_number' => $referenceNumber,
+                ],
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Credits payment subscription failed: ' . $e->getMessage(), [
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'exception' => $e
