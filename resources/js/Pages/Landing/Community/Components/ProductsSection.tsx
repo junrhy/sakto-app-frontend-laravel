@@ -3,6 +3,7 @@ import ProductFilterPanel from './ProductFilterPanel';
 import ProductCartSummary from './ProductCartSummary';
 import ProductGrid from './ProductGrid';
 import ProductCheckoutDialog from './ProductCheckoutDialog';
+import ProductOrderHistory from './ProductOrderHistory';
 
 // Define types for Product, Variant, etc. as needed
 
@@ -51,9 +52,14 @@ interface ProductsSectionProps {
     id: number;
     identifier?: string;
   };
+  contactId?: number;
+  orderHistory?: any[];
 }
 
-export default function ProductsSection({ products, appCurrency, member }: ProductsSectionProps) {
+export default function ProductsSection({ products, appCurrency, member, contactId, orderHistory }: ProductsSectionProps) {
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
   const [marketplaceFilters, setMarketplaceFilters] = useState({
@@ -287,25 +293,54 @@ export default function ProductsSection({ products, appCurrency, member }: Produ
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-        <h2 className="text-lg font-semibold text-gray-900">Marketplace</h2>
-        <div className="flex items-center gap-3">
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="flex space-x-8">
           <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+            onClick={() => setActiveTab('products')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'products'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-            </svg>
-            Filters
-            {hasActiveFilters() && (
-              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-xs rounded-full">
-                {Object.values(marketplaceFilters).filter(v => v !== '').length}
-              </span>
-            )}
+            Products
           </button>
-        </div>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'orders'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Order History
+          </button>
+        </nav>
       </div>
+
+      {/* Products Tab */}
+      {activeTab === 'products' && (
+        <>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <h2 className="text-lg font-semibold text-gray-900">Marketplace</h2>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+                </svg>
+                Filters
+                {hasActiveFilters() && (
+                  <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-xs rounded-full">
+                    {Object.values(marketplaceFilters).filter(v => v !== '').length}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
 
       <ProductFilterPanel
         showFilters={showFilters}
@@ -363,6 +398,24 @@ export default function ProductsSection({ products, appCurrency, member }: Produ
           updateCartQuantity={updateCartQuantity}
           member={member}
         />
-      </div>
-    );
-  } 
+        </>
+      )}
+
+      {/* Order History Tab */}
+      {activeTab === 'orders' && contactId && (
+        <ProductOrderHistory contactId={contactId} appCurrency={appCurrency} member={member} orderHistory={orderHistory || []} />
+      )}
+
+      {/* Order History Tab - No Contact ID */}
+      {activeTab === 'orders' && !contactId && (
+        <div className="text-center text-gray-500 py-12">
+          <svg className="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <p className="text-lg font-medium">Authentication Required</p>
+          <p className="text-sm">Please log in to view your order history</p>
+        </div>
+      )}
+    </div>
+  );
+} 

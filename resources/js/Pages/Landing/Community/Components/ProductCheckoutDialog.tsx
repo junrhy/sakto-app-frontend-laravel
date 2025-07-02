@@ -76,6 +76,7 @@ interface CheckoutForm {
   country: string;
   notes: string;
   shippingMethod: string;
+  paymentMethod: string;
 }
 
 export default function ProductCheckoutDialog({
@@ -104,7 +105,8 @@ export default function ProductCheckoutDialog({
     zipCode: '',
     country: 'Philippines',
     notes: '',
-    shippingMethod: ''
+    shippingMethod: '',
+    paymentMethod: 'cod'
   });
 
   // Get available shipping methods based on selected location
@@ -173,6 +175,20 @@ export default function ProductCheckoutDialog({
     setIsProcessing(true);
 
     try {
+      // Get contact ID from visitor authorization data
+      let contactId = null;
+      const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+      console.log('Auth data:', authData);
+      if (authData) {
+        try {
+          const { visitorInfo } = JSON.parse(authData);
+          contactId = visitorInfo?.contactId || null;
+          console.log('Contact ID:', contactId);
+        } catch (error) {
+          console.error('Error parsing auth data:', error);
+        }
+      }
+
       // Prepare order data according to publicStore method expectations
       const orderData = {
         customer_name: `${formData.firstName} ${formData.lastName}`,
@@ -196,10 +212,14 @@ export default function ProductCheckoutDialog({
         shipping_fee: shippingFee,
         discount_amount: 0,
         total_amount: getCartTotal() * 1.12 + shippingFee,
-        payment_method: 'cod', // Default to cash on delivery
+        payment_method: formData.paymentMethod,
         notes: formData.notes,
-        client_identifier: member?.identifier || member?.id?.toString() || ''
+        client_identifier: member?.identifier || member?.id?.toString() || '',
+        contact_id: contactId
       };
+
+      console.log('Order data being sent:', orderData);
+      console.log('Contact ID in order data:', orderData.contact_id);
 
       // Submit order to the correct endpoint
       await router.post(route('member.public-checkout.store'), orderData as any, {
@@ -415,6 +435,23 @@ export default function ProductCheckoutDialog({
                   </div>
                 )}
 
+                {/* Payment Method Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Method *
+                  </label>
+                  <select
+                    value={formData.paymentMethod}
+                    onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled={isProcessing}
+                    required
+                  >
+                    <option value="">Select payment method</option>
+                    <option value="cod">Cash on Delivery</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Order Notes
@@ -533,11 +570,11 @@ export default function ProductCheckoutDialog({
                   </div>
                 </div>
 
-                {/* Payment Method Placeholder */}
+                {/* Payment Method Display */}
                 <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <h4 className="font-medium text-gray-900 mb-2">Payment Method</h4>
                   <p className="text-sm text-gray-600">
-                    Payment options will be available in the next step.
+                    {formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Payment method not selected'}
                   </p>
                 </div>
               </div>

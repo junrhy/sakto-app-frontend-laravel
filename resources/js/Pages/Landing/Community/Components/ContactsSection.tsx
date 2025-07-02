@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface Contact {
     id: number;
     first_name: string;
@@ -19,16 +21,104 @@ interface ContactsSectionProps {
 }
 
 export default function ContactsSection({ contacts }: ContactsSectionProps) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterBy, setFilterBy] = useState<'all' | 'name' | 'email' | 'phone'>('all');
+
+    // Filter contacts based on search term and filter type
+    const filteredContacts = contacts.filter((contact) => {
+        if (!searchTerm.trim()) return true;
+        
+        const searchLower = searchTerm.toLowerCase();
+        
+        switch (filterBy) {
+            case 'name':
+                const fullName = `${contact.first_name} ${contact.middle_name || ''} ${contact.last_name}`.toLowerCase();
+                return fullName.includes(searchLower);
+            case 'email':
+                return contact.email.toLowerCase().includes(searchLower);
+            case 'phone':
+                const phoneNumbers = [
+                    contact.call_number,
+                    contact.sms_number,
+                    contact.whatsapp
+                ].filter(Boolean).join(' ');
+                return phoneNumbers.toLowerCase().includes(searchLower);
+            case 'all':
+            default:
+                const allFields = [
+                    contact.first_name,
+                    contact.middle_name,
+                    contact.last_name,
+                    contact.email,
+                    contact.call_number,
+                    contact.sms_number,
+                    contact.whatsapp,
+                    contact.address
+                ].filter(Boolean).join(' ').toLowerCase();
+                return allFields.includes(searchLower);
+        }
+    });
     if (contacts.length === 0) {
         return (
             <div className="bg-white rounded-xl shadow-sm p-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6">Contacts</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Members</h2>
                 <div className="text-center text-gray-500 py-12">
                     <svg className="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <p className="text-lg font-medium">No contacts found</p>
-                    <p className="text-sm">No contacts have been added yet</p>
+                    <p className="text-lg font-medium">No members found</p>
+                    <p className="text-sm">No members have been added yet</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (searchTerm && filteredContacts.length === 0) {
+        return (
+            <div className="bg-white rounded-xl shadow-sm p-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Members</h2>
+                
+                {/* Filter Section */}
+                <div className="mb-6">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        {/* Search Input */}
+                        <div className="flex-1">
+                            <div className="relative">
+                                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    type="text"
+                                    placeholder="Search members..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+                        
+                        {/* Filter Dropdown */}
+                        <div className="sm:w-48">
+                            <select
+                                value={filterBy}
+                                onChange={(e) => setFilterBy(e.target.value as 'all' | 'name' | 'email' | 'phone')}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="all">All Fields</option>
+                                <option value="name">Name</option>
+                                <option value="email">Email</option>
+                                <option value="phone">Phone</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="text-center text-gray-500 py-12">
+                    <svg className="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <p className="text-lg font-medium">No members found</p>
+                    <p className="text-sm">Try adjusting your search terms or filter</p>
                 </div>
             </div>
         );
@@ -36,15 +126,58 @@ export default function ContactsSection({ contacts }: ContactsSectionProps) {
 
     return (
         <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Contacts</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">Members</h2>
+            
+            {/* Filter Section */}
+            <div className="mb-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Search Input */}
+                    <div className="flex-1">
+                        <div className="relative">
+                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search members..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Filter Dropdown */}
+                    <div className="sm:w-48">
+                        <select
+                            value={filterBy}
+                            onChange={(e) => setFilterBy(e.target.value as 'all' | 'name' | 'email' | 'phone')}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                            <option value="all">All Fields</option>
+                            <option value="name">Name</option>
+                            <option value="email">Email</option>
+                            <option value="phone">Phone</option>
+                        </select>
+                    </div>
+                </div>
+                
+                {/* Results Count */}
+                {searchTerm && (
+                    <div className="mt-3 text-sm text-gray-600">
+                        Found {filteredContacts.length} of {contacts.length} members
+                    </div>
+                )}
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {contacts.map((contact) => (
+                {filteredContacts.map((contact) => (
                     <div key={contact.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200">
                         {/* Contact Header */}
                         <div className="p-6">
-                            <div className="flex items-start space-x-4 mb-4">
+                            <div className="text-center mb-4">
                                 {/* Contact Avatar */}
-                                <div className="flex-shrink-0">
+                                <div className="flex justify-center mb-3">
                                     {contact.id_picture ? (
                                         <img 
                                             src={contact.id_picture} 
@@ -59,14 +192,9 @@ export default function ContactsSection({ contacts }: ContactsSectionProps) {
                                 </div>
 
                                 {/* Contact Name */}
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
-                                        {contact.first_name} {contact.middle_name && `${contact.middle_name} `}{contact.last_name}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Contact ID: {contact.id}
-                                    </p>
-                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                                    {contact.first_name} {contact.middle_name && `${contact.middle_name} `}{contact.last_name}
+                                </h3>
                             </div>
 
                             {/* Contact Details */}

@@ -246,6 +246,22 @@ class LandingController extends Controller
             // Optionally log error
         }
 
+        // Fetch order history from API (will be used when visitor is authenticated)
+        $orderHistory = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/product-orders", [
+                    'client_identifier' => $member->identifier,
+                    'per_page' => 50 // Get more orders for order history
+                ]);
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $orderHistory = $responseData['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
         return Inertia::render('Landing/Community/MemberRefactored', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -257,7 +273,8 @@ class LandingController extends Controller
             'pages' => $pages,
             'contacts' => $contacts,
             'updates' => $updates,
-            'products' => $products
+            'products' => $products,
+            'orderHistory' => $orderHistory
         ]);
     }
 
