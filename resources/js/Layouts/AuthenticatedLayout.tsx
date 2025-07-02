@@ -970,7 +970,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
 
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/contacts?app=${appParam}`}>
-                                                        Contacts
+                                                        My Contacts
                                                     </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>

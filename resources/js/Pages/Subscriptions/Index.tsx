@@ -83,11 +83,20 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const [networkError, setNetworkError] = useState(false);
     const [showPaymentSteps, setShowPaymentSteps] = useState(false);
 
-    // Check URL parameters for plan to highlight
+    // Check URL parameters for plan to highlight and set billing period based on active subscription
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const highlightPlan = params.get('highlight_plan');
         const appName = params.get('app');
+        
+        // Set billing period based on active subscription if it exists
+        if (activeSubscription) {
+            if (activeSubscription.plan.duration_in_days > 90) {
+                setBillingPeriod('annually');
+            } else {
+                setBillingPeriod('monthly');
+            }
+        }
         
         if (highlightPlan) {
             // Find the plan by slug instead of name
@@ -111,7 +120,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
         if (appName) {
             setHighlightedApp(appName);
         }
-    }, [plans]);
+    }, [plans, activeSubscription]);
 
     // Set payment method to cash when a plan is selected
     useEffect(() => {
