@@ -1,6 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useEffect } from 'react';
+import { extractYouTubeVideos, hideYouTubeLinks, YouTubeVideo } from '@/lib/youtube-utils';
+import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 interface PageProps {
     member: {
@@ -136,6 +139,8 @@ export default function Member({ member, challenges, events, pages, contacts, up
         search: ''
     });
     const [showFilters, setShowFilters] = useState(false);
+    const [selectedUpdateForVideos, setSelectedUpdateForVideos] = useState<any>(null);
+    const [showVideoDialog, setShowVideoDialog] = useState(false);
 
     const menuItems = [
         { id: 'updates', label: 'Updates', icon: 'M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2m10-4H7a2 2 0 00-2 2v0a2 2 0 002 2h10a2 2 0 002-2v0a2 2 0 00-2-2z' },
@@ -641,31 +646,64 @@ export default function Member({ member, challenges, events, pages, contacts, up
 
                                             {/* Post Content */}
                                             <div className="px-4 pb-3 flex-1">
-                                                <div className="text-gray-700 text-sm leading-relaxed" 
-                                                     dangerouslySetInnerHTML={{ 
-                                                         __html: expandedUpdates.has(update.id) || update.content.length <= 300
-                                                             ? update.content 
-                                                             : update.content.substring(0, 300) + '...' 
-                                                     }} 
-                                                />
-                                                {update.content.length > 300 && !expandedUpdates.has(update.id) && (
-                                                    <button 
-                                                        onClick={() => toggleUpdateExpansion(update.id)}
-                                                        className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 transition-colors"
-                                                    >
-                                                        See more
-                                                    </button>
-                                                )}
+                                                {(() => {
+                                                    // Extract YouTube videos from the content
+                                                    const youtubeVideos = extractYouTubeVideos(update.content);
+                                                    // Hide YouTube links from the content
+                                                    const processedContent = hideYouTubeLinks(update.content, false);
+                                                    
+                                                    return (
+                                                        <>
+                                                            {/* Text Content */}
+                                                            <div className="text-gray-700 text-sm leading-relaxed" 
+                                                                 dangerouslySetInnerHTML={{ 
+                                                                     __html: expandedUpdates.has(update.id) || processedContent.length <= 300
+                                                                         ? processedContent 
+                                                                         : processedContent.substring(0, 300) + '...' 
+                                                                 }} 
+                                                            />
+                                                            {processedContent.length > 300 && !expandedUpdates.has(update.id) && (
+                                                                <button 
+                                                                    onClick={() => toggleUpdateExpansion(update.id)}
+                                                                    className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2 transition-colors"
+                                                                >
+                                                                    See more
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
 
                                             {/* Post Image */}
                                             {update.featured_image && (
-                                                <div className="mt-auto">
+                                                <div className="mt-auto relative group cursor-pointer" 
+                                                     onClick={() => {
+                                                         const youtubeVideos = extractYouTubeVideos(update.content);
+                                                         if (youtubeVideos.length > 0) {
+                                                             setSelectedUpdateForVideos({ ...update, youtubeVideos });
+                                                             setShowVideoDialog(true);
+                                                         }
+                                                     }}>
                                                     <img 
                                                         src={update.featured_image} 
                                                         alt={update.title} 
-                                                        className="w-full rounded-lg object-cover max-h-96"
+                                                        className="w-full rounded-lg object-cover max-h-96 transition-transform duration-200 group-hover:scale-[1.02]"
                                                     />
+                                                    {(() => {
+                                                        const youtubeVideos = extractYouTubeVideos(update.content);
+                                                        return youtubeVideos.length > 0 ? (
+                                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                                <div className="text-white text-center">
+                                                                    <svg className="w-8 h-8 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
+                                                                        <path d="M8 5v14l11-7z"/>
+                                                                    </svg>
+                                                                    <p className="text-sm font-medium">Watch Videos</p>
+                                                                    <p className="text-xs opacity-75">{youtubeVideos.length} video{youtubeVideos.length > 1 ? 's' : ''}</p>
+                                                                </div>
+                                                            </div>
+                                                        ) : null;
+                                                    })()}
                                                 </div>
                                             )}
                                         </div>
@@ -1936,6 +1974,54 @@ export default function Member({ member, challenges, events, pages, contacts, up
                         </div>
                     </div>
                 )}
+
+                {/* Video Dialog */}
+                <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold">
+                                {selectedUpdateForVideos?.title || 'Videos'}
+                            </DialogTitle>
+                            <DialogDescription>
+                                Videos from this update
+                            </DialogDescription>
+                        </DialogHeader>
+                        
+                        {selectedUpdateForVideos?.youtubeVideos && (
+                            <div className="space-y-6">
+                                {selectedUpdateForVideos.youtubeVideos.map((video: YouTubeVideo, index: number) => (
+                                    <div key={video.id} className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-lg font-medium text-gray-900">
+                                                Video {index + 1} of {selectedUpdateForVideos.youtubeVideos.length}
+                                            </h3>
+                                        </div>
+                                        <div className="relative w-full bg-gray-100 rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                                            <iframe
+                                                src={video.embedUrl}
+                                                title={`YouTube video ${index + 1}`}
+                                                className="absolute top-0 left-0 w-full h-full rounded-lg"
+                                                frameBorder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        <DialogFooter>
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setShowVideoDialog(false)}
+                            >
+                                Close
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );
