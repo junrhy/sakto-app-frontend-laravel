@@ -292,4 +292,37 @@ class ContentCreatorController extends Controller
             'content' => $response->json()
         ]);
     }
+
+    public function publicShow($slug)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/content-creator/public/{$slug}");
+            
+            if (!$response->successful()) {
+                abort(404, 'Post not found');
+            }
+
+                        $responseData = $response->json();
+            $content = $responseData['content'];
+            $suggestedContent = $responseData['suggestedContent'] ?? [];
+
+            // Only show published content publicly
+            if ($content['status'] !== 'published') {
+                abort(404, 'Post not found');
+            }
+
+            return Inertia::render('ContentCreator/PublicShow', [
+                'content' => $content,
+                'suggestedContent' => $suggestedContent
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in content public show', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            abort(404, 'Post not found');
+        }
+    }
 }

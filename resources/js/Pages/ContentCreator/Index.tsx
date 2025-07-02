@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, Calendar, User } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, Calendar, User, Share2 } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -174,6 +174,14 @@ export default function Index({ auth, content }: Props) {
                                                             View
                                                         </Link>
                                                     </DropdownMenuItem>
+                                                    {item.status === 'published' && (
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('content-creator.public', item.slug)} target="_blank">
+                                                                <Share2 className="w-4 h-4 mr-2" />
+                                                                Share
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     <DropdownMenuItem asChild>
                                                         <Link href={route('content-creator.edit', item.id)}>
                                                             <Edit className="w-4 h-4 mr-2" />
@@ -190,13 +198,25 @@ export default function Index({ auth, content }: Props) {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
-                                        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                                            <Badge 
-                                                variant={getStatusBadgeColor(item.status)}
-                                                className="capitalize"
-                                            >
-                                                {item.status}
-                                            </Badge>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                                                <Badge 
+                                                    variant={getStatusBadgeColor(item.status)}
+                                                    className="capitalize"
+                                                >
+                                                    {item.status}
+                                                </Badge>
+                                            </div>
+                                            {item.status === 'published' && (
+                                                <Link 
+                                                    href={route('content-creator.public', item.slug)} 
+                                                    target="_blank"
+                                                    className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                                >
+                                                    <Share2 className="w-3 h-3" />
+                                                    <span>Share</span>
+                                                </Link>
+                                            )}
                                         </div>
                                     </CardHeader>
                                     <CardContent className="pt-0">

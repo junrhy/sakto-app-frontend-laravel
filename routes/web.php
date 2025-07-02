@@ -222,6 +222,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/member/checkout', [ProductOrderController::class, 'publicCheckout'])->name('member.public-checkout');
     Route::post('/member/checkout', [ProductOrderController::class, 'publicStore'])->name('member.public-checkout.store');
     Route::get('/member/checkout/success', [ProductOrderController::class, 'publicCheckoutSuccess'])->name('member.public-checkout.success');
+
+    // Public routes (no authentication required)
+    Route::get('/post/{slug}', [ContentCreatorController::class, 'publicShow'])->name('content-creator.public');
 });
 
 // Admin Auth Routes
