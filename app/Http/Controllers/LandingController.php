@@ -246,7 +246,7 @@ class LandingController extends Controller
             // Optionally log error
         }
 
-        return Inertia::render('Landing/Community/Member', [
+        return Inertia::render('Landing/Community/MemberRefactored', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
