@@ -55,9 +55,7 @@ export default function UpdatesSection({ updates }: UpdatesSectionProps) {
 
     return (
         <>
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
-                <div className="space-y-4">
-                    <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
                         {updates.map(update => (
                             <div key={update.id} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm dark:shadow-gray-900/50 hover:shadow-md dark:hover:shadow-gray-900/70 transition-shadow duration-200 break-inside-avoid mb-6">
                                 {/* Post Header */}
@@ -168,8 +166,6 @@ export default function UpdatesSection({ updates }: UpdatesSectionProps) {
                             </div>
                         ))}
                     </div>
-                </div>
-            </div>
 
             {/* Video Dialog */}
             <Dialog open={showVideoDialog} onOpenChange={setShowVideoDialog}>

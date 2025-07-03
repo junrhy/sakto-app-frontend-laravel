@@ -20,7 +20,7 @@ interface ProfileSectionProps {
 
 export default function ProfileSection({ member }: ProfileSectionProps) {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
+        <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Your Profile</h2>
             <div className="max-w-2xl">
                 {/* Profile Header */}

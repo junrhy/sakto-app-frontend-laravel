@@ -39,26 +39,18 @@ export default function EventsSection({ events, formatPrice }: EventsSectionProp
 
     if (events.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Events</h2>
-                <div className="space-y-6">
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-                        <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No events found</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Check back later for upcoming events</p>
-                    </div>
-                </div>
+            <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No events found</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Check back later for upcoming events</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Upcoming Events</h2>
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {events.map((event) => (
                         <div key={event.id} className="group bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden hover:shadow-lg dark:hover:shadow-gray-900/70 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200">
                             {/* Event Image */}
@@ -95,12 +87,6 @@ export default function EventsSection({ events, formatPrice }: EventsSectionProp
                                                     month: 'long',
                                                     day: 'numeric',
                                                     year: 'numeric'
-                                                })}
-                                            </span>
-                                            <span className="text-gray-500 dark:text-gray-400 ml-2">
-                                                at {formatTimeForDisplay(event.start_date, {
-                                                    hour: 'numeric',
-                                                    minute: '2-digit'
                                                 })}
                                             </span>
                                         </div>
@@ -216,7 +202,5 @@ export default function EventsSection({ events, formatPrice }: EventsSectionProp
                         </div>
                     ))}
                 </div>
-            </div>
-        </div>
     );
 } 

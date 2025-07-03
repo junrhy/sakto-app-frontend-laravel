@@ -249,26 +249,26 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
           <div
             key={order.id}
             onClick={() => handleOrderClick(order)}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm dark:hover:shadow-gray-900/50 transition-all cursor-pointer"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm dark:hover:shadow-gray-900/50 transition-all cursor-pointer"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3">
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">#{order.order_number || 'N/A'}</span>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.order_status)}`}>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full w-fit ${getStatusColor(order.order_status)}`}>
                   {getStatusLabel(order.order_status)}
                 </span>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatPrice(order.total_amount || 0)}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(order.created_at || '')}</div>
               </div>
             </div>
             
-            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-600 dark:text-gray-400 space-y-1 sm:space-y-0">
               <div>
                 <span className="font-medium">{order.order_items?.length || 0}</span> item{(order.order_items?.length || 0) !== 1 ? 's' : ''}
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
                 <span>Payment: {order.payment_method || 'N/A'}</span>
                 <span>Shipping: {formatPrice(order.shipping_fee || 0)}</span>
               </div>
@@ -279,36 +279,36 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
 
       {/* Order Details Modal */}
       {showOrderDetails && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                   Order #{selectedOrder.order_number}
                 </h3>
                 <button
                   onClick={closeOrderDetails}
-                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Order Status */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                 <div>
                   <span className="text-sm text-gray-500 dark:text-gray-400">Status</span>
                   <div className="flex items-center mt-1">
-                    <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedOrder.order_status)}`}>
+                    <span className={`px-3 py-1 text-sm font-medium rounded-full w-fit ${getStatusColor(selectedOrder.order_status)}`}>
                       {getStatusLabel(selectedOrder.order_status)}
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Order Date</span>
                   <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatDate(selectedOrder.created_at || '')}</div>
                 </div>
@@ -327,7 +327,7 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Order Items</h4>
                 <div className="space-y-3">
                   {selectedOrder.order_items?.map((item: any, index: number) => (
-                    <div key={`${item.product_id}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div key={`${item.product_id}-${index}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-2 sm:space-y-0">
                       <div className="flex-1">
                         <div className="font-medium text-gray-900 dark:text-gray-100">{item.name || 'N/A'}</div>
                         <div className="text-sm text-gray-600 dark:text-gray-300">
@@ -343,7 +343,7 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                           </div>
                         )}
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right">
                         <div className="font-medium text-gray-900 dark:text-gray-100">{formatPrice((item.price || 0) * (item.quantity || 0))}</div>
                       </div>
                     </div>
@@ -404,33 +404,33 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
 
              {/* Cancel Confirmation Modal */}
        {showCancelConfirmation && selectedOrder && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
-             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[95vh] sm:max-h-auto overflow-y-auto">
+             <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                <div className="flex items-center justify-between">
-                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                    Cancel Order
                  </h3>
                  <button
                    onClick={closeCancelConfirmation}
                    disabled={cancellingOrder}
-                   className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
+                   className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 p-1"
                  >
-                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                    </svg>
                  </button>
                </div>
              </div>
 
-             <div className="p-6 space-y-4">
+             <div className="p-4 sm:p-6 space-y-4">
                <div className="text-center">
-                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50 mb-4">
-                   <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <div className="mx-auto flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-100 dark:bg-red-900/50 mb-3 sm:mb-4">
+                   <svg className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                    </svg>
                  </div>
-                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                 <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                    Cancel Order #{selectedOrder.order_number}?
                  </h3>
                  <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -444,7 +444,7 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                  </div>
                )}
 
-               <div className="flex space-x-3">
+               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                  <button
                    onClick={closeCancelConfirmation}
                    disabled={cancellingOrder}

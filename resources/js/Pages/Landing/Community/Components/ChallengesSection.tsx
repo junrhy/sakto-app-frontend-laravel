@@ -17,23 +17,18 @@ interface ChallengesSectionProps {
 export default function ChallengesSection({ challenges }: ChallengesSectionProps) {
     if (challenges.length === 0) {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Challenges</h2>
-                <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-                    <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No challenges found</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Check back later for new challenges</p>
-                </div>
+            <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No challenges found</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Check back later for new challenges</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Challenges</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {challenges.map((challenge) => (
                     <div key={challenge.id} className="group bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg dark:hover:shadow-gray-900/70 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200">
                         {/* Challenge Header */}
@@ -145,6 +140,5 @@ export default function ChallengesSection({ challenges }: ChallengesSectionProps
                     </div>
                 ))}
             </div>
-        </div>
     );
 } 
