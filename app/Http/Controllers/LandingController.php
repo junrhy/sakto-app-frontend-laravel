@@ -316,4 +316,50 @@ class LandingController extends Controller
             'phpVersion' => PHP_VERSION,
         ]);
     }
+
+    public function cancelOrder(Request $request, $identifier, $orderId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            // Call the backend API to cancel the order
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/product-orders/{$orderId}", [
+                    'order_status' => 'cancelled'
+                ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'message' => 'Order cancelled successfully',
+                    'order' => $response->json()
+                ]);
+            } else {
+                $errorData = $response->json();
+                return response()->json([
+                    'error' => $errorData['error'] ?? 'Failed to cancel order'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while cancelling order'
+            ], 500);
+        }
+    }
 } 

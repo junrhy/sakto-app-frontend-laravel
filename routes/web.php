@@ -192,6 +192,7 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/community/member/{identifier}', [LandingController::class, 'communityMember'])->name('community.member');
     Route::get('/m/{identifier}', [LandingController::class, 'communityMember'])->name('member.short');
+    Route::post('/m/{identifier}/cancel-order/{orderId}', [LandingController::class, 'cancelOrder'])->name('member.cancel-order');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
     Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');

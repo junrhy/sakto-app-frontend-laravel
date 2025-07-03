@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { router } from '@inertiajs/react';
 
 interface OrderItem {
   product_id: number;
@@ -52,6 +53,8 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [cancellingOrder, setCancellingOrder] = useState(false);
 
   // Filter orders by contact_id when component mounts or contactId changes
   useEffect(() => {
@@ -124,6 +127,10 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  const canCancelOrder = (order: Order): boolean => {
+    return ['pending', 'confirmed', 'processing'].includes(order.order_status);
+  };
+
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
@@ -132,6 +139,63 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
   const closeOrderDetails = () => {
     setShowOrderDetails(false);
     setSelectedOrder(null);
+  };
+
+  const handleCancelOrder = () => {
+    setShowCancelConfirmation(true);
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!selectedOrder) return;
+
+    setCancellingOrder(true);
+    setError(null);
+
+    try {
+      // Get the current URL to extract the member identifier
+      const currentPath = window.location.pathname;
+      const pathParts = currentPath.split('/');
+      const memberIdentifier = pathParts[pathParts.length - 1]; // Last part of the URL
+
+      const response = await fetch(`/m/${memberIdentifier}/cancel-order/${selectedOrder.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update the order in the local state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === selectedOrder.id 
+              ? { ...order, order_status: 'cancelled' }
+              : order
+          )
+        );
+        
+        // Update the selected order
+        setSelectedOrder(prev => prev ? { ...prev, order_status: 'cancelled' } : null);
+        
+        setShowCancelConfirmation(false);
+        setShowOrderDetails(false);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to cancel order');
+      }
+    } catch (err) {
+      setError('Network error occurred while cancelling order');
+    } finally {
+      setCancellingOrder(false);
+    }
+  };
+
+  const closeCancelConfirmation = () => {
+    setShowCancelConfirmation(false);
+    setError(null);
   };
 
   if (loading) {
@@ -308,10 +372,105 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                   </div>
                 </div>
               </div>
+
+              {/* Action Buttons */}
+              {canCancelOrder(selectedOrder) && (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <button
+                    onClick={handleCancelOrder}
+                    disabled={cancellingOrder}
+                    className="w-full px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {cancellingOrder ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Cancelling...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancel Order
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
+
+             {/* Cancel Confirmation Modal */}
+       {showCancelConfirmation && selectedOrder && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+           <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full">
+             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+               <div className="flex items-center justify-between">
+                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                   Cancel Order
+                 </h3>
+                 <button
+                   onClick={closeCancelConfirmation}
+                   disabled={cancellingOrder}
+                   className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50"
+                 >
+                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                   </svg>
+                 </button>
+               </div>
+             </div>
+
+             <div className="p-6 space-y-4">
+               <div className="text-center">
+                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50 mb-4">
+                   <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                   </svg>
+                 </div>
+                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                   Cancel Order #{selectedOrder.order_number}?
+                 </h3>
+                 <p className="text-sm text-gray-600 dark:text-gray-400">
+                   This action cannot be undone. The order will be marked as cancelled and any inventory will be restored.
+                 </p>
+               </div>
+
+               {error && (
+                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                   <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                 </div>
+               )}
+
+               <div className="flex space-x-3">
+                 <button
+                   onClick={closeCancelConfirmation}
+                   disabled={cancellingOrder}
+                   className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                 >
+                   Keep Order
+                 </button>
+                 <button
+                   onClick={confirmCancelOrder}
+                   disabled={cancellingOrder}
+                   className="flex-1 px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                 >
+                   {cancellingOrder ? (
+                     <>
+                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                       Cancelling...
+                     </>
+                   ) : (
+                     'Cancel Order'
+                   )}
+                 </button>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
     </div>
   );
 } 
