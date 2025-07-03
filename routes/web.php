@@ -194,6 +194,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/m/{identifier}', [LandingController::class, 'communityMember'])->name('member.short');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
+    Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
 
     Route::get('/', function (Request $request) {
         $host = $request->getHost();

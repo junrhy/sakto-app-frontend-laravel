@@ -71,6 +71,15 @@ class LandingController extends Controller
             ]);
         }
 
+        if (str_contains($request->getHost(), 'travel') || str_contains($request->getPathInfo(), 'travel')) {
+            return Inertia::render('Landing/Travel', [
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+            ]);
+        }
+
         return Inertia::render('Landing/Default', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
@@ -291,6 +300,16 @@ class LandingController extends Controller
     public function medical()
     {
         return Inertia::render('Landing/Medical', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+        ]);
+    }
+
+    public function travel()
+    {
+        return Inertia::render('Landing/Travel', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,

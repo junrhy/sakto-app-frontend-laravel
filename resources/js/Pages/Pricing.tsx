@@ -79,16 +79,16 @@ export default function Pricing({ auth }: PageProps) {
                     ]
                 },
                 {
-                    name: 'Pay-as-you-go',
-                    price: 0,
-                    description: 'Pay only for what you use',
+                    name: 'Business',
+                    price: 299,
+                    description: 'Perfect for established communities with advanced needs',
                     features: [
-                        'Access to All Community Apps',
-                        'Credit-based Usage',
-                        'No Monthly Subscription',
-                        'Basic Support',
-                        'Email Support',
-                        'Purchase Credits as Needed'
+                        'All Community Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        '24/7 Support',
+                        'Virtual Assistant'
                     ]
                 }
             ]
@@ -120,16 +120,16 @@ export default function Pricing({ auth }: PageProps) {
                     ]
                 },
                 {
-                    name: 'Pay-as-you-go',
-                    price: 0,
-                    description: 'Pay only for what you use',
+                    name: 'Business',
+                    price: 699,
+                    description: 'Perfect for established logistics companies with advanced needs',
                     features: [
-                        'Access to All Logistics Apps',
-                        'Credit-based Usage',
-                        'No Monthly Subscription',
-                        'Basic Support',
-                        'Email Support',
-                        'Purchase Credits as Needed'
+                        'All Logistics Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        '24/7 Support',
+                        'Virtual Assistant'
                     ]
                 }
             ]
@@ -161,16 +161,16 @@ export default function Pricing({ auth }: PageProps) {
                     ]
                 },
                 {
-                    name: 'Pay-as-you-go',
-                    price: 0,
-                    description: 'Pay only for what you use',
+                    name: 'Business',
+                    price: 699,
+                    description: 'Perfect for established medical practices with advanced needs',
                     features: [
-                        'Access to All Medical Apps',
-                        'Credit-based Usage',
-                        'No Monthly Subscription',
-                        'Basic Support',
-                        'Email Support',
-                        'Purchase Credits as Needed'
+                        'All Medical Apps',
+                        'Email Integration',
+                        'SMS Integration',
+                        'Priority Support',
+                        '24/7 Support',
+                        'Virtual Assistant'
                     ]
                 }
             ]
@@ -337,14 +337,8 @@ export default function Pricing({ auth }: PageProps) {
                                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
                                                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{plan.description}</p>
                                                 <p className="mt-4">
-                                                    {plan.name === 'Pay-as-you-go' ? (
-                                                        <span className="text-3xl font-extrabold text-gray-900 dark:text-white">Pay per use</span>
-                                                    ) : (
-                                                        <>
-                                                            <span className="text-3xl font-extrabold text-gray-900 dark:text-white">₱{plan.price}</span>
-                                                            <span className="text-sm text-gray-600 dark:text-gray-300">/month</span>
-                                                        </>
-                                                    )}
+                                                    <span className="text-3xl font-extrabold text-gray-900 dark:text-white">₱{plan.price}</span>
+                                                    <span className="text-sm text-gray-600 dark:text-gray-300">/month</span>
                                                 </p>
                                                 {!auth.user && (
                                                     <Link
