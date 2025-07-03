@@ -402,6 +402,7 @@ class ProductOrderController extends Controller
             'payment_method' => 'nullable|string|in:cash,card,bank_transfer,digital_wallet,cod',
             'notes' => 'nullable|string',
             'client_identifier' => 'required|string',
+            'contact_id' => 'nullable|integer',
         ]);
 
         try {

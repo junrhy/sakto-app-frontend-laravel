@@ -27,7 +27,7 @@ class LandingController extends Controller
         }
 
         if (str_contains($request->getHost(), 'shop') || str_contains($request->getPathInfo(), 'shop')) {
-            return Inertia::render('Landing/Shop', [
+            return Inertia::render('Landing/Shop/Index', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -36,7 +36,7 @@ class LandingController extends Controller
         }
 
         if (str_contains($request->getHost(), 'delivery') || str_contains($request->getPathInfo(), 'delivery')) {
-            return Inertia::render('Landing/Delivery', [
+            return Inertia::render('Landing/Delivery/Index', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -45,7 +45,7 @@ class LandingController extends Controller
         }
 
         if (str_contains($request->getHost(), 'jobs') || str_contains($request->getPathInfo(), 'jobs')) {
-            return Inertia::render('Landing/Jobs', [
+            return Inertia::render('Landing/Jobs/Index', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -63,7 +63,7 @@ class LandingController extends Controller
         }
 
         if (str_contains($request->getHost(), 'logistics') || str_contains($request->getPathInfo(), 'logistics')) {
-            return Inertia::render('Landing/Logistics', [
+            return Inertia::render('Landing/Logistics/Index', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -72,7 +72,7 @@ class LandingController extends Controller
         }
 
         if (str_contains($request->getHost(), 'travel') || str_contains($request->getPathInfo(), 'travel')) {
-            return Inertia::render('Landing/Travel', [
+            return Inertia::render('Landing/Travel/Index', [
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,
@@ -80,7 +80,7 @@ class LandingController extends Controller
             ]);
         }
 
-        return Inertia::render('Landing/Default', [
+        return Inertia::render('Landing/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -90,7 +90,7 @@ class LandingController extends Controller
 
     public function shop()
     {
-        return Inertia::render('Landing/Shop', [
+        return Inertia::render('Landing/Shop/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -100,7 +100,7 @@ class LandingController extends Controller
 
     public function delivery()
     {
-        return Inertia::render('Landing/Delivery', [
+        return Inertia::render('Landing/Delivery/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -110,7 +110,7 @@ class LandingController extends Controller
 
     public function jobs()
     {
-        return Inertia::render('Landing/Jobs', [
+        return Inertia::render('Landing/Jobs/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -271,7 +271,7 @@ class LandingController extends Controller
             // Optionally log error
         }
 
-        return Inertia::render('Landing/Community/MemberRefactored', [
+        return Inertia::render('Landing/Community/Member', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -289,7 +289,7 @@ class LandingController extends Controller
 
     public function logistics()
     {
-        return Inertia::render('Landing/Logistics', [
+        return Inertia::render('Landing/Logistics/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
@@ -309,7 +309,7 @@ class LandingController extends Controller
 
     public function travel()
     {
-        return Inertia::render('Landing/Travel', [
+        return Inertia::render('Landing/Travel/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,

@@ -247,13 +247,13 @@ export default function ProductCheckoutDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Checkout</h2>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Checkout</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             disabled={isProcessing}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,11 +266,11 @@ export default function ProductCheckoutDialog({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Customer Information */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Customer Information</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       First Name *
                     </label>
                     <input
@@ -278,12 +278,12 @@ export default function ProductCheckoutDialog({
                       required
                       value={formData.firstName}
                       onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                       disabled={isProcessing}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Last Name *
                     </label>
                     <input
@@ -291,14 +291,14 @@ export default function ProductCheckoutDialog({
                       required
                       value={formData.lastName}
                       onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                       disabled={isProcessing}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Email Address *
                   </label>
                   <input
@@ -306,26 +306,26 @@ export default function ProductCheckoutDialog({
                     required
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     disabled={isProcessing}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Phone Number
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     disabled={isProcessing}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Address *
                   </label>
                   <input
@@ -333,20 +333,20 @@ export default function ProductCheckoutDialog({
                     required
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     disabled={isProcessing}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       City *
                     </label>
                     <select
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={isProcessing}
                     >
                       <option value="">Select a city</option>
@@ -358,13 +358,13 @@ export default function ProductCheckoutDialog({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       State/Province *
                     </label>
                     <select
                       value={formData.state}
                       onChange={(e) => handleInputChange('state', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={isProcessing}
                     >
                       <option value="">Select a state</option>
@@ -379,7 +379,7 @@ export default function ProductCheckoutDialog({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       ZIP/Postal Code *
                     </label>
                     <input
@@ -387,18 +387,18 @@ export default function ProductCheckoutDialog({
                       required
                       value={formData.zipCode}
                       onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                       disabled={isProcessing}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Country *
                     </label>
                     <select
                       value={formData.country}
                       onChange={(e) => handleInputChange('country', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={isProcessing}
                       required
                     >
@@ -415,13 +415,13 @@ export default function ProductCheckoutDialog({
                 {/* Shipping Method Selection */}
                 {formData.country && formData.state && formData.city && availableShippingMethods.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Shipping Method *
                     </label>
                     <select
                       value={formData.shippingMethod}
                       onChange={(e) => handleInputChange('shippingMethod', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                       disabled={isProcessing}
                       required
                     >
@@ -437,13 +437,13 @@ export default function ProductCheckoutDialog({
 
                 {/* Payment Method Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Payment Method *
                   </label>
                   <select
                     value={formData.paymentMethod}
                     onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     disabled={isProcessing}
                     required
                   >
@@ -453,14 +453,14 @@ export default function ProductCheckoutDialog({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Order Notes
                   </label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => handleInputChange('notes', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="Any special instructions or notes..."
                     disabled={isProcessing}
                   />
@@ -470,8 +470,8 @@ export default function ProductCheckoutDialog({
 
             {/* Order Summary */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Order Summary</h3>
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-4">
                 {/* Cart Items */}
                 <div className="space-y-3">
                   {cartItems.map((item) => {
@@ -493,18 +493,18 @@ export default function ProductCheckoutDialog({
                               />
                             )}
                             <div>
-                              <h4 className="font-medium text-gray-900">{product.name}</h4>
+                              <h4 className="font-medium text-gray-900 dark:text-gray-100">{product.name}</h4>
                               {item.variant && (
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                   {Object.entries(item.variant.attributes).map(([key, value]) => `${key}: ${value}`).join(', ')}
                                 </p>
                               )}
                               <div className="flex items-center space-x-2 mt-2">
-                                <span className="text-sm text-gray-500">Qty:</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">Qty:</span>
                                 <button
                                   type="button"
                                   onClick={() => updateCartQuantity(item.id, item.quantity - 1, item.variant?.id)}
-                                  className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center text-xs"
+                                  className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center text-xs"
                                   disabled={isProcessing || item.quantity <= 1}
                                   title="Decrease quantity"
                                 >
@@ -516,7 +516,7 @@ export default function ProductCheckoutDialog({
                                 <button
                                   type="button"
                                   onClick={() => updateCartQuantity(item.id, item.quantity + 1, item.variant?.id)}
-                                  className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center text-xs"
+                                  className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center text-xs"
                                   disabled={isProcessing}
                                   title="Increase quantity"
                                 >
@@ -528,13 +528,13 @@ export default function ProductCheckoutDialog({
                         </div>
                         <div className="text-right flex items-center space-x-3">
                           <div>
-                            <p className="font-medium text-gray-900">{formatPrice(total)}</p>
-                            <p className="text-sm text-gray-500">{formatPrice(price)} each</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">{formatPrice(total)}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{formatPrice(price)} each</p>
                           </div>
                           <button
                             type="button"
                             onClick={() => removeFromCart(item.id, item.variant?.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors p-1"
+                            className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors p-1"
                             title="Remove item"
                             disabled={isProcessing}
                           >
@@ -549,31 +549,31 @@ export default function ProductCheckoutDialog({
                 </div>
 
                 {/* Order Totals */}
-                <div className="border-t border-gray-200 pt-4 space-y-2">
+                <div className="border-t border-gray-200 dark:border-gray-600 pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
                     <span className="font-medium">{formatPrice(getCartTotal())}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Shipping:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
                     <span className="font-medium">
                       {formData.shippingMethod ? formatPrice(shippingFee) : 'Select shipping method'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax (12%):</span>
+                    <span className="text-gray-600 dark:text-gray-400">Tax (12%):</span>
                     <span className="font-medium">{formatPrice(getCartTotal() * 0.12)}</span>
                   </div>
-                  <div className="flex justify-between text-lg font-semibold border-t border-gray-200 pt-2">
+                  <div className="flex justify-between text-lg font-semibold border-t border-gray-200 dark:border-gray-600 pt-2">
                     <span>Total:</span>
                     <span>{formatPrice(getCartTotal() * 1.12 + shippingFee)}</span>
                   </div>
                 </div>
 
                 {/* Payment Method Display */}
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <h4 className="font-medium text-gray-900 mb-2">Payment Method</h4>
-                  <p className="text-sm text-gray-600">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Payment Method</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Payment method not selected'}
                   </p>
                 </div>
@@ -582,11 +582,11 @@ export default function ProductCheckoutDialog({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               disabled={isProcessing}
             >
               Cancel
@@ -594,7 +594,7 @@ export default function ProductCheckoutDialog({
             <button
               type="submit"
               disabled={isProcessing || getCartItemCount() === 0 || shippingFee === 0}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {isProcessing ? (
                 <>
