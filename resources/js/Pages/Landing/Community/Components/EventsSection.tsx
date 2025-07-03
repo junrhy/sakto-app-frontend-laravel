@@ -56,7 +56,7 @@ export default function EventsSection({ events, formatPrice }: EventsSectionProp
 
     return (
         <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Events</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">Upcoming Events</h2>
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {events.map((event) => (

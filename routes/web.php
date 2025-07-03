@@ -103,6 +103,77 @@ Route::group(['middleware' => ['web']], function () {
             ->header('Cache-Control', 'public, max-age=3600');
     });
 
+    // Add this new route for content creator manifest
+    Route::get('/manifest/content/{slug}.json', function ($slug) {
+        try {
+            $apiUrl = config('api.url');
+            $apiToken = config('api.token');
+            
+            $response = Http::withToken($apiToken)
+                ->get("{$apiUrl}/content-creator/public/{$slug}");
+            
+            if (!$response->successful()) {
+                return response()->json([
+                    'error' => 'Content not found'
+                ], 404);
+            }
+
+            $responseData = $response->json();
+            $content = $responseData['content'];
+
+            // Only show published content
+            if ($content['status'] !== 'published') {
+                return response()->json([
+                    'error' => 'Content not found'
+                ], 404);
+            }
+
+            $manifest = [
+                'name' => $content['title'],
+                'short_name' => $content['title'],
+                'description' => $content['excerpt'] ?? $content['title'],
+                'start_url' => "/post/{$slug}",
+                'display' => 'standalone',
+                'background_color' => '#ffffff',
+                'theme_color' => '#ffffff',
+                'orientation' => 'portrait',
+                'scope' => "/post/{$slug}",
+                'lang' => 'en',
+                'categories' => ['entertainment', 'education'],
+                'icons' => [
+                    [
+                        'src' => '/images/tetris-white-bg.png',
+                        'sizes' => '192x192',
+                        'type' => 'image/png',
+                        'purpose' => 'any maskable'
+                    ],
+                    [
+                        'src' => '/images/tetris-white-bg.png',
+                        'sizes' => '512x512',
+                        'type' => 'image/png',
+                        'purpose' => 'any maskable'
+                    ]
+                ],
+                'screenshots' => $content['featured_image'] ? [
+                    [
+                        'src' => $content['featured_image'],
+                        'sizes' => '1280x720',
+                        'type' => 'image/jpeg',
+                        'form_factor' => 'wide'
+                    ]
+                ] : []
+            ];
+
+            return response()->json($manifest)
+                ->header('Content-Type', 'application/manifest+json')
+                ->header('Cache-Control', 'public, max-age=3600');
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Content not found'
+            ], 404);
+        }
+    });
+
     // Welcome and Policy Routes
     Route::get('/landing', [LandingController::class, 'index'])->name('landing');
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');

@@ -56,6 +56,8 @@
         <!-- PWA manifest -->
         @if(in_array(request()->route()->getName(), ['community.member', 'member.short']))
             <link rel="manifest" href="{{ asset('manifest/member/' . request()->route('identifier') . '.json') }}">
+        @elseif(request()->route()->getName() === 'content-creator.public')
+            <link rel="manifest" href="{{ asset('manifest/content/' . request()->route('slug') . '.json') }}">
         @else
             <link rel="manifest" href="{{ asset('manifest.json') }}">
         @endif

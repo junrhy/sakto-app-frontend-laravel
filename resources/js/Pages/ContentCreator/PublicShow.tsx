@@ -56,6 +56,25 @@ export default function PublicShow({ content, suggestedContent, youtubeVideos = 
                 {content.featured_image && (
                     <meta name="twitter:image" content={content.featured_image} />
                 )}
+                
+                {/* PWA Meta Tags */}
+                <meta name="application-name" content={`${content.title} - Sakto App`} />
+                <meta name="apple-mobile-web-app-title" content={content.title} />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <meta name="theme-color" content="#ffffff" />
+                <meta name="msapplication-TileColor" content="#ffffff" />
+                
+                {/* Article specific meta tags */}
+                <meta property="article:published_time" content={content.created_at} />
+                <meta property="article:modified_time" content={content.updated_at || content.created_at} />
+                <meta property="article:author" content={content.author} />
+                {content.tags && content.tags.length > 0 && (
+                    content.tags.map((tag, index) => (
+                        <meta key={index} property="article:tag" content={tag} />
+                    ))
+                )}
             </Head>
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">

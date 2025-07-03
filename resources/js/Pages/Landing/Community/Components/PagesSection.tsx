@@ -40,7 +40,7 @@ export default function PagesSection({ pages }: PagesSectionProps) {
 
     return (
         <div className="bg-white rounded-xl shadow-sm p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Pages</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">Resources</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {publishedPages.map((page) => (
                     <div key={page.id} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200">
