@@ -17,7 +17,11 @@ export default function Welcome({
     const [isMobile, setIsMobile] = useState(false);
     const [scrollX, setScrollX] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
+    const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const productsDropdownRef = useRef<HTMLDivElement>(null);
+    const legalDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -30,19 +34,46 @@ export default function Welcome({
             }
         };
 
+        const handleClickOutside = (event: MouseEvent) => {
+            if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node)) {
+                setIsProductsDropdownOpen(false);
+            }
+            if (legalDropdownRef.current && !legalDropdownRef.current.contains(event.target as Node)) {
+                setIsLegalDropdownOpen(false);
+            }
+        };
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
         if (containerRef.current) {
             containerRef.current.addEventListener('scroll', handleScroll);
         }
+        document.addEventListener('mousedown', handleClickOutside);
 
         return () => {
             window.removeEventListener('resize', checkMobile);
             if (containerRef.current) {
                 containerRef.current.removeEventListener('scroll', handleScroll);
             }
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    const productsMenuItems = [
+        { name: 'Community', href: route('community') },
+        { name: 'Logistics', href: route('logistics') },
+        { name: 'Medical', href: route('medical') },
+        { name: 'Retail Delivery', href: route('delivery') },
+        { name: 'Human Resources', href: route('jobs') },
+        { name: 'E-Commerce', href: route('shop') },
+    ];
+
+    const legalMenuItems = [
+        { name: 'Privacy Policy', href: route('privacy-policy') },
+        { name: 'Terms & Conditions', href: route('terms-and-conditions') },
+        { name: 'Cookie Policy', href: route('cookie-policy') },
+        { name: 'FAQ', href: route('faq') },
+    ];
 
     return (
         <>
@@ -68,6 +99,38 @@ export default function Welcome({
                                     <>
                                         {/* Desktop Navigation */}
                                         <div className="hidden md:flex items-center space-x-1">
+                                            {/* Products Dropdown */}
+                                            <div className="relative" ref={productsDropdownRef}>
+                                                <button
+                                                    onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
+                                                    className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+                                                >
+                                                    Solutions
+                                                    <svg
+                                                        className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                {isProductsDropdownOpen && (
+                                                    <div className="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                                        {productsMenuItems.map((item) => (
+                                                            <Link
+                                                                key={item.name}
+                                                                href={item.href}
+                                                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-white transition-colors duration-200"
+                                                                onClick={() => setIsProductsDropdownOpen(false)}
+                                                            >
+                                                                {item.name}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <Link
                                                 href={route('features')}
                                                 className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
@@ -81,30 +144,38 @@ export default function Welcome({
                                                 Pricing
                                             </Link>
                                             <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
-                                            <Link
-                                                href={route('privacy-policy')}
-                                                className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                                            >
-                                                Privacy
-                                            </Link>
-                                            <Link
-                                                href={route('terms-and-conditions')}
-                                                className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                                            >
-                                                Terms
-                                            </Link>
-                                            <Link
-                                                href={route('cookie-policy')}
-                                                className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                                            >
-                                                Cookies
-                                            </Link>
-                                            <Link
-                                                href={route('faq')}
-                                                className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-                                            >
-                                                FAQ
-                                            </Link>
+                                            {/* Legal Dropdown */}
+                                            <div className="relative" ref={legalDropdownRef}>
+                                                <button
+                                                    onClick={() => setIsLegalDropdownOpen(!isLegalDropdownOpen)}
+                                                    className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+                                                >
+                                                    Legal
+                                                    <svg
+                                                        className={`ml-1 h-4 w-4 transition-transform duration-200 ${isLegalDropdownOpen ? 'rotate-180' : ''}`}
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                {isLegalDropdownOpen && (
+                                                    <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                                        {legalMenuItems.map((item) => (
+                                                            <Link
+                                                                key={item.name}
+                                                                href={item.href}
+                                                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-white transition-colors duration-200"
+                                                                onClick={() => setIsLegalDropdownOpen(false)}
+                                                            >
+                                                                {item.name}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
                                             <Link
                                                 href={route(isMobile ? 'login.mobile' : 'login')}
@@ -147,48 +218,62 @@ export default function Welcome({
                         {isMenuOpen && (
                             <div className="md:hidden">
                                 <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                                    <Link
-                                        href={route('features')}
-                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Features
-                                    </Link>
-                                    <Link
-                                        href={route('pricing')}
-                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Pricing
-                                    </Link>
-                                    <Link
-                                        href={route('privacy-policy')}
-                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Privacy
-                                    </Link>
-                                    <Link
-                                        href={route('terms-and-conditions')}
-                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Terms
-                                    </Link>
-                                    <Link
-                                        href={route('cookie-policy')}
-                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        Cookies
-                                    </Link>
-                                    <Link
-                                        href={route('faq')}
-                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
-                                    >
-                                        FAQ
-                                    </Link>
-                                    <Link
-                                        href={route(isMobile ? 'login.mobile' : 'login')}
-                                        className="block w-full text-center px-4 py-2 mt-4 rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600"
-                                    >
-                                        Log in
-                                    </Link>
+                                    {/* Products Section */}
+                                    <div className="px-3 py-2">
+                                        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Products
+                                        </div>
+                                        <div className="mt-2 space-y-1">
+                                            {productsMenuItems.map((item) => (
+                                                <Link
+                                                    key={item.name}
+                                                    href={item.href}
+                                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                                    onClick={() => setIsMenuOpen(false)}
+                                                >
+                                                    {item.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                                        <Link
+                                            href={route('features')}
+                                            className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            Features
+                                        </Link>
+                                        <Link
+                                            href={route('pricing')}
+                                            className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                        >
+                                            Pricing
+                                        </Link>
+                                        {/* Legal Section */}
+                                        <div className="px-3 py-2">
+                                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                Legal
+                                            </div>
+                                            <div className="mt-2 space-y-1">
+                                                {legalMenuItems.map((item) => (
+                                                    <Link
+                                                        key={item.name}
+                                                        href={item.href}
+                                                        className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white"
+                                                        onClick={() => setIsMenuOpen(false)}
+                                                    >
+                                                        {item.name}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <Link
+                                            href={route(isMobile ? 'login.mobile' : 'login')}
+                                            className="block w-full text-center px-4 py-2 mt-4 rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600"
+                                        >
+                                            Log in
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -424,19 +509,19 @@ export default function Welcome({
                             ></div>
                             <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                                 <div className="text-center">
-                                    <h2 className="text-4xl font-extrabold tracking-tight text-transparent bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text dark:text-gray-100 sm:text-5xl md:text-6xl">
+                                    <h2 className="text-3xl font-extrabold tracking-tight text-transparent bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text dark:text-gray-100 sm:text-4xl md:text-5xl">
                                         Ready to Transform Your Industry?
                                     </h2>
                                     <p className="mt-6 text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                                        Choose your specialized platform and start your journey today
+                                        Choose your specialized solution and start your journey today
                                     </p>
                                     {!auth.user && (
-                                        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
+                                        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
                                             {[
                                                 { 
-                                                    name: 'Community Apps', 
+                                                    name: 'Community', 
                                                     color: 'from-pink-500 to-rose-500',
-                                                    description: 'Build and manage vibrant communities',
+                                                    description: 'Build vibrant communities',
                                                     icon: (
                                                         <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
@@ -445,7 +530,7 @@ export default function Welcome({
                                                     link: route('community')
                                                 },
                                                 { 
-                                                    name: 'Logistics Apps', 
+                                                    name: 'Logistics', 
                                                     color: 'from-cyan-500 to-blue-500',
                                                     description: 'Optimize your supply chain',
                                                     icon: (
@@ -456,7 +541,7 @@ export default function Welcome({
                                                     link: route('logistics')
                                                 },
                                                 { 
-                                                    name: 'Medical Apps', 
+                                                    name: 'Medical', 
                                                     color: 'from-emerald-500 to-teal-500',
                                                     description: 'Enhance healthcare delivery',
                                                     icon: (
@@ -464,12 +549,45 @@ export default function Welcome({
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
                                                         </svg>
                                                     ),
-                                                    link: route('register', { project: 'medical' })
+                                                    link: route('medical')
                                                 },
                                                 { 
-                                                    name: 'Enterprise Apps', 
+                                                    name: 'Retail Delivery', 
+                                                    color: 'from-purple-500 to-violet-500',
+                                                    description: 'Streamline retail operations',
+                                                    icon: (
+                                                        <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                                        </svg>
+                                                    ),
+                                                    link: route('delivery')
+                                                },
+                                                { 
+                                                    name: 'Human Resources', 
+                                                    color: 'from-indigo-500 to-blue-600',
+                                                    description: 'Manage your workforce efficiently',
+                                                    icon: (
+                                                        <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                                        </svg>
+                                                    ),
+                                                    link: route('jobs')
+                                                },
+                                                { 
+                                                    name: 'E-Commerce', 
+                                                    color: 'from-green-500 to-emerald-600',
+                                                    description: 'Build your online store',
+                                                    icon: (
+                                                        <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.5c.513 0 1.024.195 1.414.586L9 9.414V18a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 001 1h2a1 1 0 001-1V9.414l3.836-3.828A2.25 2.25 0 0021.75 3h-1.5a2.25 2.25 0 00-2.25 2.25v.75a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-.75A2.25 2.25 0 004.5 3z" />
+                                                        </svg>
+                                                    ),
+                                                    link: route('shop')
+                                                },
+                                                { 
+                                                    name: 'Enterprise', 
                                                     color: 'from-orange-500 to-amber-500',
-                                                    description: 'All apps in one place. Scale your business.',
+                                                    description: 'All apps in one place',
                                                     icon: (
                                                         <svg className="w-6 h-6 sm:w-8 sm:h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />

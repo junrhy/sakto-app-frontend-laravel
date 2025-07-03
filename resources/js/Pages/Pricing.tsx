@@ -3,9 +3,9 @@ import { Link } from '@inertiajs/react';
 import { 
     UserGroupIcon, 
     TruckIcon, 
-    HeartIcon, 
-    BuildingOfficeIcon 
+    HeartIcon
 } from '@heroicons/react/24/outline';
+import { useEffect, useState, useRef } from 'react';
 
 interface PageProps {
     auth: {
@@ -17,6 +17,40 @@ interface PageProps {
 }
 
 export default function Pricing({ auth }: PageProps) {
+    const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
+    const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
+    const productsDropdownRef = useRef<HTMLDivElement>(null);
+    const legalDropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node)) {
+                setIsProductsDropdownOpen(false);
+            }
+            if (legalDropdownRef.current && !legalDropdownRef.current.contains(event.target as Node)) {
+                setIsLegalDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const productsMenuItems = [
+        { name: 'Community', href: route('community') },
+        { name: 'Logistics', href: route('logistics') },
+        { name: 'Medical', href: route('medical') },
+        { name: 'Retail Delivery', href: route('delivery') },
+        { name: 'Human Resources', href: route('jobs') },
+        { name: 'E-Commerce', href: route('shop') },
+    ];
+
+    const legalMenuItems = [
+        { name: 'Privacy Policy', href: route('privacy-policy') },
+        { name: 'Terms & Conditions', href: route('terms-and-conditions') },
+        { name: 'Cookie Policy', href: route('cookie-policy') },
+        { name: 'FAQ', href: route('faq') },
+    ];
     const projectPlans = {
         Community: {
             name: 'Community',
@@ -140,47 +174,6 @@ export default function Pricing({ auth }: PageProps) {
                     ]
                 }
             ]
-        },
-        Enterprise: {
-            name: 'Enterprise',
-            icon: BuildingOfficeIcon,
-            plans: [
-                {
-                    name: 'Business',
-                    price: 799,
-                    description: 'For medium-sized businesses',
-                    features: [
-                        'All Apps Across All Projects',
-                        'Priority Support',
-                        '24/7 Support'
-                    ]
-                },
-                {
-                    name: 'Enterprise',
-                    price: 1499,
-                    description: 'For large enterprises',
-                    features: [
-                        'All Apps Across All Projects',
-                        'Email Integration',
-                        'SMS Integration',
-                        'Dedicated Support',
-                        'Custom Integration Support'
-                    ]
-                },
-                {
-                    name: 'Pay-as-you-go',
-                    price: 0,
-                    description: 'Pay only for what you use',
-                    features: [
-                        'Access to All Apps Across All Projects',
-                        'Credit-based Usage',
-                        'No Monthly Subscription',
-                        'Basic Support',
-                        'Email Support',
-                        'Purchase Credits as Needed'
-                    ]
-                }
-            ]
         }
     };
 
@@ -215,12 +208,84 @@ export default function Pricing({ auth }: PageProps) {
                                     </>
                                 ) : (
                                     <>
+                                        {/* Solutions Dropdown */}
+                                        <div className="relative" ref={productsDropdownRef}>
+                                            <button
+                                                onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
+                                                className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+                                            >
+                                                Solutions
+                                                <svg
+                                                    className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            {isProductsDropdownOpen && (
+                                                <div className="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                                    {productsMenuItems.map((item) => (
+                                                        <Link
+                                                            key={item.name}
+                                                            href={item.href}
+                                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-white transition-colors duration-200"
+                                                            onClick={() => setIsProductsDropdownOpen(false)}
+                                                        >
+                                                            {item.name}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                         <Link
                                             href={route('features')}
                                             className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                                         >
                                             Features
                                         </Link>
+                                        <Link
+                                            href={route('pricing')}
+                                            className="text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-indigo-50 dark:bg-indigo-900/20"
+                                        >
+                                            Pricing
+                                        </Link>
+                                        <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
+                                        {/* Legal Dropdown */}
+                                        <div className="relative" ref={legalDropdownRef}>
+                                            <button
+                                                onClick={() => setIsLegalDropdownOpen(!isLegalDropdownOpen)}
+                                                className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+                                            >
+                                                Legal
+                                                <svg
+                                                    className={`ml-1 h-4 w-4 transition-transform duration-200 ${isLegalDropdownOpen ? 'rotate-180' : ''}`}
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            {isLegalDropdownOpen && (
+                                                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                                    {legalMenuItems.map((item) => (
+                                                        <Link
+                                                            key={item.name}
+                                                            href={item.href}
+                                                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-white transition-colors duration-200"
+                                                            onClick={() => setIsLegalDropdownOpen(false)}
+                                                        >
+                                                            {item.name}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
                                         <Link
                                             href={route('login')}
                                             className="group inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600"

@@ -287,4 +287,14 @@ class LandingController extends Controller
             'phpVersion' => PHP_VERSION,
         ]);
     }
+
+    public function medical()
+    {
+        return Inertia::render('Landing/Medical', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+        ]);
+    }
 } 

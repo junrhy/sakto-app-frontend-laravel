@@ -193,6 +193,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/community/member/{identifier}', [LandingController::class, 'communityMember'])->name('community.member');
     Route::get('/m/{identifier}', [LandingController::class, 'communityMember'])->name('member.short');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
+    Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
 
     Route::get('/', function (Request $request) {
         $host = $request->getHost();
