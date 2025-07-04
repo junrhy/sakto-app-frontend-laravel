@@ -36,6 +36,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\HealthInsuranceController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\MortuaryController;
@@ -179,7 +180,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
-    Route::get('/community', [LandingController::class, 'community'])->name('community');
+    Route::get('/community', [CommunityController::class, 'index'])->name('community');
     
     // Redirect old ID-based URLs to slug-based URLs for SEO
     Route::get('/community/member/{id}', function ($id) {
@@ -190,9 +191,9 @@ Route::group(['middleware' => ['web']], function () {
         abort(404);
     })->where('id', '[0-9]+');
     
-    Route::get('/community/member/{identifier}', [LandingController::class, 'communityMember'])->name('community.member');
-    Route::get('/m/{identifier}', [LandingController::class, 'communityMember'])->name('member.short');
-    Route::post('/m/{identifier}/cancel-order/{orderId}', [LandingController::class, 'cancelOrder'])->name('member.cancel-order');
+    Route::get('/community/member/{identifier}', [CommunityController::class, 'member'])->name('community.member');
+    Route::get('/m/{identifier}', [CommunityController::class, 'member'])->name('member.short');
+    Route::post('/m/{identifier}/cancel-order/{orderId}', [CommunityController::class, 'cancelOrder'])->name('member.cancel-order');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
     Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
