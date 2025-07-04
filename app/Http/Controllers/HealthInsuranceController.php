@@ -138,6 +138,79 @@ class HealthInsuranceController extends Controller
         }
     }
 
+    public function recordBulkContributions(Request $request)
+    {
+        $validated = $request->validate([
+            'contributions' => 'required|array|min:1',
+            'contributions.*.member_id' => 'required|string',
+            'contributions.*.amount' => 'required|numeric|min:0',
+            'contributions.*.payment_date' => 'required|date',
+            'contributions.*.payment_method' => 'required|string',
+            'contributions.*.reference_number' => 'nullable|string'
+        ]);
+
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $successCount = 0;
+            $failedContributions = [];
+
+            foreach ($validated['contributions'] as $contribution) {
+                try {
+                    $contribution['client_identifier'] = $clientIdentifier;
+                    $response = Http::withToken($this->apiToken)
+                        ->post("{$this->apiUrl}/health-insurance/contributions/{$contribution['member_id']}", $contribution);
+
+                    if ($response->successful()) {
+                        $successCount++;
+                    } else {
+                        $failedContributions[] = [
+                            'member_id' => $contribution['member_id'],
+                            'error' => $response->body()
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    $failedContributions[] = [
+                        'member_id' => $contribution['member_id'],
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            $totalCount = count($validated['contributions']);
+            $failedCount = count($failedContributions);
+
+            if ($failedCount === 0) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Successfully recorded {$successCount} contributions",
+                    'data' => [
+                        'total' => $totalCount,
+                        'successful' => $successCount,
+                        'failed' => $failedCount
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Recorded {$successCount} contributions, {$failedCount} failed",
+                    'data' => [
+                        'total' => $totalCount,
+                        'successful' => $successCount,
+                        'failed' => $failedCount,
+                        'failed_contributions' => $failedContributions
+                    ]
+                ], 207); // 207 Multi-Status
+            }
+        } catch (\Exception $e) {
+            Log::error('Error recording bulk contributions: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record bulk contributions',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function updateContribution(Request $request, string $memberId, string $contributionId)
     {
         $validated = $request->validate([

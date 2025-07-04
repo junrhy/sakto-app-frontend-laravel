@@ -528,6 +528,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Contributions
         Route::post('/contributions/{memberId}', [HealthInsuranceController::class, 'recordContribution'])->name('health-insurance.contributions.store');
+        Route::post('/contributions/bulk', [HealthInsuranceController::class, 'recordBulkContributions'])->name('health-insurance.contributions.bulk');
         Route::put('/contributions/{memberId}/{contributionId}', [HealthInsuranceController::class, 'updateContribution'])->name('health-insurance.contributions.update');
         Route::get('/contributions/{memberId}', [HealthInsuranceController::class, 'getMemberContributions'])->name('health-insurance.contributions.index');
         Route::delete('/contributions/{memberId}/{contributionId}', [HealthInsuranceController::class, 'deleteContribution'])->name('health-insurance.contributions.delete');
@@ -743,6 +744,7 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         
         // Contribution routes
         Route::post('/contributions/{memberId}', [MortuaryController::class, 'recordContribution'])->name('mortuary.contributions.store');
+        Route::post('/contributions/bulk', [MortuaryController::class, 'recordBulkContributions'])->name('mortuary.contributions.bulk');
         Route::put('/contributions/{memberId}/{contributionId}', [MortuaryController::class, 'updateContribution'])->name('mortuary.contributions.update');
         Route::get('/contributions/{memberId}', [MortuaryController::class, 'getMemberContributions'])->name('mortuary.contributions.index');
         Route::delete('/contributions/{memberId}/{contributionId}', [MortuaryController::class, 'deleteContribution'])->name('mortuary.contributions.destroy');

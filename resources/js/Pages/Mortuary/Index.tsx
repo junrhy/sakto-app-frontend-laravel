@@ -15,6 +15,7 @@ import { Button } from '@/Components/ui/button';
 import { Plus } from 'lucide-react';
 import AddMemberDialog from './Components/AddMemberDialog';
 import AddContributionDialog from './Components/AddContributionDialog';
+import BulkContributionDialog from './Components/BulkContributionDialog';
 import SubmitClaimDialog from './Components/SubmitClaimDialog';
 import EditMemberDialog from './Components/EditMemberDialog';
 
@@ -91,6 +92,7 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
     const [claims, setClaims] = useState<Claim[]>(initialClaims);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
+    const [isBulkContributionOpen, setIsBulkContributionOpen] = useState(false);
     const [isSubmitClaimOpen, setIsSubmitClaimOpen] = useState(false);
     const [isEditMemberOpen, setIsEditMemberOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<(Member & { contributions: Contribution[] }) | null>(null);
@@ -132,6 +134,22 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                 return {
                     ...member,
                     total_contribution: member.total_contribution + Number(newContribution.amount)
+                };
+            }
+            return member;
+        }));
+    };
+
+    const handleBulkContributionsAdded = (newContributions: Contribution[]) => {
+        setContributions([...contributions, ...newContributions]);
+        // Update each member's total contribution
+        setMembers(members.map(member => {
+            const memberContributions = newContributions.filter(c => c.member_id === member.id);
+            if (memberContributions.length > 0) {
+                const totalAdded = memberContributions.reduce((sum, c) => sum + Number(c.amount), 0);
+                return {
+                    ...member,
+                    total_contribution: member.total_contribution + totalAdded
                 };
             }
             return member;
@@ -193,7 +211,14 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                     className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 transition-colors"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Record Contribution
+                                    Single Contribution
+                                </Button>
+                                <Button 
+                                    onClick={() => setIsBulkContributionOpen(true)} 
+                                    className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-colors"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Bulk Contributions
                                 </Button>
                                 <Button 
                                     onClick={() => setIsSubmitClaimOpen(true)} 
@@ -284,6 +309,14 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                 onContributionAdded={handleAddContribution}
                 members={members}
                 appCurrency={appCurrency}
+            />
+
+            <BulkContributionDialog
+                open={isBulkContributionOpen}
+                onOpenChange={setIsBulkContributionOpen}
+                members={members}
+                appCurrency={appCurrency}
+                onContributionsAdded={handleBulkContributionsAdded}
             />
 
             <SubmitClaimDialog 

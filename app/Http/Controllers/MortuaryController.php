@@ -138,6 +138,55 @@ class MortuaryController extends Controller
         }
     }
 
+    public function recordBulkContributions(Request $request)
+    {
+        $validated = $request->validate([
+            'contributions' => 'required|array|min:1',
+            'contributions.*.member_id' => 'required|string',
+            'contributions.*.amount' => 'required|numeric|min:0',
+            'contributions.*.payment_date' => 'required|date',
+            'contributions.*.payment_method' => 'required|string',
+            'contributions.*.reference_number' => 'nullable|string'
+        ]);
+
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $successCount = 0;
+            $errors = [];
+
+            foreach ($validated['contributions'] as $index => $contribution) {
+                try {
+                    $memberId = $contribution['member_id'];
+                    $url = $this->apiUrl . '/mortuary/contributions/' . $memberId;
+                    $data = $contribution;
+                    $data['client_identifier'] = $clientIdentifier;
+                    $response = Http::withToken($this->apiToken)->post($url, $data);
+
+                    if ($response->successful()) {
+                        $successCount++;
+                    } else {
+                        $errors[] = "Contribution " . ($index + 1) . ": " . $response->body();
+                    }
+                } catch (\Exception $e) {
+                        $errors[] = "Contribution " . ($index + 1) . ": " . $e->getMessage();
+                }
+            }
+
+            if ($successCount > 0) {
+                $message = "Successfully recorded {$successCount} contributions.";
+                if (count($errors) > 0) {
+                    $message .= " Some contributions failed to record.";
+                }
+                return back()->with('success', $message);
+            } else {
+                return back()->with('error', 'Failed to record any contributions. ' . implode('; ', $errors));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error recording bulk contributions: ' . $e->getMessage());
+            return back()->with('error', 'Failed to record bulk contributions.');
+        }
+    }
+
     public function updateContribution(Request $request, string $memberId, string $contributionId)
     {
         $validated = $request->validate([
