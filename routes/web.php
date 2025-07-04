@@ -40,6 +40,7 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\MortuaryController;
+use App\Http\Controllers\CommunityKioskTerminalController;
 
 use App\Models\User;
 
@@ -809,6 +810,25 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
     Route::get('/pages/settings', [PagesController::class, 'settings'])->name('pages.settings');
     Route::get('/pages/list', [PagesController::class, 'getPages'])->name('pages.list');
     Route::get('/pages/{id}/duplicate', [PagesController::class, 'duplicate'])->name('pages.duplicate');
+
+    // Community Kiosk Terminal (subscription required)
+    Route::prefix('kiosk')->name('kiosk.community.')->group(function () {
+        Route::get('/', [CommunityKioskTerminalController::class, 'index'])->name('index');
+        Route::get('/data', [CommunityKioskTerminalController::class, 'getUpdatedData'])->name('data');
+        
+        // Event check-in routes
+        Route::get('/events/{eventId}/participants', [CommunityKioskTerminalController::class, 'getEventParticipants'])->name('events.participants');
+        Route::post('/events/{eventId}/participants/{participantId}/check-in', [CommunityKioskTerminalController::class, 'checkInParticipant'])->name('events.check-in');
+        
+        // Health insurance contribution routes
+        Route::post('/health-insurance/contributions', [CommunityKioskTerminalController::class, 'submitHealthInsuranceContributions'])->name('health-insurance.contributions');
+        
+        // Mortuary contribution routes
+        Route::post('/mortuary/contributions', [CommunityKioskTerminalController::class, 'submitMortuaryContributions'])->name('mortuary.contributions');
+        
+        // Search routes
+        Route::post('/search/members', [CommunityKioskTerminalController::class, 'searchMembers'])->name('search.members');
+    });
 });
 
 // Admin routes
