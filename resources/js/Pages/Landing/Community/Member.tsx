@@ -50,6 +50,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
     const [error, setError] = useState('');
     const [visitorInfo, setVisitorInfo] = useState({
         firstName: '',
+        middleName: '',
         lastName: '',
         email: '',
         phone: ''
@@ -57,6 +58,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentVisitor, setCurrentVisitor] = useState<{
         firstName: string;
+        middleName: string;
         lastName: string;
         email: string;
         phone: string;
@@ -113,6 +115,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
                 memberId: member.id,
                 visitorInfo: {
                     firstName: visitorInfo.firstName,
+                    middleName: visitorInfo.middleName,
                     lastName: visitorInfo.lastName,
                     email: visitorInfo.email,
                     phone: visitorInfo.phone,
@@ -135,6 +138,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
         setCurrentVisitor(null);
         setVisitorInfo({
             firstName: '',
+            middleName: '',
             lastName: '',
             email: '',
             phone: ''
@@ -235,6 +239,19 @@ export default function MemberRefactored({ member, challenges, events, pages, co
                                 </div>
 
                                 <div>
+                                    <label htmlFor="middleName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Middle Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="middleName"
+                                        value={visitorInfo.middleName}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, middleName: e.target.value }))}
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+                                    />
+                                </div>
+
+                                <div>
                                     <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Last Name
                                     </label>
@@ -311,7 +328,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
                                     <div className="text-lg sm:text-xl font-bold text-white truncate">{member.name}</div>
                                     {currentVisitor && (
                                         <div className="text-xs sm:text-sm text-indigo-200 dark:text-indigo-300 truncate">
-                                            Welcome, {currentVisitor.firstName} {currentVisitor.lastName}
+                                            Welcome, {currentVisitor.firstName} {currentVisitor.middleName ? `${currentVisitor.middleName} ` : ''}{currentVisitor.lastName}
                                         </div>
                                     )}
                                 </div>

@@ -233,4 +233,207 @@ class CommunityController extends Controller
             ], 500);
         }
     }
+
+    public function searchLendingRecords(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $borrowerName = $request->input('borrower_name');
+            
+            // Fetch lending records from API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/lending", [
+                    'client_identifier' => $member->identifier,
+                    'borrower_name' => $borrowerName
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $loans = $data['data']['loans'] ?? [];
+                
+                // Filter loans by borrower name (case-insensitive)
+                $matchingLoans = collect($loans)->filter(function ($loan) use ($borrowerName) {
+                    return stripos($loan['borrower_name'], $borrowerName) !== false;
+                })->values();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'loans' => $matchingLoans,
+                        'total_found' => $matchingLoans->count()
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'error' => 'Failed to fetch lending records'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while searching lending records'
+            ], 500);
+        }
+    }
+
+    public function searchHealthcareRecords(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $searchParams = $request->only(['name', 'gender', 'date_of_birth']);
+            
+            // Fetch health insurance records from API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/health-insurance", [
+                    'client_identifier' => $member->identifier
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $members = $data['data']['members'] ?? [];
+                
+                // Filter members by search criteria
+                $matchingMembers = collect($members)->filter(function ($member) use ($searchParams) {
+                    $matches = true;
+                    
+                    if (!empty($searchParams['name'])) {
+                        $matches = $matches && stripos($member['name'], $searchParams['name']) !== false;
+                    }
+
+                    if (!empty($searchParams['gender'])) {
+                        $matches = $matches && strtolower($member['gender']) === strtolower($searchParams['gender']);
+                    }
+                    
+                    if (!empty($searchParams['date_of_birth'])) {
+                        $matches = $matches && $member['date_of_birth'] === $searchParams['date_of_birth'];
+                    }
+
+                    return $matches;
+                })->values();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'members' => $matchingMembers,
+                        'total_found' => $matchingMembers->count()
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'error' => 'Failed to fetch healthcare records'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while searching healthcare records'
+            ], 500);
+        }
+    }
+
+    public function searchMortuaryRecords(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $searchParams = $request->only(['name', 'gender', 'date_of_birth']);
+            
+            // Fetch mortuary records from API
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/mortuary", [
+                    'client_identifier' => $member->identifier
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $members = $data['data']['members'] ?? [];
+                
+                // Filter members by search criteria
+                $matchingMembers = collect($members)->filter(function ($member) use ($searchParams) {
+                    $matches = true;
+                    
+                    if (!empty($searchParams['name'])) {
+                        $matches = $matches && stripos($member['name'], $searchParams['name']) !== false;
+                    }
+                    
+                    if (!empty($searchParams['gender'])) {
+                        $matches = $matches && strtolower($member['gender']) === strtolower($searchParams['gender']);
+                    }
+                    
+                    if (!empty($searchParams['date_of_birth'])) {
+                        $matches = $matches && $member['date_of_birth'] === $searchParams['date_of_birth'];
+                    }
+                    
+                    return $matches;
+                })->values();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'members' => $matchingMembers,
+                        'total_found' => $matchingMembers->count()
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'error' => 'Failed to fetch mortuary records'
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while searching mortuary records'
+            ], 500);
+        }
+    }
 } 
