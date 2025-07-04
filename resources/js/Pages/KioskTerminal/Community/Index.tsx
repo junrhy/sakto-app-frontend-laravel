@@ -340,7 +340,6 @@ export default function KioskTerminal({
                     message: `Successfully recorded ${successData.successful} ${activeTab === 'health_insurance' ? 'healthcare' : 'mortuary'} contributions`
                 }}
                 onBack={handleBackToKiosk}
-                onNewSubmission={handleNewSubmission}
             />
         );
     }
