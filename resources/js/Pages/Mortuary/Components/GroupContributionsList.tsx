@@ -17,6 +17,39 @@ interface Props {
     };
 }
 
+// Function to generate a consistent color based on group name
+const getGroupColor = (groupName: string) => {
+    const colors = [
+        'text-blue-600 dark:text-blue-400',
+        'text-green-600 dark:text-green-400',
+        'text-purple-600 dark:text-purple-400',
+        'text-orange-600 dark:text-orange-400',
+        'text-pink-600 dark:text-pink-400',
+        'text-indigo-600 dark:text-indigo-400',
+        'text-teal-600 dark:text-teal-400',
+        'text-red-600 dark:text-red-400',
+        'text-yellow-600 dark:text-yellow-400',
+        'text-cyan-600 dark:text-cyan-400',
+        'text-emerald-600 dark:text-emerald-400',
+        'text-violet-600 dark:text-violet-400',
+        'text-amber-600 dark:text-amber-400',
+        'text-rose-600 dark:text-rose-400',
+        'text-sky-600 dark:text-sky-400',
+    ];
+    
+    // Generate a hash from the group name to get consistent color
+    let hash = 0;
+    for (let i = 0; i < groupName.length; i++) {
+        const char = groupName.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Use absolute value and modulo to get index
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+};
+
 export default function GroupContributionsList({ members, appCurrency }: Props) {
     // Calculate totals per group
     const groupStats = members.reduce((acc, member) => {
@@ -66,11 +99,11 @@ export default function GroupContributionsList({ members, appCurrency }: Props) 
                     <TableBody>
                         {sortedGroups.map(({ group, total_contribution, total_claims, net_balance }) => (
                             <TableRow key={group} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 dark:border-gray-800 transition-colors duration-200">
-                                <TableCell className="font-medium text-gray-800 dark:text-gray-100">{group}</TableCell>
-                                <TableCell className="text-right font-medium dark:text-gray-100">
+                                <TableCell className={`font-medium ${getGroupColor(group)}`}>{group}</TableCell>
+                                <TableCell className="text-right font-medium dark:text-gray-50">
                                     {appCurrency.symbol}{total_contribution.toLocaleString()}
                                 </TableCell>
-                                <TableCell className="text-right font-medium dark:text-gray-100">
+                                <TableCell className="text-right font-medium dark:text-gray-50">
                                     {appCurrency.symbol}{total_claims.toLocaleString()}
                                 </TableCell>
                                 <TableCell className={`text-right font-medium ${net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>

@@ -128,13 +128,13 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'approved':
-                return 'bg-green-500';
+                return 'bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white';
             case 'pending':
-                return 'bg-yellow-500';
+                return 'bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white';
             case 'rejected':
-                return 'bg-red-500';
+                return 'bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white';
             default:
-                return 'bg-gray-500';
+                return 'bg-slate-500 hover:bg-slate-600 dark:bg-slate-600 dark:hover:bg-slate-700 text-white';
         }
     };
 
@@ -142,12 +142,12 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                     <Input
                         placeholder="Search by member name, claim type, hospital, diagnosis, or status..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 h-10 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                        className="pl-8 h-10 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
                     />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -157,16 +157,16 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 <Button
                                     variant="outline"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal h-10 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
-                                        !startDate && "text-muted-foreground dark:text-gray-400",
-                                        startDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
+                                        "w-[240px] justify-start text-left font-normal h-10 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700",
+                                        !startDate && "text-slate-500 dark:text-slate-400",
+                                        startDate && "border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10"
                                     )}
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
                                     {startDate ? format(startDate, "PPP") : "Start date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
+                            <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
                                 <DatePicker
                                     mode="single"
                                     selected={startDate}
@@ -175,22 +175,22 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 />
                             </PopoverContent>
                         </Popover>
-                        <span className="text-muted-foreground dark:text-gray-400 font-medium">to</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">to</span>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
                                     className={cn(
-                                        "w-[240px] justify-start text-left font-normal h-10 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
-                                        !endDate && "text-muted-foreground dark:text-gray-400",
-                                        endDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
+                                        "w-[240px] justify-start text-left font-normal h-10 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700",
+                                        !endDate && "text-slate-500 dark:text-slate-400",
+                                        endDate && "border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10"
                                     )}
                                 >
                                     <Calendar className="mr-2 h-4 w-4" />
                                     {endDate ? format(endDate, "PPP") : "End date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
+                            <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
                                 <DatePicker
                                     mode="single"
                                     selected={endDate}
@@ -208,7 +208,7 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                 setStartDate(startOfYear(new Date()));
                                 setEndDate(endOfYear(new Date()));
                             }}
-                            className="text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200 h-10"
+                            className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 h-10"
                         >
                             Reset to current year
                         </Button>
@@ -216,90 +216,92 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                 </div>
             </div>
 
-            <div className="rounded-lg border bg-card dark:bg-gray-900 dark:border-gray-700">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
                 <Table>
                     <TableHeader>
-                        <TableRow className="hover:bg-muted/50 dark:border-gray-700 dark:hover:bg-gray-800/50">
+                        <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
                             <TableHead 
-                                className="cursor-pointer font-semibold dark:text-gray-300"
+                                className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                 onClick={() => handleSort('date_of_service')}
                             >
                                 <div className="flex items-center gap-2">
-                                    Service Date
+                                    Date of Service
                                     {sortField === 'date_of_service' && (
-                                        <span className="text-muted-foreground dark:text-gray-400">
+                                        <span className="text-slate-500 dark:text-slate-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold dark:text-gray-300">Member</TableHead>
+                            <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member</TableHead>
                             <TableHead 
-                                className="cursor-pointer font-semibold dark:text-gray-300"
+                                className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                 onClick={() => handleSort('claim_type')}
                             >
                                 <div className="flex items-center gap-2">
-                                    Type
+                                    Claim Type
                                     {sortField === 'claim_type' && (
-                                        <span className="text-muted-foreground dark:text-gray-400">
+                                        <span className="text-slate-500 dark:text-slate-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
                             <TableHead 
-                                className="cursor-pointer font-semibold dark:text-gray-300"
+                                className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                 onClick={() => handleSort('amount')}
                             >
                                 <div className="flex items-center gap-2">
                                     Amount
                                     {sortField === 'amount' && (
-                                        <span className="text-muted-foreground dark:text-gray-400">
+                                        <span className="text-slate-500 dark:text-slate-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold dark:text-gray-300">Hospital</TableHead>
+                            <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Hospital</TableHead>
                             <TableHead 
-                                className="cursor-pointer font-semibold dark:text-gray-300"
+                                className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                 onClick={() => handleSort('status')}
                             >
                                 <div className="flex items-center gap-2">
                                     Status
                                     {sortField === 'status' && (
-                                        <span className="text-muted-foreground dark:text-gray-400">
+                                        <span className="text-slate-500 dark:text-slate-400">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
                                     )}
                                 </div>
                             </TableHead>
-                            <TableHead className="font-semibold text-right dark:text-gray-300">Actions</TableHead>
+                            <TableHead className="text-slate-700 dark:text-slate-200 font-semibold text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {filteredClaims.length === 0 ? (
-                            <TableRow className="dark:border-gray-700">
-                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground dark:text-gray-400">
+                            <TableRow className="border-slate-200 dark:border-slate-700">
+                                <TableCell colSpan={7} className="h-24 text-center text-slate-500 dark:text-slate-400">
                                     No claims found
                                 </TableCell>
                             </TableRow>
                         ) : (
                             filteredClaims.map((claim) => (
-                                <TableRow key={claim.id} className="hover:bg-muted/50 dark:border-gray-700 dark:hover:bg-gray-800/50">
-                                    <TableCell className="font-medium dark:text-gray-200">
+                                <TableRow key={claim.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                    <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                                         {format(new Date(claim.date_of_service), 'MMM d, yyyy')}
                                     </TableCell>
-                                    <TableCell className="font-medium dark:text-gray-200">
+                                    <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                                         {getMemberName(claim.member_id)}
                                     </TableCell>
-                                    <TableCell className="capitalize dark:text-gray-300">
+                                    <TableCell className="capitalize text-slate-700 dark:text-slate-300">
                                         {claim.claim_type}
                                     </TableCell>
-                                    <TableCell className="font-medium dark:text-gray-200">
-                                        {appCurrency.symbol}{Number(claim.amount).toFixed(2)}
+                                    <TableCell className="font-medium text-slate-700 dark:text-slate-300">
+                                        <span className="text-blue-600 dark:text-blue-300 font-semibold">
+                                            {appCurrency.symbol}{Number(claim.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
                                     </TableCell>
-                                    <TableCell className="dark:text-gray-300">
+                                    <TableCell className="text-slate-700 dark:text-slate-300">
                                         {claim.hospital_name}
                                     </TableCell>
                                     <TableCell>
@@ -318,14 +320,14 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleEdit(claim.member_id, claim.id)}
-                                                className="hover:bg-muted dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+                                                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
                                                 onClick={() => handleDelete(claim.member_id, claim.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />

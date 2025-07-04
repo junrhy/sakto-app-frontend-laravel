@@ -119,55 +119,57 @@ export default function MissingContributionsList({ members, contributions, appCu
     const renderSummaryView = () => (
         <Table>
             <TableHeader>
-                <TableRow className="dark:border-gray-700">
-                    <TableHead className="dark:text-gray-300">Member Name</TableHead>
-                    <TableHead className="dark:text-gray-300">Contribution Frequency</TableHead>
-                    <TableHead className="dark:text-gray-300">Expected Amount</TableHead>
-                    <TableHead className="dark:text-gray-300">Start Date</TableHead>
-                    <TableHead className="dark:text-gray-300">Missing Contributions</TableHead>
-                    <TableHead className="dark:text-gray-300">Total Due</TableHead>
-                    <TableHead className="dark:text-gray-300">Actions</TableHead>
+                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Contribution Frequency</TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Expected Amount</TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Start Date</TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Missing Contributions</TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Total Due</TableHead>
+                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {filteredMembers.map((member) => (
-                    <TableRow key={member.id} className="dark:border-gray-700">
-                        <TableCell className="font-medium dark:text-gray-200">
+                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                             {member.name}
                         </TableCell>
-                        <TableCell className="capitalize dark:text-gray-300">
+                        <TableCell className="capitalize text-slate-700 dark:text-slate-300">
                             {member.contribution_frequency}
                         </TableCell>
-                        <TableCell className="dark:text-gray-300">
-                            {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                        <TableCell className="text-slate-700 dark:text-slate-300">
+                            <span className="text-blue-600 dark:text-blue-300 font-semibold">
+                                {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
                         </TableCell>
-                        <TableCell className="dark:text-gray-300">
+                        <TableCell className="text-slate-700 dark:text-slate-300">
                             {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
                         </TableCell>
                         <TableCell>
                             <div className="flex items-center gap-2">
-                                <span className="text-red-600 dark:text-red-400 font-medium">
+                                <span className="text-red-600 dark:text-orange-300 font-medium">
                                     {member.missingContributions.length} payments
                                 </span>
                                 <Button
                                     variant="link"
                                     size="sm"
                                     onClick={() => setViewMode('calendar')}
-                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200 transition-colors duration-200"
                                 >
                                     View Details
                                 </Button>
                             </div>
                         </TableCell>
-                        <TableCell className="font-medium text-red-600 dark:text-red-400">
-                            {appCurrency.symbol}{(Number(member.contribution_amount) * member.missingContributions.length).toFixed(2)}
+                        <TableCell className="font-medium text-red-600 dark:text-orange-300">
+                            {appCurrency.symbol}{(Number(member.contribution_amount) * member.missingContributions.length).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleAddContribution(member)}
-                                className="dark:text-gray-300 dark:hover:text-gray-100"
+                                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Contribution
@@ -204,14 +206,14 @@ export default function MissingContributionsList({ members, contributions, appCu
 
             return (
                 <div className="mb-8 p-4">
-                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">{title}</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">{title}</h3>
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="dark:border-gray-700">
-                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Member Name</TableHead>
+                                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
                                     {months.map(month => (
-                                        <TableHead key={month.toISOString()} className="min-w-[120px] dark:text-gray-300">
+                                        <TableHead key={month.toISOString()} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
                                             {format(month, 'MMM yyyy')}
                                         </TableHead>
                                     ))}
@@ -219,8 +221,8 @@ export default function MissingContributionsList({ members, contributions, appCu
                             </TableHeader>
                             <TableBody>
                                 {members.map((member) => (
-                                    <TableRow key={member.id} className="dark:border-gray-700">
-                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-200">
+                                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
                                         </TableCell>
                                         {months.map(month => {
@@ -233,19 +235,22 @@ export default function MissingContributionsList({ members, contributions, appCu
                                             return (
                                                 <TableCell 
                                                     key={month.toISOString()}
-                                                    className={`text-center ${hasContribution ? 'bg-red-100 dark:bg-red-900/20' : 'bg-green-100 dark:bg-green-900/20'} ${isBeforeStart ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
+                                                    className={`text-center ${hasContribution ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'} ${isBeforeStart ? 'bg-slate-50 dark:bg-slate-800' : ''}`}
                                                 >
                                                     {!isBeforeStart && (
                                                         <>
                                                             {hasContribution ? (
                                                                 <div className="space-y-1">
-                                                                    <div></div>
+                                                                    <div className="text-red-600 dark:text-red-400">✗</div>
+                                                                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                                                                        Missing
+                                                                    </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="space-y-1">
                                                                     <div className="text-green-600 dark:text-green-400">✓</div>
-                                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                                                                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -268,14 +273,14 @@ export default function MissingContributionsList({ members, contributions, appCu
 
             return (
                 <div className="mb-8 p-4">
-                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Annual Contributions</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Annual Contributions</h3>
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="dark:border-gray-700">
-                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Member Name</TableHead>
+                                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
                                     {years.map(year => (
-                                        <TableHead key={year} className="min-w-[120px] dark:text-gray-300">
+                                        <TableHead key={year} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
                                             {year}
                                         </TableHead>
                                     ))}
@@ -283,8 +288,8 @@ export default function MissingContributionsList({ members, contributions, appCu
                             </TableHeader>
                             <TableBody>
                                 {members.map((member) => (
-                                    <TableRow key={member.id} className="dark:border-gray-700">
-                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-200">
+                                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
                                         </TableCell>
                                         {years.map(year => {
@@ -296,19 +301,22 @@ export default function MissingContributionsList({ members, contributions, appCu
                                             return (
                                                 <TableCell 
                                                     key={year}
-                                                    className={`text-center ${hasContribution ? 'bg-red-100 dark:bg-red-900/20' : 'bg-green-100 dark:bg-green-900/20'} ${isBeforeStart ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
+                                                    className={`text-center ${hasContribution ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'} ${isBeforeStart ? 'bg-slate-50 dark:bg-slate-800' : ''}`}
                                                 >
                                                     {!isBeforeStart && (
                                                         <>
                                                             {hasContribution ? (
                                                                 <div className="space-y-1">
-                                                                    <div></div>
+                                                                    <div className="text-red-600 dark:text-red-400">✗</div>
+                                                                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                                                                        Missing
+                                                                    </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="space-y-1">
                                                                     <div className="text-green-600 dark:text-green-400">✓</div>
-                                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                                                                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -339,26 +347,26 @@ export default function MissingContributionsList({ members, contributions, appCu
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                     <Input
                         placeholder="Search members..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                        className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
                     />
                 </div>
                 <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'summary' | 'calendar')}>
-                    <TabsList className="dark:bg-gray-800">
+                    <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                         <TabsTrigger 
                             value="summary"
-                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                            className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm transition-all duration-200"
                         >
                             <TableIcon className="h-4 w-4 mr-2" />
                             Summary
                         </TabsTrigger>
                         <TabsTrigger 
                             value="calendar"
-                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                            className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm transition-all duration-200"
                         >
                             <Calendar className="h-4 w-4 mr-2" />
                             Calendar
@@ -367,7 +375,7 @@ export default function MissingContributionsList({ members, contributions, appCu
                 </Tabs>
             </div>
 
-            <div className="rounded-md border dark:border-gray-700">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
                 {viewMode === 'summary' ? renderSummaryView() : renderCalendarView()}
             </div>
 

@@ -91,8 +91,6 @@ export default function ContributionsList({ contributions, members, appCurrency 
         // This will be handled by the page refresh after the API call
     };
 
-
-
     const getMemberName = (memberId: string) => {
         const member = members.find(m => m.id === memberId);
         return member ? member.name : 'Unknown Member';
@@ -182,58 +180,80 @@ export default function ContributionsList({ contributions, members, appCurrency 
             if (monthlyMembers.length === 0) {
                 return (
                     <div className="mb-8 p-4">
-                        <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Monthly/Quarterly Contributions</h3>
-                        <p className="text-gray-500 dark:text-gray-400">No members with monthly or quarterly contribution frequency found.</p>
+                        <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Monthly/Quarterly Contributions</h3>
+                        <p className="text-slate-500 dark:text-slate-400">No members with monthly or quarterly contribution frequency found.</p>
                     </div>
                 );
             }
 
             return (
                 <div className="mb-8 p-4">
-                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Monthly/Quarterly Contributions</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Monthly/Quarterly Contributions</h3>
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="dark:border-gray-700">
-                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Member Name</TableHead>
-                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Frequency</TableHead>
+                                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Frequency</TableHead>
                                     {months.map(month => (
-                                        <TableHead key={month.toISOString()} className="min-w-[120px] dark:text-gray-300">
+                                        <TableHead key={month.toISOString()} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
                                             {format(month, 'MMM yyyy')}
                                         </TableHead>
                                     ))}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {monthlyMembers.map(member => (
-                                    <TableRow key={member.id} className="dark:border-gray-700">
-                                        <TableCell className="sticky left-0 bg-white dark:bg-gray-900 font-medium dark:text-gray-200">
+                                {monthlyMembers.map((member) => (
+                                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
                                         </TableCell>
-                                        <TableCell className="sticky left-0 bg-white dark:bg-gray-900 capitalize dark:text-gray-300">
+                                        <TableCell className="capitalize sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
                                             {member.contribution_frequency}
                                         </TableCell>
                                         {months.map(month => {
                                             const monthContributions = contributions.filter(contribution => {
-                                                if (contribution.member_id !== member.id) return false;
-                                                const contributionDate = new Date(contribution.payment_date);
-                                                return contributionDate.getMonth() === month.getMonth() && 
-                                                       contributionDate.getFullYear() === month.getFullYear();
+                                                try {
+                                                    const contributionDate = new Date(contribution.payment_date);
+                                                    if (isNaN(contributionDate.getTime())) return false;
+                                                    
+                                                    return (
+                                                        contribution.member_id === member.id &&
+                                                        contributionDate.getMonth() === month.getMonth() &&
+                                                        contributionDate.getFullYear() === month.getFullYear()
+                                                    );
+                                                } catch (error) {
+                                                    console.error('Error processing contribution date:', error);
+                                                    return false;
+                                                }
                                             });
                                             
-                                            const totalAmount = monthContributions.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+                                            const totalAmount = monthContributions.reduce((sum, c) => {
+                                                try {
+                                                    return sum + Number(c.amount || 0);
+                                                } catch (error) {
+                                                    console.error('Error calculating amount:', error);
+                                                    return sum;
+                                                }
+                                            }, 0);
                                             
                                             return (
-                                                <TableCell key={month.toISOString()} className="text-center dark:text-gray-300">
-                                                    {totalAmount > 0 ? (
-                                                        <div className="text-sm">
-                                                            <div className="font-medium">{appCurrency.symbol}{totalAmount.toFixed(2)}</div>
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                {monthContributions.length} payment{monthContributions.length !== 1 ? 's' : ''}
+                                                <TableCell 
+                                                    key={month.toISOString()}
+                                                    className={`text-center ${monthContributions.length > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-slate-50 dark:bg-slate-800'}`}
+                                                >
+                                                    {monthContributions.length > 0 ? (
+                                                        <div className="space-y-1">
+                                                            <div className="text-green-600 dark:text-green-400">✓</div>
+                                                            <div className="text-xs text-slate-600 dark:text-slate-400">
+                                                                {appCurrency.symbol}{totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </div>
+                                                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                                                                {monthContributions.length} payment{monthContributions.length > 1 ? 's' : ''}
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-gray-400 dark:text-gray-500">-</span>
+                                                        <div className="text-slate-400 dark:text-slate-500">-</div>
                                                     )}
                                                 </TableCell>
                                             );
@@ -256,53 +276,75 @@ export default function ContributionsList({ contributions, members, appCurrency 
             if (annualMembers.length === 0) {
                 return (
                     <div className="p-4">
-                        <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Annual Contributions</h3>
-                        <p className="text-gray-500 dark:text-gray-400">No members with annual contribution frequency found.</p>
+                        <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Annual Contributions</h3>
+                        <p className="text-slate-500 dark:text-slate-400">No members with annual contribution frequency found.</p>
                     </div>
                 );
             }
 
             return (
                 <div className="p-4">
-                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Annual Contributions</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Annual Contributions</h3>
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="dark:border-gray-700">
-                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-900 dark:text-gray-300">Member Name</TableHead>
+                                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Frequency</TableHead>
                                     {years.map(year => (
-                                        <TableHead key={year} className="min-w-[100px] dark:text-gray-300">
+                                        <TableHead key={year} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
                                             {year}
                                         </TableHead>
                                     ))}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {annualMembers.map(member => (
-                                    <TableRow key={member.id} className="dark:border-gray-700">
-                                        <TableCell className="sticky left-0 bg-white dark:bg-gray-900 font-medium dark:text-gray-200">
+                                {annualMembers.map((member) => (
+                                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
+                                        </TableCell>
+                                        <TableCell className="capitalize sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                                            {member.contribution_frequency}
                                         </TableCell>
                                         {years.map(year => {
                                             const yearContributions = contributions.filter(contribution => {
-                                                if (contribution.member_id !== member.id) return false;
-                                                const contributionDate = new Date(contribution.payment_date);
-                                                return contributionDate.getFullYear() === year;
+                                                try {
+                                                    const contributionDate = new Date(contribution.payment_date);
+                                                    if (isNaN(contributionDate.getTime())) return false;
+                                                    
+                                                    return (
+                                                        contribution.member_id === member.id &&
+                                                        contributionDate.getFullYear() === year
+                                                    );
+                                                } catch (error) {
+                                                    console.error('Error processing contribution date:', error);
+                                                    return false;
+                                                }
                                             });
                                             
-                                            const totalAmount = yearContributions.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+                                            const totalAmount = yearContributions.reduce((sum, c) => {
+                                                try {
+                                                    return sum + Number(c.amount || 0);
+                                                } catch (error) {
+                                                    console.error('Error calculating amount:', error);
+                                                    return sum;
+                                                }
+                                            }, 0);
                                             
                                             return (
-                                                <TableCell key={year} className="text-center dark:text-gray-300">
+                                                <TableCell key={year} className="text-center text-slate-700 dark:text-slate-300">
                                                     {totalAmount > 0 ? (
                                                         <div className="text-sm">
-                                                            <div className="font-medium">{appCurrency.symbol}{totalAmount.toFixed(2)}</div>
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                            <div className="font-medium text-blue-600 dark:text-blue-300">
+                                                                {appCurrency.symbol}{totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </div>
+                                                            <div className="text-xs text-slate-500 dark:text-slate-400">
                                                                 {yearContributions.length} payment{yearContributions.length !== 1 ? 's' : ''}
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-gray-400 dark:text-gray-500">-</span>
+                                                        <span className="text-slate-400 dark:text-slate-500">-</span>
                                                     )}
                                                 </TableCell>
                                             );
@@ -329,12 +371,12 @@ export default function ContributionsList({ contributions, members, appCurrency 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div className="relative flex-1">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                         <Input
                             placeholder="Search contributions..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-8 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                            className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
                         />
                     </div>
                     {viewMode === 'table' && (
@@ -345,16 +387,16 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                         <Button
                                             variant="outline"
                                             className={cn(
-                                                "w-[240px] justify-start text-left font-normal dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
-                                                !startDate && "text-muted-foreground dark:text-gray-400",
-                                                startDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
+                                                "w-[240px] justify-start text-left font-normal border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700",
+                                                !startDate && "text-slate-500 dark:text-slate-400",
+                                                startDate && "border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10"
                                             )}
                                         >
                                             <Calendar className="mr-2 h-4 w-4" />
                                             {startDate ? format(startDate, "PPP") : "Start date"}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
+                                    <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
                                         <DatePicker
                                             mode="single"
                                             selected={startDate}
@@ -363,22 +405,22 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                         />
                                     </PopoverContent>
                                 </Popover>
-                                <span className="text-muted-foreground dark:text-gray-400 font-medium">to</span>
+                                <span className="text-slate-500 dark:text-slate-400 font-medium">to</span>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
                                             className={cn(
-                                                "w-[240px] justify-start text-left font-normal dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700",
-                                                !endDate && "text-muted-foreground dark:text-gray-400",
-                                                endDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10"
+                                                "w-[240px] justify-start text-left font-normal border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700",
+                                                !endDate && "text-slate-500 dark:text-slate-400",
+                                                endDate && "border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10"
                                             )}
                                         >
                                             <Calendar className="mr-2 h-4 w-4" />
                                             {endDate ? format(endDate, "PPP") : "End date"}
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
+                                    <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
                                         <DatePicker
                                             mode="single"
                                             selected={endDate}
@@ -396,7 +438,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                         setStartDate(startOfYear(new Date()));
                                         setEndDate(endOfYear(new Date()));
                                     }}
-                                    className="text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-200"
+                                    className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
                                 >
                                     Reset to current year
                                 </Button>
@@ -405,17 +447,17 @@ export default function ContributionsList({ contributions, members, appCurrency 
                     )}
                 </div>
                 <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'table' | 'calendar')}>
-                    <TabsList className="dark:bg-gray-800">
+                    <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                         <TabsTrigger 
                             value="table"
-                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                            className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm transition-all duration-200"
                         >
                             <TableIcon className="h-4 w-4 mr-2" />
                             Table
                         </TabsTrigger>
                         <TabsTrigger 
                             value="calendar"
-                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                            className="text-slate-700 dark:text-slate-300 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm transition-all duration-200"
                         >
                             <Calendar className="h-4 w-4 mr-2" />
                             Calendar
@@ -424,32 +466,32 @@ export default function ContributionsList({ contributions, members, appCurrency 
                 </Tabs>
             </div>
             
-            <div className="rounded-md border dark:border-gray-700">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
                 {viewMode === 'table' ? (
                     <Table>
                         <TableHeader>
-                            <TableRow className="dark:border-gray-700">
+                            <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
                                 <TableHead 
-                                    className="cursor-pointer dark:text-gray-300"
+                                    className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                     onClick={() => handleSort('payment_date')}
                                 >
                                     Payment Date {sortField === 'payment_date' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </TableHead>
-                                <TableHead className="dark:text-gray-300">Member</TableHead>
+                                <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member</TableHead>
                                 <TableHead 
-                                    className="cursor-pointer dark:text-gray-300"
+                                    className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                     onClick={() => handleSort('amount')}
                                 >
                                     Amount {sortField === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </TableHead>
                                 <TableHead 
-                                    className="cursor-pointer dark:text-gray-300"
+                                    className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
                                     onClick={() => handleSort('payment_method')}
                                 >
                                     Payment Method {sortField === 'payment_method' && (sortDirection === 'asc' ? '↑' : '↓')}
                                 </TableHead>
-                                <TableHead className="dark:text-gray-300">Reference Number</TableHead>
-                                <TableHead className="dark:text-gray-300">Actions</TableHead>
+                                <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Reference Number</TableHead>
+                                <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -459,20 +501,22 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                     const isValidDate = !isNaN(paymentDate.getTime());
                                     
                                     return (
-                                        <TableRow key={contribution.id} className="dark:border-gray-700">
-                                            <TableCell className="dark:text-gray-300">
+                                        <TableRow key={contribution.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                            <TableCell className="text-slate-700 dark:text-slate-300">
                                                 {isValidDate ? format(paymentDate, 'MMM d, yyyy') : 'Invalid Date'}
                                             </TableCell>
-                                            <TableCell className="font-medium dark:text-gray-200">
+                                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
                                                 {getMemberName(contribution.member_id)}
                                             </TableCell>
-                                            <TableCell className="dark:text-gray-300">
-                                                {appCurrency.symbol}{Number(contribution.amount || 0).toFixed(2)}
+                                            <TableCell className="text-slate-700 dark:text-slate-300">
+                                                <span className="text-blue-600 dark:text-blue-300 font-semibold">
+                                                    {appCurrency.symbol}{Number(contribution.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </span>
                                             </TableCell>
-                                            <TableCell className="capitalize dark:text-gray-300">
+                                            <TableCell className="capitalize text-slate-700 dark:text-slate-300">
                                                 {(contribution.payment_method || '').replace('_', ' ')}
                                             </TableCell>
-                                            <TableCell className="dark:text-gray-300">
+                                            <TableCell className="text-slate-700 dark:text-slate-300">
                                                 {contribution.reference_number || '-'}
                                             </TableCell>
                                             <TableCell>
@@ -481,14 +525,14 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                                         variant="ghost"
                                                         size="icon"
                                                         onClick={() => handleEdit(contribution)}
-                                                        className="hover:bg-muted dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700"
+                                                        className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
                                                         onClick={() => handleDelete(contribution.member_id, contribution.id)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />

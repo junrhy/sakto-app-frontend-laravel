@@ -189,44 +189,56 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
     return (
         <AuthenticatedLayout
             auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Mortuary</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Mortuary Management</h2>}
         >
             <Head title="Mortuary" />
 
-            <div className="py-6">
-                <div className="max-w-[90rem] mx-auto sm:px-6 lg:px-8">
+            <div className="py-0">
+                <div className="w-full mx-auto sm:px-6 lg:px-0">
                     <Card className="shadow-xl border-0 dark:bg-gray-950 dark:border-gray-800 bg-white">
                         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-50">Mortuary Management</CardTitle>
-                            <div className="flex flex-wrap gap-3 w-full sm:w-auto">
-                                <Button 
-                                    onClick={() => setIsAddMemberOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Add Member
-                                </Button>
-                                <Button 
-                                    onClick={() => setIsAddContributionOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Single Contribution
-                                </Button>
-                                <Button 
-                                    onClick={() => setIsBulkContributionOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Bulk Contributions
-                                </Button>
-                                <Button 
-                                    onClick={() => setIsSubmitClaimOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Submit Claim
-                                </Button>
+                            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-50">Records</CardTitle>
+                            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                                {activeTab === 'members' && (
+                                    <Button 
+                                        onClick={() => setIsAddMemberOpen(true)} 
+                                        size="sm"
+                                        className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white transition-all duration-200 shadow-sm hover:shadow-md text-sm px-3 py-1.5"
+                                    >
+                                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                        Add Member
+                                    </Button>
+                                )}
+                                {activeTab === 'contributions' && (
+                                    <>
+                                        <Button 
+                                            onClick={() => setIsAddContributionOpen(true)} 
+                                            size="sm"
+                                            className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 dark:text-white transition-all duration-200 shadow-sm hover:shadow-md text-sm px-3 py-1.5"
+                                        >
+                                            <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                            Single Contribution
+                                        </Button>
+                                        <Button 
+                                            onClick={() => setIsBulkContributionOpen(true)} 
+                                            size="sm"
+                                            className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:text-white transition-all duration-200 shadow-sm hover:shadow-md text-sm px-3 py-1.5"
+                                        >
+                                            <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                            Bulk Contributions
+                                        </Button>
+                                    </>
+                                )}
+                                {activeTab === 'claims' && (
+                                    <Button 
+                                        onClick={() => setIsSubmitClaimOpen(true)} 
+                                        size="sm"
+                                        className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 dark:text-white transition-all duration-200 shadow-sm hover:shadow-md text-sm px-3 py-1.5"
+                                    >
+                                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                        Submit Claim
+                                    </Button>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="p-6 dark:bg-gray-950">
@@ -313,7 +325,6 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                 <TabsContent value="group-contributions">
                                     <GroupContributionsList 
                                         members={members}
-                                        contributions={contributions}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
