@@ -812,7 +812,7 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
     Route::get('/pages/{id}/duplicate', [PagesController::class, 'duplicate'])->name('pages.duplicate');
 
     // Community Kiosk Terminal (subscription required)
-    Route::prefix('kiosk')->name('kiosk.community.')->group(function () {
+    Route::prefix('kiosk/community')->name('kiosk.community.')->group(function () {
         Route::get('/', [CommunityKioskTerminalController::class, 'index'])->name('index');
         Route::get('/data', [CommunityKioskTerminalController::class, 'getUpdatedData'])->name('data');
         

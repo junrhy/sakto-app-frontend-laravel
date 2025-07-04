@@ -17,6 +17,13 @@ import {
     CheckCircle,
 } from 'lucide-react';
 
+// Helper function to format date in Manila timezone
+const formatManilaTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const manilaTime = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Manila"}));
+    return format(manilaTime, 'MMM dd, yyyy h:mm a');
+};
+
 interface Event {
     id: string;
     title: string;
@@ -32,8 +39,6 @@ interface Event {
 interface Participant {
     id: string;
     name: string;
-    email: string;
-    phone: string;
     checked_in: boolean;
     checked_in_at?: string;
     payment_status?: string;
@@ -48,6 +53,7 @@ export default function EventCheckIn({ events }: EventCheckInProps) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [eventSearchQuery, setEventSearchQuery] = useState('');
     const [participantSearchQuery, setParticipantSearchQuery] = useState('');
+    const [loadingParticipants, setLoadingParticipants] = useState(false);
 
     // Filtered data
     const filteredEvents = events.filter(event =>
@@ -56,31 +62,33 @@ export default function EventCheckIn({ events }: EventCheckInProps) {
     );
 
     const filteredParticipants = participants.filter(participant =>
-        participant.name.toLowerCase().includes(participantSearchQuery.toLowerCase()) ||
-        participant.email.toLowerCase().includes(participantSearchQuery.toLowerCase()) ||
-        participant.phone.includes(participantSearchQuery)
+        participant.name.toLowerCase().includes(participantSearchQuery.toLowerCase())
     );
 
     // Load event participants
     const loadEventParticipants = async (eventId: string) => {
+        setLoadingParticipants(true);
         try {
-            const response = await fetch(route('kiosk.events.participants', { eventId }));
+            const response = await fetch(route('kiosk.community.events.participants', { eventId }));
+            
             if (response.ok) {
                 const data = await response.json();
-                setParticipants(data);
+                setParticipants(data.data || data);
             } else {
+                const errorData = await response.text();
                 toast.error('Failed to load participants');
             }
         } catch (error) {
-            console.error('Error loading participants:', error);
             toast.error('Failed to load participants');
+        } finally {
+            setLoadingParticipants(false);
         }
     };
 
     // Check-in participant
     const checkInParticipant = async (eventId: string, participantId: string) => {
         try {
-            const response = await fetch(route('kiosk.events.check-in', { eventId, participantId }), {
+            const response = await fetch(route('kiosk.community.events.check-in', { eventId, participantId }), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -131,33 +139,35 @@ export default function EventCheckIn({ events }: EventCheckInProps) {
                 </div>
 
                 {/* Events List */}
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredEvents.map((event) => (
                         <Card 
                             key={event.id} 
-                            className={`cursor-pointer transition-colors min-h-[200px] ${
+                            className={`cursor-pointer transition-colors min-h-[180px] lg:min-h-[200px] ${
                                 selectedEvent?.id === event.id 
                                     ? 'ring-4 ring-blue-500 bg-blue-50 border-blue-300' 
                                     : 'hover:bg-gray-50 hover:shadow-lg'
                             }`}
                             onClick={() => {
                                 setSelectedEvent(event);
+                                setParticipants([]);
+                                setParticipantSearchQuery('');
                                 loadEventParticipants(event.id);
                             }}
                         >
-                            <CardContent className="p-6">
-                                <h3 className="font-semibold text-xl mb-3">{event.title}</h3>
-                                <p className="text-base text-gray-600 mb-4">{event.location}</p>
-                                <div className="flex items-center gap-3 mb-3">
-                                    <Badge variant={event.status === 'published' ? 'default' : 'secondary'} className="text-sm px-3 py-1">
+                            <CardContent className="p-4 lg:p-6">
+                                <h3 className="font-semibold text-lg lg:text-xl mb-2 lg:mb-3">{event.title}</h3>
+                                <p className="text-sm lg:text-base text-gray-600 mb-3 lg:mb-4">{event.location}</p>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:gap-3 mb-2 lg:mb-3">
+                                    <Badge variant={event.status === 'published' ? 'default' : 'secondary'} className="text-xs lg:text-sm px-2 lg:px-3 py-1 w-fit">
                                         {event.status}
                                     </Badge>
-                                    <span className="text-base text-gray-500">
+                                    <span className="text-sm lg:text-base text-gray-500">
                                         {format(new Date(event.start_date), 'MMM dd, yyyy')}
                                     </span>
                                 </div>
                                 {event.current_participants !== undefined && (
-                                    <p className="text-base text-gray-600">
+                                    <p className="text-sm lg:text-base text-gray-600">
                                         {event.current_participants}/{event.max_participants} participants
                                     </p>
                                 )}
@@ -169,62 +179,93 @@ export default function EventCheckIn({ events }: EventCheckInProps) {
                 {/* Participants List */}
                 {selectedEvent && (
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-2xl font-semibold">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <h3 className="text-xl lg:text-2xl font-semibold">
                                 Participants - {selectedEvent.title}
                             </h3>
                             <Input
                                 placeholder="Search participants..."
                                 value={participantSearchQuery}
                                 onChange={(e) => setParticipantSearchQuery(e.target.value)}
-                                className="w-80 h-12 text-lg px-4"
+                                className="w-full lg:w-80 h-12 text-lg px-4"
                             />
                         </div>
 
                         <div className="border-2 rounded-lg">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Name</th>
-                                            <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Email</th>
-                                            <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Phone</th>
-                                            <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Status</th>
-                                            <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {filteredParticipants.map((participant) => (
-                                            <tr key={participant.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 text-lg">{participant.name}</td>
-                                                <td className="px-6 py-4 text-lg">{participant.email}</td>
-                                                <td className="px-6 py-4 text-lg">{participant.phone}</td>
-                                                <td className="px-6 py-4">
-                                                    {participant.checked_in ? (
-                                                        <Badge variant="default" className="flex items-center gap-2 text-base px-4 py-2">
-                                                            <CheckCircle className="w-5 h-5" />
-                                                            Checked In
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="secondary" className="text-base px-4 py-2">Not Checked In</Badge>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    {!participant.checked_in && (
-                                                        <Button
-                                                            size="lg"
-                                                            className="px-6 py-3 text-lg"
-                                                            onClick={() => checkInParticipant(selectedEvent.id, participant.id)}
-                                                        >
-                                                            Check In
-                                                        </Button>
-                                                    )}
-                                                </td>
+                            {loadingParticipants ? (
+                                <div className="p-8 text-center">
+                                    <p className="text-lg text-gray-500">Loading participants...</p>
+                                </div>
+                            ) : filteredParticipants.length > 0 ? (
+                                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                                    <table className="w-full min-w-[700px]">
+                                        <thead className="bg-gray-50 sticky top-0 z-10">
+                                            <tr>
+                                                <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Name</th>
+                                                <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Payment Status</th>
+                                                <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Check-in Time</th>
+                                                <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Status</th>
+                                                <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Actions</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {filteredParticipants.map((participant) => (
+                                                <tr key={participant.id} className="hover:bg-gray-50">
+                                                    <td className="px-3 lg:px-6 py-4 text-base lg:text-lg">{participant.name}</td>
+                                                    <td className="px-3 lg:px-6 py-4">
+                                                        <Badge 
+                                                            variant={participant.payment_status === 'paid' ? 'default' : 'secondary'} 
+                                                            className="text-sm lg:text-base px-3 lg:px-4 py-1 lg:py-2"
+                                                        >
+                                                            {participant.payment_status ? participant.payment_status.toUpperCase() : 'N/A'}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-3 lg:px-6 py-4 text-sm lg:text-lg">
+                                                        {participant.checked_in_at 
+                                                            ? formatManilaTime(participant.checked_in_at)
+                                                            : '-'
+                                                        }
+                                                    </td>
+                                                    <td className="px-3 lg:px-6 py-4">
+                                                        {participant.checked_in ? (
+                                                            <Badge variant="default" className="flex items-center gap-1 lg:gap-2 text-sm lg:text-base px-3 lg:px-4 py-1 lg:py-2">
+                                                                <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5" />
+                                                                Checked In
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="secondary" className="text-sm lg:text-base px-3 lg:px-4 py-1 lg:py-2">Not Checked In</Badge>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 lg:px-6 py-4">
+                                                        {!participant.checked_in && (
+                                                            <Button
+                                                                size="lg"
+                                                                className="px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-lg"
+                                                                onClick={() => checkInParticipant(selectedEvent.id, participant.id)}
+                                                            >
+                                                                Check In
+                                                            </Button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center">
+                                    <p className="text-lg text-gray-500 mb-4">
+                                        {participants.length === 0 
+                                            ? 'No participants found for this event.' 
+                                            : 'No participants match your search criteria.'}
+                                    </p>
+                                    {participants.length === 0 && (
+                                        <p className="text-sm text-gray-400">
+                                            Participants will appear here once they register for the event.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

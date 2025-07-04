@@ -16,9 +16,9 @@ const menuItems = [
     },
     {
         id: 'health_insurance',
-        label: 'Health Insurance',
+        label: 'Healthcare',
         icon: UserCheck,
-        description: 'Health insurance contributions'
+        description: 'Healthcare contributions'
     },
     {
         id: 'mortuary',

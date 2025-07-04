@@ -38,6 +38,7 @@ import KioskSidebar from './Components/KioskSidebar';
 import EventCheckIn from './Components/EventCheckIn';
 import HealthInsurance from './Components/HealthInsurance';
 import Mortuary from './Components/Mortuary';
+import ContributionSuccess from './Components/ContributionSuccess';
 
 interface Event {
     id: string;
@@ -117,6 +118,8 @@ export default function KioskTerminal({
     const [selectAll, setSelectAll] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successData, setSuccessData] = useState<any>(null);
 
     // Filtered data - moved to individual components
 
@@ -152,20 +155,47 @@ export default function KioskTerminal({
         const numAmount = Number(amount) || 0;
         setContributionData(prev => ({ ...prev, bulk_amount: amount }));
         
-        setMemberContributions(prev => prev.map(member => ({
-            ...member,
-            amount: member.selected ? numAmount : member.amount
-        })));
+        setMemberContributions(prev => prev.map(member => {
+            if (!member.selected) return member;
+            
+            // Find the corresponding member data to get contribution_amount
+            const memberData = currentMembers.find(m => m.id === member.member_id);
+            const minAmount = memberData?.contribution_amount || 0;
+            
+            // Use the higher of the bulk amount or minimum contribution amount
+            const finalAmount = Math.max(numAmount, minAmount);
+            
+            return {
+                ...member,
+                amount: finalAmount
+            };
+        }));
     };
 
     // Handle member selection for contributions
     const handleMemberSelection = (memberId: string, selected: boolean) => {
-        setMemberContributions(prev => prev.map(member => ({
-            ...member,
-            selected: member.member_id === memberId ? selected : member.selected,
-            amount: member.member_id === memberId && selected && contributionData.bulk_amount ? 
-                Number(contributionData.bulk_amount) : member.amount
-        })));
+        setMemberContributions(prev => prev.map(member => {
+            if (member.member_id !== memberId) return member;
+            
+            const isSelected = selected;
+            let newAmount = member.amount;
+            
+            if (isSelected && contributionData.bulk_amount) {
+                // Find the corresponding member data to get contribution_amount
+                const memberData = currentMembers.find(m => m.id === memberId);
+                const minAmount = memberData?.contribution_amount || 0;
+                const bulkAmount = Number(contributionData.bulk_amount) || 0;
+                
+                // Use the higher of the bulk amount or minimum contribution amount
+                newAmount = Math.max(bulkAmount, minAmount);
+            }
+            
+            return {
+                ...member,
+                selected: isSelected,
+                amount: newAmount
+            };
+        }));
     };
 
     // Handle select all for contributions
@@ -173,19 +203,42 @@ export default function KioskTerminal({
         setSelectAll(selected);
         const allMemberIds = filteredMembers.map(m => m.id);
         
-        setMemberContributions(prev => prev.map(member => ({
-            ...member,
-            selected: allMemberIds.includes(member.member_id) ? selected : member.selected,
-            amount: allMemberIds.includes(member.member_id) && selected && contributionData.bulk_amount ? 
-                Number(contributionData.bulk_amount) : member.amount
-        })));
+        setMemberContributions(prev => prev.map(member => {
+            if (!allMemberIds.includes(member.member_id)) return member;
+            
+            let newAmount = member.amount;
+            
+            if (selected && contributionData.bulk_amount) {
+                // Find the corresponding member data to get contribution_amount
+                const memberData = currentMembers.find(m => m.id === member.member_id);
+                const minAmount = memberData?.contribution_amount || 0;
+                const bulkAmount = Number(contributionData.bulk_amount) || 0;
+                
+                // Use the higher of the bulk amount or minimum contribution amount
+                newAmount = Math.max(bulkAmount, minAmount);
+            }
+            
+            return {
+                ...member,
+                selected: selected,
+                amount: newAmount
+            };
+        }));
     };
 
     // Handle individual member amount change
     const handleMemberAmountChange = (memberId: string, amount: string) => {
+        const member = currentMembers.find(m => m.id === memberId);
+        const numAmount = Number(amount) || 0;
+        
+        // If amount is less than premium, set it to premium amount
+        const finalAmount = member && numAmount < member.contribution_amount 
+            ? member.contribution_amount 
+            : numAmount;
+        
         setMemberContributions(prev => prev.map(member => ({
             ...member,
-            amount: member.member_id === memberId ? Number(amount) || 0 : member.amount
+            amount: member.member_id === memberId ? finalAmount : member.amount
         })));
     };
 
@@ -194,20 +247,15 @@ export default function KioskTerminal({
         const selectedContributions = memberContributions
             .filter(member => member.selected && member.amount > 0)
             .map(member => ({
-                member_id: member.member_id,
+                member_id: String(member.member_id), // Convert to string
                 amount: member.amount,
-                payment_date: contributionData.payment_date,
-                payment_method: contributionData.payment_method,
-                reference_number: contributionData.reference_number
+                payment_date: format(new Date(), 'yyyy-MM-dd'), // Always use today's date
+                payment_method: 'cash', // Always use cash
+                reference_number: '' // No reference number
             }));
 
         if (selectedContributions.length === 0) {
             toast.error('Please select at least one member and enter an amount');
-            return;
-        }
-
-        if (!contributionData.payment_method) {
-            toast.error('Please select a payment method');
             return;
         }
 
@@ -216,13 +264,14 @@ export default function KioskTerminal({
 
         try {
             const routeName = activeTab === 'health_insurance' 
-                ? 'kiosk.health-insurance.contributions' 
-                : 'kiosk.mortuary.contributions';
+                ? 'kiosk.community.health-insurance.contributions' 
+                : 'kiosk.community.mortuary.contributions';
 
             const response = await fetch(route(routeName), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({ contributions: selectedContributions })
@@ -232,24 +281,12 @@ export default function KioskTerminal({
 
             if (response.ok || response.status === 207) {
                 if (result.success) {
-                    toast.success(result.message);
+                    // Show success page instead of toast
+                    setSuccessData(result.data);
+                    setShowSuccess(true);
                 } else {
                     toast.warning(result.message);
                 }
-                
-                // Reset form
-                setContributionData({
-                    payment_date: format(new Date(), 'yyyy-MM-dd'),
-                    payment_method: '',
-                    reference_number: '',
-                    bulk_amount: '',
-                });
-                setMemberContributions(prev => prev.map(member => ({
-                    ...member,
-                    selected: false,
-                    amount: member.amount
-                })));
-                setSelectAll(false);
             } else {
                 toast.error(result.message || 'Failed to submit contributions');
             }
@@ -262,24 +299,51 @@ export default function KioskTerminal({
         }
     };
 
-    // Refresh data
-    const refreshData = async () => {
-        try {
-            const response = await fetch(route('kiosk.data'));
-            if (response.ok) {
-                const data = await response.json();
-                setEvents(data.events);
-                setHealthInsuranceMembers(data.healthInsuranceMembers);
-                setMortuaryMembers(data.mortuaryMembers);
-                toast.success('Data refreshed successfully');
-            } else {
-                toast.error('Failed to refresh data');
-            }
-        } catch (error) {
-            console.error('Error refreshing data:', error);
-            toast.error('Failed to refresh data');
-        }
+    // Reset form
+    const resetForm = () => {
+        setContributionData({
+            payment_date: format(new Date(), 'yyyy-MM-dd'),
+            payment_method: '',
+            reference_number: '',
+            bulk_amount: '',
+        });
+        setMemberContributions(prev => prev.map(member => ({
+            ...member,
+            selected: false,
+            amount: member.amount
+        })));
+        setSelectAll(false);
+        setShowSuccess(false);
+        setSuccessData(null);
     };
+
+    // Handle new submission
+    const handleNewSubmission = () => {
+        resetForm();
+    };
+
+    // Handle back to kiosk
+    const handleBackToKiosk = () => {
+        setShowSuccess(false);
+        setSuccessData(null);
+    };
+
+    // Show success page if submission was successful
+    if (showSuccess && successData) {
+        return (
+            <ContributionSuccess
+                type={activeTab as 'health_insurance' | 'mortuary'}
+                successData={{
+                    total: successData.total,
+                    successful: successData.successful,
+                    failed: successData.failed,
+                    message: `Successfully recorded ${successData.successful} ${activeTab === 'health_insurance' ? 'healthcare' : 'mortuary'} contributions`
+                }}
+                onBack={handleBackToKiosk}
+                onNewSubmission={handleNewSubmission}
+            />
+        );
+    }
 
     return (
         <>
@@ -310,12 +374,6 @@ export default function KioskTerminal({
                     .kiosk-light-mode * {
                         color-scheme: light !important;
                     }
-                    .kiosk-light-mode button {
-                        color: #111827 !important;
-                    }
-                    .kiosk-light-mode .button {
-                        color: #111827 !important;
-                    }
                     .kiosk-light-mode [data-radix-collection-item] {
                         color: #111827 !important;
                     }
@@ -331,34 +389,7 @@ export default function KioskTerminal({
                     
                     {/* Main Content */}
                     <div className="flex-1 flex flex-col overflow-hidden">
-                        {/* Header with Refresh Button */}
-                        <div className="bg-white border-b-2 border-gray-200 p-6">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-900">
-                                        {activeTab === 'events' && 'Event Check-in'}
-                                        {activeTab === 'health_insurance' && 'Health Insurance Contributions'}
-                                        {activeTab === 'mortuary' && 'Mortuary Contributions'}
-                                    </h1>
-                                    <p className="text-gray-600 mt-1">
-                                        {activeTab === 'events' && 'Select an event and check-in participants'}
-                                        {activeTab === 'health_insurance' && 'Submit contributions for health insurance members'}
-                                        {activeTab === 'mortuary' && 'Submit contributions for mortuary members'}
-                                    </p>
-                                </div>
-                                <Button 
-                                    onClick={refreshData} 
-                                    variant="outline" 
-                                    size="lg"
-                                    className="!text-gray-900 !border-gray-300 hover:!bg-gray-100 px-6 py-3 text-lg"
-                                >
-                                    <RefreshCw className="w-6 h-6 mr-3" />
-                                    Refresh Data
-                                </Button>
-                            </div>
-                        </div>
-
-                                                {/* Content Area */}
+                         {/* Content Area */}
                         <div className="flex-1 overflow-auto p-6">
                             {/* Event Check-in Content */}
                             {activeTab === 'events' && (

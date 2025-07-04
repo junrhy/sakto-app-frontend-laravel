@@ -37,6 +37,9 @@ interface Member {
     contribution_frequency: string;
     status: string;
     group: string;
+    latest_contribution_amount?: number;
+    latest_contribution_date?: string;
+    total_contribution?: number;
 }
 
 interface Contribution {
@@ -44,6 +47,13 @@ interface Contribution {
     amount: number;
     selected: boolean;
 }
+
+// Helper function to format date in Manila timezone
+const formatManilaTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const manilaTime = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Manila"}));
+    return format(manilaTime, 'MMM dd, yyyy h:mm a');
+};
 
 interface MortuaryProps {
     members: Member[];
@@ -67,6 +77,7 @@ interface MortuaryProps {
     onMemberSelection: (memberId: string, selected: boolean) => void;
     onSelectAll: (selected: boolean) => void;
     onMemberAmountChange: (memberId: string, amount: string) => void;
+    onRefreshData?: () => void;
 }
 
 export default function Mortuary({
@@ -88,42 +99,90 @@ export default function Mortuary({
     onBulkAmountChange,
     onMemberSelection,
     onSelectAll,
-    onMemberAmountChange
+    onMemberAmountChange,
+    onRefreshData
 }: MortuaryProps) {
     return (
         <>
             <style>{`
+                /* Checkbox styling - simple color change */
                 [data-radix-checkbox] {
-                    border-color: #d1d5db !important;
                     background-color: white !important;
+                    border: 2px solid #d1d5db !important;
                 }
+                
                 [data-radix-checkbox][data-state="checked"] {
-                    background-color: #16a34a !important;
-                    border-color: #16a34a !important;
+                    background-color: #3b82f6 !important;
+                    border-color: #3b82f6 !important;
                 }
-                [data-radix-checkbox][data-state="checked"] svg {
+                
+                /* Submit button text color fix */
+                .submit-button {
                     color: white !important;
-                    stroke: white !important;
-                    fill: white !important;
                 }
-                [data-radix-checkbox] svg {
-                    color: transparent !important;
-                    stroke: transparent !important;
-                    fill: transparent !important;
+                .submit-button:hover {
+                    color: white !important;
+                }
+                .submit-button:not(:disabled) {
+                    color: white !important;
+                }
+                .submit-button:not(:disabled):hover {
+                    color: white !important;
                 }
             `}</style>
             <Card className="border-2">
             <CardHeader className="pb-6">
-                <CardTitle className="flex items-center gap-3 text-2xl">
-                    <DollarSign className="w-8 h-8" />
-                    Mortuary Contributions
-                </CardTitle>
-                <CardDescription className="text-lg">Submit contributions for mortuary members</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
-                {/* Search and Filter */}
-                <div className="flex gap-6">
-                    <div className="flex-1">
+                {/* Submit Button Card */}
+                <Card className="border-2 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <CardContent className="p-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h3 className="text-xl lg:text-2xl font-bold text-gray-800 mb-2">
+                                    Submit Contributions
+                                </h3>
+                                <p className="text-gray-600">
+                                    Review and submit the selected member contributions
+                                </p>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                {onRefreshData && (
+                                    <Button 
+                                        onClick={onRefreshData}
+                                        variant="outline"
+                                        className="h-12 px-6 text-lg"
+                                    >
+                                        <RefreshCw className="w-5 h-5 mr-2" />
+                                        Refresh
+                                    </Button>
+                                )}
+                                <Button 
+                                    onClick={onSubmit} 
+                                    disabled={processing}
+                                    className="submit-button min-w-[200px] h-12 text-lg px-8 font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 !bg-gradient-to-r !from-indigo-600 !to-purple-600 hover:!from-indigo-700 hover:!to-purple-700 !text-white hover:!text-white disabled:!bg-gray-400 disabled:!text-gray-200 disabled:transform-none disabled:shadow-none rounded-xl border-0"
+                                    type="button"
+                                >
+                                    {processing ? (
+                                        <>
+                                            <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CreditCard className="w-5 h-5 mr-2" />
+                                            Submit
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Search, Filter, and Bulk Amount */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                    <div>
                         <Label className="text-lg font-semibold mb-3 block">Search Members</Label>
                         <Input
                             placeholder="Search by name or contact number..."
@@ -132,7 +191,7 @@ export default function Mortuary({
                             className="h-12 text-lg px-4"
                         />
                     </div>
-                    <div className="w-64">
+                    <div>
                         <Label className="text-lg font-semibold mb-3 block">Filter by Group</Label>
                         <Select value={filterGroup} onValueChange={setFilterGroup}>
                             <SelectTrigger className="h-12 text-lg">
@@ -146,43 +205,6 @@ export default function Mortuary({
                                 ))}
                             </SelectContent>
                         </Select>
-                    </div>
-                </div>
-
-                {/* Contribution Form */}
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                        <Label className="text-lg font-semibold mb-3 block">Payment Date</Label>
-                        <Input
-                            type="date"
-                            value={contributionData.payment_date}
-                            onChange={(e) => setContributionData((prev: any) => ({ ...prev, payment_date: e.target.value }))}
-                            className="h-12 text-lg px-4"
-                        />
-                    </div>
-                    <div>
-                        <Label className="text-lg font-semibold mb-3 block">Payment Method</Label>
-                        <Select value={contributionData.payment_method} onValueChange={(value) => setContributionData((prev: any) => ({ ...prev, payment_method: value }))}>
-                            <SelectTrigger className="h-12 text-lg">
-                                <SelectValue placeholder="Select payment method" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="cash" className="text-lg py-3">Cash</SelectItem>
-                                <SelectItem value="bank_transfer" className="text-lg py-3">Bank Transfer</SelectItem>
-                                <SelectItem value="check" className="text-lg py-3">Check</SelectItem>
-                                <SelectItem value="mobile_money" className="text-lg py-3">Mobile Money</SelectItem>
-                                <SelectItem value="other" className="text-lg py-3">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div>
-                        <Label className="text-lg font-semibold mb-3 block">Reference Number</Label>
-                        <Input
-                            placeholder="Optional reference number"
-                            value={contributionData.reference_number}
-                            onChange={(e) => setContributionData((prev: any) => ({ ...prev, reference_number: e.target.value }))}
-                            className="h-12 text-lg px-4"
-                        />
                     </div>
                     <div>
                         <Label className="text-lg font-semibold mb-3 block">Bulk Amount ({appCurrency.symbol})</Label>
@@ -222,15 +244,16 @@ export default function Mortuary({
                     )}
 
                     <div className="border-2 rounded-lg">
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50">
+                        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                            <table className="w-full min-w-[800px]">
+                                <thead className="bg-gray-50 sticky top-0 z-10">
                                     <tr>
-                                        <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Select</th>
-                                        <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Name</th>
-                                        <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Contact</th>
-                                        <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Group</th>
-                                        <th className="px-6 py-4 text-left text-lg font-semibold text-gray-700">Amount ({appCurrency.symbol})</th>
+                                        <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Select</th>
+                                        <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Name</th>
+                                        <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Latest Contribution</th>
+                                        <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Total Contribution</th>
+                                        <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Group</th>
+                                        <th className="px-3 lg:px-6 py-4 text-left text-base lg:text-lg font-semibold text-gray-700">Amount ({appCurrency.symbol})</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -238,24 +261,53 @@ export default function Mortuary({
                                         const contribution = memberContributions.find(c => c.member_id === member.id);
                                         return (
                                             <tr key={member.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 lg:px-6 py-4">
                                                     <Checkbox
                                                         checked={contribution?.selected || false}
                                                         onCheckedChange={(checked) => onMemberSelection(member.id, checked as boolean)}
-                                                        className="w-6 h-6"
+                                                        className="w-5 h-5 lg:w-6 lg:h-6"
                                                     />
                                                 </td>
-                                                <td className="px-6 py-4 text-lg font-medium">{member.name}</td>
-                                                <td className="px-6 py-4 text-lg">{member.contact_number}</td>
-                                                <td className="px-6 py-4 text-lg">{member.group || '-'}</td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 lg:px-6 py-4 text-base lg:text-lg font-medium">{member.name}</td>
+                                                <td className="px-3 lg:px-6 py-4 text-base lg:text-lg">
+                                                    {member.latest_contribution_amount ? (
+                                                        <div>
+                                                            <div className="font-medium">{appCurrency.symbol}{member.latest_contribution_amount}</div>
+                                                            <div className="text-xs lg:text-sm text-gray-500">
+                                                                {member.latest_contribution_date ? formatManilaTime(member.latest_contribution_date) : 'N/A'}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-gray-400">No contributions</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 lg:px-6 py-4 text-base lg:text-lg">
+                                                    {member.total_contribution ? (
+                                                        <span className="font-medium">{appCurrency.symbol}{member.total_contribution}</span>
+                                                    ) : (
+                                                        <span className="text-gray-400">₱0</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-3 lg:px-6 py-4 text-base lg:text-lg">{member.group || '-'}</td>
+                                                <td className="px-3 lg:px-6 py-4">
                                                     <Input
                                                         type="number"
                                                         value={contribution?.amount || 0}
                                                         onChange={(e) => onMemberAmountChange(member.id, e.target.value)}
-                                                        className="w-32 h-10 text-lg"
+                                                        className={`w-24 lg:w-32 h-8 lg:h-10 text-base lg:text-lg ${
+                                                            contribution?.amount && contribution.amount < member.contribution_amount 
+                                                                ? 'border-red-500 focus:border-red-500' 
+                                                                : ''
+                                                        }`}
                                                         disabled={!contribution?.selected}
+                                                        min={member.contribution_amount}
+                                                        placeholder={`Min: ${appCurrency.symbol}${member.contribution_amount}`}
                                                     />
+                                                    {contribution?.amount && contribution.amount < member.contribution_amount && (
+                                                        <p className="text-xs text-red-500 mt-1">
+                                                            Minimum: {appCurrency.symbol}{member.contribution_amount}
+                                                        </p>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -263,27 +315,6 @@ export default function Mortuary({
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
-                        <Button 
-                            onClick={onSubmit} 
-                            disabled={processing || memberContributions.filter(c => c.selected).length === 0}
-                            className="min-w-[300px] h-14 text-xl px-8 !bg-blue-600 hover:!bg-blue-700 !text-white disabled:!bg-gray-400 disabled:!text-gray-200"
-                        >
-                            {processing ? (
-                                <>
-                                    <RefreshCw className="w-6 h-6 mr-3 animate-spin" />
-                                    Processing...
-                                </>
-                            ) : (
-                                <>
-                                    <CreditCard className="w-6 h-6 mr-3" />
-                                    Submit Contributions
-                                </>
-                            )}
-                        </Button>
                     </div>
                 </div>
             </CardContent>
