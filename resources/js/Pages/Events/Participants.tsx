@@ -184,13 +184,13 @@ export default function Participants({ auth, event, participants }: Props) {
     const getPaymentStatusBadge = (status: string) => {
         switch (status) {
             case 'paid':
-                return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700">Paid</Badge>;
+                return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 border-green-200 dark:border-green-800 border">Paid</Badge>;
             case 'pending':
-                return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700">Pending</Badge>;
+                return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800 border">Pending</Badge>;
             case 'cancelled':
-                return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700">Cancelled</Badge>;
+                return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200 border-red-200 dark:border-red-800 border">Cancelled</Badge>;
             default:
-                return <Badge variant="secondary" className="dark:bg-gray-700 dark:text-gray-300">Unknown</Badge>;
+                return <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 border">Unknown</Badge>;
         }
     };
 
@@ -230,33 +230,33 @@ export default function Participants({ auth, event, participants }: Props) {
     return (
         <AuthenticatedLayout
             auth={auth}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Event Participants</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">Event Participants</h2>}
         >
             <Head title={`Participants - ${event.title}`} />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Event Info Card */}
-                    <Card className="mb-8 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <Card className="mb-8 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                         <CardHeader>
                             <CardTitle className="text-gray-900 dark:text-gray-100">{event.title}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                                     <Calendar className="w-4 h-4" />
                                     <span>{format(new Date(event.start_date), 'MMM d, yyyy')}</span>
                                 </div>
-                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                                     <MapPin className="w-4 h-4" />
                                     <span>{event.location}</span>
                                 </div>
-                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                                     <Users className="w-4 h-4" />
                                     <span>{event.current_participants}/{event.max_participants || '∞'} participants</span>
                                 </div>
                                 {event.is_paid_event && (
-                                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                                    <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                                         <CreditCard className="w-4 h-4" />
                                         <span>{formatAmount(event.event_price, event.currency)}</span>
                                     </div>
@@ -269,7 +269,7 @@ export default function Participants({ auth, event, participants }: Props) {
                         {/* Main Content */}
                         <div className="lg:col-span-3 space-y-6">
                             {/* Filters and Search */}
-                            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                 <CardHeader>
                                     <CardTitle className="text-gray-900 dark:text-gray-100">Filters & Search</CardTitle>
                                 </CardHeader>
@@ -282,16 +282,16 @@ export default function Participants({ auth, event, participants }: Props) {
                                                     placeholder="Search participants..."
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                                    className="pl-10 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                    className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                                                 />
                                             </div>
                                         </div>
                                         <div className="flex gap-2">
                                             <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                                                <SelectTrigger className="w-40 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                                <SelectTrigger className="w-40 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                                                     <SelectValue placeholder="Payment Status" />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                                <SelectContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                                     <SelectItem value="all">All Status</SelectItem>
                                                     <SelectItem value="paid">Paid</SelectItem>
                                                     <SelectItem value="pending">Pending</SelectItem>
@@ -299,10 +299,10 @@ export default function Participants({ auth, event, participants }: Props) {
                                                 </SelectContent>
                                             </Select>
                                             <Select value={checkInFilter} onValueChange={setCheckInFilter}>
-                                                <SelectTrigger className="w-40 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                                <SelectTrigger className="w-40 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                                                     <SelectValue placeholder="Check-in Status" />
                                                 </SelectTrigger>
-                                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                                <SelectContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                                     <SelectItem value="all">All Status</SelectItem>
                                                     <SelectItem value="checked_in">Checked In</SelectItem>
                                                     <SelectItem value="not_checked_in">Not Checked In</SelectItem>
@@ -311,7 +311,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                             <Button
                                                 variant="outline"
                                                 onClick={clearFilters}
-                                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                                             >
                                                 <Filter className="w-4 h-4" />
                                             </Button>
@@ -320,42 +320,42 @@ export default function Participants({ auth, event, participants }: Props) {
 
                                     {/* Filter Stats */}
                                     <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
-                                        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                                             <div className="font-semibold text-gray-900 dark:text-gray-100">{filterCounts.total}</div>
-                                            <div className="text-gray-600 dark:text-gray-400">Total</div>
+                                            <div className="text-gray-600 dark:text-gray-300">Total</div>
                                         </div>
-                                        <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                                            <div className="font-semibold text-green-700 dark:text-green-300">{filterCounts.paid}</div>
-                                            <div className="text-green-600 dark:text-green-400">Paid</div>
+                                        <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                            <div className="font-semibold text-green-700 dark:text-green-200">{filterCounts.paid}</div>
+                                            <div className="text-green-600 dark:text-green-300">Paid</div>
                                         </div>
-                                        <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                                            <div className="font-semibold text-yellow-700 dark:text-yellow-300">{filterCounts.pending}</div>
-                                            <div className="text-yellow-600 dark:text-yellow-400">Pending</div>
+                                        <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                                            <div className="font-semibold text-yellow-700 dark:text-yellow-200">{filterCounts.pending}</div>
+                                            <div className="text-yellow-600 dark:text-yellow-300">Pending</div>
                                         </div>
-                                        <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                                            <div className="font-semibold text-red-700 dark:text-red-300">{filterCounts.cancelled}</div>
-                                            <div className="text-red-600 dark:text-red-400">Cancelled</div>
+                                        <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                            <div className="font-semibold text-red-700 dark:text-red-200">{filterCounts.cancelled}</div>
+                                            <div className="text-red-600 dark:text-red-300">Cancelled</div>
                                         </div>
-                                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                            <div className="font-semibold text-blue-700 dark:text-blue-300">{filterCounts.checkedIn}</div>
-                                            <div className="text-blue-600 dark:text-blue-400">Checked In</div>
+                                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                            <div className="font-semibold text-blue-700 dark:text-blue-200">{filterCounts.checkedIn}</div>
+                                            <div className="text-blue-600 dark:text-blue-300">Checked In</div>
                                         </div>
-                                        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <div className="font-semibold text-gray-700 dark:text-gray-300">{filterCounts.notCheckedIn}</div>
-                                            <div className="text-gray-600 dark:text-gray-400">Not Checked In</div>
+                                        <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <div className="font-semibold text-gray-700 dark:text-gray-200">{filterCounts.notCheckedIn}</div>
+                                            <div className="text-gray-600 dark:text-gray-300">Not Checked In</div>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
                             {/* Participants List */}
-                            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                 <CardHeader className="flex flex-row items-center justify-between">
                                     <CardTitle className="text-gray-900 dark:text-gray-100">Participants ({filteredParticipants.length})</CardTitle>
                                     <Button
                                         variant="outline"
                                         onClick={exportToCSV}
-                                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                                     >
                                         <Download className="w-4 h-4 mr-2" />
                                         Export CSV
@@ -366,26 +366,26 @@ export default function Participants({ auth, event, participants }: Props) {
                                         {filteredParticipants.map((participant) => (
                                             <div
                                                 key={participant.id}
-                                                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex-1">
                                                         <div className="flex items-center space-x-3 mb-2">
                                                             <h3 className="font-semibold text-gray-900 dark:text-gray-100">{participant.name}</h3>
                                                             {participant.checked_in ? (
-                                                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 border-green-200 dark:border-green-800 border">
                                                                     <CheckCircle className="w-3 h-3 mr-1" />
                                                                     Checked In
                                                                 </Badge>
                                                             ) : (
-                                                                <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                                <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 border">
                                                                     <Clock className="w-3 h-3 mr-1" />
                                                                     Not Checked In
                                                                 </Badge>
                                                             )}
                                                             {getPaymentStatusBadge(participant.payment_status)}
                                                         </div>
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-300">
                                                             <div className="flex items-center space-x-2">
                                                                 <Mail className="w-4 h-4" />
                                                                 <span>{participant.email}</span>
@@ -402,12 +402,12 @@ export default function Participants({ auth, event, participants }: Props) {
                                                             </div>
                                                         </div>
                                                         {participant.notes && (
-                                                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                                                                 <strong>Notes:</strong> {participant.notes}
                                                             </div>
                                                         )}
                                                         {participant.payment_status === 'paid' && (
-                                                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                                                                 <strong>Payment:</strong> {formatAmount(participant.amount_paid, event.currency)} 
                                                                 {participant.payment_date && ` on ${format(new Date(participant.payment_date), 'MMM d, yyyy')}`}
                                                                 {participant.payment_method && ` via ${participant.payment_method}`}
@@ -464,7 +464,7 @@ export default function Participants({ auth, event, participants }: Props) {
 
                         {/* Sidebar - Add Participant Form */}
                         <div className="lg:col-span-1">
-                            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 sticky top-6">
+                            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 sticky top-6">
                                 <CardHeader>
                                     <CardTitle className="text-gray-900 dark:text-gray-100">Add Participant</CardTitle>
                                 </CardHeader>
@@ -477,7 +477,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                 required
-                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                                                 placeholder="Enter full name"
                                             />
                                         </div>
@@ -489,7 +489,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                                 required
-                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                                                 placeholder="Enter email address"
                                             />
                                         </div>
@@ -499,7 +499,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                                 id="phone"
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                                                 placeholder="Enter phone number"
                                             />
                                         </div>
@@ -509,7 +509,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                                 id="notes"
                                                 value={formData.notes}
                                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                                className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                                                 placeholder="Any additional notes"
                                                 rows={3}
                                             />
@@ -533,7 +533,7 @@ export default function Participants({ auth, event, participants }: Props) {
             {/* Payment Modal */}
             {paymentModal.isOpen && paymentModal.participant && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md mx-4 border border-gray-200 dark:border-gray-800">
                         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
                             Update Payment Status
                         </h3>
@@ -547,10 +547,10 @@ export default function Participants({ auth, event, participants }: Props) {
                                         paymentData: { ...paymentModal.paymentData, payment_status: value }
                                     })}
                                 >
-                                    <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
+                                    <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                    <SelectContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="paid">Paid</SelectItem>
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -567,7 +567,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, amount_paid: parseFloat(e.target.value) || 0 }
                                     })}
-                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -578,7 +578,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, payment_method: e.target.value }
                                     })}
-                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
                                     placeholder="e.g., Cash, Credit Card, Bank Transfer"
                                 />
                             </div>
@@ -590,7 +590,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, transaction_id: e.target.value }
                                     })}
-                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
                                     placeholder="Optional transaction reference"
                                 />
                             </div>
@@ -602,7 +602,7 @@ export default function Participants({ auth, event, participants }: Props) {
                                         ...paymentModal,
                                         paymentData: { ...paymentModal.paymentData, payment_notes: e.target.value }
                                     })}
-                                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
+                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
                                     placeholder="Any additional payment notes"
                                     rows={3}
                                 />
@@ -612,7 +612,7 @@ export default function Participants({ auth, event, participants }: Props) {
                             <Button
                                 variant="outline"
                                 onClick={() => setPaymentModal({ isOpen: false, participant: null, paymentData: { payment_status: 'pending', amount_paid: 0, payment_method: '', transaction_id: '', payment_notes: '' } })}
-                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                             >
                                 Cancel
                             </Button>

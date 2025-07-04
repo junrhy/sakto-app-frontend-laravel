@@ -77,20 +77,20 @@ export default function Calendar({ auth }: PageProps) {
     return (
         <AuthenticatedLayout
             auth={auth}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Events Calendar</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">Events Calendar</h2>}
         >
             <Head title="Events Calendar" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-800">
                         <div className="p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center space-x-4">
                                     <Button
                                         variant="outline"
                                         onClick={() => navigateMonth('prev')}
-                                        className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Previous</span>
@@ -99,7 +99,7 @@ export default function Calendar({ auth }: PageProps) {
                                     <Button
                                         variant="outline"
                                         onClick={() => navigateMonth('next')}
-                                        className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                                     >
                                         <span>Next</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -120,18 +120,18 @@ export default function Calendar({ auth }: PageProps) {
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
                                 </div>
                             ) : (
-                                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                     <CardContent className="p-0">
-                                        <div className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-600">
+                                        <div className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-700">
                                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                                <div key={day} className="bg-white dark:bg-gray-800 p-2 text-center font-semibold text-gray-900 dark:text-gray-100">
+                                                <div key={day} className="bg-white dark:bg-gray-900 p-2 text-center font-semibold text-gray-900 dark:text-gray-100">
                                                     {day}
                                                 </div>
                                             ))}
                                             {days.map((day, index) => (
                                                 <div
                                                     key={index}
-                                                    className={`bg-white dark:bg-gray-800 p-2 min-h-[120px] ${
+                                                    className={`bg-white dark:bg-gray-900 p-2 min-h-[120px] ${
                                                         !isSameMonth(day, currentDate)
                                                             ? 'text-gray-400 dark:text-gray-500'
                                                             : 'text-gray-900 dark:text-gray-100'
@@ -148,20 +148,20 @@ export default function Calendar({ auth }: PageProps) {
                                                                 <Tooltip>
                                                                     <TooltipTrigger asChild>
                                                                         <div
-                                                                            className="text-xs p-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/50 truncate"
+                                                                            className="text-xs p-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/30 truncate border border-blue-200 dark:border-blue-800"
                                                                             onClick={() => window.location.href = `/events/${event.id}/edit`}
                                                                         >
                                                                             {event.title}
                                                                         </div>
                                                                     </TooltipTrigger>
-                                                                    <TooltipContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                                                    <TooltipContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                                                                         <div className="space-y-1">
                                                                             <p className="font-semibold text-gray-900 dark:text-gray-100">{event.title}</p>
-                                                                            <p className="text-sm text-gray-600 dark:text-gray-400">{event.description}</p>
-                                                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                            <p className="text-sm text-gray-600 dark:text-gray-300">{event.description}</p>
+                                                                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                                                                 {format(new Date(event.start_date), 'h:mm a')} - {event.location}
                                                                             </p>
-                                                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                            <p className="text-sm text-gray-600 dark:text-gray-300">
                                                                                 {event.current_participants}/{event.max_participants} participants
                                                                             </p>
                                                                         </div>

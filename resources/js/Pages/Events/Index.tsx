@@ -91,25 +91,25 @@ export default function Index({ auth, events }: Props) {
         const endDate = new Date(event.end_date);
         
         if (startDate > now) {
-            return { status: 'upcoming', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' };
+            return { status: 'upcoming', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 border-blue-200 dark:border-blue-800' };
         } else if (endDate < now) {
-            return { status: 'past', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+            return { status: 'past', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700' };
         } else {
-            return { status: 'ongoing', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' };
+            return { status: 'ongoing', color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 border-green-200 dark:border-green-800' };
         }
     };
 
     return (
         <AuthenticatedLayout
             auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Events</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">Events</h2>}
         >
             <Head title="Events" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header Section */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-8 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg mb-8 border border-gray-200 dark:border-gray-800">
                         <div className="p-6">
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
@@ -119,7 +119,7 @@ export default function Index({ auth, events }: Props) {
                                             placeholder="Search events..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="pl-10 w-80 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                            className="pl-10 w-80 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                         />
                                     </div>
                                     {selectedEvents.length > 0 && (
@@ -135,7 +135,7 @@ export default function Index({ auth, events }: Props) {
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <Link href="/events/calendar">
-                                        <Button variant="outline" className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <Button variant="outline" className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
                                             <Calendar className="w-4 h-4" />
                                             <span>Calendar View</span>
                                         </Button>
@@ -157,16 +157,16 @@ export default function Index({ auth, events }: Props) {
                         {filteredEvents.map((event) => {
                             const eventStatus = getEventStatus(event);
                             return (
-                                <Card key={event.id} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-gray-200 dark:hover:shadow-gray-900">
+                                <Card key={event.id} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-md bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:shadow-gray-200 dark:hover:shadow-gray-950">
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200 line-clamp-2 mb-2">
+                                                <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 mb-2">
                                                     {event.title}
                                                 </CardTitle>
                                                 <div className="flex items-center space-x-2 mb-2">
                                                     <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                                    <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
+                                                    <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800">
                                                         {event.category}
                                                     </Badge>
                                                 </div>
@@ -174,7 +174,7 @@ export default function Index({ auth, events }: Props) {
                                             <div className="flex items-center space-x-2">
                                                 <input
                                                     type="checkbox"
-                                                    className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
+                                                    className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                                     checked={selectedEvents.includes(event.id)}
                                                     onChange={(e) => {
                                                         if (e.target.checked) {
@@ -202,22 +202,22 @@ export default function Index({ auth, events }: Props) {
 
                                         {/* Event Details */}
                                         <div className="space-y-3">
-                                            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
                                                 {event.description}
                                             </p>
 
                                             <div className="space-y-2">
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                                                     <Calendar className="w-4 h-4" />
                                                     <span>{format(new Date(event.start_date), 'MMM d, yyyy h:mm a')}</span>
                                                 </div>
                                                 
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                                                     <MapPin className="w-4 h-4" />
                                                     <span className="line-clamp-1">{event.location}</span>
                                                 </div>
 
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                                                     <Users className="w-4 h-4" />
                                                     <span>
                                                         {event.current_participants}
@@ -225,7 +225,7 @@ export default function Index({ auth, events }: Props) {
                                                     </span>
                                                 </div>
 
-                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                                                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                                                     <Clock className="w-4 h-4" />
                                                     <span>Registration until {format(new Date(event.registration_deadline), 'MMM d, yyyy')}</span>
                                                 </div>
@@ -234,16 +234,16 @@ export default function Index({ auth, events }: Props) {
                                             {/* Status and Payment Badges */}
                                             <div className="flex items-center justify-between pt-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <Badge className={eventStatus.color}>
+                                                    <Badge className={`${eventStatus.color} border`}>
                                                         {eventStatus.status.charAt(0).toUpperCase() + eventStatus.status.slice(1)}
                                                     </Badge>
                                                     {event.is_paid_event ? (
-                                                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 flex items-center space-x-1">
+                                                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 border-green-200 dark:border-green-800 flex items-center space-x-1 border">
                                                             <CreditCard className="w-3 h-3" />
                                                             <span>{formatEventPrice(event.event_price, event.currency)}</span>
                                                         </Badge>
                                                     ) : (
-                                                        <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                                        <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700 border">
                                                             Free
                                                         </Badge>
                                                     )}
@@ -251,16 +251,16 @@ export default function Index({ auth, events }: Props) {
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/events/${event.id}/public-register`}>
-                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                             <UserPlus className="w-4 h-4" />
                                                             <span>Register</span>
                                                         </Button>
                                                     </Link>
                                                     <Link href={`/events/${event.id}/participants`}>
-                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                             <Users className="w-4 h-4" />
                                                             <span>View</span>
                                                         </Button>
@@ -268,7 +268,7 @@ export default function Index({ auth, events }: Props) {
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <Link href={`/events/${event.id}/edit`}>
-                                                        <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                             Edit
                                                         </Button>
                                                     </Link>
