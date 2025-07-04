@@ -32,7 +32,7 @@ export function extractYouTubeVideos(content: string): YouTubeVideo[] {
             if (!videos.some(video => video.id === videoId)) {
                 videos.push({
                     id: videoId,
-                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1`
+                    embedUrl: `https://www.youtube.com/embed/${videoId}?mute=1&rel=0&modestbranding=1`
                 });
             }
         }

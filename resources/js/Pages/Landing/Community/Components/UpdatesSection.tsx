@@ -83,13 +83,6 @@ export default function UpdatesSection({ updates }: UpdatesSectionProps) {
                                                         year: 'numeric'
                                                     })}
                                                 </span>
-                                                <span>•</span>
-                                                <span>
-                                                    {formatTimeForDisplay(update.created_at, {
-                                                        hour: 'numeric',
-                                                        minute: '2-digit'
-                                                    })}
-                                                </span>
                                                 {update.status === 'draft' && (
                                                     <>
                                                         <span>•</span>
@@ -175,7 +168,7 @@ export default function UpdatesSection({ updates }: UpdatesSectionProps) {
                             {selectedUpdateForVideos?.title || 'Videos'}
                         </DialogTitle>
                         <DialogDescription className="text-gray-600 dark:text-gray-400">
-                            Videos from this update
+                            Videos
                         </DialogDescription>
                     </DialogHeader>
                     
@@ -184,7 +177,7 @@ export default function UpdatesSection({ updates }: UpdatesSectionProps) {
                             {selectedUpdateForVideos.youtubeVideos.map((video: YouTubeVideo, index: number) => (
                                 <div key={index} className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                                     <iframe
-                                        src={video.embedUrl}
+                                        src={index === 0 ? `${video.embedUrl}&autoplay=1` : video.embedUrl}
                                         title={`YouTube video ${index + 1}`}
                                         className="absolute top-0 left-0 w-full h-full rounded-lg"
                                         frameBorder="0"
