@@ -1,20 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
+import { useState } from 'react';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
+import { Button } from '@/Components/ui/button';
+import { format, addMonths, addQuarters, addYears, isBefore, isAfter, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
+import { Plus, Table as TableIcon, Calendar, Search } from 'lucide-react';
+import AddContributionDialog from './AddContributionDialog';
+import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Input } from '@/Components/ui/input';
 
 interface Member {
     id: string;
     name: string;
-    group: string;
+    date_of_birth: string;
+    gender: string;
+    contact_number: string;
+    address: string;
+    membership_start_date: string;
     contribution_amount: number;
     contribution_frequency: string;
-    membership_start_date: string;
-    total_contribution: number;
+    status: string;
+    group: string;
 }
 
 interface Contribution {
     id: string;
     member_id: string;
-    amount: number;
     payment_date: string;
 }
 
@@ -25,147 +41,367 @@ interface Props {
         code: string;
         symbol: string;
     };
+    onContributionAdded?: (contribution: any) => void;
 }
 
-export default function MissingContributionsList({ members, contributions, appCurrency }: Props) {
-    const formatCurrency = (amount: number) => {
-        // Ensure amount is a number and handle any string conversion
-        const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(numericAmount)) return `${appCurrency.symbol}0`;
-        return `${appCurrency.symbol}${numericAmount.toLocaleString()}`;
-    };
+export default function MissingContributionsList({ members, contributions, appCurrency, onContributionAdded }: Props) {
+    const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
+    const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+    const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
-    };
-
-    const getExpectedContributions = (member: Member) => {
+    const getExpectedContributionDates = (member: Member) => {
         const startDate = new Date(member.membership_start_date);
-        const now = new Date();
-        const monthsDiff = (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth());
-        
-        switch (member.contribution_frequency) {
-            case 'monthly':
-                return Math.max(0, monthsDiff);
-            case 'quarterly':
-                return Math.max(0, Math.floor(monthsDiff / 3));
-            case 'annually':
-                return Math.max(0, Math.floor(monthsDiff / 12));
-            default:
-                return 0;
+        const today = new Date();
+        const dates: Date[] = [];
+        let currentDate = startDate;
+
+        while (isBefore(currentDate, today)) {
+            dates.push(new Date(currentDate));
+            
+            switch (member.contribution_frequency) {
+                case 'monthly':
+                    currentDate = addMonths(currentDate, 1);
+                    break;
+                case 'quarterly':
+                    currentDate = addQuarters(currentDate, 1);
+                    break;
+                case 'annually':
+                    currentDate = addYears(currentDate, 1);
+                    break;
+            }
         }
+
+        return dates;
     };
 
     const getMissingContributions = (member: Member) => {
-        const expected = getExpectedContributions(member);
-        const actual = contributions.filter(c => c.member_id === member.id).length;
-        return Math.max(0, expected - actual);
+        const expectedDates = getExpectedContributionDates(member);
+        const memberContributions = contributions.filter(c => c.member_id === member.id);
+        
+        return expectedDates.filter(expectedDate => {
+            const hasContribution = memberContributions.some(contribution => {
+                const contributionDate = new Date(contribution.payment_date);
+                if (member.contribution_frequency === 'annually') {
+                    return contributionDate.getFullYear() === expectedDate.getFullYear();
+                }
+                return (
+                    contributionDate.getMonth() === expectedDate.getMonth() &&
+                    contributionDate.getFullYear() === expectedDate.getFullYear()
+                );
+            });
+            return !hasContribution;
+        });
     };
 
-    const getMissingAmount = (member: Member) => {
-        return getMissingContributions(member) * member.contribution_amount;
+    const handleAddContribution = (member: Member) => {
+        setSelectedMember(member);
+        setIsAddContributionOpen(true);
+    };
+
+    const handleContributionAdded = (contribution: any) => {
+        if (onContributionAdded) {
+            onContributionAdded(contribution);
+        }
+        setIsAddContributionOpen(false);
+        setSelectedMember(null);
     };
 
     const membersWithMissingContributions = members
-        .filter(member => getMissingContributions(member) > 0)
-        .sort((a, b) => getMissingAmount(b) - getMissingAmount(a));
+        .map(member => ({
+            ...member,
+            missingContributions: getMissingContributions(member)
+        }))
+        .filter(member => member.missingContributions.length > 0)
+        .sort((a, b) => b.missingContributions.length - a.missingContributions.length);
 
-    const totalMissingAmount = membersWithMissingContributions.reduce((sum, member) => sum + getMissingAmount(member), 0);
+    const filteredMembers = membersWithMissingContributions.filter(member => {
+        const searchLower = searchQuery.toLowerCase();
+        
+        return (
+            member.name.toLowerCase().includes(searchLower) ||
+            member.contribution_frequency.toLowerCase().includes(searchLower) ||
+            member.status.toLowerCase().includes(searchLower) ||
+            (member.group && member.group.toLowerCase().includes(searchLower))
+        );
+    });
+
+    const renderSummaryView = () => (
+        <Table>
+            <TableHeader>
+                <TableRow className="dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+                    <TableHead className="dark:text-gray-200">Member Name</TableHead>
+                    <TableHead className="dark:text-gray-200">Group</TableHead>
+                    <TableHead className="dark:text-gray-200">Contribution Frequency</TableHead>
+                    <TableHead className="dark:text-gray-200">Expected Amount</TableHead>
+                    <TableHead className="dark:text-gray-200">Start Date</TableHead>
+                    <TableHead className="dark:text-gray-200">Missing Contributions</TableHead>
+                    <TableHead className="dark:text-gray-200">Total Due</TableHead>
+                    <TableHead className="dark:text-gray-200">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {filteredMembers.map((member) => (
+                    <TableRow key={member.id} className="dark:border-gray-800 hover:bg-muted/50 dark:hover:bg-gray-900/50 transition-colors duration-200">
+                        <TableCell className="font-medium dark:text-gray-100">
+                            {member.name}
+                        </TableCell>
+                        <TableCell className="dark:text-gray-200">
+                            {member.group || 'No Group'}
+                        </TableCell>
+                        <TableCell className="capitalize dark:text-gray-200">
+                            {member.contribution_frequency}
+                        </TableCell>
+                        <TableCell className="dark:text-gray-200">
+                            <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                                {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                            </span>
+                        </TableCell>
+                        <TableCell className="dark:text-gray-200">
+                            {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                        </TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2">
+                                <span className="text-red-600 dark:text-red-400 font-medium">
+                                    {member.missingContributions.length} payments
+                                </span>
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    onClick={() => setViewMode('calendar')}
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                >
+                                    View Details
+                                </Button>
+                            </div>
+                        </TableCell>
+                        <TableCell className="font-medium text-red-600 dark:text-red-400">
+                            {appCurrency.symbol}{(Number(member.contribution_amount) * member.missingContributions.length).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleAddContribution(member)}
+                                className="dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Add Contribution
+                            </Button>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+
+    const renderCalendarView = () => {
+        // Get all months from the earliest membership start date to current month
+        const earliestStartDate = new Date(Math.min(...members.map(m => new Date(m.membership_start_date).getTime())));
+        const months = eachMonthOfInterval({
+            start: startOfMonth(earliestStartDate),
+            end: endOfMonth(new Date())
+        });
+
+        // Get all years for annual view
+        const years = Array.from(
+            new Set(
+                months.map(month => month.getFullYear())
+            )
+        ).sort();
+
+        // Group members by contribution frequency
+        const monthlyMembers = filteredMembers.filter(m => m.contribution_frequency === 'monthly');
+        const quarterlyMembers = filteredMembers.filter(m => m.contribution_frequency === 'quarterly');
+        const annualMembers = filteredMembers.filter(m => m.contribution_frequency === 'annually');
+
+        const renderMonthlyTable = (members: typeof filteredMembers, title: string) => {
+            if (members.length === 0) return null;
+
+            return (
+                <div className="mb-8 p-4">
+                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">{title}</h3>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-950 dark:text-gray-200">Member Name</TableHead>
+                                    {months.map(month => (
+                                        <TableHead key={month.toISOString()} className="min-w-[120px] dark:text-gray-200">
+                                            {format(month, 'MMM yyyy')}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {members.map((member) => (
+                                    <TableRow key={member.id} className="dark:border-gray-800 hover:bg-muted/50 dark:hover:bg-gray-900/50">
+                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-950 dark:text-gray-100">
+                                            {member.name}
+                                        </TableCell>
+                                        {months.map(month => {
+                                            const hasContribution = member.missingContributions.some(
+                                                date => date.getMonth() === month.getMonth() && 
+                                                       date.getFullYear() === month.getFullYear()
+                                            );
+                                            const isBeforeStart = isBefore(month, new Date(member.membership_start_date));
+                                            
+                                            return (
+                                                <TableCell 
+                                                    key={month.toISOString()}
+                                                    className={`text-center ${hasContribution ? 'bg-red-100 dark:bg-red-900/20' : 'bg-green-100 dark:bg-green-900/20'} ${isBeforeStart ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
+                                                >
+                                                    {!isBeforeStart && (
+                                                        <>
+                                                            {hasContribution ? (
+                                                                <div className="space-y-1">
+                                                                    <div className="text-red-600 dark:text-red-400">✗</div>
+                                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        Missing
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-1">
+                                                                    <div className="text-green-600 dark:text-green-400">✓</div>
+                                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            );
+        };
+
+        const renderAnnualTable = (members: typeof filteredMembers) => {
+            if (members.length === 0) return null;
+
+            return (
+                <div className="mb-8 p-4">
+                    <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Annual Contributions</h3>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+                                    <TableHead className="sticky left-0 bg-white dark:bg-gray-950 dark:text-gray-200">Member Name</TableHead>
+                                    {years.map(year => (
+                                        <TableHead key={year} className="min-w-[120px] dark:text-gray-200">
+                                            {year}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {members.map((member) => (
+                                    <TableRow key={member.id} className="dark:border-gray-800 hover:bg-muted/50 dark:hover:bg-gray-900/50">
+                                        <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-950 dark:text-gray-100">
+                                            {member.name}
+                                        </TableCell>
+                                        {years.map(year => {
+                                            const hasContribution = member.missingContributions.some(
+                                                date => date.getFullYear() === year
+                                            );
+                                            const isBeforeStart = year < new Date(member.membership_start_date).getFullYear();
+                                            
+                                            return (
+                                                <TableCell 
+                                                    key={year}
+                                                    className={`text-center ${hasContribution ? 'bg-red-100 dark:bg-red-900/20' : 'bg-green-100 dark:bg-green-900/20'} ${isBeforeStart ? 'bg-gray-50 dark:bg-gray-800' : ''}`}
+                                                >
+                                                    {!isBeforeStart && (
+                                                        <>
+                                                            {hasContribution ? (
+                                                                <div className="space-y-1">
+                                                                    <div className="text-red-600 dark:text-red-400">✗</div>
+                                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        Missing
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-1">
+                                                                    <div className="text-green-600 dark:text-green-400">✓</div>
+                                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            );
+        };
+
+        return (
+            <div className="space-y-6 p-4">
+                {renderMonthlyTable(monthlyMembers, 'Monthly Contributions')}
+                {renderMonthlyTable(quarterlyMembers, 'Quarterly Contributions')}
+                {renderAnnualTable(annualMembers)}
+            </div>
+        );
+    };
 
     return (
-        <div className="space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Members with Missing Contributions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                            {membersWithMissingContributions.length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Missing Amount</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                            {formatCurrency(totalMissingAmount)}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Average Missing per Member</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                            {formatCurrency(membersWithMissingContributions.length > 0 ? 
-                                totalMissingAmount / membersWithMissingContributions.length : 0
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                    <Input
+                        placeholder="Search members..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 dark:bg-gray-950 dark:border-gray-800 dark:text-gray-100 dark:placeholder-gray-500 focus:dark:border-blue-500 focus:dark:ring-blue-500/20"
+                    />
+                </div>
+                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'summary' | 'calendar')}>
+                    <TabsList className="dark:bg-gray-900 dark:border-gray-800">
+                        <TabsTrigger 
+                            value="summary"
+                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100 transition-all duration-200"
+                        >
+                            <TableIcon className="h-4 w-4 mr-2" />
+                            Summary
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="calendar"
+                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-gray-100 transition-all duration-200"
+                        >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Calendar
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
             </div>
 
-            {/* Missing Contributions Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Missing Contributions ({membersWithMissingContributions.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b dark:border-gray-700">
-                                    <th className="text-left py-3 px-4 font-medium">Member</th>
-                                    <th className="text-left py-3 px-4 font-medium">Group</th>
-                                    <th className="text-left py-3 px-4 font-medium">Contribution Amount</th>
-                                    <th className="text-left py-3 px-4 font-medium">Frequency</th>
-                                    <th className="text-left py-3 px-4 font-medium">Membership Start</th>
-                                    <th className="text-left py-3 px-4 font-medium">Missing Count</th>
-                                    <th className="text-left py-3 px-4 font-medium">Missing Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {membersWithMissingContributions.map((member) => (
-                                    <tr key={member.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                        <td className="py-3 px-4">
-                                            <div className="font-medium">{member.name}</div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <div className="text-sm">{member.group || 'No Group'}</div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <div className="font-medium text-blue-600 dark:text-blue-400">
-                                                {formatCurrency(member.contribution_amount)}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <Badge variant="outline">{member.contribution_frequency}</Badge>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <div className="text-sm">{formatDate(member.membership_start_date)}</div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <div className="font-medium text-red-600 dark:text-red-400">
-                                                {getMissingContributions(member)}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <div className="font-medium text-orange-600 dark:text-orange-400">
-                                                {formatCurrency(getMissingAmount(member))}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="rounded-lg border bg-card dark:bg-gray-950 dark:border-gray-800 shadow-lg dark:shadow-gray-900/50">
+                {viewMode === 'summary' ? renderSummaryView() : renderCalendarView()}
+            </div>
+
+            {isAddContributionOpen && onContributionAdded && (
+                <AddContributionDialog
+                    isOpen={isAddContributionOpen}
+                    onClose={() => setIsAddContributionOpen(false)}
+                    members={members}
+                    appCurrency={appCurrency}
+                    onContributionAdded={handleContributionAdded}
+                />
+            )}
         </div>
     );
 } 

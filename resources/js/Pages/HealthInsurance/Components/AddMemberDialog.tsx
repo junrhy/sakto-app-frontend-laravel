@@ -6,7 +6,9 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useToast } from '@/Components/ui/use-toast';
 import { useState, useEffect } from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Plus, Trash2, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 
 interface Contact {
     id: string;
@@ -22,30 +24,49 @@ interface Contact {
     date_of_birth?: string;
 }
 
+interface MemberFormData {
+    name: string;
+    date_of_birth: string;
+    gender: string;
+    contact_number: string;
+    address: string;
+    membership_start_date: string;
+    contribution_amount: string;
+    contribution_frequency: string;
+    status: string;
+    group: string;
+}
+
 interface Props {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onMemberAdded: (member: any) => void;
+    appCurrency: {
+        code: string;
+        symbol: string;
+    };
 }
 
-export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: Props) {
+export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, appCurrency }: Props) {
     const { toast } = useToast();
     const [contacts, setContacts] = useState<Contact[]>([]);
-    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
     const [showContactSearch, setShowContactSearch] = useState(false);
-
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        date_of_birth: '',
-        gender: '',
-        contact_number: '',
-        address: '',
-        membership_start_date: '',
-        contribution_amount: '',
-        contribution_frequency: '',
-        status: 'active',
-        group: '',
-    });
+    const [members, setMembers] = useState<MemberFormData[]>([
+        {
+            name: '',
+            date_of_birth: '',
+            gender: '',
+            contact_number: '',
+            address: '',
+            membership_start_date: '',
+            contribution_amount: '',
+            contribution_frequency: '',
+            status: 'active',
+            group: '',
+        }
+    ]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         // Fetch contacts when dialog opens
@@ -54,7 +75,19 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
         } else {
             // Reset states when dialog closes
             setShowContactSearch(false);
-            setSelectedContact(null);
+            setSelectedContacts([]);
+            setMembers([{
+                name: '',
+                date_of_birth: '',
+                gender: '',
+                contact_number: '',
+                address: '',
+                membership_start_date: '',
+                contribution_amount: '',
+                contribution_frequency: '',
+                status: 'active',
+                group: '',
+            }]);
         }
     }, [open]);
 
@@ -80,244 +113,341 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
         }
     };
 
-    const handleContactSelect = (contactId: string) => {
-        const contact = contacts.find(c => c.id === contactId);
-        if (contact) {
-            setSelectedContact(contact);
-            // Format date_of_birth if it exists
+    const handleContactSelect = (contactIds: string[]) => {
+        setSelectedContacts(contactIds);
+        
+        // Create member entries for selected contacts
+        const selectedContactData = contacts.filter(c => contactIds.includes(c.id));
+        const newMembers = selectedContactData.map(contact => {
             const formattedDate = contact.date_of_birth ? new Date(contact.date_of_birth).toISOString().split('T')[0] : '';
-            setData({
-                ...data,
+            return {
                 name: `${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`.trim(),
                 contact_number: contact.call_number || contact.sms_number || contact.whatsapp || '',
                 address: contact.address || '',
                 date_of_birth: formattedDate,
                 gender: contact.gender || '',
-            });
-            setShowContactSearch(false);
+                membership_start_date: '',
+                contribution_amount: '',
+                contribution_frequency: '',
+                status: 'active',
+                group: '',
+            };
+        });
+        
+        setMembers(newMembers);
+        setShowContactSearch(false);
+    };
+
+    const addMember = () => {
+        setMembers([...members, {
+            name: '',
+            date_of_birth: '',
+            gender: '',
+            contact_number: '',
+            address: '',
+            membership_start_date: '',
+            contribution_amount: '',
+            contribution_frequency: '',
+            status: 'active',
+            group: '',
+        }]);
+    };
+
+    const removeMember = (index: number) => {
+        if (members.length > 1) {
+            setMembers(members.filter((_, i) => i !== index));
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post(route('health-insurance.members.store'), {
-            onSuccess: () => {
-                reset();
-                setSelectedContact(null);
-                onOpenChange(false);
-                toast({
-                    title: "Success",
-                    description: "Member added successfully",
-                });
-                // Add delay before reloading to show toast
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500); // 1.5 seconds delay
-            },
-            onError: () => {
-                toast({
-                    title: "Error",
-                    description: "Failed to add member",
-                    variant: "destructive",
-                });
-            },
-        });
+    const updateMember = (index: number, field: keyof MemberFormData, value: string) => {
+        const updatedMembers = [...members];
+        updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+        setMembers(updatedMembers);
     };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            // Submit each member individually
+            for (const member of members) {
+                if (!member.name.trim()) continue; // Skip empty entries
+                
+                await new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    Object.entries(member).forEach(([key, value]) => {
+                        formData.append(key, value);
+                    });
+
+                    fetch(route('health-insurance.members.store'), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to add member');
+                        return response.json();
+                    })
+                    .then(resolve)
+                    .catch(reject);
+                });
+            }
+
+            toast({
+                title: "Success",
+                description: `${members.filter(m => m.name.trim()).length} member(s) added successfully`,
+            });
+
+            // Reset and close
+            setMembers([{
+                name: '',
+                date_of_birth: '',
+                gender: '',
+                contact_number: '',
+                address: '',
+                membership_start_date: '',
+                contribution_amount: '',
+                contribution_frequency: '',
+                status: 'active',
+                group: '',
+            }]);
+            setSelectedContacts([]);
+            onOpenChange(false);
+            
+            // Reload page after delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to add some members",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const validMembers = members.filter(m => m.name.trim());
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Add Member</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Add Members
+                        <Badge variant="secondary" className="ml-2">
+                            {validMembers.length} member{validMembers.length !== 1 ? 's' : ''}
+                        </Badge>
+                    </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {!showContactSearch ? (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => setShowContactSearch(true)}
-                        >
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Search from Contacts
-                        </Button>
+                        <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
+                            <CardContent className="p-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full h-16"
+                                    onClick={() => setShowContactSearch(true)}
+                                >
+                                    <UserPlus className="mr-2 h-5 w-5" />
+                                    Search from Contacts
+                                </Button>
+                            </CardContent>
+                        </Card>
                     ) : (
-                        <div>
-                            <Label>Search Contact</Label>
-                            <Select
-                                value={selectedContact?.id}
-                                onValueChange={handleContactSelect}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a contact" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {contacts.map((contact) => (
-                                        <SelectItem key={contact.id} value={contact.id}>
-                                            {`${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-sm">Select Contacts</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Select
+                                    value={selectedContacts[0] || ''}
+                                    onValueChange={(value) => handleContactSelect([value])}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select contacts" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {contacts.map((contact) => (
+                                            <SelectItem key={contact.id} value={contact.id}>
+                                                {`${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </CardContent>
+                        </Card>
                     )}
 
-                    <div>
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                            id="name"
-                            type="text"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Enter full name"
-                        />
-                        {errors.name && (
-                            <p className="text-sm text-red-500">{errors.name}</p>
-                        )}
+                    <div className="space-y-4">
+                        {members.map((member, index) => (
+                            <Card key={index} className="relative">
+                                <CardHeader className="pb-3">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-sm">Member {index + 1}</CardTitle>
+                                        {members.length > 1 && (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => removeMember(index)}
+                                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label htmlFor={`name-${index}`}>Full Name</Label>
+                                            <Input
+                                                id={`name-${index}`}
+                                                value={member.name}
+                                                onChange={(e) => updateMember(index, 'name', e.target.value)}
+                                                placeholder="Enter full name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor={`date_of_birth-${index}`}>Date of Birth</Label>
+                                            <Input
+                                                id={`date_of_birth-${index}`}
+                                                type="date"
+                                                value={member.date_of_birth}
+                                                onChange={(e) => updateMember(index, 'date_of_birth', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label htmlFor={`gender-${index}`}>Gender</Label>
+                                            <Select
+                                                value={member.gender}
+                                                onValueChange={(value) => updateMember(index, 'gender', value)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select gender" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="male">Male</SelectItem>
+                                                    <SelectItem value="female">Female</SelectItem>
+                                                    <SelectItem value="other">Other</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <Label htmlFor={`contact_number-${index}`}>Contact Number</Label>
+                                            <Input
+                                                id={`contact_number-${index}`}
+                                                value={member.contact_number}
+                                                onChange={(e) => updateMember(index, 'contact_number', e.target.value)}
+                                                placeholder="Enter contact number"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor={`address-${index}`}>Address</Label>
+                                        <Input
+                                            id={`address-${index}`}
+                                            value={member.address}
+                                            onChange={(e) => updateMember(index, 'address', e.target.value)}
+                                            placeholder="Enter address"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <Label htmlFor={`membership_start_date-${index}`}>Membership Start Date</Label>
+                                            <Input
+                                                id={`membership_start_date-${index}`}
+                                                type="date"
+                                                value={member.membership_start_date}
+                                                onChange={(e) => updateMember(index, 'membership_start_date', e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor={`contribution_amount-${index}`}>Premium ({appCurrency.symbol})</Label>
+                                            <Input
+                                                id={`contribution_amount-${index}`}
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={member.contribution_amount}
+                                                onChange={(e) => updateMember(index, 'contribution_amount', e.target.value)}
+                                                placeholder="Enter premium amount"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <Label htmlFor={`contribution_frequency-${index}`}>Frequency</Label>
+                                            <Select
+                                                value={member.contribution_frequency}
+                                                onValueChange={(value) => updateMember(index, 'contribution_frequency', value)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select frequency" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                    <SelectItem value="annually">Annually</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <Label htmlFor={`status-${index}`}>Status</Label>
+                                            <Select
+                                                value={member.status}
+                                                onValueChange={(value) => updateMember(index, 'status', value)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="active">Active</SelectItem>
+                                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <Label htmlFor={`group-${index}`}>Group</Label>
+                                            <Input
+                                                id={`group-${index}`}
+                                                value={member.group}
+                                                onChange={(e) => updateMember(index, 'group', e.target.value)}
+                                                placeholder="Enter group name"
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
 
-                    <div>
-                        <Label htmlFor="date_of_birth">Date of Birth</Label>
-                        <Input
-                            id="date_of_birth"
-                            type="date"
-                            value={data.date_of_birth}
-                            onChange={(e) => setData('date_of_birth', e.target.value)}
-                        />
-                        {errors.date_of_birth && (
-                            <p className="text-sm text-red-500">{errors.date_of_birth}</p>
-                        )}
-                    </div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addMember}
+                        className="w-full"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Another Member
+                    </Button>
 
-                    <div>
-                        <Label htmlFor="gender">Gender</Label>
-                        <Select
-                            value={data.gender}
-                            onValueChange={(value) => setData('gender', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="male">Male</SelectItem>
-                                <SelectItem value="female">Female</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.gender && (
-                            <p className="text-sm text-red-500">{errors.gender}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="contact_number">Contact Number</Label>
-                        <Input
-                            id="contact_number"
-                            type="tel"
-                            value={data.contact_number}
-                            onChange={(e) => setData('contact_number', e.target.value)}
-                            placeholder="Enter contact number"
-                        />
-                        {errors.contact_number && (
-                            <p className="text-sm text-red-500">{errors.contact_number}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="address">Address</Label>
-                        <Input
-                            id="address"
-                            type="text"
-                            value={data.address}
-                            onChange={(e) => setData('address', e.target.value)}
-                            placeholder="Enter address"
-                        />
-                        {errors.address && (
-                            <p className="text-sm text-red-500">{errors.address}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="membership_start_date">Membership Start Date</Label>
-                        <Input
-                            id="membership_start_date"
-                            type="date"
-                            value={data.membership_start_date}
-                            onChange={(e) => setData('membership_start_date', e.target.value)}
-                        />
-                        {errors.membership_start_date && (
-                            <p className="text-sm text-red-500">{errors.membership_start_date}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="contribution_amount">Contribution Amount</Label>
-                        <Input
-                            id="contribution_amount"
-                            type="number"
-                            value={data.contribution_amount}
-                            onChange={(e) => setData('contribution_amount', e.target.value)}
-                            placeholder="Enter contribution amount"
-                        />
-                        {errors.contribution_amount && (
-                            <p className="text-sm text-red-500">{errors.contribution_amount}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="contribution_frequency">Contribution Frequency</Label>
-                        <Select
-                            value={data.contribution_frequency}
-                            onValueChange={(value) => setData('contribution_frequency', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select frequency" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="quarterly">Quarterly</SelectItem>
-                                <SelectItem value="annually">Annually</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.contribution_frequency && (
-                            <p className="text-sm text-red-500">{errors.contribution_frequency}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="status">Status</Label>
-                        <Select
-                            value={data.status}
-                            onValueChange={(value) => setData('status', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.status && (
-                            <p className="text-sm text-red-500">{errors.status}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Label htmlFor="group">Group</Label>
-                        <Input
-                            id="group"
-                            type="text"
-                            value={data.group}
-                            onChange={(e) => setData('group', e.target.value)}
-                            placeholder="Enter group name"
-                        />
-                        {errors.group && (
-                            <p className="text-sm text-red-500">{errors.group}</p>
-                        )}
-                    </div>
-
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-2 pt-4 border-t">
                         <Button
                             type="button"
                             variant="outline"
@@ -325,8 +455,11 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded }: P
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={processing}>
-                            Add Member
+                        <Button 
+                            type="submit" 
+                            disabled={isSubmitting || validMembers.length === 0}
+                        >
+                            {isSubmitting ? 'Adding...' : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
                         </Button>
                     </div>
                 </form>

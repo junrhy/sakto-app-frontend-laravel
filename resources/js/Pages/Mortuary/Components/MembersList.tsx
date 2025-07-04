@@ -1,10 +1,20 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Edit, Trash2, Search, Eye, List, Users } from 'lucide-react';
+import { format } from 'date-fns';
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Edit, Eye, Trash2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 interface Contribution {
     id: string;
@@ -34,8 +44,12 @@ interface Member {
 }
 
 interface Props {
-    members: Member[];
-    onMemberSelect: (member: Member) => void;
+    members: (Member & {
+        contributions: Contribution[];
+    })[];
+    onMemberSelect: (member: Member & {
+        contributions: Contribution[];
+    }) => void;
     appCurrency: {
         code: string;
         symbol: string;
@@ -43,207 +57,331 @@ interface Props {
 }
 
 export default function MembersList({ members, onMemberSelect, appCurrency }: Props) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [groupFilter, setGroupFilter] = useState('all');
+    const [sortField, setSortField] = useState<keyof Member>('name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
 
-    const filteredMembers = members.filter(member => {
-        const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            member.contact_number.includes(searchTerm) ||
-            member.group?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
-        const matchesGroup = groupFilter === 'all' || member.group === groupFilter;
+    const handleSort = (field: keyof Member) => {
+        if (field === sortField) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const handleDelete = (memberId: string) => {
+        if (window.confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+            router.delete(`/mortuary/members/${memberId}`, {
+                onSuccess: () => {
+                    toast.success('Member deleted successfully');
+                    // Add delay before reloading to show toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500); // 1.5 seconds delay
+                },
+                onError: () => {
+                    toast.error('Failed to delete member');
+                }
+            });
+        }
+    };
+
+    const sortedMembers = [...members].sort((a, b) => {
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+
+        if (sortField === 'net_balance') {
+            const aNetBalance = a.total_contribution - a.total_claims_amount;
+            const bNetBalance = b.total_contribution - b.total_claims_amount;
+            return sortDirection === 'asc' ? aNetBalance - bNetBalance : bNetBalance - aNetBalance;
+        }
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return sortDirection === 'asc'
+                ? aValue.localeCompare(bValue)
+                : bValue.localeCompare(aValue);
+        }
+
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+
+        return 0;
+    });
+
+    const filteredMembers = sortedMembers.filter(member => {
+        const searchLower = searchQuery.toLowerCase();
         
-        return matchesSearch && matchesStatus && matchesGroup;
+        return (
+            member.name.toLowerCase().includes(searchLower) ||
+            member.contribution_frequency.toLowerCase().includes(searchLower) ||
+            member.status.toLowerCase().includes(searchLower) ||
+            member.contact_number.toLowerCase().includes(searchLower) ||
+            member.address.toLowerCase().includes(searchLower)
+        );
     });
 
     const getStatusColor = (status: string) => {
-        switch (status) {
+        switch (status.toLowerCase()) {
             case 'active':
-                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                return 'bg-green-500';
             case 'inactive':
-                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                return 'bg-red-500';
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+                return 'bg-gray-500';
         }
     };
 
-    const getBalanceColor = (balance: number) => {
-        if (balance >= 0) {
-            return 'text-green-600 dark:text-green-400';
+    const groupedMembers = filteredMembers.reduce((acc, member) => {
+        const group = member.group || 'Ungrouped';
+        if (!acc[group]) {
+            acc[group] = [];
         }
-        return 'text-red-600 dark:text-red-400';
-    };
+        acc[group].push(member);
+        return acc;
+    }, {} as Record<string, typeof filteredMembers>);
 
-    const formatCurrency = (amount: number) => {
-        // Ensure amount is a number and handle any string conversion
-        const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(numericAmount)) return `${appCurrency.symbol}0`;
-        return `${appCurrency.symbol}${numericAmount.toLocaleString()}`;
-    };
+    const renderListView = () => (
+        <div className="rounded-md border dark:border-gray-700">
+            <Table>
+                <TableHeader>
+                    <TableRow className="dark:border-gray-700">
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('name')}
+                        >
+                            Name {sortField === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('membership_start_date')}
+                        >
+                            Start Date {sortField === 'membership_start_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('contribution_amount')}
+                        >
+                            Premium {sortField === 'contribution_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('contribution_frequency')}
+                        >
+                            Frequency {sortField === 'contribution_frequency' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('total_contribution')}
+                        >
+                            Total Contribution {sortField === 'total_contribution' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('total_claims_amount')}
+                        >
+                            Total Claims {sortField === 'total_claims_amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('net_balance')}
+                        >
+                            Net Balance {sortField === 'net_balance' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead 
+                            className="cursor-pointer dark:text-gray-300"
+                            onClick={() => handleSort('status')}
+                        >
+                            Status {sortField === 'status' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        </TableHead>
+                        <TableHead className="dark:text-gray-300">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredMembers.map((member) => (
+                        <TableRow key={member.id} className="dark:border-gray-700">
+                            <TableCell className="font-medium dark:text-gray-200">{member.name}</TableCell>
+                            <TableCell className="dark:text-gray-300">
+                                {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                            </TableCell>
+                            <TableCell className="dark:text-gray-300">
+                                {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                            </TableCell>
+                            <TableCell className="capitalize dark:text-gray-300">
+                                {member.contribution_frequency}
+                            </TableCell>
+                            <TableCell className="dark:text-gray-300">
+                                {appCurrency.symbol}{Number(member.total_contribution).toFixed(2)}
+                            </TableCell>
+                            <TableCell className="dark:text-gray-300">
+                                {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                                <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500 dark:text-red-400' : 'dark:text-gray-300'}>
+                                    {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
+                                </span>
+                            </TableCell>
+                            <TableCell>
+                                <Badge className={getStatusColor(member.status)}>
+                                    {member.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => window.open(`/mortuary/members/${member.id}/public`, '_blank')}
+                                        className="dark:text-gray-300 dark:hover:text-gray-100"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => onMemberSelect(member)}
+                                        className="dark:text-gray-300 dark:hover:text-gray-100"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                        onClick={() => handleDelete(member.id)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
-    };
-
-    const groups = [...new Set(members.map(member => member.group).filter(Boolean))];
-
-    return (
+    const renderGroupView = () => (
         <div className="space-y-6">
-            {/* Filters */}
-            <div className="flex flex-col gap-4">
-                <div className="flex-1">
-                    <Input
-                        placeholder="Search members..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full"
-                    />
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-full sm:w-48">
-                            <SelectValue placeholder="Filter by status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Status</SelectItem>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={groupFilter} onValueChange={setGroupFilter}>
-                        <SelectTrigger className="w-full sm:w-48">
-                            <SelectValue placeholder="Filter by group" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Groups</SelectItem>
-                            {groups.map(group => (
-                                <SelectItem key={group} value={group}>{group}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Members</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl md:text-2xl font-bold">{members.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Members</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">
-                            {members.filter(m => m.status === 'active').length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contributions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {formatCurrency(members.reduce((sum, m) => sum + m.total_contribution, 0))}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Claims</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400">
-                            {formatCurrency(members.reduce((sum, m) => sum + m.total_claims_amount, 0))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Members Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Members ({filteredMembers.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[800px]">
-                            <thead>
-                                <tr className="border-b dark:border-gray-700">
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Name</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Contact</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Group</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Status</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Contributions</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Claims</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Balance</th>
-                                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-sm">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredMembers.map((member) => (
-                                    <tr key={member.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div>
-                                                <div className="font-medium text-sm">{member.name}</div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {formatDate(member.date_of_birth)} • {member.gender}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div className="text-xs sm:text-sm">{member.contact_number}</div>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div className="text-xs sm:text-sm">{member.group || '-'}</div>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
+            {Object.entries(groupedMembers).map(([group, members]) => (
+                <div key={group} className="space-y-2">
+                    <h3 className="text-lg font-semibold dark:text-gray-200">{group}</h3>
+                    <div className="rounded-md border dark:border-gray-700">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="dark:border-gray-700">
+                                    <TableHead className="dark:text-gray-300">Name</TableHead>
+                                    <TableHead className="dark:text-gray-300">Start Date</TableHead>
+                                    <TableHead className="dark:text-gray-300">Premium</TableHead>
+                                    <TableHead className="dark:text-gray-300">Frequency</TableHead>
+                                    <TableHead className="dark:text-gray-300">Total Contribution</TableHead>
+                                    <TableHead className="dark:text-gray-300">Total Claims</TableHead>
+                                    <TableHead className="dark:text-gray-300">Net Balance</TableHead>
+                                    <TableHead className="dark:text-gray-300">Status</TableHead>
+                                    <TableHead className="dark:text-gray-300">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {members.map((member) => (
+                                    <TableRow key={member.id} className="dark:border-gray-700">
+                                        <TableCell className="font-medium dark:text-gray-200">{member.name}</TableCell>
+                                        <TableCell className="dark:text-gray-300">
+                                            {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                                        </TableCell>
+                                        <TableCell className="dark:text-gray-300">
+                                            {appCurrency.symbol}{Number(member.contribution_amount).toFixed(2)}
+                                        </TableCell>
+                                        <TableCell className="capitalize dark:text-gray-300">
+                                            {member.contribution_frequency}
+                                        </TableCell>
+                                        <TableCell className="dark:text-gray-300">
+                                            {appCurrency.symbol}{Number(member.total_contribution).toFixed(2)}
+                                        </TableCell>
+                                        <TableCell className="dark:text-gray-300">
+                                            {appCurrency.symbol}{Number(member.total_claims_amount).toFixed(2)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={Number(member.total_contribution) - Number(member.total_claims_amount) < 0 ? 'text-red-500 dark:text-red-400' : 'dark:text-gray-300'}>
+                                                {appCurrency.symbol}{(Number(member.total_contribution) - Number(member.total_claims_amount)).toFixed(2)}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
                                             <Badge className={getStatusColor(member.status)}>
-                                                <span className="text-xs">{member.status}</span>
+                                                {member.status}
                                             </Badge>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400">
-                                                {formatCurrency(member.total_contribution)}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400">
-                                                {formatCurrency(member.total_claims_amount)}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div className={`text-xs sm:text-sm font-medium ${getBalanceColor(member.net_balance)}`}>
-                                                {formatCurrency(member.net_balance)}
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-2 sm:px-4">
-                                            <div className="flex gap-1 sm:gap-2">
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex gap-2">
                                                 <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => onMemberSelect(member)}
-                                                    className="h-8 w-8 sm:h-9 sm:w-auto p-0 sm:px-3"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => window.open(`/mortuary/members/${member.id}/public`, '_blank')}
+                                                    className="dark:text-gray-300 dark:hover:text-gray-100"
                                                 >
-                                                    <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-                                                    <span className="hidden sm:inline ml-1">Edit</span>
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => onMemberSelect(member)}
+                                                    className="dark:text-gray-300 dark:hover:text-gray-100"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                    onClick={() => handleDelete(member.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            ))}
+        </div>
+    );
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
+                    <Input
+                        placeholder="Search members..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                    />
+                </div>
+                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'list' | 'group')}>
+                    <TabsList className="dark:bg-gray-800">
+                        <TabsTrigger 
+                            value="list"
+                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                        >
+                            <List className="h-4 w-4 mr-2" />
+                            List View
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="group"
+                            className="dark:text-gray-300 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-gray-100"
+                        >
+                            <Users className="h-4 w-4 mr-2" />
+                            Group View
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
+            {viewMode === 'list' ? renderListView() : renderGroupView()}
         </div>
     );
 } 

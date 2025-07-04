@@ -1,25 +1,38 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Trash2, Search, Calendar } from 'lucide-react';
+import { format, startOfYear, endOfYear, subYears } from 'date-fns';
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Calendar as DatePicker } from '@/Components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { cn } from '@/lib/utils';
+
+interface Member {
+    id: string;
+    name: string;
+}
 
 interface Claim {
     id: string;
     member_id: string;
     claim_type: string;
-    amount: number;
+    amount: number | string;
     date_of_death: string;
     deceased_name: string;
     relationship_to_member: string;
     cause_of_death: string;
     status: string;
-}
-
-interface Member {
-    id: string;
-    name: string;
-    group: string;
 }
 
 interface Props {
@@ -32,225 +45,313 @@ interface Props {
 }
 
 export default function ClaimsList({ claims, members, appCurrency }: Props) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [memberFilter, setMemberFilter] = useState('all');
-    const [claimTypeFilter, setClaimTypeFilter] = useState('all');
-    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortField, setSortField] = useState<keyof Claim>('date_of_death');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [startDate, setStartDate] = useState<Date>(startOfYear(subYears(new Date(), 10)));
+    const [endDate, setEndDate] = useState<Date>(endOfYear(new Date()));
 
-    const filteredClaims = claims.filter(claim => {
-        const member = members.find(m => m.id === claim.member_id);
-        const matchesSearch = member?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            claim.deceased_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            claim.relationship_to_member.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesMember = memberFilter === 'all' || claim.member_id === memberFilter;
-        const matchesClaimType = claimTypeFilter === 'all' || claim.claim_type === claimTypeFilter;
-        const matchesStatus = statusFilter === 'all' || claim.status === statusFilter;
+    const handleSort = (field: keyof Claim) => {
+        if (field === sortField) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const handleDelete = (memberId: string, claimId: string) => {
+        if (window.confirm('Are you sure you want to delete this claim? This action cannot be undone.')) {
+            router.delete(`/mortuary/claims/${memberId}/${claimId}`, {
+                onSuccess: () => {
+                    toast.success('Claim deleted successfully');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                },
+                onError: () => {
+                    toast.error('Failed to delete claim');
+                }
+            });
+        }
+    };
+
+    const getMemberName = (memberId: string) => {
+        const member = members.find(m => m.id === memberId);
+        return member ? member.name : 'Unknown Member';
+    };
+
+    const sortedClaims = [...claims].sort((a, b) => {
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return sortDirection === 'asc'
+                ? aValue.localeCompare(bValue)
+                : bValue.localeCompare(aValue);
+        }
+
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+
+        return 0;
+    });
+
+    const filteredClaims = sortedClaims.filter(claim => {
+        const searchLower = searchQuery.toLowerCase();
+        const memberName = getMemberName(claim.member_id).toLowerCase();
+        const claimDate = new Date(claim.date_of_death);
         
-        return matchesSearch && matchesMember && matchesClaimType && matchesStatus;
+        const matchesSearch = (
+            memberName.includes(searchLower) ||
+            claim.claim_type.toLowerCase().includes(searchLower) ||
+            claim.deceased_name.toLowerCase().includes(searchLower) ||
+            claim.relationship_to_member.toLowerCase().includes(searchLower) ||
+            claim.cause_of_death.toLowerCase().includes(searchLower) ||
+            claim.status.toLowerCase().includes(searchLower)
+        );
+
+        const matchesDateRange = (!startDate || claimDate >= startDate) && 
+                                (!endDate || claimDate <= endDate);
+
+        return matchesSearch && matchesDateRange;
     });
 
     const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pending':
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+        switch (status.toLowerCase()) {
             case 'approved':
-                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                return 'bg-green-500';
+            case 'pending':
+                return 'bg-yellow-500';
             case 'rejected':
-                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                return 'bg-red-500';
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+                return 'bg-gray-500';
         }
     };
 
     const getClaimTypeColor = (claimType: string) => {
-        switch (claimType) {
+        switch (claimType.toLowerCase()) {
             case 'funeral_service':
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+                return 'bg-blue-500';
             case 'burial_plot':
-                return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+                return 'bg-purple-500';
             case 'transportation':
-                return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                return 'bg-orange-500';
             case 'memorial_service':
-                return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+                return 'bg-indigo-500';
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+                return 'bg-gray-500';
         }
     };
 
-    const formatCurrency = (amount: number) => {
-        // Ensure amount is a number and handle any string conversion
-        const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(numericAmount)) return `${appCurrency.symbol}0`;
-        return `${appCurrency.symbol}${numericAmount.toLocaleString()}`;
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
-    };
-
-    const claimTypes = [...new Set(claims.map(c => c.claim_type))];
-
     return (
         <div className="space-y-6">
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="relative flex-1">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground dark:text-gray-400" />
                     <Input
-                        placeholder="Search claims..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full"
+                        placeholder="Search by member name, claim type, deceased name, relationship, cause of death, or status..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 h-10 dark:bg-gray-950 dark:border-gray-800 dark:text-gray-100 dark:placeholder-gray-500 focus:dark:border-blue-500 focus:dark:ring-blue-500/20"
                     />
                 </div>
-                <Select value={memberFilter} onValueChange={setMemberFilter}>
-                    <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Filter by member" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Members</SelectItem>
-                        {members.map(member => (
-                            <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Select value={claimTypeFilter} onValueChange={setClaimTypeFilter}>
-                    <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Filter by claim type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        {claimTypes.map(type => (
-                            <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-48">
-                        <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Claims</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                            {formatCurrency(claims.reduce((sum, c) => sum + c.amount, 0))}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Claims</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                            {claims.filter(c => c.status === 'pending').length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Approved Claims</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {formatCurrency(claims
-                                .filter(c => c.status === 'approved')
-                                .reduce((sum, c) => sum + c.amount, 0)
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Average Claim</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {formatCurrency(claims.length > 0 ? 
-                                claims.reduce((sum, c) => sum + c.amount, 0) / claims.length : 0
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Claims Table */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Claims ({filteredClaims.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b dark:border-gray-700">
-                                    <th className="text-left py-3 px-4 font-medium">Member</th>
-                                    <th className="text-left py-3 px-4 font-medium">Deceased</th>
-                                    <th className="text-left py-3 px-4 font-medium">Claim Type</th>
-                                    <th className="text-left py-3 px-4 font-medium">Amount</th>
-                                    <th className="text-left py-3 px-4 font-medium">Date of Death</th>
-                                    <th className="text-left py-3 px-4 font-medium">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredClaims.map((claim) => {
-                                    const member = members.find(m => m.id === claim.member_id);
-                                    return (
-                                        <tr key={claim.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            <td className="py-3 px-4">
-                                                <div>
-                                                    <div className="font-medium">{member?.name || 'Unknown Member'}</div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                        {member?.group || 'No Group'}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <div>
-                                                    <div className="font-medium">{claim.deceased_name}</div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                        {claim.relationship_to_member}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <Badge className={getClaimTypeColor(claim.claim_type)}>
-                                                    {claim.claim_type.replace('_', ' ')}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <div className="font-medium text-purple-600 dark:text-purple-400">
-                                                    {formatCurrency(claim.amount)}
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <div className="text-sm">{formatDate(claim.date_of_death)}</div>
-                                            </td>
-                                            <td className="py-3 px-4">
-                                                <Badge className={getStatusColor(claim.status)}>
-                                                    {claim.status}
-                                                </Badge>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex items-center gap-3">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[240px] justify-start text-left font-normal h-10 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-600 transition-all duration-200",
+                                        !startDate && "text-muted-foreground dark:text-gray-400",
+                                        startDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-300"
+                                    )}
+                                >
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {startDate ? format(startDate, "PPP") : "Start date"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 dark:bg-gray-950 dark:border-gray-800" align="start">
+                                <DatePicker
+                                    mode="single"
+                                    selected={startDate}
+                                    onSelect={(date) => date && setStartDate(date)}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <span className="text-muted-foreground dark:text-gray-400 font-medium">to</span>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[240px] justify-start text-left font-normal h-10 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:border-gray-600 transition-all duration-200",
+                                        !endDate && "text-muted-foreground dark:text-gray-400",
+                                        endDate && "border-primary bg-primary/5 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-300"
+                                    )}
+                                >
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {endDate ? format(endDate, "PPP") : "End date"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 dark:bg-gray-950 dark:border-gray-800" align="start">
+                                <DatePicker
+                                    mode="single"
+                                    selected={endDate}
+                                    onSelect={(date) => date && setEndDate(date)}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
-                </CardContent>
-            </Card>
+                    {(startDate || endDate) && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setStartDate(startOfYear(new Date()));
+                                setEndDate(endOfYear(new Date()));
+                            }}
+                            className="text-muted-foreground hover:text-foreground dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800 h-10 transition-all duration-200"
+                        >
+                            Reset to current year
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            <div className="rounded-lg border bg-card dark:bg-gray-950 dark:border-gray-800 shadow-lg dark:shadow-gray-900/50">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="hover:bg-muted/50 dark:border-gray-800 dark:hover:bg-gray-900/50 bg-gray-50 dark:bg-gray-900/50">
+                            <TableHead 
+                                className="cursor-pointer font-semibold dark:text-gray-200 hover:dark:text-gray-100 transition-colors duration-200"
+                                onClick={() => handleSort('date_of_death')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    Date of Death
+                                    {sortField === 'date_of_death' && (
+                                        <span className="text-muted-foreground dark:text-blue-400">
+                                            {sortDirection === 'asc' ? '↑' : '↓'}
+                                        </span>
+                                    )}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold dark:text-gray-200">Member</TableHead>
+                            <TableHead className="font-semibold dark:text-gray-200">Deceased</TableHead>
+                            <TableHead 
+                                className="cursor-pointer font-semibold dark:text-gray-200 hover:dark:text-gray-100 transition-colors duration-200"
+                                onClick={() => handleSort('claim_type')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    Claim Type
+                                    {sortField === 'claim_type' && (
+                                        <span className="text-muted-foreground dark:text-blue-400">
+                                            {sortDirection === 'asc' ? '↑' : '↓'}
+                                        </span>
+                                    )}
+                                </div>
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer font-semibold dark:text-gray-200 hover:dark:text-gray-100 transition-colors duration-200"
+                                onClick={() => handleSort('amount')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    Amount
+                                    {sortField === 'amount' && (
+                                        <span className="text-muted-foreground dark:text-blue-400">
+                                            {sortDirection === 'asc' ? '↑' : '↓'}
+                                        </span>
+                                    )}
+                                </div>
+                            </TableHead>
+                            <TableHead 
+                                className="cursor-pointer font-semibold dark:text-gray-200 hover:dark:text-gray-100 transition-colors duration-200"
+                                onClick={() => handleSort('status')}
+                            >
+                                <div className="flex items-center gap-2">
+                                    Status
+                                    {sortField === 'status' && (
+                                        <span className="text-muted-foreground dark:text-blue-400">
+                                            {sortDirection === 'asc' ? '↑' : '↓'}
+                                        </span>
+                                    )}
+                                </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-right dark:text-gray-200">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredClaims.length === 0 ? (
+                            <TableRow className="dark:border-gray-800">
+                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground dark:text-gray-500">
+                                    No claims found
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredClaims.map((claim) => (
+                                <TableRow key={claim.id} className="hover:bg-muted/50 dark:border-gray-800 dark:hover:bg-gray-900/50 transition-colors duration-200">
+                                    <TableCell className="font-medium dark:text-gray-100">
+                                        {format(new Date(claim.date_of_death), 'MMM d, yyyy')}
+                                    </TableCell>
+                                    <TableCell className="font-medium dark:text-gray-100">
+                                        {getMemberName(claim.member_id)}
+                                    </TableCell>
+                                    <TableCell className="dark:text-gray-200">
+                                        <div>
+                                            <div className="font-medium dark:text-gray-100">{claim.deceased_name}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                {claim.relationship_to_member}
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge 
+                                            className={cn(
+                                                "capitalize text-white shadow-sm",
+                                                getClaimTypeColor(claim.claim_type)
+                                            )}
+                                        >
+                                            {claim.claim_type.replace('_', ' ')}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="font-medium dark:text-gray-100">
+                                        <span className="text-green-600 dark:text-green-400 font-semibold">
+                                            {appCurrency.symbol}{Number(claim.amount).toFixed(2)}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge 
+                                            className={cn(
+                                                "capitalize text-white shadow-sm",
+                                                getStatusColor(claim.status)
+                                            )}
+                                        >
+                                            {claim.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 transition-all duration-200"
+                                                onClick={() => handleDelete(claim.member_id, claim.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 } 

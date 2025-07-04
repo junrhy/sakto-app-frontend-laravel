@@ -195,94 +195,122 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
 
             <div className="py-6">
                 <div className="max-w-[90rem] mx-auto sm:px-6 lg:px-8">
-                    <Card className="shadow-lg border-0 dark:bg-gray-900 dark:border-gray-700">
-                        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50/50 dark:bg-gray-800/50 border-b dark:border-gray-700">
-                            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">Mortuary Management</CardTitle>
+                    <Card className="shadow-xl border-0 dark:bg-gray-950 dark:border-gray-800 bg-white">
+                        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-900 dark:to-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-50">Mortuary Management</CardTitle>
                             <div className="flex flex-wrap gap-3 w-full sm:w-auto">
                                 <Button 
                                     onClick={() => setIsAddMemberOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+                                    className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Add Member
                                 </Button>
                                 <Button 
                                     onClick={() => setIsAddContributionOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 transition-colors"
+                                    className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Single Contribution
                                 </Button>
                                 <Button 
                                     onClick={() => setIsBulkContributionOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-colors"
+                                    className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Bulk Contributions
                                 </Button>
                                 <Button 
                                     onClick={() => setIsSubmitClaimOpen(true)} 
-                                    className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 transition-colors"
+                                    className="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 dark:text-white transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
                                     Submit Claim
                                 </Button>
                             </div>
                         </CardHeader>
-                        <CardContent className="p-0">
-                            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                                <div className="overflow-x-auto">
-                                    <TabsList className="grid w-full grid-cols-6 min-w-[600px] bg-gray-100 dark:bg-gray-800">
-                                        <TabsTrigger value="members" className="text-xs sm:text-sm">Members</TabsTrigger>
-                                        <TabsTrigger value="contributions" className="text-xs sm:text-sm">Contributions</TabsTrigger>
-                                        <TabsTrigger value="claims" className="text-xs sm:text-sm">Claims</TabsTrigger>
-                                        <TabsTrigger value="missing" className="text-xs sm:text-sm">Missing</TabsTrigger>
-                                        <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
-                                        <TabsTrigger value="groups" className="text-xs sm:text-sm">Groups</TabsTrigger>
+                        <CardContent className="p-6 dark:bg-gray-950">
+                            <Tabs 
+                                value={activeTab} 
+                                onValueChange={handleTabChange}
+                                className="w-full"
+                            >
+                                <div className="overflow-x-auto mb-6">
+                                    <TabsList className="w-full sm:w-auto bg-gray-100 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+                                        <TabsTrigger 
+                                            value="members" 
+                                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg dark:data-[state=active]:shadow-gray-900/50 data-[state=active]:text-gray-900 dark:text-gray-100 dark:text-gray-300 dark:data-[state=active]:text-gray-50 transition-all duration-200 rounded-lg"
+                                        >
+                                            Members
+                                        </TabsTrigger>
+                                        <TabsTrigger 
+                                            value="contributions" 
+                                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg dark:data-[state=active]:shadow-gray-900/50 data-[state=active]:text-gray-900 dark:text-gray-100 dark:text-gray-300 dark:data-[state=active]:text-gray-50 transition-all duration-200 rounded-lg"
+                                        >
+                                            Contributions
+                                        </TabsTrigger>
+                                        <TabsTrigger 
+                                            value="claims" 
+                                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg dark:data-[state=active]:shadow-gray-900/50 data-[state=active]:text-gray-900 dark:text-gray-100 dark:text-gray-300 dark:data-[state=active]:text-gray-50 transition-all duration-200 rounded-lg"
+                                        >
+                                            Claims
+                                        </TabsTrigger>
+                                        <TabsTrigger 
+                                            value="missing" 
+                                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg dark:data-[state=active]:shadow-gray-900/50 data-[state=active]:text-gray-900 dark:text-gray-100 dark:text-gray-300 dark:data-[state=active]:text-gray-50 transition-all duration-200 rounded-lg"
+                                        >
+                                            Missing Contributions
+                                        </TabsTrigger>
+                                        <TabsTrigger 
+                                            value="upcoming" 
+                                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg dark:data-[state=active]:shadow-gray-900/50 data-[state=active]:text-gray-900 dark:text-gray-100 dark:text-gray-300 dark:data-[state=active]:text-gray-50 transition-all duration-200 rounded-lg"
+                                        >
+                                            Upcoming Contributions
+                                        </TabsTrigger>
+                                        <TabsTrigger 
+                                            value="group-contributions" 
+                                            className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-lg dark:data-[state=active]:shadow-gray-900/50 data-[state=active]:text-gray-900 dark:text-gray-100 dark:text-gray-300 dark:data-[state=active]:text-gray-50 transition-all duration-200 rounded-lg"
+                                        >
+                                            Group Contributions
+                                        </TabsTrigger>
                                     </TabsList>
                                 </div>
-
-                                <TabsContent value="members" className="p-3 sm:p-6">
+                                <TabsContent value="members">
                                     <MembersList 
                                         members={members} 
                                         onMemberSelect={handleMemberSelect}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
-
-                                <TabsContent value="contributions" className="p-3 sm:p-6">
+                                <TabsContent value="contributions">
                                     <ContributionsList 
                                         contributions={contributions}
                                         members={members}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
-
-                                <TabsContent value="claims" className="p-3 sm:p-6">
+                                <TabsContent value="claims">
                                     <ClaimsList 
                                         claims={claims}
                                         members={members}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
-
-                                <TabsContent value="missing" className="p-3 sm:p-6">
+                                <TabsContent value="missing">
                                     <MissingContributionsList 
                                         members={members}
                                         contributions={contributions}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
-
-                                <TabsContent value="upcoming" className="p-3 sm:p-6">
+                                <TabsContent value="upcoming">
                                     <UpcomingContributionsList 
                                         members={members}
                                         contributions={contributions}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
-
-                                <TabsContent value="groups" className="p-3 sm:p-6">
+                                <TabsContent value="group-contributions">
                                     <GroupContributionsList 
                                         members={members}
                                         contributions={contributions}
@@ -295,20 +323,19 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                 </div>
             </div>
 
-            {/* Dialogs */}
-            <AddMemberDialog 
+            <AddMemberDialog
                 isOpen={isAddMemberOpen}
                 onClose={() => setIsAddMemberOpen(false)}
                 onMemberAdded={handleAddMember}
                 appCurrency={appCurrency}
             />
 
-            <AddContributionDialog 
+            <AddContributionDialog
                 isOpen={isAddContributionOpen}
                 onClose={() => setIsAddContributionOpen(false)}
-                onContributionAdded={handleAddContribution}
                 members={members}
                 appCurrency={appCurrency}
+                onContributionAdded={handleAddContribution}
             />
 
             <BulkContributionDialog
@@ -319,20 +346,20 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                 onContributionsAdded={handleBulkContributionsAdded}
             />
 
-            <SubmitClaimDialog 
+            <SubmitClaimDialog
                 isOpen={isSubmitClaimOpen}
                 onClose={() => setIsSubmitClaimOpen(false)}
-                onClaimSubmitted={handleSubmitClaim}
                 members={members}
                 appCurrency={appCurrency}
+                onClaimSubmitted={handleSubmitClaim}
             />
 
             {selectedMember && (
-                <EditMemberDialog 
+                <EditMemberDialog
                     isOpen={isEditMemberOpen}
                     onClose={() => setIsEditMemberOpen(false)}
-                    onMemberUpdated={handleMemberUpdate}
                     member={selectedMember}
+                    onMemberUpdated={handleMemberUpdate}
                     appCurrency={appCurrency}
                 />
             )}
