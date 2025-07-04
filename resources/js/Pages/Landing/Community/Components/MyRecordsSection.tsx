@@ -192,7 +192,10 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
         try {
             const searchParams = new URLSearchParams({
                 name: `${visitorInfo.firstName} ${visitorInfo.middleName ? `${visitorInfo.middleName} ` : ''}${visitorInfo.lastName}`.trim(),
-                email: visitorInfo.email
+                email: visitorInfo.email,
+                date_of_birth: visitorInfo.date_of_birth || '',
+                gender: visitorInfo.gender || '',
+                phone: visitorInfo.phone || ''
             });
 
             const response = await fetch(`/m/${member.id}/search-healthcare?${searchParams.toString()}`);
@@ -222,7 +225,10 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
         try {
             const searchParams = new URLSearchParams({
                 name: `${visitorInfo.firstName} ${visitorInfo.middleName ? `${visitorInfo.middleName} ` : ''}${visitorInfo.lastName}`.trim(),
-                email: visitorInfo.email
+                email: visitorInfo.email,
+                date_of_birth: visitorInfo.date_of_birth || '',
+                gender: visitorInfo.gender || '',
+                phone: visitorInfo.phone || ''
             });
 
             const response = await fetch(`/m/${member.id}/search-mortuary?${searchParams.toString()}`);
@@ -250,7 +256,11 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
             return `${symbol}0.00`;
         }
         
-        return `${symbol}${numericPrice.toFixed(2)}`;
+        // Format with commas for thousands separators
+        return `${symbol}${numericPrice.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}`;
     };
 
     const formatDate = (dateString: string): string => {
@@ -528,14 +538,16 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                                     Contributions ({record.contributions.length})
                                                 </h6>
                                                 <div className="space-y-2">
-                                                    {record.contributions.map((contribution) => (
+                                                    {record.contributions
+                                                        .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())
+                                                        .map((contribution) => (
                                                         <div key={contribution.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                                                             <div>
                                                                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                                     {formatPrice(contribution.amount)}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {contribution.payment_method} • {formatDate(contribution.payment_date)}
+                                                                    <span className="mr-1">{new Date(contribution.payment_date).getFullYear()}:</span> {contribution.payment_method} • {formatDate(contribution.payment_date)}
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
@@ -561,7 +573,9 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                                     Claims ({record.claims.length})
                                                 </h6>
                                                 <div className="space-y-3">
-                                                    {record.claims.map((claim) => (
+                                                    {record.claims
+                                                        .sort((a, b) => new Date(b.date_of_service).getTime() - new Date(a.date_of_service).getTime())
+                                                        .map((claim) => (
                                                         <div key={claim.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded border-l-4 border-blue-500">
                                                             <div className="flex items-start justify-between mb-2">
                                                                 <div>
@@ -748,14 +762,16 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                                     Contributions ({record.contributions.length})
                                                 </h6>
                                                 <div className="space-y-2">
-                                                    {record.contributions.map((contribution) => (
+                                                    {record.contributions
+                                                        .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())
+                                                        .map((contribution) => (
                                                         <div key={contribution.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                                                             <div>
                                                                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                                     {formatPrice(contribution.amount)}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {contribution.payment_method} • {formatDate(contribution.payment_date)}
+                                                                    <span className="mr-1">{new Date(contribution.payment_date).getFullYear()}:</span> {contribution.payment_method} • {formatDate(contribution.payment_date)}
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
@@ -781,7 +797,9 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                                     Claims ({record.claims.length})
                                                 </h6>
                                                 <div className="space-y-3">
-                                                    {record.claims.map((claim) => (
+                                                    {record.claims
+                                                        .sort((a, b) => new Date(b.date_of_death).getTime() - new Date(a.date_of_death).getTime())
+                                                        .map((claim) => (
                                                         <div key={claim.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded border-l-4 border-gray-500">
                                                             <div className="flex items-start justify-between mb-2">
                                                                 <div>

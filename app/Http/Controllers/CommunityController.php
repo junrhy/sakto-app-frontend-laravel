@@ -326,7 +326,7 @@ class CommunityController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
                 $members = $data['data']['members'] ?? [];
-                
+
                 // Filter members by search criteria
                 $matchingMembers = collect($members)->filter(function ($member) use ($searchParams) {
                     $matches = true;
@@ -338,9 +338,15 @@ class CommunityController extends Controller
                     if (!empty($searchParams['gender'])) {
                         $matches = $matches && strtolower($member['gender']) === strtolower($searchParams['gender']);
                     }
+
+                    if (!empty($searchParams['phone'])) {
+                        $matches = $matches && strtolower($member['contact_number']) === strtolower($searchParams['phone']);
+                    }
                     
                     if (!empty($searchParams['date_of_birth'])) {
-                        $matches = $matches && $member['date_of_birth'] === $searchParams['date_of_birth'];
+                        // Format the date_of_birth from ISO format to Y-m-d format for comparison
+                        $memberDateOfBirth = date('Y-m-d', strtotime($member['date_of_birth']));
+                        $matches = $matches && $memberDateOfBirth === $searchParams['date_of_birth'];
                     }
 
                     return $matches;
@@ -410,10 +416,17 @@ class CommunityController extends Controller
                     if (!empty($searchParams['gender'])) {
                         $matches = $matches && strtolower($member['gender']) === strtolower($searchParams['gender']);
                     }
+
+                    if (!empty($searchParams['phone'])) {
+                        $matches = $matches && strtolower($member['contact_number']) === strtolower($searchParams['phone']);
+                    }
                     
                     if (!empty($searchParams['date_of_birth'])) {
-                        $matches = $matches && $member['date_of_birth'] === $searchParams['date_of_birth'];
+                        // Format the date_of_birth from ISO format to Y-m-d format for comparison
+                        $memberDateOfBirth = date('Y-m-d', strtotime($member['date_of_birth']));
+                        $matches = $matches && $memberDateOfBirth === $searchParams['date_of_birth'];
                     }
+
                     
                     return $matches;
                 })->values();

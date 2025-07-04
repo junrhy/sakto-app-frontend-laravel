@@ -120,7 +120,9 @@ export default function MemberRefactored({ member, challenges, events, pages, co
                     lastName: visitorInfo.lastName,
                     email: visitorInfo.email,
                     phone: visitorInfo.phone,
-                    contactId: matchingContact.id
+                    contactId: matchingContact.id,
+                    date_of_birth: matchingContact.date_of_birth,
+                    gender: matchingContact.gender
                 }
             };
             localStorage.setItem(`visitor_auth_${member.id}`, JSON.stringify(authData));

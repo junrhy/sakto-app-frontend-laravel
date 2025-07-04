@@ -164,6 +164,60 @@ export default function ProfileSection({ member }: ProfileSectionProps) {
                                     </div>
                                 </div>
                             </div>
+
+                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Date of Birth</p>
+                                        <p className="text-gray-900 dark:text-gray-100 font-medium truncate">
+                                            {(() => {
+                                                const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                                if (authData) {
+                                                    try {
+                                                        const { visitorInfo } = JSON.parse(authData);
+                                                        return visitorInfo?.date_of_birth ? new Date(visitorInfo.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Not available';
+                                                    } catch (error) {
+                                                        return 'Not available';
+                                                    }
+                                                }
+                                                return 'Not available';
+                                            })()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Gender</p>
+                                        <p className="text-gray-900 dark:text-gray-100 font-medium truncate">
+                                            {(() => {
+                                                const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+                                                if (authData) {
+                                                    try {
+                                                        const { visitorInfo } = JSON.parse(authData);
+                                                        return visitorInfo?.gender || 'Not available';
+                                                    } catch (error) {
+                                                        return 'Not available';
+                                                    }
+                                                }
+                                                return 'Not available';
+                                            })()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
