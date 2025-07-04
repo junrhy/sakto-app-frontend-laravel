@@ -138,6 +138,9 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
     const [lendingError, setLendingError] = useState('');
     const [healthcareError, setHealthcareError] = useState('');
     const [mortuaryError, setMortuaryError] = useState('');
+    const [hasSearchedLending, setHasSearchedLending] = useState(false);
+    const [hasSearchedHealthcare, setHasSearchedHealthcare] = useState(false);
+    const [hasSearchedMortuary, setHasSearchedMortuary] = useState(false);
 
     const getVisitorInfo = () => {
         const authData = localStorage.getItem(`visitor_auth_${member.id}`);
@@ -158,6 +161,7 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
 
         setIsLoadingLending(true);
         setLendingError('');
+        setHasSearchedLending(true);
 
         try {
             const borrowerName = `${visitorInfo.firstName} ${visitorInfo.middleName ? `${visitorInfo.middleName} ` : ''}${visitorInfo.lastName}`.trim();
@@ -183,6 +187,7 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
 
         setIsLoadingHealthcare(true);
         setHealthcareError('');
+        setHasSearchedHealthcare(true);
 
         try {
             const searchParams = new URLSearchParams({
@@ -212,6 +217,7 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
 
         setIsLoadingMortuary(true);
         setMortuaryError('');
+        setHasSearchedMortuary(true);
 
         try {
             const searchParams = new URLSearchParams({
@@ -286,7 +292,7 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
-                                    Show
+                                    Search
                                 </>
                             )}
                         </button>
@@ -298,115 +304,124 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                         </div>
                     )}
 
-                    {lendingRecords.length > 0 && (
-                        <div className="space-y-4">
-                            {lendingRecords.map((record) => (
-                                <div key={record.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                    {/* Loan Header */}
-                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    {record.borrower_name}
-                                                </h5>
-                                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                    Loan ID: {record.id} • {record.status} • {record.interest_type} interest
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.amount)}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    Original Amount
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Loan Details */}
-                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400 mb-1">Loan Terms</p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Interest Rate:</span> {record.interest_rate}%
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Frequency:</span> {record.frequency}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Start Date:</span> {formatDate(record.start_date)}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100">
-                                                    <span className="font-medium">End Date:</span> {formatDate(record.end_date)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400 mb-1">Payment Details</p>
-                                                {record.installment_frequency && (
-                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                        <span className="font-medium">Installment:</span> {record.installment_frequency}
+                    {hasSearchedLending && (
+                        lendingRecords.length > 0 ? (
+                            <div className="space-y-4">
+                                {lendingRecords.map((record) => (
+                                    <div key={record.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        {/* Loan Header */}
+                                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                        {record.borrower_name}
+                                                    </h5>
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                        Loan ID: {record.id} • {record.status} • {record.interest_type} interest
                                                     </p>
-                                                )}
-                                                {record.installment_amount && (
-                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                        <span className="font-medium">Installment Amount:</span> {formatPrice(record.installment_amount)}
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.amount)}
                                                     </p>
-                                                )}
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Total Interest:</span> {formatPrice(record.total_interest)}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100">
-                                                    <span className="font-medium">Created:</span> {formatDate(record.created_at)}
-                                                </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        Original Amount
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Financial Summary */}
-                                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Total Balance</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.total_balance)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Amount Paid</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.paid_amount)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Remaining Balance</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(parseFloat(record.total_balance) - parseFloat(record.paid_amount))}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Payment Progress</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {((parseFloat(record.paid_amount) / parseFloat(record.total_balance)) * 100).toFixed(1)}%
-                                                </p>
+                                        {/* Loan Details */}
+                                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400 mb-1">Loan Terms</p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Interest Rate:</span> {record.interest_rate}%
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Frequency:</span> {record.frequency}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Start Date:</span> {formatDate(record.start_date)}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100">
+                                                        <span className="font-medium">End Date:</span> {formatDate(record.end_date)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400 mb-1">Payment Details</p>
+                                                    {record.installment_frequency && (
+                                                        <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                            <span className="font-medium">Installment:</span> {record.installment_frequency}
+                                                        </p>
+                                                    )}
+                                                    {record.installment_amount && (
+                                                        <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                            <span className="font-medium">Installment Amount:</span> {formatPrice(record.installment_amount)}
+                                                        </p>
+                                                    )}
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Total Interest:</span> {formatPrice(record.total_interest)}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100">
+                                                        <span className="font-medium">Created:</span> {formatDate(record.created_at)}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Status Badge */}
-                                    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                            record.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                            record.status === 'paid' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                                        }`}>
-                                            {record.status}
-                                        </span>
+                                        {/* Financial Summary */}
+                                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Total Balance</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.total_balance)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Amount Paid</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.paid_amount)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Remaining Balance</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(parseFloat(record.total_balance) - parseFloat(record.paid_amount))}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Payment Progress</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {((parseFloat(record.paid_amount) / parseFloat(record.total_balance)) * 100).toFixed(1)}%
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Status Badge */}
+                                        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                record.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                                record.status === 'paid' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                            }`}>
+                                                {record.status}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
+                                <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">No lending records found</p>
+                            </div>
+                        )
                     )}
                 </div>
 
@@ -437,7 +452,7 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
-                                    Show
+                                    Search
                                 </>
                             )}
                         </button>
@@ -449,174 +464,183 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                         </div>
                     )}
 
-                    {healthcareRecords.length > 0 && (
-                        <div className="space-y-4">
-                            {healthcareRecords.map((record) => (
-                                <div key={record.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                    {/* Member Header */}
-                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    {record.name}
-                                                </h5>
-                                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                    Member ID: {record.id} • {record.status} • {record.group || 'No Group'}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.contribution_amount)}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {record.contribution_frequency}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Member Details */}
-                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400 mb-1">Personal Information</p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Gender:</span> {record.gender}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Date of Birth:</span> {formatDate(record.date_of_birth)}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Contact:</span> {record.contact_number}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100">
-                                                    <span className="font-medium">Member Since:</span> {formatDate(record.membership_start_date)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400 mb-1">Address</p>
-                                                <p className="text-gray-900 dark:text-gray-100 text-sm whitespace-pre-line">
-                                                    {record.address}
-                                                </p>
+                    {hasSearchedHealthcare && (
+                        healthcareRecords.length > 0 ? (
+                            <div className="space-y-4">
+                                {healthcareRecords.map((record) => (
+                                    <div key={record.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        {/* Member Header */}
+                                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                        {record.name}
+                                                    </h5>
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                        Member ID: {record.id} • {record.status} • {record.group || 'No Group'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.contribution_amount)}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {record.contribution_frequency}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Contributions */}
-                                    {record.contributions && record.contributions.length > 0 && (
+                                        {/* Member Details */}
                                         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                            <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                                                <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                </svg>
-                                                Contributions ({record.contributions.length})
-                                            </h6>
-                                            <div className="space-y-2">
-                                                {record.contributions.map((contribution) => (
-                                                    <div key={contribution.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                {formatPrice(contribution.amount)}
-                                                            </p>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                {contribution.payment_method} • {formatDate(contribution.payment_date)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            {contribution.reference_number && (
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    Ref: {contribution.reference_number}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400 mb-1">Personal Information</p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Gender:</span> {record.gender}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Date of Birth:</span> {formatDate(record.date_of_birth)}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Contact:</span> {record.contact_number}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100">
+                                                        <span className="font-medium">Member Since:</span> {formatDate(record.membership_start_date)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400 mb-1">Address</p>
+                                                    <p className="text-gray-900 dark:text-gray-100 text-sm whitespace-pre-line">
+                                                        {record.address}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    )}
 
-                                    {/* Claims */}
-                                    {record.claims && record.claims.length > 0 && (
-                                        <div className="px-4 py-3">
-                                            <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                                                <svg className="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                Claims ({record.claims.length})
-                                            </h6>
-                                            <div className="space-y-3">
-                                                {record.claims.map((claim) => (
-                                                    <div key={claim.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded border-l-4 border-blue-500">
-                                                        <div className="flex items-start justify-between mb-2">
+                                        {/* Contributions */}
+                                        {record.contributions && record.contributions.length > 0 && (
+                                            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                                <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                                                    <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                    </svg>
+                                                    Contributions ({record.contributions.length})
+                                                </h6>
+                                                <div className="space-y-2">
+                                                    {record.contributions.map((contribution) => (
+                                                        <div key={contribution.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                                                             <div>
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
-                                                                    {claim.claim_type} Claim
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                    {formatPrice(contribution.amount)}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {formatDate(claim.date_of_service)} • {claim.hospital_name}
+                                                                    {contribution.payment_method} • {formatDate(contribution.payment_date)}
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                    {formatPrice(claim.amount)}
-                                                                </p>
-                                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                                    claim.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                                                    claim.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                                                                }`}>
-                                                                    {claim.status}
-                                                                </span>
+                                                                {contribution.reference_number && (
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        Ref: {contribution.reference_number}
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                                <span className="font-medium">Diagnosis:</span> {claim.diagnosis}
-                                                            </p>
-                                                            {claim.remarks && (
-                                                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                    <span className="font-medium">Remarks:</span> {claim.remarks}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Summary */}
-                                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Total Contributions</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.contributions.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
-                                                </p>
+                                        {/* Claims */}
+                                        {record.claims && record.claims.length > 0 && (
+                                            <div className="px-4 py-3">
+                                                <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                                                    <svg className="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    Claims ({record.claims.length})
+                                                </h6>
+                                                <div className="space-y-3">
+                                                    {record.claims.map((claim) => (
+                                                        <div key={claim.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded border-l-4 border-blue-500">
+                                                            <div className="flex items-start justify-between mb-2">
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+                                                                        {claim.claim_type} Claim
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        {formatDate(claim.date_of_service)} • {claim.hospital_name}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                        {formatPrice(claim.amount)}
+                                                                    </p>
+                                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                                        claim.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                                                        claim.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                                                    }`}>
+                                                                        {claim.status}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                                                    <span className="font-medium">Diagnosis:</span> {claim.diagnosis}
+                                                                </p>
+                                                                {claim.remarks && (
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        <span className="font-medium">Remarks:</span> {claim.remarks}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Total Claims</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.claims.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Pending Claims</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {record.claims.filter(c => c.status === 'pending').length}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Approved Claims</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {record.claims.filter(c => c.status === 'approved').length}
-                                                </p>
+                                        )}
+
+                                        {/* Summary */}
+                                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Total Contributions</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.contributions.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Total Claims</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.claims.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Pending Claims</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {record.claims.filter(c => c.status === 'pending').length}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Approved Claims</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {record.claims.filter(c => c.status === 'approved').length}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
+                                <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">No healthcare records found</p>
+                            </div>
+                        )
                     )}
                 </div>
 
@@ -648,7 +672,7 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
-                                    Show
+                                    Search
                                 </>
                             )}
                         </button>
@@ -660,186 +684,196 @@ export default function MyRecordsSection({ member }: MyRecordsSectionProps) {
                         </div>
                     )}
 
-                    {mortuaryRecords.length > 0 && (
-                        <div className="space-y-4">
-                            {mortuaryRecords.map((record) => (
-                                <div key={record.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                                    {/* Member Header */}
-                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                                    {record.name}
-                                                </h5>
-                                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                    Member ID: {record.id} • {record.status} • {record.group || 'No Group'}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.contribution_amount)}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {record.contribution_frequency}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Member Details */}
-                                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400 mb-1">Personal Information</p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Gender:</span> {record.gender}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Date of Birth:</span> {formatDate(record.date_of_birth)}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100 mb-1">
-                                                    <span className="font-medium">Contact:</span> {record.contact_number}
-                                                </p>
-                                                <p className="text-gray-900 dark:text-gray-100">
-                                                    <span className="font-medium">Member Since:</span> {formatDate(record.membership_start_date)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400 mb-1">Address</p>
-                                                <p className="text-gray-900 dark:text-gray-100 text-sm whitespace-pre-line">
-                                                    {record.address}
-                                                </p>
+                    {hasSearchedMortuary && (
+                        mortuaryRecords.length > 0 ? (
+                            <div className="space-y-4">
+                                {mortuaryRecords.map((record) => (
+                                    <div key={record.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                        {/* Member Header */}
+                                        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/20">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                                        {record.name}
+                                                    </h5>
+                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                        Member ID: {record.id} • {record.status} • {record.group || 'No Group'}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.contribution_amount)}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {record.contribution_frequency}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Contributions */}
-                                    {record.contributions && record.contributions.length > 0 && (
+                                        {/* Member Details */}
                                         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                            <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                                                <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                                </svg>
-                                                Contributions ({record.contributions.length})
-                                            </h6>
-                                            <div className="space-y-2">
-                                                {record.contributions.map((contribution) => (
-                                                    <div key={contribution.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                {formatPrice(contribution.amount)}
-                                                            </p>
-                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                {contribution.payment_method} • {formatDate(contribution.payment_date)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            {contribution.reference_number && (
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    Ref: {contribution.reference_number}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400 mb-1">Personal Information</p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Gender:</span> {record.gender}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Date of Birth:</span> {formatDate(record.date_of_birth)}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100 mb-1">
+                                                        <span className="font-medium">Contact:</span> {record.contact_number}
+                                                    </p>
+                                                    <p className="text-gray-900 dark:text-gray-100">
+                                                        <span className="font-medium">Member Since:</span> {formatDate(record.membership_start_date)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400 mb-1">Address</p>
+                                                    <p className="text-gray-900 dark:text-gray-100 text-sm whitespace-pre-line">
+                                                        {record.address}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                    )}
 
-                                    {/* Claims */}
-                                    {record.claims && record.claims.length > 0 && (
-                                        <div className="px-4 py-3">
-                                            <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
-                                                <svg className="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                Claims ({record.claims.length})
-                                            </h6>
-                                            <div className="space-y-3">
-                                                {record.claims.map((claim) => (
-                                                    <div key={claim.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded border-l-4 border-gray-500">
-                                                        <div className="flex items-start justify-between mb-2">
+                                        {/* Contributions */}
+                                        {record.contributions && record.contributions.length > 0 && (
+                                            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                                <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                                                    <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                                    </svg>
+                                                    Contributions ({record.contributions.length})
+                                                </h6>
+                                                <div className="space-y-2">
+                                                    {record.contributions.map((contribution) => (
+                                                        <div key={contribution.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                                                             <div>
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
-                                                                    {claim.claim_type} Claim
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                    {formatPrice(contribution.amount)}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {formatDate(claim.date_of_death)} • {claim.deceased_name}
+                                                                    {contribution.payment_method} • {formatDate(contribution.payment_date)}
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                    {formatPrice(claim.amount)}
+                                                                {contribution.reference_number && (
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        Ref: {contribution.reference_number}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Claims */}
+                                        {record.claims && record.claims.length > 0 && (
+                                            <div className="px-4 py-3">
+                                                <h6 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center">
+                                                    <svg className="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    Claims ({record.claims.length})
+                                                </h6>
+                                                <div className="space-y-3">
+                                                    {record.claims.map((claim) => (
+                                                        <div key={claim.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded border-l-4 border-gray-500">
+                                                            <div className="flex items-start justify-between mb-2">
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 capitalize">
+                                                                        {claim.claim_type} Claim
+                                                                    </p>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        {formatDate(claim.date_of_death)} • {claim.deceased_name}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                        {formatPrice(claim.amount)}
+                                                                    </p>
+                                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                                        claim.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                                                        claim.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                                                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                                                    }`}>
+                                                                        {claim.status}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                                                    <span className="font-medium">Relationship:</span> {claim.relationship_to_member}
                                                                 </p>
+                                                                {claim.cause_of_death && (
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                                                        <span className="font-medium">Cause of Death:</span> {claim.cause_of_death}
+                                                                    </p>
+                                                                )}
+                                                                {claim.remarks && (
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        <span className="font-medium">Remarks:</span> {claim.remarks}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <div className="mt-2">
                                                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                                    claim.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                                                                    claim.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                                                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                                                    claim.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
                                                                 }`}>
-                                                                    {claim.status}
+                                                                    {claim.is_active ? 'Active' : 'Inactive'}
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                                <span className="font-medium">Relationship:</span> {claim.relationship_to_member}
-                                                            </p>
-                                                            {claim.cause_of_death && (
-                                                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                                    <span className="font-medium">Cause of Death:</span> {claim.cause_of_death}
-                                                                </p>
-                                                            )}
-                                                            {claim.remarks && (
-                                                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                    <span className="font-medium">Remarks:</span> {claim.remarks}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <div className="mt-2">
-                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                                claim.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                                                            }`}>
-                                                                {claim.is_active ? 'Active' : 'Inactive'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* Summary */}
-                                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Total Contributions</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.contributions.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Total Claims</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {formatPrice(record.claims.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Pending Claims</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {record.claims.filter(c => c.status === 'pending').length}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-500 dark:text-gray-400">Active Claims</p>
-                                                <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                    {record.claims.filter(c => c.is_active).length}
-                                                </p>
+                                        {/* Summary */}
+                                        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Total Contributions</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.contributions.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Total Claims</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(record.claims.reduce((sum, c) => sum + parseFloat(c.amount), 0))}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Pending Claims</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {record.claims.filter(c => c.status === 'pending').length}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 dark:text-gray-400">Active Claims</p>
+                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                        {record.claims.filter(c => c.is_active).length}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
+                                <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+                                </svg>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">No mortuary records found</p>
+                            </div>
+                        )
                     )}
                 </div>
             </div>
