@@ -528,8 +528,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/members/{id}', [HealthInsuranceController::class, 'deleteMember'])->name('health-insurance.members.delete');
         
         // Contributions
-        Route::post('/contributions/{memberId}', [HealthInsuranceController::class, 'recordContribution'])->name('health-insurance.contributions.store');
         Route::post('/contributions/bulk', [HealthInsuranceController::class, 'recordBulkContributions'])->name('health-insurance.contributions.bulk');
+        Route::post('/contributions/{memberId}', [HealthInsuranceController::class, 'recordContribution'])->name('health-insurance.contributions.store');
         Route::put('/contributions/{memberId}/{contributionId}', [HealthInsuranceController::class, 'updateContribution'])->name('health-insurance.contributions.update');
         Route::get('/contributions/{memberId}', [HealthInsuranceController::class, 'getMemberContributions'])->name('health-insurance.contributions.index');
         Route::delete('/contributions/{memberId}/{contributionId}', [HealthInsuranceController::class, 'deleteContribution'])->name('health-insurance.contributions.delete');
@@ -744,8 +744,8 @@ Route::middleware(['auth', 'verified', 'subscription.access'])->group(function (
         Route::delete('/members/{id}', [MortuaryController::class, 'deleteMember'])->name('mortuary.members.destroy');
         
         // Contribution routes
-        Route::post('/contributions/{memberId}', [MortuaryController::class, 'recordContribution'])->name('mortuary.contributions.store');
         Route::post('/contributions/bulk', [MortuaryController::class, 'recordBulkContributions'])->name('mortuary.contributions.bulk');
+        Route::post('/contributions/{memberId}', [MortuaryController::class, 'recordContribution'])->name('mortuary.contributions.store');
         Route::put('/contributions/{memberId}/{contributionId}', [MortuaryController::class, 'updateContribution'])->name('mortuary.contributions.update');
         Route::get('/contributions/{memberId}', [MortuaryController::class, 'getMemberContributions'])->name('mortuary.contributions.index');
         Route::delete('/contributions/{memberId}/{contributionId}', [MortuaryController::class, 'deleteContribution'])->name('mortuary.contributions.destroy');
