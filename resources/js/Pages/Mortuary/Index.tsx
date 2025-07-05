@@ -335,8 +335,8 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
             </div>
 
             <AddMemberDialog
-                isOpen={isAddMemberOpen}
-                onClose={() => setIsAddMemberOpen(false)}
+                open={isAddMemberOpen}
+                onOpenChange={setIsAddMemberOpen}
                 onMemberAdded={handleAddMember}
                 appCurrency={appCurrency}
             />

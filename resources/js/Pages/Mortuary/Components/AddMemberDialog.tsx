@@ -5,10 +5,12 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useToast } from '@/Components/ui/use-toast';
-import { useState, useEffect } from 'react';
-import { UserPlus, Plus, Trash2, Users } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { UserPlus, Plus, Trash2, Users, Upload, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import { router } from '@inertiajs/react';
+import { Separator } from '@/Components/ui/separator';
 
 interface Contact {
     id: string;
@@ -38,8 +40,8 @@ interface MemberFormData {
 }
 
 interface Props {
-    isOpen: boolean;
-    onClose: () => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
     onMemberAdded: (member: any) => void;
     appCurrency: {
         code: string;
@@ -47,7 +49,7 @@ interface Props {
     };
 }
 
-export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCurrency }: Props) {
+export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, appCurrency }: Props) {
     const { toast } = useToast();
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
@@ -67,10 +69,19 @@ export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCur
         }
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Use router for posting individual members
+    const [processing, setProcessing] = useState(false);
+    
+    // CSV import functionality
+    const [showCsvImport, setShowCsvImport] = useState(false);
+    const [csvData, setCsvData] = useState<MemberFormData[]>([]);
+    const [csvErrors, setCsvErrors] = useState<string[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         // Fetch contacts when dialog opens
-        if (isOpen) {
+        if (open) {
             fetchContacts();
         } else {
             // Reset states when dialog closes
@@ -88,8 +99,14 @@ export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCur
                 status: 'active',
                 group: '',
             }]);
+            // Reset processing state
+            setProcessing(false);
+            // Reset CSV import state
+            setShowCsvImport(false);
+            setCsvData([]);
+            setCsvErrors([]);
         }
-    }, [isOpen]);
+    }, [open]);
 
     const fetchContacts = async () => {
         try {
@@ -168,31 +185,28 @@ export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCur
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setProcessing(true);
 
         try {
-            // Submit each member individually
+            // Submit each member individually using Inertia router
             for (const member of members) {
                 if (!member.name.trim()) continue; // Skip empty entries
                 
-                await new Promise((resolve, reject) => {
-                    const formData = new FormData();
-                    Object.entries(member).forEach(([key, value]) => {
-                        formData.append(key, value);
-                    });
-
-                    fetch('/mortuary/members', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                // Submit using Inertia router.post
+                await new Promise<void>((resolve, reject) => {
+                    router.post(route('mortuary.members.store'), member as any, {
+                        onSuccess: () => {
+                            resolve();
                         },
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Failed to add member');
-                        return response.json();
-                    })
-                    .then(resolve)
-                    .catch(reject);
+                        onError: (errors: any) => {
+                            const errorMessage = Object.entries(errors)
+                                .map(([field, message]) => `${field}: ${message}`)
+                                .join('; ');
+                            reject(new Error(errorMessage));
+                        },
+                        preserveScroll: true,
+                        preserveState: true,
+                    });
                 });
             }
 
@@ -215,27 +229,214 @@ export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCur
                 group: '',
             }]);
             setSelectedContacts([]);
-            onClose();
+            onOpenChange(false);
             
             // Reload page after delay
             setTimeout(() => {
                 window.location.reload();
             }, 1500);
         } catch (error) {
+            console.error('Error adding members:', error);
             toast({
                 title: "Error",
-                description: "Failed to add some members",
+                description: error instanceof Error ? error.message : "Failed to add some members",
                 variant: "destructive",
             });
         } finally {
             setIsSubmitting(false);
+            setProcessing(false);
         }
     };
 
     const validMembers = members.filter(m => m.name.trim());
 
+    // CSV parsing function
+    const parseCSV = (csvText: string): MemberFormData[] => {
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+            throw new Error('CSV must have at least a header row and one data row');
+        }
+
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        const dataRows = lines.slice(1);
+        const errors: string[] = [];
+        const parsedData: MemberFormData[] = [];
+
+        dataRows.forEach((row, index) => {
+            const values = row.split(',').map(v => v.trim().replace(/"/g, ''));
+            const member: MemberFormData = {
+                name: '',
+                date_of_birth: '',
+                gender: '',
+                contact_number: '',
+                address: '',
+                membership_start_date: '',
+                contribution_amount: '',
+                contribution_frequency: '',
+                status: 'active',
+                group: '',
+            };
+
+            headers.forEach((header, colIndex) => {
+                const value = values[colIndex] || '';
+                switch (header) {
+                    case 'name':
+                    case 'full_name':
+                    case 'member_name':
+                        member.name = value;
+                        break;
+                    case 'date_of_birth':
+                    case 'birth_date':
+                    case 'dob':
+                        member.date_of_birth = value;
+                        break;
+                    case 'gender':
+                        member.gender = value.toLowerCase();
+                        break;
+                    case 'contact_number':
+                    case 'phone':
+                    case 'mobile':
+                    case 'contact':
+                        member.contact_number = value;
+                        break;
+                    case 'address':
+                        member.address = value;
+                        break;
+                    case 'membership_start_date':
+                    case 'start_date':
+                    case 'member_since':
+                        member.membership_start_date = value;
+                        break;
+                    case 'contribution_amount':
+                    case 'premium':
+                    case 'amount':
+                        member.contribution_amount = value;
+                        break;
+                    case 'contribution_frequency':
+                    case 'frequency':
+                    case 'payment_frequency':
+                        member.contribution_frequency = value.toLowerCase();
+                        break;
+                    case 'status':
+                        member.status = value.toLowerCase() || 'active';
+                        break;
+                    case 'group':
+                        member.group = value;
+                        break;
+                }
+            });
+
+            // Validate required fields
+            if (!member.name) {
+                errors.push(`Row ${index + 2}: Name is required`);
+            }
+            if (!member.date_of_birth) {
+                errors.push(`Row ${index + 2}: Date of birth is required`);
+            }
+            if (!member.gender) {
+                errors.push(`Row ${index + 2}: Gender is required`);
+            }
+            if (!member.contact_number) {
+                errors.push(`Row ${index + 2}: Contact number is required`);
+            }
+            if (!member.address) {
+                errors.push(`Row ${index + 2}: Address is required`);
+            }
+            if (!member.membership_start_date) {
+                errors.push(`Row ${index + 2}: Membership start date is required`);
+            }
+            if (!member.contribution_amount) {
+                errors.push(`Row ${index + 2}: Contribution amount is required`);
+            }
+            if (!member.contribution_frequency) {
+                errors.push(`Row ${index + 2}: Contribution frequency is required`);
+            }
+
+            parsedData.push(member);
+        });
+
+        setCsvErrors(errors);
+        return parsedData;
+    };
+
+    // Handle CSV file upload
+    const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            toast({
+                title: "Error",
+                description: "Please select a CSV file",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const csvText = e.target?.result as string;
+                const parsedData = parseCSV(csvText);
+                setCsvData(parsedData);
+                
+                if (csvErrors.length === 0) {
+                    toast({
+                        title: "Success",
+                        description: `Successfully parsed ${parsedData.length} members from CSV`,
+                    });
+                } else {
+                    toast({
+                        title: "Warning",
+                        description: `Parsed ${parsedData.length} members with ${csvErrors.length} validation errors`,
+                        variant: "destructive",
+                    });
+                }
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: error instanceof Error ? error.message : "Failed to parse CSV file",
+                    variant: "destructive",
+                });
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    // Import CSV data to members
+    const importCsvData = () => {
+        if (csvData.length === 0) return;
+        
+        setMembers(csvData);
+        setShowCsvImport(false);
+        setCsvData([]);
+        setCsvErrors([]);
+        
+        toast({
+            title: "Success",
+            description: `Imported ${csvData.length} members from CSV`,
+        });
+    };
+
+    // Download CSV template
+    const downloadCsvTemplate = () => {
+        const template = `name,date_of_birth,gender,contact_number,address,membership_start_date,contribution_amount,contribution_frequency,status,group
+"John Doe","1990-01-01","male","09123456789","123 Main St","2024-01-01","500","monthly","active","Group A"
+"Jane Smith","1985-05-15","female","09876543210","456 Oak Ave","2024-01-01","750","quarterly","active","Group B"`;
+        
+        const blob = new Blob([template], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'mortuary_members_template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -248,41 +449,183 @@ export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCur
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {!showContactSearch ? (
-                        <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
-                            <CardContent className="p-4">
+                    <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600">
+                        <CardContent className="p-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {!showContactSearch ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-12"
+                                        onClick={() => setShowContactSearch(true)}
+                                    >
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                        Search Contacts
+                                    </Button>
+                                ) : (
+                                    <div className="sm:col-span-3">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-sm font-medium">Select Contact:</span>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowContactSearch(false)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                        <Select
+                                            value={selectedContacts[0] || ''}
+                                            onValueChange={(value) => handleContactSelect([value])}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a contact" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {contacts.map((contact) => (
+                                                    <SelectItem key={contact.id} value={contact.id}>
+                                                        {`${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                                
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="w-full h-16"
-                                    onClick={() => setShowContactSearch(true)}
+                                    className="h-12"
+                                    onClick={() => setShowCsvImport(true)}
                                 >
-                                    <UserPlus className="mr-2 h-5 w-5" />
-                                    Search from Contacts
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Import CSV
                                 </Button>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-sm">Select Contacts</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Select
-                                    value={selectedContacts[0] || ''}
-                                    onValueChange={(value) => handleContactSelect([value])}
+                                
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-12"
+                                    onClick={downloadCsvTemplate}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select contacts" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {contacts.map((contact) => (
-                                            <SelectItem key={contact.id} value={contact.id}>
-                                                {`${contact.first_name} ${contact.middle_name ? contact.middle_name + ' ' : ''}${contact.last_name}`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Template
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {showCsvImport && (
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-sm">Import CSV File</CardTitle>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowCsvImport(false)}
+                                    >
+                                        Close
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <div>
+                                    <Label htmlFor="csv-file" className="text-sm">Select CSV File</Label>
+                                    <Input
+                                        id="csv-file"
+                                        type="file"
+                                        accept=".csv"
+                                        onChange={handleCsvUpload}
+                                        ref={fileInputRef}
+                                        className="h-9"
+                                    />
+                                </div>
+                                
+                                {csvData.length > 0 && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-sm font-medium">Preview ({csvData.length} members)</h4>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setCsvData([]);
+                                                        setCsvErrors([]);
+                                                        if (fileInputRef.current) {
+                                                            fileInputRef.current.value = '';
+                                                        }
+                                                    }}
+                                                >
+                                                    Clear
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    onClick={importCsvData}
+                                                >
+                                                    Import to Form
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="max-h-32 overflow-y-auto border rounded-md p-2">
+                                            <table className="w-full text-xs">
+                                                <thead>
+                                                    <tr className="border-b">
+                                                        <th className="text-left p-1">Name</th>
+                                                        <th className="text-left p-1">DOB</th>
+                                                        <th className="text-left p-1">Gender</th>
+                                                        <th className="text-left p-1">Contact</th>
+                                                        <th className="text-left p-1">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {csvData.slice(0, 3).map((member, index) => (
+                                                        <tr key={index} className="border-b">
+                                                            <td className="p-1">{member.name}</td>
+                                                            <td className="p-1">{member.date_of_birth}</td>
+                                                            <td className="p-1">{member.gender}</td>
+                                                            <td className="p-1">{member.contact_number}</td>
+                                                            <td className="p-1">{member.contribution_amount}</td>
+                                                        </tr>
+                                                    ))}
+                                                    {csvData.length > 3 && (
+                                                        <tr>
+                                                            <td colSpan={5} className="p-1 text-center text-gray-500">
+                                                                ... and {csvData.length - 3} more
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        {csvErrors.length > 0 && (
+                                            <div className="bg-red-50 border border-red-200 rounded-md p-2">
+                                                <h5 className="text-sm font-medium text-red-800 mb-1">
+                                                    Errors ({csvErrors.length})
+                                                </h5>
+                                                <div className="max-h-24 overflow-y-auto">
+                                                    {csvErrors.slice(0, 5).map((error, index) => (
+                                                        <p key={index} className="text-xs text-red-700 mb-0.5">
+                                                            {error}
+                                                        </p>
+                                                    ))}
+                                                    {csvErrors.length > 5 && (
+                                                        <p className="text-xs text-red-700">
+                                                            ... and {csvErrors.length - 5} more errors
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     )}
@@ -451,15 +794,15 @@ export default function AddMemberDialog({ isOpen, onClose, onMemberAdded, appCur
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={onClose}
+                            onClick={() => onOpenChange(false)}
                         >
                             Cancel
                         </Button>
                         <Button 
                             type="submit" 
-                            disabled={isSubmitting || validMembers.length === 0}
+                            disabled={processing || isSubmitting || validMembers.length === 0}
                         >
-                            {isSubmitting ? 'Adding...' : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
+                            {processing || isSubmitting ? 'Adding...' : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
                         </Button>
                     </div>
                 </form>
