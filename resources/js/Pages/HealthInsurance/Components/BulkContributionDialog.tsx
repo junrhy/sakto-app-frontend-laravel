@@ -230,7 +230,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
     const selectedCount = memberContributions.filter(m => m.selected).length;
     const totalAmount = memberContributions
         .filter(m => m.selected)
-        .reduce((sum, m) => sum + m.amount, 0);
+        .reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -260,7 +260,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                             </div>
                                             <div className="text-center">
                                                 <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                                                    {appCurrency.symbol}{totalAmount.toFixed(2)}
+                                                    {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount).toFixed(2) : '0.00'}
                                                 </div>
                                                 <div className="text-xs text-green-600 dark:text-green-400">
                                                     Total Amount
@@ -272,7 +272,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                                 Average per member
                                             </div>
                                             <div className="text-sm font-semibold text-green-700 dark:text-green-300">
-                                                {appCurrency.symbol}{(totalAmount / selectedCount).toFixed(2)}
+                                                {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount / selectedCount).toFixed(2) : '0.00'}
                                             </div>
                                         </div>
                                     </div>
@@ -389,7 +389,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                     </Label>
                                     {selectedCount > 0 && (
                                         <Badge variant="secondary" className="ml-auto text-xs">
-                                            {selectedCount} selected • {appCurrency.symbol}{totalAmount.toFixed(2)}
+                                            {selectedCount} selected • {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount).toFixed(2) : '0.00'}
                                         </Badge>
                                     )}
                                 </div>
