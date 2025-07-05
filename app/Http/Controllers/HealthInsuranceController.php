@@ -72,12 +72,37 @@ class HealthInsuranceController extends Controller
                 ]);
 
             if (!$response->successful()) {
+                // Return JSON error response for AJAX requests
+                if ($request->expectsJson() || $request->is('api/*')) {
+                    return response()->json([
+                        'error' => 'Failed to store member',
+                        'details' => $response->body()
+                    ], $response->status());
+                }
                 throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            // Return JSON success response for AJAX requests
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Member added successfully',
+                    'data' => $response->json()['data'] ?? null
+                ]);
             }
 
             return back()->with('success', 'Member added successfully');
         } catch (\Exception $e) {
             Log::error('Error storing member: ' . $e->getMessage());
+            
+            // Return JSON error response for AJAX requests
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'error' => 'Failed to store member',
+                    'details' => $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Failed to store member.');
         }
     }

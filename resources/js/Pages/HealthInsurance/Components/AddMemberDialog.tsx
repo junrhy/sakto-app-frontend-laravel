@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { UserPlus, Plus, Trash2, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import { router } from '@inertiajs/react';
 
 interface Contact {
     id: string;
@@ -67,6 +68,9 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
         }
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Use router for posting individual members
+    const [processing, setProcessing] = useState(false);
 
     useEffect(() => {
         // Fetch contacts when dialog opens
@@ -88,6 +92,8 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                 status: 'active',
                 group: '',
             }]);
+            // Reset processing state
+            setProcessing(false);
         }
     }, [open]);
 
@@ -168,31 +174,28 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setProcessing(true);
 
         try {
-            // Submit each member individually
+            // Submit each member individually using Inertia router
             for (const member of members) {
                 if (!member.name.trim()) continue; // Skip empty entries
                 
-                await new Promise((resolve, reject) => {
-                    const formData = new FormData();
-                    Object.entries(member).forEach(([key, value]) => {
-                        formData.append(key, value);
-                    });
-
-                    fetch(route('health-insurance.members.store'), {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                // Submit using Inertia router.post
+                await new Promise<void>((resolve, reject) => {
+                    router.post(route('health-insurance.members.store'), member as any, {
+                        onSuccess: () => {
+                            resolve();
                         },
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Failed to add member');
-                        return response.json();
-                    })
-                    .then(resolve)
-                    .catch(reject);
+                        onError: (errors: any) => {
+                            const errorMessage = Object.entries(errors)
+                                .map(([field, message]) => `${field}: ${message}`)
+                                .join('; ');
+                            reject(new Error(errorMessage));
+                        },
+                        preserveScroll: true,
+                        preserveState: true,
+                    });
                 });
             }
 
@@ -222,13 +225,15 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                 window.location.reload();
             }, 1500);
         } catch (error) {
+            console.error('Error adding members:', error);
             toast({
                 title: "Error",
-                description: "Failed to add some members",
+                description: error instanceof Error ? error.message : "Failed to add some members",
                 variant: "destructive",
             });
         } finally {
             setIsSubmitting(false);
+            setProcessing(false);
         }
     };
 
@@ -457,9 +462,9 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                         </Button>
                         <Button 
                             type="submit" 
-                            disabled={isSubmitting || validMembers.length === 0}
+                            disabled={processing || isSubmitting || validMembers.length === 0}
                         >
-                            {isSubmitting ? 'Adding...' : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
+                            {processing || isSubmitting ? 'Adding...' : `Add ${validMembers.length} Member${validMembers.length !== 1 ? 's' : ''}`}
                         </Button>
                     </div>
                 </form>
