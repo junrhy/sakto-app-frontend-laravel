@@ -25,7 +25,7 @@ import { format } from 'date-fns';
 import { Users, DollarSign, Calendar, CreditCard } from 'lucide-react';
 
 interface Member {
-    id: string;
+    id: string | number;
     name: string;
     date_of_birth: string;
     gender: string;
@@ -48,7 +48,7 @@ interface Contribution {
 }
 
 interface BulkContributionData {
-    member_id: string;
+    member_id: string | number;
     amount: number;
     selected: boolean;
 }
@@ -70,7 +70,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         payment_method: '',
         reference_number: '',
         bulk_amount: '',
-        selected_members: [] as string[],
+        selected_members: [] as (string | number)[],
     });
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -121,7 +121,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         })));
     };
 
-    const handleMemberSelection = (memberId: string, selected: boolean) => {
+    const handleMemberSelection = (memberId: string | number, selected: boolean) => {
         setMemberContributions(prev => prev.map(member => ({
             ...member,
             selected: member.member_id === memberId ? selected : member.selected,
@@ -132,7 +132,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         // Update selected members array
         const newSelectedMembers = selected 
             ? [...formData.selected_members, memberId]
-            : formData.selected_members.filter((id: string) => id !== memberId);
+            : formData.selected_members.filter((id: string | number) => id !== memberId);
         setFormData(prev => ({ ...prev, selected_members: newSelectedMembers }));
     };
 
@@ -150,7 +150,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         setFormData(prev => ({ ...prev, selected_members: selected ? allMemberIds : [] }));
     };
 
-    const handleMemberAmountChange = (memberId: string, amount: string) => {
+    const handleMemberAmountChange = (memberId: string | number, amount: string) => {
         setMemberContributions(prev => prev.map(member => ({
             ...member,
             amount: member.member_id === memberId ? Number(amount) || 0 : member.amount
@@ -160,22 +160,37 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
+        // Validate required fields
+        if (!formData.payment_method || formData.payment_method.trim() === '') {
+            setErrors({ payment_method: 'Payment method is required' });
+            console.log('Payment method validation failed:', formData.payment_method);
+            return;
+        }
+        
         const selectedContributions = memberContributions
             .filter(member => member.selected && member.amount > 0)
             .map(member => ({
-                member_id: member.member_id,
-                amount: member.amount,
+                member_id: String(member.member_id), // Ensure member_id is a string
+                amount: Number(member.amount),
                 payment_date: formData.payment_date,
                 payment_method: formData.payment_method,
-                reference_number: formData.reference_number
+                reference_number: formData.reference_number || ''
             }));
 
         if (selectedContributions.length === 0) {
+            setErrors({ general: 'Please select at least one member with a valid amount' });
             return;
         }
 
+        setErrors({});
         setProcessing(true);
         setProcessingProgress({ current: 0, total: selectedContributions.length });
+        
+        // Debug: Log the payload being sent
+        console.log('Sending payload:', {
+            contributions: selectedContributions
+        });
+        console.log('Payment method:', formData.payment_method);
         
         // Use the bulk endpoint
         router.post(route('health-insurance.contributions.bulk'), {
@@ -285,6 +300,13 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-base">Global Settings</CardTitle>
                             </CardHeader>
+                            {errors.general && (
+                                <div className="px-6 pb-3">
+                                    <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <p className="text-sm text-red-700 dark:text-red-300">{errors.general}</p>
+                                    </div>
+                                </div>
+                            )}
                             <CardContent className="space-y-3">
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                     <div>
@@ -298,12 +320,23 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="payment_method" className="text-sm">Payment Method</Label>
+                                        <Label htmlFor="payment_method" className="text-sm">
+                                            Payment Method <span className="text-red-500">*</span>
+                                        </Label>
                                         <Select
                                             value={formData.payment_method}
-                                            onValueChange={(value) => setFormData(prev => ({ ...prev, payment_method: value }))}
+                                            onValueChange={(value) => {
+                                                setFormData(prev => ({ ...prev, payment_method: value }));
+                                                if (errors.payment_method) {
+                                                    setErrors(prev => {
+                                                        const newErrors = { ...prev };
+                                                        delete newErrors.payment_method;
+                                                        return newErrors;
+                                                    });
+                                                }
+                                            }}
                                         >
-                                            <SelectTrigger className="h-9">
+                                            <SelectTrigger className={`h-9 ${errors.payment_method ? 'border-red-500' : ''}`}>
                                                 <SelectValue placeholder="Select method" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -313,6 +346,9 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                                 <SelectItem value="other">Other</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                        {errors.payment_method && (
+                                            <p className="text-xs text-red-500 mt-1">{errors.payment_method}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="reference_number" className="text-sm">Reference Number</Label>
@@ -519,7 +555,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                         </Button>
                         <Button 
                             type="submit" 
-                            disabled={processing || selectedCount === 0}
+                            disabled={processing || selectedCount === 0 || !formData.payment_method}
                             className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
                         >
                             {processing ? (
