@@ -25,7 +25,7 @@ import { format } from 'date-fns';
 import { Users, DollarSign, Calendar, CreditCard } from 'lucide-react';
 
 interface Member {
-    id: string | number;
+    id: string;
     name: string;
     date_of_birth: string;
     gender: string;
@@ -40,7 +40,7 @@ interface Member {
 
 interface Contribution {
     id: string;
-    member_id: string | number;
+    member_id: string;
     amount: number;
     payment_date: string;
     payment_method: string;
@@ -48,7 +48,7 @@ interface Contribution {
 }
 
 interface BulkContributionData {
-    member_id: string | number;
+    member_id: string;
     amount: number;
     selected: boolean;
 }
@@ -70,7 +70,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         payment_method: '',
         reference_number: '',
         bulk_amount: '',
-        selected_members: [] as (string | number)[],
+        selected_members: [] as string[],
     });
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -121,7 +121,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         })));
     };
 
-    const handleMemberSelection = (memberId: string | number, selected: boolean) => {
+    const handleMemberSelection = (memberId: string, selected: boolean) => {
         setMemberContributions(prev => prev.map(member => ({
             ...member,
             selected: member.member_id === memberId ? selected : member.selected,
@@ -132,7 +132,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         // Update selected members array
         const newSelectedMembers = selected 
             ? [...formData.selected_members, memberId]
-            : formData.selected_members.filter((id: string | number) => id !== memberId);
+            : formData.selected_members.filter((id: string) => id !== memberId);
         setFormData(prev => ({ ...prev, selected_members: newSelectedMembers }));
     };
 
@@ -150,7 +150,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         setFormData(prev => ({ ...prev, selected_members: selected ? allMemberIds : [] }));
     };
 
-    const handleMemberAmountChange = (memberId: string | number, amount: string) => {
+    const handleMemberAmountChange = (memberId: string, amount: string) => {
         setMemberContributions(prev => prev.map(member => ({
             ...member,
             amount: member.member_id === memberId ? Number(amount) || 0 : member.amount
@@ -170,7 +170,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         const selectedContributions = memberContributions
             .filter(member => member.selected && member.amount > 0)
             .map(member => ({
-                member_id: String(member.member_id), // Ensure member_id is a string
+                member_id: member.member_id, // member_id is already a string in this interface
                 amount: Number(member.amount),
                 payment_date: formData.payment_date,
                 payment_method: formData.payment_method,
