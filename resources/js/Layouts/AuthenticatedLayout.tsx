@@ -376,7 +376,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 <div className="px-4 py-2">
                                     <div className="font-medium text-base text-white/90">Events</div>
                                     <ResponsiveNavLink href={`/events?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                        Events
+                                        Manage Events
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Kiosk Terminal
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -431,7 +434,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 <div className="px-4 py-2">
                                     <div className="font-medium text-base text-white/90">Healthcare</div>
                                     <ResponsiveNavLink href={`/health-insurance?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                        Healthcare
+                                        Members
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Kiosk Terminal
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -443,6 +449,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     <div className="font-medium text-base text-white/90">Mortuary</div>
                                     <ResponsiveNavLink href={`/mortuary?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Members
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Kiosk Terminal
                                     </ResponsiveNavLink>
                                 </div>
                             </div>
@@ -1064,6 +1073,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/events?app=${appParam}`}>
                                                         Events
                                                     </Dropdown.Link>
+                                                    <Dropdown.Link href={`/kiosk/community?app=${appParam}`}>
+                                                        Kiosk Terminal
+                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -1234,6 +1246,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <Dropdown.Link href={`/health-insurance?app=${appParam}`}>
                                                         Members
                                                     </Dropdown.Link>
+                                                    <Dropdown.Link href={`/kiosk/community?app=${appParam}`}>
+                                                        Kiosk Terminal
+                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -1267,6 +1282,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 <Dropdown.Content>
                                                     <Dropdown.Link href={`/mortuary?app=${appParam}`}>
                                                         Members
+                                                    </Dropdown.Link>
+                                                    <Dropdown.Link href={`/kiosk/community?app=${appParam}`}>
+                                                        Kiosk Terminal
                                                     </Dropdown.Link>
                                                 </Dropdown.Content> 
                                             </Dropdown>

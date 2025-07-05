@@ -436,7 +436,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={processing ? undefined : onOpenChange}>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -458,6 +458,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         variant="outline"
                                         className="h-12"
                                         onClick={() => setShowContactSearch(true)}
+                                        disabled={processing}
                                     >
                                         <UserPlus className="mr-2 h-4 w-4" />
                                         Search Contacts
@@ -471,6 +472,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => setShowContactSearch(false)}
+                                                disabled={processing}
                                             >
                                                 Cancel
                                             </Button>
@@ -478,6 +480,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         <Select
                                             value={selectedContacts[0] || ''}
                                             onValueChange={(value) => handleContactSelect([value])}
+                                            disabled={processing}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select a contact" />
@@ -498,6 +501,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                     variant="outline"
                                     className="h-12"
                                     onClick={() => setShowCsvImport(true)}
+                                    disabled={processing}
                                 >
                                     <Upload className="mr-2 h-4 w-4" />
                                     Import CSV
@@ -508,6 +512,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                     variant="outline"
                                     className="h-12"
                                     onClick={downloadCsvTemplate}
+                                    disabled={processing}
                                 >
                                     <Download className="mr-2 h-4 w-4" />
                                     Template
@@ -526,6 +531,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => setShowCsvImport(false)}
+                                        disabled={processing}
                                     >
                                         Close
                                     </Button>
@@ -541,6 +547,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                         onChange={handleCsvUpload}
                                         ref={fileInputRef}
                                         className="h-9"
+                                        disabled={processing}
                                     />
                                 </div>
                                 
@@ -560,6 +567,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                             fileInputRef.current.value = '';
                                                         }
                                                     }}
+                                                    disabled={processing}
                                                 >
                                                     Clear
                                                 </Button>
@@ -567,6 +575,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                     type="button"
                                                     size="sm"
                                                     onClick={importCsvData}
+                                                    disabled={processing}
                                                 >
                                                     Import to Form
                                                 </Button>
@@ -643,6 +652,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 size="sm"
                                                 onClick={() => removeMember(index)}
                                                 className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                                disabled={processing}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -658,6 +668,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 value={member.name}
                                                 onChange={(e) => updateMember(index, 'name', e.target.value)}
                                                 placeholder="Enter full name"
+                                                disabled={processing}
                                             />
                                         </div>
                                         <div>
@@ -667,6 +678,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 type="date"
                                                 value={member.date_of_birth}
                                                 onChange={(e) => updateMember(index, 'date_of_birth', e.target.value)}
+                                                disabled={processing}
                                             />
                                         </div>
                                     </div>
@@ -677,6 +689,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                             <Select
                                                 value={member.gender}
                                                 onValueChange={(value) => updateMember(index, 'gender', value)}
+                                                disabled={processing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select gender" />
@@ -695,6 +708,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 value={member.contact_number}
                                                 onChange={(e) => updateMember(index, 'contact_number', e.target.value)}
                                                 placeholder="Enter contact number"
+                                                disabled={processing}
                                             />
                                         </div>
                                     </div>
@@ -706,6 +720,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                             value={member.address}
                                             onChange={(e) => updateMember(index, 'address', e.target.value)}
                                             placeholder="Enter address"
+                                            disabled={processing}
                                         />
                                     </div>
 
@@ -717,6 +732,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 type="date"
                                                 value={member.membership_start_date}
                                                 onChange={(e) => updateMember(index, 'membership_start_date', e.target.value)}
+                                                disabled={processing}
                                             />
                                         </div>
                                         <div>
@@ -729,6 +745,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 value={member.contribution_amount}
                                                 onChange={(e) => updateMember(index, 'contribution_amount', e.target.value)}
                                                 placeholder="Enter premium amount"
+                                                disabled={processing}
                                             />
                                         </div>
                                     </div>
@@ -739,6 +756,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                             <Select
                                                 value={member.contribution_frequency}
                                                 onValueChange={(value) => updateMember(index, 'contribution_frequency', value)}
+                                                disabled={processing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select frequency" />
@@ -755,6 +773,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                             <Select
                                                 value={member.status}
                                                 onValueChange={(value) => updateMember(index, 'status', value)}
+                                                disabled={processing}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
@@ -772,6 +791,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                                                 value={member.group}
                                                 onChange={(e) => updateMember(index, 'group', e.target.value)}
                                                 placeholder="Enter group name"
+                                                disabled={processing}
                                             />
                                         </div>
                                     </div>
@@ -785,6 +805,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                         variant="outline"
                         onClick={addMember}
                         className="w-full"
+                        disabled={processing}
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Add Another Member
@@ -795,6 +816,7 @@ export default function AddMemberDialog({ open, onOpenChange, onMemberAdded, app
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
+                            disabled={processing}
                         >
                             Cancel
                         </Button>

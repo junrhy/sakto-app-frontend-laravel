@@ -9,7 +9,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2, Search, Eye, List, Users } from 'lucide-react';
+import { Edit, Trash2, Search, Eye, List, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -61,6 +61,11 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'list' | 'group'>('list');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [selectedGroup, setSelectedGroup] = useState<string>('all');
+    const [groupCurrentPage, setGroupCurrentPage] = useState(1);
+    const [groupItemsPerPage, setGroupItemsPerPage] = useState(10);
 
     const handleSort = (field: keyof Member) => {
         if (field === sortField) {
@@ -123,6 +128,37 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
         );
     });
 
+    // Pagination logic
+    const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentMembers = filteredMembers.slice(startIndex, endIndex);
+
+    // Reset to first page when search query changes
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+        setGroupCurrentPage(1);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (newItemsPerPage: number) => {
+        setItemsPerPage(newItemsPerPage);
+        setCurrentPage(1);
+    };
+
+    const handleGroupPageChange = (page: number) => {
+        setGroupCurrentPage(page);
+    };
+
+    const handleGroupItemsPerPageChange = (newItemsPerPage: number) => {
+        setGroupItemsPerPage(newItemsPerPage);
+        setGroupCurrentPage(1);
+    };
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case 'active':
@@ -142,6 +178,277 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
         acc[group].push(member);
         return acc;
     }, {} as Record<string, typeof filteredMembers>);
+
+    // Get unique group names for the filter dropdown
+    const groupNames = Object.keys(groupedMembers).sort();
+
+    // Filter groups based on selected group
+    const filteredGroupedMembers = selectedGroup === 'all' 
+        ? groupedMembers 
+        : { [selectedGroup]: groupedMembers[selectedGroup] || [] };
+
+    // Group pagination logic
+    const getGroupPaginationData = () => {
+        if (selectedGroup === 'all') {
+            return { totalPages: 0, startIndex: 0, endIndex: 0, currentGroupMembers: [] };
+        }
+
+        const groupMembers = groupedMembers[selectedGroup] || [];
+        const totalPages = Math.ceil(groupMembers.length / groupItemsPerPage);
+        const startIndex = (groupCurrentPage - 1) * groupItemsPerPage;
+        const endIndex = startIndex + groupItemsPerPage;
+        const currentGroupMembers = groupMembers.slice(startIndex, endIndex);
+
+        return { totalPages, startIndex, endIndex, currentGroupMembers };
+    };
+
+    const { totalPages: groupTotalPages, startIndex: groupStartIndex, endIndex: groupEndIndex, currentGroupMembers } = getGroupPaginationData();
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const pages = [];
+            const maxVisiblePages = 5;
+            
+            if (totalPages <= maxVisiblePages) {
+                for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                if (currentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = totalPages - 3; i <= totalPages; i++) {
+                        pages.push(i);
+                    }
+                } else {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalPages);
+                }
+            }
+            
+            return pages;
+        };
+
+        return (
+            <div className="flex items-center justify-between px-2 py-4">
+                <div className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300">
+                    <span>
+                        Showing {startIndex + 1} to {Math.min(endIndex, filteredMembers.length)} of {filteredMembers.length} members
+                    </span>
+                    <span className="text-slate-400">|</span>
+                    <span>Items per page:</span>
+                    <select
+                        value={itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                        className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+                
+                <div className="flex items-center space-x-1">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    {getPageNumbers().map((page, index) => (
+                        <div key={index}>
+                            {page === '...' ? (
+                                <span className="px-3 py-2 text-slate-500 dark:text-slate-400">...</span>
+                            ) : (
+                                <Button
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => handlePageChange(page as number)}
+                                    className={`h-8 w-8 p-0 ${
+                                        currentPage === page
+                                            ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                    }`}
+                                >
+                                    {page}
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                    
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
+    const renderGroupPagination = () => {
+        if (selectedGroup === 'all' || groupTotalPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const pages = [];
+            const maxVisiblePages = 5;
+            
+            if (groupTotalPages <= maxVisiblePages) {
+                for (let i = 1; i <= groupTotalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                if (groupCurrentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(groupTotalPages);
+                } else if (groupCurrentPage >= groupTotalPages - 2) {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = groupTotalPages - 3; i <= groupTotalPages; i++) {
+                        pages.push(i);
+                    }
+                } else {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = groupCurrentPage - 1; i <= groupCurrentPage + 1; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(groupTotalPages);
+                }
+            }
+            
+            return pages;
+        };
+
+        const groupMembers = groupedMembers[selectedGroup] || [];
+
+        return (
+            <div className="flex items-center justify-between px-2 py-4">
+                <div className="flex items-center space-x-2 text-sm text-slate-700 dark:text-slate-300">
+                    <span>
+                        Showing {groupStartIndex + 1} to {Math.min(groupEndIndex, groupMembers.length)} of {groupMembers.length} members in {selectedGroup}
+                    </span>
+                    <span className="text-slate-400">|</span>
+                    <span>Items per page:</span>
+                    <select
+                        value={groupItemsPerPage}
+                        onChange={(e) => handleGroupItemsPerPageChange(Number(e.target.value))}
+                        className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+                
+                <div className="flex items-center space-x-1">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGroupPageChange(1)}
+                        disabled={groupCurrentPage === 1}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGroupPageChange(groupCurrentPage - 1)}
+                        disabled={groupCurrentPage === 1}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    {getPageNumbers().map((page, index) => (
+                        <div key={index}>
+                            {page === '...' ? (
+                                <span className="px-3 py-2 text-slate-500 dark:text-slate-400">...</span>
+                            ) : (
+                                <Button
+                                    variant={groupCurrentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => handleGroupPageChange(page as number)}
+                                    className={`h-8 w-8 p-0 ${
+                                        groupCurrentPage === page
+                                            ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                                            : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                    }`}
+                                >
+                                    {page}
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                    
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGroupPageChange(groupCurrentPage + 1)}
+                        disabled={groupCurrentPage === groupTotalPages}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleGroupPageChange(groupTotalPages)}
+                        disabled={groupCurrentPage === groupTotalPages}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
+                        <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        );
+    };
 
     const renderListView = () => (
         <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
@@ -200,7 +507,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {filteredMembers.map((member) => (
+                    {currentMembers.map((member) => (
                         <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
                             <TableCell className="font-medium text-slate-900 dark:text-slate-100">{member.name}</TableCell>
                             <TableCell className="text-slate-700 dark:text-slate-300">
@@ -266,12 +573,35 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                     ))}
                 </TableBody>
             </Table>
+            {renderPagination()}
         </div>
     );
 
     const renderGroupView = () => (
         <div className="space-y-6">
-            {Object.entries(groupedMembers).map(([group, members]) => (
+            {/* Group Filter */}
+            <div className="flex items-center space-x-4">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Filter by Group:
+                </label>
+                <select
+                    value={selectedGroup}
+                    onChange={(e) => {
+                        setSelectedGroup(e.target.value);
+                        setGroupCurrentPage(1); // Reset to first page when changing groups
+                    }}
+                    className="border border-slate-300 dark:border-slate-600 rounded px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
+                >
+                    <option value="all">All Groups ({filteredMembers.length} members)</option>
+                    {groupNames.map((groupName) => (
+                        <option key={groupName} value={groupName}>
+                            {groupName} ({groupedMembers[groupName]?.length || 0} members)
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {Object.entries(filteredGroupedMembers).map(([group, members]) => (
                 <div key={group} className="space-y-3">
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-2">{group}</h3>
                     <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
@@ -290,7 +620,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {members.map((member) => (
+                                {(selectedGroup === 'all' ? members : currentGroupMembers).map((member) => (
                                     <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
                                         <TableCell className="font-medium text-slate-900 dark:text-slate-100">{member.name}</TableCell>
                                         <TableCell className="text-slate-700 dark:text-slate-300">
@@ -356,9 +686,19 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                                 ))}
                             </TableBody>
                         </Table>
+                        {renderGroupPagination()}
                     </div>
                 </div>
             ))}
+
+            {/* Show message when no groups match the filter */}
+            {Object.keys(filteredGroupedMembers).length === 0 && (
+                <div className="text-center py-8">
+                    <p className="text-slate-500 dark:text-slate-400">
+                        No members found in the selected group.
+                    </p>
+                </div>
+            )}
         </div>
     );
 
@@ -370,7 +710,7 @@ export default function MembersList({ members, onMemberSelect, appCurrency }: Pr
                     <Input
                         placeholder="Search members..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={handleSearchChange}
                         className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
                     />
                 </div>
