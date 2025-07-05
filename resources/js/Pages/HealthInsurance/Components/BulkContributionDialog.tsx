@@ -192,11 +192,23 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         });
         console.log('Payment method:', formData.payment_method);
         
-        // Use the bulk endpoint
-        router.post(route('health-insurance.contributions.bulk'), {
-            contributions: selectedContributions
-        }, {
-            onSuccess: () => {
+        // Use fetch instead of Inertia router to handle JSON responses
+        fetch(route('health-insurance.contributions.bulk'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                contributions: selectedContributions
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response received:', data);
+            
+            if (data.success) {
                 onOpenChange(false);
                 setFormData({
                     payment_date: format(new Date(), 'yyyy-MM-dd'),
@@ -217,28 +229,17 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                 
                 // Show success message
                 console.log(`Successfully recorded ${selectedContributions.length} contributions`);
-            },
-            onError: (errors) => {
-                onOpenChange(false);
-                setFormData({
-                    payment_date: format(new Date(), 'yyyy-MM-dd'),
-                    payment_method: '',
-                    reference_number: '',
-                    bulk_amount: '',
-                    selected_members: []
-                });
-                setProcessingProgress({ current: 0, total: 0 });
-                setProcessing(false);
-                
-                // Still add the contributions to the UI (they might have been partially successful)
-                const successfulContributions = selectedContributions.map(c => ({
-                    id: '',
-                    ...c
-                }));
-                onContributionsAdded(successfulContributions);
-                
-                console.error('Bulk contribution errors:', errors);
+            } else {
+                throw new Error(data.message || 'Failed to record contributions');
             }
+        })
+        .catch(error => {
+            console.error('Bulk contribution error:', error);
+            setProcessing(false);
+            setProcessingProgress({ current: 0, total: 0 });
+            
+            // Show error message
+            setErrors({ general: error.message || 'Failed to record contributions' });
         });
     };
 
