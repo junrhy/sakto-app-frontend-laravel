@@ -9,10 +9,11 @@ import {
 } from '@/Components/ui/table';
 import { Button } from '@/Components/ui/button';
 import { format, addMonths, addQuarters, addYears, isBefore, isAfter, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
-import { Plus, Table as TableIcon, Calendar, Search } from 'lucide-react';
+import { Plus, Table as TableIcon, Calendar, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter } from 'lucide-react';
 import AddContributionDialog from './AddContributionDialog';
 import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 interface Member {
     id: string;
@@ -49,6 +50,9 @@ export default function MissingContributionsList({ members, contributions, appCu
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
     const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+    const [selectedGroup, setSelectedGroup] = useState<string>('all');
 
     const getExpectedContributionDates = (member: Member) => {
         const startDate = new Date(member.membership_start_date);
@@ -115,86 +119,227 @@ export default function MissingContributionsList({ members, contributions, appCu
         .filter(member => member.missingContributions.length > 0)
         .sort((a, b) => b.missingContributions.length - a.missingContributions.length);
 
+    // Get unique groups for filter dropdown
+    const groups = ['all', ...Array.from(new Set(membersWithMissingContributions.map(m => m.group).filter(Boolean)))].sort();
+
     const filteredMembers = membersWithMissingContributions.filter(member => {
         const searchLower = searchQuery.toLowerCase();
-        
-        return (
+        const matchesSearch = (
             member.name.toLowerCase().includes(searchLower) ||
             member.contribution_frequency.toLowerCase().includes(searchLower) ||
             member.status.toLowerCase().includes(searchLower) ||
             (member.group && member.group.toLowerCase().includes(searchLower))
         );
+        const matchesGroup = selectedGroup === 'all' || member.group === selectedGroup;
+        
+        return matchesSearch && matchesGroup;
     });
 
-    const renderSummaryView = () => (
-        <Table>
-            <TableHeader>
-                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Contribution Frequency</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Expected Amount</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Start Date</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Missing Contributions</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Total Due</TableHead>
-                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {filteredMembers.map((member) => (
-                    <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
-                        <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                            {member.name}
-                        </TableCell>
-                        <TableCell className="text-slate-700 dark:text-slate-300">
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                {member.group || 'No Group'}
-                            </span>
-                        </TableCell>
-                        <TableCell className="capitalize text-slate-700 dark:text-slate-300">
-                            {member.contribution_frequency}
-                        </TableCell>
-                        <TableCell className="text-slate-700 dark:text-slate-300">
-                            <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
-                        </TableCell>
-                        <TableCell className="text-slate-700 dark:text-slate-300">
-                            {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <span className="text-red-600 dark:text-orange-300 font-medium">
-                                    {member.missingContributions.length} payments
-                                </span>
-                                <Button
-                                    variant="link"
-                                    size="sm"
-                                    onClick={() => setViewMode('calendar')}
-                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200 transition-colors duration-200"
-                                >
-                                    View Details
-                                </Button>
+    // Pagination logic
+    const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
+
+    // Reset to first page when search query or group filter changes
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+    };
+
+    const handleGroupChange = (value: string) => {
+        setSelectedGroup(value);
+        setCurrentPage(1);
+    };
+
+    const goToPage = (page: number) => {
+        setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    };
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const pages = [];
+            const maxVisiblePages = 5;
+            
+            if (totalPages <= maxVisiblePages) {
+                for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                if (currentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = totalPages - 3; i <= totalPages; i++) {
+                        pages.push(i);
+                    }
+                } else {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalPages);
+                }
+            }
+            
+            return pages;
+        };
+
+        return (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div className="text-sm text-slate-700 dark:text-slate-300">
+                    Showing {startIndex + 1} to {Math.min(endIndex, filteredMembers.length)} of {filteredMembers.length} members
+                </div>
+                
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                    >
+                        <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                        {getPageNumbers().map((page, index) => (
+                            <div key={index}>
+                                {page === '...' ? (
+                                    <span className="px-2 py-1 text-slate-500 dark:text-slate-400">...</span>
+                                ) : (
+                                    <Button
+                                        variant={currentPage === page ? "default" : "outline"}
+                                        size="sm"
+                                        onClick={() => goToPage(page as number)}
+                                        className={`h-8 w-8 p-0 ${
+                                            currentPage === page 
+                                                ? "bg-blue-600 text-white hover:bg-blue-700" 
+                                                : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                        }`}
+                                    >
+                                        {page}
+                                    </Button>
+                                )}
                             </div>
-                        </TableCell>
-                        <TableCell className="font-medium text-red-600 dark:text-orange-300">
-                            {appCurrency.symbol}{(Number(member.contribution_amount) * member.missingContributions.length).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleAddContribution(member)}
-                                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Contribution
-                            </Button>
-                        </TableCell>
+                        ))}
+                    </div>
+                    
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                    >
+                        <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
+    const renderSummaryView = () => (
+        <div>
+            <Table>
+                <TableHeader>
+                    <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Contribution Frequency</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Expected Amount</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Start Date</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Missing Contributions</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Total Due</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {paginatedMembers.map((member) => (
+                        <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                                {member.name}
+                            </TableCell>
+                            <TableCell className="text-slate-700 dark:text-slate-300">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                    {member.group || 'Ungrouped'}
+                                </span>
+                            </TableCell>
+                            <TableCell className="capitalize text-slate-700 dark:text-slate-300">
+                                {member.contribution_frequency}
+                            </TableCell>
+                            <TableCell className="text-slate-700 dark:text-slate-300">
+                                <span className="text-blue-600 dark:text-blue-300 font-semibold">
+                                    {appCurrency.symbol}{Number(member.contribution_amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            </TableCell>
+                            <TableCell className="text-slate-700 dark:text-slate-300">
+                                {format(new Date(member.membership_start_date), 'MMM d, yyyy')}
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-red-600 dark:text-orange-300 font-medium">
+                                        {member.missingContributions.length} payments
+                                    </span>
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        onClick={() => setViewMode('calendar')}
+                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200 transition-colors duration-200"
+                                    >
+                                        View Details
+                                    </Button>
+                                </div>
+                            </TableCell>
+                            <TableCell className="font-medium text-red-600 dark:text-orange-300">
+                                {appCurrency.symbol}{(Number(member.contribution_amount) * member.missingContributions.length).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleAddContribution(member)}
+                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Contribution
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+            {renderPagination()}
+        </div>
     );
 
     const renderCalendarView = () => {
@@ -228,6 +373,7 @@ export default function MissingContributionsList({ members, contributions, appCu
                             <TableHeader>
                                 <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
                                     <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                                    <TableHead className="sticky left-[200px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
                                     {months.map(month => (
                                         <TableHead key={month.toISOString()} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
                                             {format(month, 'MMM yyyy')}
@@ -240,6 +386,11 @@ export default function MissingContributionsList({ members, contributions, appCu
                                     <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
                                         <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
+                                        </TableCell>
+                                        <TableCell className="sticky left-[200px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                {member.group || 'Ungrouped'}
+                                            </span>
                                         </TableCell>
                                         {months.map(month => {
                                             const hasContribution = member.missingContributions.some(
@@ -295,6 +446,7 @@ export default function MissingContributionsList({ members, contributions, appCu
                             <TableHeader>
                                 <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
                                     <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                                    <TableHead className="sticky left-[200px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
                                     {years.map(year => (
                                         <TableHead key={year} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
                                             {year}
@@ -307,6 +459,11 @@ export default function MissingContributionsList({ members, contributions, appCu
                                     <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
                                         <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
+                                        </TableCell>
+                                        <TableCell className="sticky left-[200px] bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                {member.group || 'Ungrouped'}
+                                            </span>
                                         </TableCell>
                                         {years.map(year => {
                                             const hasContribution = member.missingContributions.some(
@@ -361,15 +518,32 @@ export default function MissingContributionsList({ members, contributions, appCu
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
-                    <Input
-                        placeholder="Search members..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
-                    />
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
+                        <Input
+                            placeholder="Search members..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
+                        />
+                    </div>
+                    <div className="w-full sm:w-48">
+                        <Select value={selectedGroup} onValueChange={handleGroupChange}>
+                            <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500">
+                                <Filter className="h-4 w-4 mr-2" />
+                                <SelectValue placeholder="Filter by group" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {groups.map((group) => (
+                                    <SelectItem key={group} value={group}>
+                                        {group === 'all' ? 'All Groups' : group}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'summary' | 'calendar')}>
                     <TabsList className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
@@ -395,15 +569,14 @@ export default function MissingContributionsList({ members, contributions, appCu
                 {viewMode === 'summary' ? renderSummaryView() : renderCalendarView()}
             </div>
 
-            {isAddContributionOpen && onContributionAdded && (
-                <AddContributionDialog
-                    isOpen={isAddContributionOpen}
-                    onClose={() => setIsAddContributionOpen(false)}
-                    members={members}
-                    appCurrency={appCurrency}
-                    onContributionAdded={handleContributionAdded}
-                />
-            )}
+            <AddContributionDialog
+                open={isAddContributionOpen}
+                onOpenChange={setIsAddContributionOpen}
+                members={members}
+                appCurrency={appCurrency}
+                onContributionAdded={handleContributionAdded}
+                selectedMember={selectedMember}
+            />
         </div>
     );
 } 

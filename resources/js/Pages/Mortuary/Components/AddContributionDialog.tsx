@@ -1,170 +1,246 @@
-import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/Components/ui/select';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/Components/ui/popover';
+import React from 'react';
+import { format } from 'date-fns';
 
 interface Member {
     id: string;
     name: string;
+    date_of_birth: string;
+    gender: string;
+    contact_number: string;
+    address: string;
+    membership_start_date: string;
+    contribution_amount: number;
+    contribution_frequency: string;
+    status: string;
+}
+
+interface Contribution {
+    id: string;
+    member_id: string;
+    amount: number;
+    payment_date: string;
+    payment_method: string;
+    reference_number: string;
 }
 
 interface Props {
-    isOpen: boolean;
-    onClose: () => void;
-    onContributionAdded: (contribution: any) => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
     members: Member[];
     appCurrency: {
         code: string;
         symbol: string;
     };
+    onContributionAdded: (contribution: Contribution) => void;
+    selectedMember?: Member | null;
 }
 
-export default function AddContributionDialog({ isOpen, onClose, onContributionAdded, members, appCurrency }: Props) {
-    const [formData, setFormData] = useState({
-        member_id: '',
-        amount: '',
-        payment_date: '',
+export default function AddContributionDialog({ open, onOpenChange, members, appCurrency, onContributionAdded, selectedMember }: Props) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        member_id: selectedMember?.id || '',
+        amount: selectedMember?.contribution_amount?.toString() || '',
+        payment_date: format(new Date(), 'yyyy-MM-dd'),
         payment_method: '',
-        reference_number: ''
+        reference_number: '',
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Reset form when dialog opens/closes
-    useEffect(() => {
-        if (!isOpen) {
-            setFormData({
-                member_id: '',
-                amount: '',
-                payment_date: '',
-                payment_method: '',
-                reference_number: ''
-            });
+    // Update form data when selectedMember prop changes
+    React.useEffect(() => {
+        if (selectedMember) {
+            setData('member_id', selectedMember.id);
+            setData('amount', selectedMember.contribution_amount?.toString() || '');
         }
-    }, [isOpen]);
+    }, [selectedMember, setData]);
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const filteredMembers = members.filter(member => 
+        member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const [openMemberPopover, setOpenMemberPopover] = useState(false);
+
+    // Get the selected member object based on the form data
+    const selectedMemberFromForm = members.find(member => member.id === data.member_id);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        if (!formData.member_id) return;
-        router.post(`/mortuary/contributions/${formData.member_id}`, formData, {
+        post(route('mortuary.contributions.store', { memberId: data.member_id }), {
             onSuccess: () => {
-                setFormData({
-                    member_id: '',
-                    amount: '',
-                    payment_date: '',
-                    payment_method: '',
-                    reference_number: ''
+                onOpenChange(false);
+                reset();
+                onContributionAdded({
+                    id: '', // This will be set by the backend
+                    member_id: data.member_id,
+                    amount: Number(data.amount),
+                    payment_date: data.payment_date,
+                    payment_method: data.payment_method,
+                    reference_number: data.reference_number
                 });
-                onClose();
-                setIsSubmitting(false);
             },
-            onError: () => {
-                setIsSubmitting(false);
-            }
         });
-    };
-
-    const handleInputChange = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleMemberSelect = (memberId: string) => {
-        setFormData(prev => ({ ...prev, member_id: memberId }));
-    };
-
-    const handleClose = () => {
-        setFormData({
-            member_id: '',
-            amount: '',
-            payment_date: '',
-            payment_method: '',
-            reference_number: ''
-        });
-        onClose();
-    };
-
-    // Helper function to get selected member name
-    const getSelectedMemberName = () => {
-        if (!formData.member_id) return '';
-        const selectedMember = members.find(member => member.id === formData.member_id);
-        return selectedMember ? selectedMember.name : '';
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="max-w-[95vw] sm:max-w-md mx-4">
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Record Contribution</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <Label htmlFor="member_id">Member</Label>
-                        <Select 
-                            value={formData.member_id} 
-                            onValueChange={handleMemberSelect}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select member">
-                                    {getSelectedMemberName()}
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {members.map(member => (
-                                    <SelectItem key={member.id} value={member.id}>
-                                        {member.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Popover open={openMemberPopover} onOpenChange={setOpenMemberPopover}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openMemberPopover}
+                                    className="w-full justify-between"
+                                    onClick={() => setOpenMemberPopover((open) => !open)}
+                                >
+                                    {selectedMemberFromForm ? selectedMemberFromForm.name : 'Select member'}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent 
+                                className="p-0 w-[var(--radix-popover-trigger-width)] z-50"
+                                sideOffset={4}
+                            >
+                                <div className="p-2">
+                                    <Input
+                                        placeholder="Search member..."
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                        }}
+                                        className="mb-2"
+                                    />
+                                    <div className="max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+                                        {filteredMembers.length === 0 ? (
+                                            <div className="p-2 text-sm text-muted-foreground">No members found</div>
+                                        ) : (
+                                            filteredMembers.map((member) => (
+                                                <div
+                                                    key={member.id}
+                                                    onClick={() => {
+                                                        setData('member_id', member.id);
+                                                        setData('amount', member.contribution_amount?.toString() || '');
+                                                        setOpenMemberPopover(false);
+                                                        setSearchQuery(''); // Clear search after selection
+                                                    }}
+                                                    className="p-2 hover:bg-accent cursor-pointer rounded-sm"
+                                                >
+                                                    {member.name}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                        {errors.member_id && (
+                            <p className="text-sm text-red-500">{errors.member_id}</p>
+                        )}
                     </div>
+
                     <div>
                         <Label htmlFor="amount">Amount ({appCurrency.symbol})</Label>
                         <Input
                             id="amount"
                             type="number"
                             step="0.01"
-                            min="0"
-                            value={formData.amount}
-                            onChange={e => handleInputChange('amount', e.target.value)}
-                            required
+                            value={data.amount}
+                            onChange={(e) => setData('amount', e.target.value)}
+                            placeholder="Enter amount"
+                            className={errors.amount ? "border-red-500" : ""}
                         />
+                        {errors.amount && (
+                            <p className="text-sm text-red-500">{errors.amount}</p>
+                        )}
                     </div>
+
                     <div>
                         <Label htmlFor="payment_date">Payment Date</Label>
                         <Input
                             id="payment_date"
                             type="date"
-                            value={formData.payment_date}
-                            onChange={e => handleInputChange('payment_date', e.target.value)}
-                            required
+                            value={data.payment_date}
+                            onChange={(e) => setData('payment_date', e.target.value)}
                         />
+                        {errors.payment_date && (
+                            <p className="text-sm text-red-500">{errors.payment_date}</p>
+                        )}
                     </div>
+
                     <div>
                         <Label htmlFor="payment_method">Payment Method</Label>
-                        <Input
-                            id="payment_method"
-                            value={formData.payment_method}
-                            onChange={e => handleInputChange('payment_method', e.target.value)}
-                            required
-                        />
+                        <Select
+                            value={data.payment_method}
+                            onValueChange={(value) => setData('payment_method', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select payment method" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="cash">Cash</SelectItem>
+                                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                <SelectItem value="check">Check</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.payment_method && (
+                            <p className="text-sm text-red-500">{errors.payment_method}</p>
+                        )}
                     </div>
+
                     <div>
-                        <Label htmlFor="reference_number">Reference Number (Optional)</Label>
+                        <Label htmlFor="reference_number">Reference Number</Label>
                         <Input
                             id="reference_number"
-                            value={formData.reference_number}
-                            onChange={e => handleInputChange('reference_number', e.target.value)}
+                            type="text"
+                            value={data.reference_number}
+                            onChange={(e) => setData('reference_number', e.target.value)}
+                            placeholder="Enter reference number"
                         />
+                        {errors.reference_number && (
+                            <p className="text-sm text-red-500">{errors.reference_number}</p>
+                        )}
                     </div>
-                    <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
-                        <Button type="button" variant="outline" onClick={handleClose} className="w-full sm:w-auto">
+
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                            {isSubmitting ? 'Recording...' : 'Record Contribution'}
+                        <Button type="submit" disabled={processing}>
+                            Record Contribution
                         </Button>
                     </div>
                 </form>

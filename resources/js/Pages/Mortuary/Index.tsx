@@ -212,7 +212,10 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                 {activeTab === 'contributions' && (
                                     <>
                                         <Button 
-                                            onClick={() => setIsAddContributionOpen(true)} 
+                                            onClick={() => {
+                                                console.log('Button clicked, setting isAddContributionOpen to true');
+                                                setIsAddContributionOpen(true);
+                                            }} 
                                             size="sm"
                                             className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 dark:text-white transition-all duration-200 shadow-sm hover:shadow-md text-sm px-3 py-1.5"
                                         >
@@ -325,6 +328,7 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                 <TabsContent value="group-contributions">
                                     <GroupContributionsList 
                                         members={members}
+                                        contributions={contributions}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
@@ -342,8 +346,8 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
             />
 
             <AddContributionDialog
-                isOpen={isAddContributionOpen}
-                onClose={() => setIsAddContributionOpen(false)}
+                open={isAddContributionOpen}
+                onOpenChange={setIsAddContributionOpen}
                 members={members}
                 appCurrency={appCurrency}
                 onContributionAdded={handleAddContribution}

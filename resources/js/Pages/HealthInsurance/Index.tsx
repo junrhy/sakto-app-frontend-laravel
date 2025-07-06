@@ -325,6 +325,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                                 <TabsContent value="group-contributions">
                                     <GroupContributionsList 
                                         members={members}
+                                        contributions={contributions}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>

@@ -68,12 +68,23 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
         reference_number: '',
     });
 
+    // Update form data when selectedMember prop changes
+    React.useEffect(() => {
+        if (selectedMember) {
+            setData('member_id', selectedMember.id);
+            setData('amount', selectedMember.contribution_amount?.toString() || '');
+        }
+    }, [selectedMember, setData]);
+
     const [searchQuery, setSearchQuery] = useState('');
     const filteredMembers = members.filter(member => 
         member.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const [openMemberPopover, setOpenMemberPopover] = useState(false);
+
+    // Get the selected member object based on the form data
+    const selectedMemberFromForm = members.find(member => member.id === data.member_id);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -112,7 +123,7 @@ export default function AddContributionDialog({ open, onOpenChange, members, app
                                     className="w-full justify-between"
                                     onClick={() => setOpenMemberPopover((open) => !open)}
                                 >
-                                    {selectedMember ? selectedMember.name : 'Select member'}
+                                    {selectedMemberFromForm ? selectedMemberFromForm.name : 'Select member'}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent 

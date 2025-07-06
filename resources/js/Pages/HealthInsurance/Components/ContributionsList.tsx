@@ -170,9 +170,15 @@ export default function ContributionsList({ contributions, members, appCurrency 
             years.push(year);
         }
 
+        // Filter members based on search query for calendar view
+        const filteredMembers = members.filter(member => {
+            if (!searchQuery.trim()) return true;
+            return member.name.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+
         const renderMonthlyTable = () => {
             // Filter members to only show those with monthly or quarterly frequency
-            const monthlyMembers = members.filter(member => 
+            const monthlyMembers = filteredMembers.filter(member => 
                 member.contribution_frequency.toLowerCase() === 'monthly' || 
                 member.contribution_frequency.toLowerCase() === 'quarterly'
             );
@@ -269,7 +275,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
 
         const renderAnnualTable = () => {
             // Filter members to only show those with annual frequency
-            const annualMembers = members.filter(member => 
+            const annualMembers = filteredMembers.filter(member => 
                 member.contribution_frequency.toLowerCase() === 'annually'
             );
 
@@ -446,7 +452,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 >
                                     Reset to current year
                                 </Button>
-                            )}
+                                                        )}
                         </div>
                     )}
                 </div>
