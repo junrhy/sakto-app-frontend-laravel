@@ -250,7 +250,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[900px] max-h-[85vh] flex flex-col">
+            <DialogContent className="sm:max-w-[1400px] max-h-[90vh] flex flex-col">
                 <DialogHeader className="flex-shrink-0">
                     <DialogTitle className="flex items-center gap-2">
                         <Users className="w-5 h-5" />
@@ -260,275 +260,317 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                     <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                        {/* Summary Card */}
-                        {selectedCount > 0 && (
-                            <Card className="border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
-                                <CardContent className="p-3">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-center">
-                                                <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                                                    {selectedCount}
-                                                </div>
-                                                <div className="text-xs text-green-600 dark:text-green-400">
-                                                    Members Selected
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <div className="text-xl font-bold text-green-700 dark:text-green-300">
-                                                    {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount).toFixed(2) : '0.00'}
-                                                </div>
-                                                <div className="text-xs text-green-600 dark:text-green-400">
-                                                    Total Amount
-                                                </div>
+                        {/* Two Column Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Left Column - Global Settings */}
+                            <div className="space-y-4">
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base">Global Settings</CardTitle>
+                                    </CardHeader>
+                                    {errors.general && (
+                                        <div className="px-6 pb-3">
+                                            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                                <p className="text-sm text-red-700 dark:text-red-300">{errors.general}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-xs text-green-600 dark:text-green-400">
-                                                Average per member
-                                            </div>
-                                            <div className="text-sm font-semibold text-green-700 dark:text-green-300">
-                                                {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount / selectedCount).toFixed(2) : '0.00'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-
-                        {/* Global Settings */}
-                        <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base">Global Settings</CardTitle>
-                            </CardHeader>
-                            {errors.general && (
-                                <div className="px-6 pb-3">
-                                    <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                                        <p className="text-sm text-red-700 dark:text-red-300">{errors.general}</p>
-                                    </div>
-                                </div>
-                            )}
-                            <CardContent className="space-y-3">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                    <div>
-                                        <Label htmlFor="payment_date" className="text-sm">Payment Date</Label>
-                                        <Input
-                                            id="payment_date"
-                                            type="date"
-                                            value={formData.payment_date}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, payment_date: e.target.value }))}
-                                            className="h-9"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="payment_method" className="text-sm">
-                                            Payment Method <span className="text-red-500">*</span>
-                                        </Label>
-                                        <Select
-                                            value={formData.payment_method}
-                                            onValueChange={(value) => {
-                                                setFormData(prev => ({ ...prev, payment_method: value }));
-                                                if (errors.payment_method) {
-                                                    setErrors(prev => {
-                                                        const newErrors = { ...prev };
-                                                        delete newErrors.payment_method;
-                                                        return newErrors;
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <SelectTrigger className={`h-9 ${errors.payment_method ? 'border-red-500' : ''}`}>
-                                                <SelectValue placeholder="Select method" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="cash">Cash</SelectItem>
-                                                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                                <SelectItem value="check">Check</SelectItem>
-                                                <SelectItem value="other">Other</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        {errors.payment_method && (
-                                            <p className="text-xs text-red-500 mt-1">{errors.payment_method}</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="reference_number" className="text-sm">Reference Number</Label>
-                                        <Input
-                                            id="reference_number"
-                                            type="text"
-                                            value={formData.reference_number}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, reference_number: e.target.value }))}
-                                            placeholder="Optional"
-                                            className="h-9"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="bulk_amount" className="text-sm">Bulk Amount</Label>
-                                        <Input
-                                            id="bulk_amount"
-                                            type="number"
-                                            step="0.01"
-                                            value={formData.bulk_amount}
-                                            onChange={(e) => handleBulkAmountChange(e.target.value)}
-                                            placeholder="Amount for selected"
-                                            className="h-9"
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Member Selection */}
-                        <Card>
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-base">Select Members</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                {/* Filters */}
-                                <div className="flex flex-col sm:flex-row gap-3">
-                                    <div className="flex-1">
-                                        <Label htmlFor="search" className="text-sm">Search Members</Label>
-                                        <Input
-                                            id="search"
-                                            type="text"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            placeholder="Search by name or contact number"
-                                            className="h-9"
-                                        />
-                                    </div>
-                                    <div className="sm:w-40">
-                                        <Label htmlFor="group-filter" className="text-sm">Filter by Group</Label>
-                                        <Select value={filterGroup} onValueChange={setFilterGroup}>
-                                            <SelectTrigger className="h-9">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {groups.map(group => (
-                                                    <SelectItem key={group} value={group}>
-                                                        {group === 'all' ? 'All Groups' : group}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-
-                                {/* Select All */}
-                                <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                    <Checkbox
-                                        id="select-all"
-                                        checked={selectAll}
-                                        onCheckedChange={handleSelectAll}
-                                    />
-                                    <Label htmlFor="select-all" className="text-sm font-medium">
-                                        Select All ({filteredMembers.length} members)
-                                    </Label>
-                                    {selectedCount > 0 && (
-                                        <Badge variant="secondary" className="ml-auto text-xs">
-                                            {selectedCount} selected • {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount).toFixed(2) : '0.00'}
-                                        </Badge>
                                     )}
-                                </div>
-
-                                {/* Quick Group Selection */}
-                                {filterGroup !== 'all' && (
-                                    <div className="flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                        <span className="text-xs text-blue-700 dark:text-blue-300">
-                                            Filtering by group: <strong>{filterGroup}</strong>
-                                        </span>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                const groupMembers = filteredMembers.map(m => m.id);
-                                                setMemberContributions(prev => prev.map(member => ({
-                                                    ...member,
-                                                    selected: groupMembers.includes(member.member_id) ? true : member.selected,
-                                                    amount: groupMembers.includes(member.member_id) && formData.bulk_amount ? 
-                                                        Number(formData.bulk_amount) : member.amount
-                                                })));
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    selected_members: [...prev.selected_members, ...groupMembers.filter(id => !prev.selected_members.includes(id))]
-                                                }));
-                                            }}
-                                            className="text-xs h-7"
-                                        >
-                                            Select All in Group
-                                        </Button>
-                                    </div>
-                                )}
-
-                                {/* Members List */}
-                                <div className="max-h-[300px] overflow-y-auto space-y-1">
-                                    {filteredMembers.length === 0 ? (
-                                        <div className="text-center py-6 text-gray-500 text-sm">
-                                            No members found
-                                        </div>
-                                    ) : (
-                                        filteredMembers.map(member => {
-                                            const memberContribution = memberContributions.find(m => m.member_id === member.id);
-                                            const isSelected = memberContribution?.selected || false;
-                                            const amount = memberContribution?.amount || 0;
-
-                                            return (
-                                                <div
-                                                    key={member.id}
-                                                    className={`p-3 border rounded-lg transition-colors ${
-                                                        isSelected 
-                                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                                                            : 'border-gray-200 dark:border-gray-700'
-                                                    }`}
+                                    <CardContent className="space-y-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <Label htmlFor="payment_date" className="text-sm">Payment Date</Label>
+                                                <Input
+                                                    id="payment_date"
+                                                    type="date"
+                                                    value={formData.payment_date}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, payment_date: e.target.value }))}
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="payment_method" className="text-sm">
+                                                    Payment Method <span className="text-red-500">*</span>
+                                                </Label>
+                                                <Select
+                                                    value={formData.payment_method}
+                                                    onValueChange={(value) => {
+                                                        setFormData(prev => ({ ...prev, payment_method: value }));
+                                                        if (errors.payment_method) {
+                                                            setErrors(prev => {
+                                                                const newErrors = { ...prev };
+                                                                delete newErrors.payment_method;
+                                                                return newErrors;
+                                                            });
+                                                        }
+                                                    }}
                                                 >
-                                                    <div className="flex items-center gap-3">
-                                                        <Checkbox
-                                                            checked={isSelected}
-                                                            onCheckedChange={(checked) => 
-                                                                handleMemberSelection(member.id, checked as boolean)
-                                                            }
-                                                        />
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <h4 className="font-medium text-sm truncate">{member.name}</h4>
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    {member.group || 'No Group'}
-                                                                </Badge>
-                                                            </div>
-                                                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                                                                <span>{member.contact_number}</span>
-                                                                <span className="mx-2">•</span>
-                                                                <span>Default: {appCurrency.symbol}{member.contribution_amount}</span>
-                                                            </div>
-                                                            {isSelected && (
-                                                                <div className="flex items-center gap-2">
-                                                                    <Label htmlFor={`amount-${member.id}`} className="text-xs">
-                                                                        Amount:
-                                                                    </Label>
-                                                                    <Input
-                                                                        id={`amount-${member.id}`}
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        value={amount}
-                                                                        onChange={(e) => handleMemberAmountChange(member.id, e.target.value)}
-                                                                        className="w-24 h-7 text-xs"
-                                                                        placeholder="0.00"
-                                                                    />
-                                                                    <span className="text-xs text-gray-500">
-                                                                        {appCurrency.code}
-                                                                    </span>
+                                                    <SelectTrigger className={`h-9 ${errors.payment_method ? 'border-red-500' : ''}`}>
+                                                        <SelectValue placeholder="Select method" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="cash">Cash</SelectItem>
+                                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                                        <SelectItem value="check">Check</SelectItem>
+                                                        <SelectItem value="other">Other</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.payment_method && (
+                                                    <p className="text-xs text-red-500 mt-1">{errors.payment_method}</p>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="reference_number" className="text-sm">Reference Number</Label>
+                                                <Input
+                                                    id="reference_number"
+                                                    type="text"
+                                                    value={formData.reference_number}
+                                                    onChange={(e) => setFormData(prev => ({ ...prev, reference_number: e.target.value }))}
+                                                    placeholder="Optional"
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="bulk_amount" className="text-sm">Bulk Amount</Label>
+                                                <Input
+                                                    id="bulk_amount"
+                                                    type="number"
+                                                    step="0.01"
+                                                    value={formData.bulk_amount}
+                                                    onChange={(e) => handleBulkAmountChange(e.target.value)}
+                                                    placeholder="Amount for selected"
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Selected Members Section */}
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base flex items-center justify-between">
+                                            <span>Selected Members</span>
+                                            {selectedCount > 0 && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    {selectedCount} selected
+                                                </Badge>
+                                            )}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {selectedCount === 0 ? (
+                                            <div className="text-center py-8 text-gray-500 text-sm">
+                                                <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                                                <p>No members selected</p>
+                                                <p className="text-xs">Select members from the list on the right</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1 max-h-[300px] overflow-y-auto">
+                                                {memberContributions
+                                                    .filter(member => member.selected)
+                                                    .map(memberContribution => {
+                                                        const member = members.find(m => m.id === memberContribution.member_id);
+                                                        if (!member) return null;
+                                                        
+                                                        return (
+                                                            <div
+                                                                key={member.id}
+                                                                className="flex items-center justify-between p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                                                            >
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <h4 className="font-medium text-sm truncate">{member.name}</h4>
+                                                                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                                                                            {member.group || 'No Group'}
+                                                                        </Badge>
+                                                                    </div>
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
+                                                                <div className="flex items-center gap-2 text-right">
+                                                                    <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                                                        {appCurrency.symbol}{Number(memberContribution.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-500 w-16">
+                                                                        {member.contribution_frequency}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                            </div>
+                                        )}
+                                        
+                                        {selectedCount > 0 && (
+                                            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="font-medium text-green-700 dark:text-green-300">Total Amount:</span>
+                                                    <span className="font-bold text-green-700 dark:text-green-300">
+                                                        {appCurrency.symbol}{totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </span>
                                                 </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                                <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-400 mt-1">
+                                                    <span>Average per member:</span>
+                                                    <span>{appCurrency.symbol}{(totalAmount / selectedCount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Right Column - Member Selection */}
+                            <div className="space-y-4">
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-base">Select Members</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        {/* Filters */}
+                                        <div className="flex flex-col sm:flex-row gap-3">
+                                            <div className="flex-1">
+                                                <Label htmlFor="search" className="text-sm">Search Members</Label>
+                                                <Input
+                                                    id="search"
+                                                    type="text"
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    placeholder="Search by name or contact number"
+                                                    className="h-9"
+                                                />
+                                            </div>
+                                            <div className="sm:w-40">
+                                                <Label htmlFor="group-filter" className="text-sm">Filter by Group</Label>
+                                                <Select value={filterGroup} onValueChange={setFilterGroup}>
+                                                    <SelectTrigger className="h-9">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {groups.map(group => (
+                                                            <SelectItem key={group} value={group}>
+                                                                {group === 'all' ? 'All Groups' : group}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
+                                        {/* Select All */}
+                                        <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                            <Checkbox
+                                                id="select-all"
+                                                checked={selectAll}
+                                                onCheckedChange={handleSelectAll}
+                                            />
+                                            <Label htmlFor="select-all" className="text-sm font-medium">
+                                                Select All ({filteredMembers.length} members)
+                                            </Label>
+                                            {selectedCount > 0 && (
+                                                <Badge variant="secondary" className="ml-auto text-xs">
+                                                    {selectedCount} selected • {appCurrency.symbol}{!isNaN(Number(totalAmount)) ? Number(totalAmount).toFixed(2) : '0.00'}
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        {/* Quick Group Selection */}
+                                        {filterGroup !== 'all' && (
+                                            <div className="flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                                <span className="text-xs text-blue-700 dark:text-blue-300">
+                                                    Filtering by group: <strong>{filterGroup}</strong>
+                                                </span>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        const groupMembers = filteredMembers.map(m => m.id);
+                                                        setMemberContributions(prev => prev.map(member => ({
+                                                            ...member,
+                                                            selected: groupMembers.includes(member.member_id) ? true : member.selected,
+                                                            amount: groupMembers.includes(member.member_id) && formData.bulk_amount ? 
+                                                                Number(formData.bulk_amount) : member.amount
+                                                        })));
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            selected_members: [...prev.selected_members, ...groupMembers.filter(id => !prev.selected_members.includes(id))]
+                                                        }));
+                                                    }}
+                                                    className="text-xs h-7"
+                                                >
+                                                    Select All in Group
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                        {/* Members List */}
+                                        <div className="max-h-[500px] overflow-y-auto space-y-1">
+                                            {filteredMembers.length === 0 ? (
+                                                <div className="text-center py-6 text-gray-500 text-sm">
+                                                    No members found
+                                                </div>
+                                            ) : (
+                                                filteredMembers.map(member => {
+                                                    const memberContribution = memberContributions.find(m => m.member_id === member.id);
+                                                    const isSelected = memberContribution?.selected || false;
+                                                    const amount = memberContribution?.amount || 0;
+
+                                                    return (
+                                                        <div
+                                                            key={member.id}
+                                                            className={`p-3 border rounded-lg transition-colors ${
+                                                                isSelected 
+                                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                                                                    : 'border-gray-200 dark:border-gray-700'
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <Checkbox
+                                                                    checked={isSelected}
+                                                                    onCheckedChange={(checked) => 
+                                                                        handleMemberSelection(member.id, checked as boolean)
+                                                                    }
+                                                                />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <h4 className="font-medium text-sm truncate">{member.name}</h4>
+                                                                        <Badge variant="outline" className="text-xs">
+                                                                            {member.group || 'No Group'}
+                                                                        </Badge>
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                                                        <span>{member.contact_number}</span>
+                                                                        <span className="mx-2">•</span>
+                                                                        <span>Default: {appCurrency.symbol}{member.contribution_amount}</span>
+                                                                    </div>
+                                                                    {isSelected && (
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Label htmlFor={`amount-${member.id}`} className="text-xs">
+                                                                                Amount:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id={`amount-${member.id}`}
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={amount}
+                                                                                onChange={(e) => handleMemberAmountChange(member.id, e.target.value)}
+                                                                                className="w-24 h-7 text-xs"
+                                                                                placeholder="0.00"
+                                                                            />
+                                                                            <span className="text-xs text-gray-500">
+                                                                                {appCurrency.code}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
                     </div>
 
                     {processing && processingProgress.total > 0 && (
