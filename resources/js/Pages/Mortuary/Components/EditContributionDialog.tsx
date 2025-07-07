@@ -14,6 +14,7 @@ interface Contribution {
     payment_date: string;
     payment_method: string;
     reference_number: string;
+    created_at?: string;
 }
 
 interface Props {

@@ -8,7 +8,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Button } from '@/Components/ui/button';
-import { Edit, Trash2, Search, Calendar, Table as TableIcon } from 'lucide-react';
+import { Edit, Trash2, Search, Calendar, Table as TableIcon, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { format, startOfYear, endOfYear, subYears, eachMonthOfInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -18,11 +18,13 @@ import { Calendar as DatePicker } from '@/Components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 interface Member {
     id: string;
     name: string;
     contribution_frequency: string;
+    group: string;
 }
 
 interface Contribution {
@@ -32,6 +34,7 @@ interface Contribution {
     payment_date: string;
     payment_method: string;
     reference_number: string;
+    created_at?: string;
 }
 
 interface Props {
@@ -44,7 +47,7 @@ interface Props {
 }
 
 export default function ContributionsList({ contributions, members, appCurrency }: Props) {
-    const [sortField, setSortField] = useState<keyof Contribution>('payment_date');
+    const [sortField, setSortField] = useState<keyof Contribution>('created_at');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedContribution, setSelectedContribution] = useState<Contribution | null>(null);
@@ -52,6 +55,17 @@ export default function ContributionsList({ contributions, members, appCurrency 
     const [startDate, setStartDate] = useState<Date>(startOfYear(subYears(new Date(), 10)));
     const [endDate, setEndDate] = useState<Date>(endOfYear(new Date()));
     const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    
+    // Calendar pagination state
+    const [calendarCurrentPage, setCalendarCurrentPage] = useState(1);
+    const [calendarItemsPerPage, setCalendarItemsPerPage] = useState(10);
+    
+    // Group filter state
+    const [selectedGroup, setSelectedGroup] = useState<string>('all');
 
     const handleSort = (field: keyof Contribution) => {
         if (field === sortField) {
@@ -96,6 +110,17 @@ export default function ContributionsList({ contributions, members, appCurrency 
         return member ? member.name : 'Unknown Member';
     };
 
+    const getMemberGroup = (memberId: string) => {
+        const member = members.find(m => m.id === memberId);
+        return member ? member.group : '';
+    };
+
+    // Get unique groups from members
+    const getUniqueGroups = () => {
+        const groups = members.map(member => member.group).filter(group => group && group.trim() !== '');
+        return [...new Set(groups)].sort();
+    };
+
     const sortedContributions = [...contributions].sort((a, b) => {
         try {
             const aValue = a[sortField];
@@ -127,6 +152,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
             const memberName = getMemberName(contribution.member_id)?.toLowerCase() || '';
             const paymentMethod = contribution.payment_method?.toLowerCase() || '';
             const referenceNumber = contribution.reference_number?.toLowerCase() || '';
+            const memberGroup = getMemberGroup(contribution.member_id)?.toLowerCase() || '';
             
             const paymentDate = new Date(contribution.payment_date);
             if (isNaN(paymentDate.getTime())) {
@@ -137,18 +163,306 @@ export default function ContributionsList({ contributions, members, appCurrency 
             const matchesSearch = (
                 memberName.includes(searchLower) ||
                 paymentMethod.includes(searchLower) ||
-                referenceNumber.includes(searchLower)
+                referenceNumber.includes(searchLower) ||
+                memberGroup.includes(searchLower)
             );
 
             const matchesDateRange = (!startDate || paymentDate >= startDate) && 
                                     (!endDate || paymentDate <= endDate);
 
-            return matchesSearch && matchesDateRange;
+            const matchesGroup = selectedGroup === 'all' || getMemberGroup(contribution.member_id) === selectedGroup;
+
+            return matchesSearch && matchesDateRange && matchesGroup;
         } catch (error) {
             console.error('Error filtering contribution:', error, contribution);
             return false;
         }
     });
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredContributions.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedContributions = filteredContributions.slice(startIndex, endIndex);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleItemsPerPageChange = (newItemsPerPage: number) => {
+        setItemsPerPage(newItemsPerPage);
+        setCurrentPage(1); // Reset to first page when changing items per page
+    };
+
+    // Calendar pagination handlers
+    const handleCalendarPageChange = (page: number) => {
+        setCalendarCurrentPage(page);
+    };
+
+    const handleCalendarItemsPerPageChange = (newItemsPerPage: number) => {
+        setCalendarItemsPerPage(newItemsPerPage);
+        setCalendarCurrentPage(1); // Reset to first page when changing items per page
+    };
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const pages = [];
+            const maxVisiblePages = 5;
+            
+            if (totalPages <= maxVisiblePages) {
+                for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                if (currentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = totalPages - 3; i <= totalPages; i++) {
+                        pages.push(i);
+                    }
+                } else {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalPages);
+                }
+            }
+            
+            return pages;
+        };
+
+        return (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center space-x-4 text-sm text-slate-700 dark:text-slate-300">
+                    <span>
+                        Showing {startIndex + 1} to {Math.min(endIndex, filteredContributions.length)} of {filteredContributions.length} contributions
+                    </span>
+                    <span className="text-slate-400">|</span>
+                    <span>Items per page:</span>
+                    <select
+                        value={itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                        className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+                
+                {totalPages > 1 && (
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(1)}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronsLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                            {getPageNumbers().map((page, index) => (
+                                <div key={index}>
+                                    {page === '...' ? (
+                                        <span className="px-2 py-1 text-slate-500 dark:text-slate-400">...</span>
+                                    ) : (
+                                        <Button
+                                            variant={currentPage === page ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handlePageChange(page as number)}
+                                            className={`h-8 w-8 p-0 ${
+                                                currentPage === page 
+                                                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900" 
+                                                    : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                            }`}
+                                        >
+                                            {page}
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(totalPages)}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronsRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderCalendarPagination = (totalMembers: number, currentMembers: any[]) => {
+        const totalCalendarPages = Math.ceil(totalMembers / calendarItemsPerPage);
+        const calendarStartIndex = (calendarCurrentPage - 1) * calendarItemsPerPage;
+        const calendarEndIndex = calendarStartIndex + calendarItemsPerPage;
+
+        if (totalCalendarPages <= 1) return null;
+
+        const getPageNumbers = () => {
+            const pages = [];
+            const maxVisiblePages = 5;
+            
+            if (totalCalendarPages <= maxVisiblePages) {
+                for (let i = 1; i <= totalCalendarPages; i++) {
+                    pages.push(i);
+                }
+            } else {
+                if (calendarCurrentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalCalendarPages);
+                } else if (calendarCurrentPage >= totalCalendarPages - 2) {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = totalCalendarPages - 3; i <= totalCalendarPages; i++) {
+                        pages.push(i);
+                    }
+                } else {
+                    pages.push(1);
+                    pages.push('...');
+                    for (let i = calendarCurrentPage - 1; i <= calendarCurrentPage + 1; i++) {
+                        pages.push(i);
+                    }
+                    pages.push('...');
+                    pages.push(totalCalendarPages);
+                }
+            }
+            
+            return pages;
+        };
+
+        return (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center space-x-4 text-sm text-slate-700 dark:text-slate-300">
+                    <span>
+                        Showing {calendarStartIndex + 1} to {Math.min(calendarEndIndex, totalMembers)} of {totalMembers} members
+                    </span>
+                    <span className="text-slate-400">|</span>
+                    <span>Items per page:</span>
+                    <select
+                        value={calendarItemsPerPage}
+                        onChange={(e) => handleCalendarItemsPerPageChange(Number(e.target.value))}
+                        className="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+                
+                {totalCalendarPages > 1 && (
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCalendarPageChange(1)}
+                            disabled={calendarCurrentPage === 1}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronsLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCalendarPageChange(calendarCurrentPage - 1)}
+                            disabled={calendarCurrentPage === 1}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                            {getPageNumbers().map((page, index) => (
+                                <div key={index}>
+                                    {page === '...' ? (
+                                        <span className="px-2 py-1 text-slate-500 dark:text-slate-400">...</span>
+                                    ) : (
+                                        <Button
+                                            variant={calendarCurrentPage === page ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => handleCalendarPageChange(page as number)}
+                                            className={`h-8 w-8 p-0 ${
+                                                calendarCurrentPage === page 
+                                                    ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900" 
+                                                    : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                            }`}
+                                        >
+                                            {page}
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCalendarPageChange(calendarCurrentPage + 1)}
+                            disabled={calendarCurrentPage === totalCalendarPages}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCalendarPageChange(totalCalendarPages)}
+                            disabled={calendarCurrentPage === totalCalendarPages}
+                            className="h-8 w-8 p-0 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        >
+                            <ChevronsRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     const renderCalendarView = () => {
         // Get all months from 10 years ago to current month
@@ -170,10 +484,12 @@ export default function ContributionsList({ contributions, members, appCurrency 
             years.push(year);
         }
 
-        // Filter members based on search query for calendar view
+        // Filter members based on search query and group for calendar view
         const filteredMembers = members.filter(member => {
-            if (!searchQuery.trim()) return true;
-            return member.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesSearch = !searchQuery.trim() || 
+                member.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesGroup = selectedGroup === 'all' || member.group === selectedGroup;
+            return matchesSearch && matchesGroup;
         });
 
         const renderMonthlyTable = () => {
@@ -192,6 +508,11 @@ export default function ContributionsList({ contributions, members, appCurrency 
                 );
             }
 
+            // Paginate monthly members
+            const monthlyStartIndex = (calendarCurrentPage - 1) * calendarItemsPerPage;
+            const monthlyEndIndex = monthlyStartIndex + calendarItemsPerPage;
+            const paginatedMonthlyMembers = monthlyMembers.slice(monthlyStartIndex, monthlyEndIndex);
+
             return (
                 <div className="mb-8 p-4">
                     <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Monthly/Quarterly Contributions</h3>
@@ -200,6 +521,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             <TableHeader>
                                 <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
                                     <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
                                     <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Frequency</TableHead>
                                     {months.map(month => (
                                         <TableHead key={month.toISOString()} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
@@ -209,10 +531,13 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {monthlyMembers.map((member) => (
+                                {paginatedMonthlyMembers.map((member) => (
                                     <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
                                         <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
+                                        </TableCell>
+                                        <TableCell className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                                            {member.group || '-'}
                                         </TableCell>
                                         <TableCell className="capitalize sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
                                             {member.contribution_frequency}
@@ -269,6 +594,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             </TableBody>
                         </Table>
                     </div>
+                    {renderCalendarPagination(monthlyMembers.length, paginatedMonthlyMembers)}
                 </div>
             );
         };
@@ -288,6 +614,11 @@ export default function ContributionsList({ contributions, members, appCurrency 
                 );
             }
 
+            // Paginate annual members
+            const annualStartIndex = (calendarCurrentPage - 1) * calendarItemsPerPage;
+            const annualEndIndex = annualStartIndex + calendarItemsPerPage;
+            const paginatedAnnualMembers = annualMembers.slice(annualStartIndex, annualEndIndex);
+
             return (
                 <div className="mb-8 p-4">
                     <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Annual Contributions</h3>
@@ -296,6 +627,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             <TableHeader>
                                 <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
                                     <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Member Name</TableHead>
+                                    <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
                                     <TableHead className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold">Frequency</TableHead>
                                     {years.map(year => (
                                         <TableHead key={year} className="min-w-[120px] text-slate-700 dark:text-slate-200 font-semibold">
@@ -305,10 +637,13 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {annualMembers.map((member) => (
+                                {paginatedAnnualMembers.map((member) => (
                                     <TableRow key={member.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
                                         <TableCell className="font-medium sticky left-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
                                             {member.name}
+                                        </TableCell>
+                                        <TableCell className="sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                                            {member.group || '-'}
                                         </TableCell>
                                         <TableCell className="capitalize sticky left-0 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
                                             {member.contribution_frequency}
@@ -364,6 +699,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             </TableBody>
                         </Table>
                     </div>
+                    {renderCalendarPagination(annualMembers.length, paginatedAnnualMembers)}
                 </div>
             );
         };
@@ -389,6 +725,27 @@ export default function ContributionsList({ contributions, members, appCurrency 
                             className="pl-8 bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500"
                         />
                     </div>
+                    
+                    {/* Group Filter */}
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                            Group:
+                        </label>
+                        <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                            <SelectTrigger className="w-[180px] border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-200">
+                                <SelectValue placeholder="All Groups" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Groups</SelectItem>
+                                {getUniqueGroups().map((group) => (
+                                    <SelectItem key={group} value={group}>
+                                        {group}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    
                     {viewMode === 'table' && (
                         <div className="flex flex-col sm:flex-row gap-2">
                             <div className="flex items-center gap-2">
@@ -452,7 +809,7 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                 >
                                     Reset to current year
                                 </Button>
-                                                        )}
+                            )}
                         </div>
                     )}
                 </div>
@@ -478,86 +835,104 @@ export default function ContributionsList({ contributions, members, appCurrency 
             
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 dark:bg-slate-900/50">
                 {viewMode === 'table' ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
-                                <TableHead 
-                                    className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
-                                    onClick={() => handleSort('payment_date')}
-                                >
-                                    Payment Date {sortField === 'payment_date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </TableHead>
-                                <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member</TableHead>
-                                <TableHead 
-                                    className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
-                                    onClick={() => handleSort('amount')}
-                                >
-                                    Amount {sortField === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </TableHead>
-                                <TableHead 
-                                    className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
-                                    onClick={() => handleSort('payment_method')}
-                                >
-                                    Payment Method {sortField === 'payment_method' && (sortDirection === 'asc' ? '↑' : '↓')}
-                                </TableHead>
-                                <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Reference Number</TableHead>
-                                <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredContributions.map((contribution) => {
-                                try {
-                                    const paymentDate = new Date(contribution.payment_date);
-                                    const isValidDate = !isNaN(paymentDate.getTime());
-                                    
-                                    return (
-                                        <TableRow key={contribution.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
-                                            <TableCell className="text-slate-700 dark:text-slate-300">
-                                                {isValidDate ? format(paymentDate, 'MMM d, yyyy') : 'Invalid Date'}
-                                            </TableCell>
-                                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                                                {getMemberName(contribution.member_id)}
-                                            </TableCell>
-                                            <TableCell className="text-slate-700 dark:text-slate-300">
-                                                <span className="text-blue-600 dark:text-blue-300 font-semibold">
-                                                    {appCurrency.symbol}{Number(contribution.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="capitalize text-slate-700 dark:text-slate-300">
-                                                {(contribution.payment_method || '').replace('_', ' ')}
-                                            </TableCell>
-                                            <TableCell className="text-slate-700 dark:text-slate-300">
-                                                {contribution.reference_number || '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => handleEdit(contribution)}
-                                                        className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
-                                                        onClick={() => handleDelete(contribution.member_id, contribution.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                } catch (error) {
-                                    console.error('Error rendering contribution row:', error, contribution);
-                                    return null;
-                                }
-                            })}
-                        </TableBody>
-                    </Table>
+                    <>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+                                    <TableHead 
+                                        className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                                        onClick={() => handleSort('created_at')}
+                                    >
+                                        Created At {sortField === 'created_at' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                                        onClick={() => handleSort('payment_date')}
+                                    >
+                                        Payment Date {sortField === 'payment_date' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </TableHead>
+                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Member</TableHead>
+                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Group</TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                                        onClick={() => handleSort('amount')}
+                                    >
+                                        Amount {sortField === 'amount' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </TableHead>
+                                    <TableHead 
+                                        className="cursor-pointer text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white font-semibold"
+                                        onClick={() => handleSort('payment_method')}
+                                    >
+                                        Payment Method {sortField === 'payment_method' && (sortDirection === 'asc' ? '↑' : '↓')}
+                                    </TableHead>
+                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Reference Number</TableHead>
+                                    <TableHead className="text-slate-700 dark:text-slate-200 font-semibold">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {paginatedContributions.map((contribution) => {
+                                    try {
+                                        const paymentDate = new Date(contribution.payment_date);
+                                        const createdDate = new Date(contribution.created_at || '');
+                                        const isValidPaymentDate = !isNaN(paymentDate.getTime());
+                                        const isValidCreatedDate = !isNaN(createdDate.getTime());
+                                        
+                                        return (
+                                            <TableRow key={contribution.id} className="border-slate-200 dark:border-slate-700 dark:bg-slate-900/30 hover:dark:bg-slate-800/50 transition-colors">
+                                                <TableCell className="text-slate-700 dark:text-slate-300">
+                                                    {isValidCreatedDate ? format(createdDate, 'MMM d, yyyy HH:mm') : 'Invalid Date'}
+                                                </TableCell>
+                                                <TableCell className="text-slate-700 dark:text-slate-300">
+                                                    {isValidPaymentDate ? format(paymentDate, 'MMM d, yyyy') : 'Invalid Date'}
+                                                </TableCell>
+                                                <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                                                    {getMemberName(contribution.member_id)}
+                                                </TableCell>
+                                                <TableCell className="text-slate-700 dark:text-slate-300">
+                                                    {getMemberGroup(contribution.member_id) || '-'}
+                                                </TableCell>
+                                                <TableCell className="text-slate-700 dark:text-slate-300">
+                                                    <span className="text-blue-600 dark:text-blue-300 font-semibold">
+                                                        {appCurrency.symbol}{Number(contribution.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="capitalize text-slate-700 dark:text-slate-300">
+                                                    {(contribution.payment_method || '').replace('_', ' ')}
+                                                </TableCell>
+                                                <TableCell className="text-slate-700 dark:text-slate-300">
+                                                    {contribution.reference_number || '-'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleEdit(contribution)}
+                                                            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
+                                                            onClick={() => handleDelete(contribution.member_id, contribution.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    } catch (error) {
+                                        console.error('Error rendering contribution row:', error, contribution);
+                                        return null;
+                                    }
+                                })}
+                            </TableBody>
+                        </Table>
+                        {renderPagination()}
+                    </>
                 ) : (
                     renderCalendarView()
                 )}

@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Progress } from '@/Components/ui/progress';
 import { format } from 'date-fns';
-import { Users, DollarSign, Calendar, CreditCard } from 'lucide-react';
+import { Users, DollarSign, Calendar, CreditCard, Settings, Plus, Trash2 } from 'lucide-react';
 
 interface Member {
     id: string | number;
@@ -47,10 +47,19 @@ interface Contribution {
     reference_number: string;
 }
 
+interface MemberContributionEntry {
+    date: string;
+    amount: number;
+}
+
 interface BulkContributionData {
     member_id: string | number;
     amount: number;
+    payment_date: string;
     selected: boolean;
+    use_individual_date: boolean;
+    multiple_contributions: MemberContributionEntry[];
+    use_multiple_dates: boolean;
 }
 
 interface Props {
@@ -71,6 +80,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         reference_number: '',
         bulk_amount: '',
         selected_members: [] as (string | number)[],
+        use_individual_dates: false,
     });
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -87,13 +97,18 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
             const initialContributions = members.map(member => ({
                 member_id: member.id,
                 amount: member.contribution_amount || 0,
-                selected: false
+                payment_date: format(new Date(), 'yyyy-MM-dd'),
+                selected: false,
+                use_individual_date: false,
+                multiple_contributions: [],
+                use_multiple_dates: false
             }));
             setMemberContributions(initialContributions);
             setFormData(prev => ({
                 ...prev,
                 bulk_amount: '',
-                selected_members: []
+                selected_members: [],
+                use_individual_dates: false
             }));
             setSelectAll(false);
         }
@@ -157,6 +172,79 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
         })));
     };
 
+    const handleMemberDateChange = (memberId: string | number, date: string) => {
+        setMemberContributions(prev => prev.map(member => ({
+            ...member,
+            payment_date: member.member_id === memberId ? date : member.payment_date
+        })));
+    };
+
+    const handleIndividualDateToggle = (memberId: string | number, useIndividual: boolean) => {
+        setMemberContributions(prev => prev.map(member => ({
+            ...member,
+            use_individual_date: member.member_id === memberId ? useIndividual : member.use_individual_date,
+            payment_date: member.member_id === memberId && !useIndividual ? formData.payment_date : member.payment_date
+        })));
+    };
+
+    const handleMultipleDatesToggle = (memberId: string | number, useMultiple: boolean) => {
+        setMemberContributions(prev => prev.map(member => {
+            if (member.member_id === memberId) {
+                return {
+                    ...member,
+                    use_multiple_dates: useMultiple,
+                    use_individual_date: useMultiple ? false : member.use_individual_date,
+                    multiple_contributions: useMultiple ? [{ date: format(new Date(), 'yyyy-MM-dd'), amount: member.amount }] : []
+                };
+            }
+            return member;
+        }));
+    };
+
+    const addMultipleContribution = (memberId: string | number) => {
+        setMemberContributions(prev => prev.map(member => {
+            if (member.member_id === memberId) {
+                return {
+                    ...member,
+                    multiple_contributions: [
+                        ...member.multiple_contributions,
+                        { date: format(new Date(), 'yyyy-MM-dd'), amount: member.amount }
+                    ]
+                };
+            }
+            return member;
+        }));
+    };
+
+    const removeMultipleContribution = (memberId: string | number, index: number) => {
+        setMemberContributions(prev => prev.map(member => {
+            if (member.member_id === memberId) {
+                return {
+                    ...member,
+                    multiple_contributions: member.multiple_contributions.filter((_, i) => i !== index)
+                };
+            }
+            return member;
+        }));
+    };
+
+    const updateMultipleContribution = (memberId: string | number, index: number, field: 'date' | 'amount', value: string | number) => {
+        setMemberContributions(prev => prev.map(member => {
+            if (member.member_id === memberId) {
+                const updatedContributions = [...member.multiple_contributions];
+                updatedContributions[index] = {
+                    ...updatedContributions[index],
+                    [field]: field === 'amount' ? Number(value) || 0 : value
+                };
+                return {
+                    ...member,
+                    multiple_contributions: updatedContributions
+                };
+            }
+            return member;
+        }));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -167,15 +255,35 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
             return;
         }
         
-        const selectedContributions = memberContributions
+        const selectedContributions: Omit<Contribution, 'id'>[] = [];
+        
+        memberContributions
             .filter(member => member.selected && member.amount > 0)
-            .map(member => ({
-                member_id: String(member.member_id), // Ensure member_id is a string
-                amount: Number(member.amount),
-                payment_date: formData.payment_date,
-                payment_method: formData.payment_method,
-                reference_number: formData.reference_number || ''
-            }));
+            .forEach(member => {
+                if (member.use_multiple_dates && member.multiple_contributions.length > 0) {
+                    // Add multiple contributions for this member
+                    member.multiple_contributions.forEach(contribution => {
+                        if (contribution.amount > 0) {
+                            selectedContributions.push({
+                                member_id: String(member.member_id),
+                                amount: Number(contribution.amount),
+                                payment_date: contribution.date,
+                                payment_method: formData.payment_method,
+                                reference_number: formData.reference_number || ''
+                            });
+                        }
+                    });
+                } else {
+                    // Add single contribution for this member
+                    selectedContributions.push({
+                        member_id: String(member.member_id),
+                        amount: Number(member.amount),
+                        payment_date: member.use_individual_date ? member.payment_date : formData.payment_date,
+                        payment_method: formData.payment_method,
+                        reference_number: formData.reference_number || ''
+                    });
+                }
+            });
 
         if (selectedContributions.length === 0) {
             setErrors({ general: 'Please select at least one member with a valid amount' });
@@ -215,15 +323,16 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                     payment_method: '',
                     reference_number: '',
                     bulk_amount: '',
-                    selected_members: []
+                    selected_members: [],
+                    use_individual_dates: false
                 });
                 setProcessingProgress({ current: 0, total: 0 });
                 setProcessing(false);
                 
                 // Add successful contributions to the UI
                 const successfulContributions = selectedContributions.map(c => ({
-                    id: '',
-                    ...c
+                    ...c,
+                    id: ''
                 }));
                 onContributionsAdded(successfulContributions);
                 
@@ -246,7 +355,21 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
     const selectedCount = memberContributions.filter(m => m.selected).length;
     const totalAmount = memberContributions
         .filter(m => m.selected)
-        .reduce((sum, m) => sum + (Number(m.amount) || 0), 0);
+        .reduce((sum, m) => {
+            if (m.use_multiple_dates && m.multiple_contributions.length > 0) {
+                return sum + m.multiple_contributions.reduce((memberSum, contribution) => memberSum + (Number(contribution.amount) || 0), 0);
+            }
+            return sum + (Number(m.amount) || 0);
+        }, 0);
+
+    const totalContributions = memberContributions
+        .filter(m => m.selected)
+        .reduce((sum, m) => {
+            if (m.use_multiple_dates && m.multiple_contributions.length > 0) {
+                return sum + m.multiple_contributions.filter(c => c.amount > 0).length;
+            }
+            return sum + (m.amount > 0 ? 1 : 0);
+        }, 0);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -266,7 +389,10 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                             <div className="space-y-4">
                                 <Card>
                                     <CardHeader className="pb-3">
-                                        <CardTitle className="text-base">Global Settings</CardTitle>
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                            <Settings className="w-4 h-4" />
+                                            Global Settings
+                                        </CardTitle>
                                     </CardHeader>
                                     {errors.general && (
                                         <div className="px-6 pb-3">
@@ -278,12 +404,20 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                     <CardContent className="space-y-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <Label htmlFor="payment_date" className="text-sm">Payment Date</Label>
+                                                <Label htmlFor="payment_date" className="text-sm">Default Payment Date</Label>
                                                 <Input
                                                     id="payment_date"
                                                     type="date"
                                                     value={formData.payment_date}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, payment_date: e.target.value }))}
+                                                    onChange={(e) => {
+                                                        const newDate = e.target.value;
+                                                        setFormData(prev => ({ ...prev, payment_date: newDate }));
+                                                        // Update all members that don't use individual dates
+                                                        setMemberContributions(prev => prev.map(member => ({
+                                                            ...member,
+                                                            payment_date: !member.use_individual_date ? newDate : member.payment_date
+                                                        })));
+                                                    }}
                                                     className="h-9"
                                                 />
                                             </div>
@@ -352,7 +486,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                             <span>Selected Members</span>
                                             {selectedCount > 0 && (
                                                 <Badge variant="secondary" className="text-xs">
-                                                    {selectedCount} selected
+                                                    {selectedCount} selected • {totalContributions} contributions
                                                 </Badge>
                                             )}
                                         </CardTitle>
@@ -365,7 +499,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                                 <p className="text-xs">Select members from the list on the right</p>
                                             </div>
                                         ) : (
-                                            <div className="space-y-1 max-h-[300px] overflow-y-auto">
+                                            <div className="space-y-3 max-h-[400px] overflow-y-auto">
                                                 {memberContributions
                                                     .filter(member => member.selected)
                                                     .map(memberContribution => {
@@ -375,23 +509,136 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                                         return (
                                                             <div
                                                                 key={member.id}
-                                                                className="flex items-center justify-between p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                                                                className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                                                             >
-                                                                <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between mb-2">
                                                                     <div className="flex items-center gap-2">
                                                                         <h4 className="font-medium text-sm truncate">{member.name}</h4>
                                                                         <Badge variant="outline" className="text-xs flex-shrink-0">
                                                                             {member.group || 'No Group'}
                                                                         </Badge>
                                                                     </div>
-                                                                </div>
-                                                                <div className="flex items-center gap-2 text-right">
                                                                     <div className="text-sm font-semibold text-green-600 dark:text-green-400">
-                                                                        {appCurrency.symbol}{Number(memberContribution.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        {memberContribution.use_multiple_dates && memberContribution.multiple_contributions.length > 0
+                                                                            ? `${memberContribution.multiple_contributions.filter(c => c.amount > 0).length} contributions`
+                                                                            : `${appCurrency.symbol}${Number(memberContribution.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                                                        }
                                                                     </div>
-                                                                    <div className="text-xs text-gray-500 w-16">
-                                                                        {member.contribution_frequency}
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                                                    <span>{member.contact_number}</span>
+                                                                    <span>•</span>
+                                                                    <span>Default: {appCurrency.symbol}{member.contribution_amount}</span>
+                                                                    <span>•</span>
+                                                                    <span>{member.contribution_frequency}</span>
+                                                                </div>
+                                                                
+                                                                {/* Single Date Options */}
+                                                                {!memberContribution.use_multiple_dates && (
+                                                                    <div className="space-y-2">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Checkbox
+                                                                                id={`individual-date-${member.id}`}
+                                                                                checked={memberContribution.use_individual_date}
+                                                                                onCheckedChange={(checked) => 
+                                                                                    handleIndividualDateToggle(member.id, checked as boolean)
+                                                                                }
+                                                                                className="w-3 h-3"
+                                                                            />
+                                                                            <Label htmlFor={`individual-date-${member.id}`} className="text-xs">
+                                                                                Use individual date
+                                                                            </Label>
+                                                                            {memberContribution.use_individual_date && (
+                                                                                <Input
+                                                                                    type="date"
+                                                                                    value={memberContribution.payment_date}
+                                                                                    onChange={(e) => handleMemberDateChange(member.id, e.target.value)}
+                                                                                    className="w-32 h-6 text-xs"
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Label htmlFor={`amount-${member.id}`} className="text-xs">
+                                                                                Amount:
+                                                                            </Label>
+                                                                            <Input
+                                                                                id={`amount-${member.id}`}
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={memberContribution.amount}
+                                                                                onChange={(e) => handleMemberAmountChange(member.id, e.target.value)}
+                                                                                className="w-24 h-7 text-xs"
+                                                                                placeholder="0.00"
+                                                                            />
+                                                                            <span className="text-xs text-gray-500">
+                                                                                {appCurrency.code}
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
+                                                                )}
+
+                                                                {/* Multiple Dates Options */}
+                                                                <div className="space-y-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Checkbox
+                                                                            id={`multiple-dates-${member.id}`}
+                                                                            checked={memberContribution.use_multiple_dates}
+                                                                            onCheckedChange={(checked) => 
+                                                                                handleMultipleDatesToggle(member.id, checked as boolean)
+                                                                            }
+                                                                            className="w-3 h-3"
+                                                                        />
+                                                                        <Label htmlFor={`multiple-dates-${member.id}`} className="text-xs">
+                                                                            Multiple dates & amounts
+                                                                        </Label>
+                                                                        {memberContribution.use_multiple_dates && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="outline"
+                                                                                size="sm"
+                                                                                onClick={() => addMultipleContribution(member.id)}
+                                                                                className="h-6 w-6 p-0 ml-auto"
+                                                                            >
+                                                                                <Plus className="w-3 h-3" />
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                    
+                                                                    {memberContribution.use_multiple_dates && (
+                                                                        <div className="space-y-2 ml-5">
+                                                                            {memberContribution.multiple_contributions.map((contribution, index) => (
+                                                                                <div key={index} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-700 rounded border">
+                                                                                    <Input
+                                                                                        type="date"
+                                                                                        value={contribution.date}
+                                                                                        onChange={(e) => updateMultipleContribution(member.id, index, 'date', e.target.value)}
+                                                                                        className="w-28 h-6 text-xs"
+                                                                                    />
+                                                                                    <Input
+                                                                                        type="number"
+                                                                                        step="0.01"
+                                                                                        value={contribution.amount}
+                                                                                        onChange={(e) => updateMultipleContribution(member.id, index, 'amount', e.target.value)}
+                                                                                        className="w-20 h-6 text-xs"
+                                                                                        placeholder="0.00"
+                                                                                    />
+                                                                                    <span className="text-xs text-gray-500 w-8">
+                                                                                        {appCurrency.code}
+                                                                                    </span>
+                                                                                    <Button
+                                                                                        type="button"
+                                                                                        variant="outline"
+                                                                                        size="sm"
+                                                                                        onClick={() => removeMultipleContribution(member.id, index)}
+                                                                                        className="h-6 w-6 p-0"
+                                                                                        disabled={memberContribution.multiple_contributions.length === 1}
+                                                                                    >
+                                                                                        <Trash2 className="w-3 h-3" />
+                                                                                    </Button>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         );
@@ -408,8 +655,12 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-400 mt-1">
-                                                    <span>Average per member:</span>
-                                                    <span>{appCurrency.symbol}{(totalAmount / selectedCount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                    <span>Total Contributions:</span>
+                                                    <span>{totalContributions} contributions</span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-xs text-green-600 dark:text-green-400 mt-1">
+                                                    <span>Average per contribution:</span>
+                                                    <span>{appCurrency.symbol}{(totalAmount / totalContributions).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -541,7 +792,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                                                         <span className="mx-2">•</span>
                                                                         <span>Default: {appCurrency.symbol}{member.contribution_amount}</span>
                                                                     </div>
-                                                                    {isSelected && (
+                                                                    {isSelected && !memberContribution?.use_multiple_dates && (
                                                                         <div className="flex items-center gap-2">
                                                                             <Label htmlFor={`amount-${member.id}`} className="text-xs">
                                                                                 Amount:
@@ -606,7 +857,7 @@ export default function BulkContributionDialog({ open, onOpenChange, members, ap
                                     `Processing ${processingProgress.current}/${processingProgress.total}...` : 
                                     'Recording...'
                             ) : (
-                                `Record ${selectedCount} Contributions`
+                                `Record ${totalContributions} Contributions`
                             )}
                         </Button>
                     </DialogFooter>
