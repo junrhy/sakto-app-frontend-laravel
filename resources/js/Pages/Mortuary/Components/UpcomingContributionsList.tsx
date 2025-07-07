@@ -14,6 +14,7 @@ interface Member {
     contribution_frequency: string;
     membership_start_date: string;
     group: string;
+    status: string;
 }
 
 interface Contribution {
@@ -72,6 +73,7 @@ export default function UpcomingContributionsList({ members, contributions, appC
     };
 
     const upcomingContributions = members
+        .filter(member => member.status === 'active')
         .map(member => ({
             ...member,
             nextContributionDate: getNextContributionDate(member)

@@ -108,19 +108,105 @@ const getGroupBgColor = (groupName: string) => {
 export default function GroupContributionsList({ members, contributions = [], appCurrency }: Props) {
     const [filterText, setFilterText] = useState('');
 
+    // Helper function to get the earliest payment date within the current period for a member
+    const getEarliestPaymentInCurrentPeriod = (memberId: string) => {
+        const memberContributions = contributions.filter(c => c.member_id === memberId);
+        if (memberContributions.length === 0) return { date: new Date('9999-12-31'), period: 'No payments' };
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const currentQuarter = Math.floor(currentMonth / 3);
+        
+        // Determine payment frequency based on contribution pattern
+        const paymentFrequency = determinePaymentFrequency(memberContributions);
+        
+        let periodStart: Date;
+        let periodEnd: Date;
+        let periodLabel: string;
+        
+        switch (paymentFrequency) {
+            case 'monthly':
+                periodStart = new Date(currentYear, currentMonth, 1);
+                periodEnd = new Date(currentYear, currentMonth + 1, 0);
+                periodLabel = 'this month';
+                break;
+            case 'quarterly':
+                const quarterStartMonth = currentQuarter * 3;
+                periodStart = new Date(currentYear, quarterStartMonth, 1);
+                periodEnd = new Date(currentYear, quarterStartMonth + 3, 0);
+                periodLabel = `Q${currentQuarter + 1} ${currentYear}`;
+                break;
+            case 'annual':
+                periodStart = new Date(currentYear, 0, 1);
+                periodEnd = new Date(currentYear, 11, 31);
+                periodLabel = 'this year';
+                break;
+            default:
+                // If we can't determine frequency, use all contributions
+                periodStart = new Date('1900-01-01');
+                periodEnd = new Date('9999-12-31');
+                periodLabel = 'all time';
+        }
+        
+        // Filter contributions within the current period
+        const periodContributions = memberContributions.filter(contribution => {
+            const paymentDate = new Date(contribution.payment_date);
+            return paymentDate >= periodStart && paymentDate <= periodEnd;
+        });
+        
+        if (periodContributions.length === 0) {
+            return { date: new Date('9999-12-31'), period: `No payments in ${periodLabel}` };
+        }
+        
+        // Find earliest payment in the period
+        const earliestDate = periodContributions.reduce((earliest, contribution) => {
+            const paymentDate = new Date(contribution.payment_date);
+            return paymentDate < earliest ? paymentDate : earliest;
+        }, new Date('9999-12-31'));
+        
+        return { date: earliestDate, period: periodLabel };
+    };
+    
+    // Helper function to determine payment frequency based on contribution pattern
+    const determinePaymentFrequency = (contributions: Contribution[]) => {
+        if (contributions.length < 2) return 'unknown';
+        
+        const sortedContributions = contributions
+            .map(c => new Date(c.payment_date))
+            .sort((a, b) => a.getTime() - b.getTime());
+        
+        const timeDiffs = [];
+        for (let i = 1; i < sortedContributions.length; i++) {
+            const diff = sortedContributions[i].getTime() - sortedContributions[i - 1].getTime();
+            timeDiffs.push(diff);
+        }
+        
+        const avgDiff = timeDiffs.reduce((sum, diff) => sum + diff, 0) / timeDiffs.length;
+        const avgDays = avgDiff / (1000 * 60 * 60 * 24);
+        
+        if (avgDays <= 35) return 'monthly';
+        if (avgDays <= 100) return 'quarterly';
+        if (avgDays <= 400) return 'annual';
+        
+        return 'unknown';
+    };
+
     // Calculate totals per group
     const groupStats = members.reduce((acc, member) => {
         const group = member.group || 'Ungrouped';
         if (!acc[group]) {
             acc[group] = {
                 total_contribution: 0,
-                total_claims: 0
+                total_claims: 0,
+                member_count: 0
             };
         }
         acc[group].total_contribution += member.total_contribution;
         acc[group].total_claims += member.total_claims_amount;
+        acc[group].member_count += 1;
         return acc;
-    }, {} as Record<string, { total_contribution: number; total_claims: number }>);
+    }, {} as Record<string, { total_contribution: number; total_claims: number; member_count: number }>);
 
     // Convert to array, filter, and sort by total contribution
     const sortedGroups = Object.entries(groupStats)
@@ -142,39 +228,63 @@ export default function GroupContributionsList({ members, contributions = [], ap
         net_balance: acc.net_balance + group.net_balance
     }), { total_contribution: 0, total_claims: 0, net_balance: 0 });
 
-    // Find top 10 highest contributors overall
+    // Find top 10 highest contributors overall with payment date consideration
     const top10OverallContributors = members
-        .sort((a, b) => b.total_contribution - a.total_contribution)
+        .sort((a, b) => {
+            // First sort by total contribution (descending)
+            if (b.total_contribution !== a.total_contribution) {
+                return b.total_contribution - a.total_contribution;
+            }
+            // If contributions are equal, sort by latest payment date (ascending)
+            const aLatestDate = getEarliestPaymentInCurrentPeriod(a.id).date;
+            const bLatestDate = getEarliestPaymentInCurrentPeriod(b.id).date;
+            return aLatestDate.getTime() - bLatestDate.getTime();
+        })
         .slice(0, 10)
         .map((member, index) => {
             const memberContributions = contributions.filter(c => c.member_id === member.id);
+            const paymentInfo = getEarliestPaymentInCurrentPeriod(member.id);
             return {
                 rank: index + 1,
                 name: member.name,
                 group: member.group || 'Ungrouped',
                 total_contribution: member.total_contribution,
                 total_claims: member.total_claims_amount,
-                contribution_count: memberContributions.length
+                contribution_count: memberContributions.length,
+                earliest_payment_date: paymentInfo.date,
+                payment_period: paymentInfo.period
             };
         });
 
-    // Find top 10 contributors per group
+    // Find top 10 contributors per group with payment date consideration
     const top10PerGroup = Object.entries(groupStats).map(([groupName]) => {
         const groupMembers = members.filter(member => (member.group || 'Ungrouped') === groupName);
         if (groupMembers.length === 0) return null;
         
         const top10InGroup = groupMembers
-            .sort((a, b) => b.total_contribution - a.total_contribution)
+            .sort((a, b) => {
+                // First sort by total contribution (descending)
+                if (b.total_contribution !== a.total_contribution) {
+                    return b.total_contribution - a.total_contribution;
+                }
+                // If contributions are equal, sort by latest payment date (ascending)
+                const aLatestDate = getEarliestPaymentInCurrentPeriod(a.id).date;
+                const bLatestDate = getEarliestPaymentInCurrentPeriod(b.id).date;
+                return aLatestDate.getTime() - bLatestDate.getTime();
+            })
             .slice(0, 10)
             .map((member, index) => {
                 const memberContributions = contributions.filter(c => c.member_id === member.id);
-                return {
-                    rank: index + 1,
-                    name: member.name,
-                    total_contribution: member.total_contribution,
-                    total_claims: member.total_claims_amount,
-                    contribution_count: memberContributions.length
-                };
+                            const paymentInfo = getEarliestPaymentInCurrentPeriod(member.id);
+            return {
+                rank: index + 1,
+                name: member.name,
+                total_contribution: member.total_contribution,
+                total_claims: member.total_claims_amount,
+                contribution_count: memberContributions.length,
+                earliest_payment_date: paymentInfo.date,
+                payment_period: paymentInfo.period
+            };
             });
         
         return {
@@ -205,6 +315,7 @@ export default function GroupContributionsList({ members, contributions = [], ap
                     <TableHeader>
                         <TableRow className="hover:bg-transparent dark:border-gray-700">
                             <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Group Name</TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-center">Members</TableHead>
                             <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Contributions</TableHead>
                             <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Claims</TableHead>
                             <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Net Balance</TableHead>
@@ -219,6 +330,11 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                         <span className={`${getGroupColor(group)} font-semibold text-lg tracking-wide`}>{group}</span>
                                     </div>
                                 </TableCell>
+                                <TableCell className="text-center font-medium text-gray-700 dark:text-gray-300">
+                                    <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-sm font-semibold">
+                                        {groupStats[group].member_count}
+                                    </span>
+                                </TableCell>
                                 <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
                                     {appCurrency.symbol}{total_contribution.toLocaleString()}
                                 </TableCell>
@@ -232,6 +348,11 @@ export default function GroupContributionsList({ members, contributions = [], ap
                         ))}
                         <TableRow className="bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700">
                             <TableCell className="font-bold text-gray-900 dark:text-gray-100">Total</TableCell>
+                            <TableCell className="text-center font-bold text-gray-900 dark:text-gray-100">
+                                <span className="bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-full text-sm font-semibold">
+                                    {members.length}
+                                </span>
+                            </TableCell>
                             <TableCell className="text-right font-bold text-blue-600 dark:text-blue-400">
                                 {appCurrency.symbol}{grandTotal.total_contribution.toLocaleString()}
                             </TableCell>
@@ -262,7 +383,14 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                                     {top10OverallContributors.map((contributor) => (
                                 <div key={`${contributor.name}-${contributor.group}`} className="border-b border-gray-200 dark:border-gray-700 pb-3 last:border-b-0">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">#{contributor.rank}</span>
+                                        <div className="flex items-center gap-1">
+                                            {contributor.rank === 1 && (
+                                                <span className="text-yellow-500 text-lg">⭐</span>
+                                            )}
+                                            <span className={`text-sm font-medium ${contributor.rank === 1 ? 'text-yellow-600 dark:text-yellow-400 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                #{contributor.rank}
+                                            </span>
+                                        </div>
                                         <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
                                             {appCurrency.symbol}{contributor.total_contribution.toLocaleString()}
                                         </span>
@@ -275,6 +403,12 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                         <span className="text-xs text-gray-500 dark:text-gray-400">Contributions:</span>
                                         <span className="text-xs font-medium text-purple-600 dark:text-purple-400">
                                             {contributor.contribution_count} times
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">First Payment ({contributor.payment_period}):</span>
+                                        <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                                            {contributor.earliest_payment_date.getFullYear() === 9999 ? 'No payments' : contributor.earliest_payment_date.toLocaleDateString()}
                                         </span>
                                     </div>
                                 </div>
@@ -304,7 +438,14 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                             <div key={`${groupData.group}-${contributor.name}`} className="space-y-1">
                                                 <div className="flex justify-between items-center text-sm">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">#{contributor.rank}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            {contributor.rank === 1 && (
+                                                                <span className="text-yellow-500 text-sm">⭐</span>
+                                                            )}
+                                                            <span className={`text-xs font-medium ${contributor.rank === 1 ? 'text-yellow-600 dark:text-yellow-400 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                                #{contributor.rank}
+                                                            </span>
+                                                        </div>
                                                         <span className="font-medium text-gray-900 dark:text-gray-100">{contributor.name}</span>
                                                     </div>
                                                     <span className="font-bold text-green-600 dark:text-green-400">
@@ -315,6 +456,12 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                                     <span className="text-gray-500 dark:text-gray-400">Contributions:</span>
                                                     <span className="font-medium text-purple-600 dark:text-purple-400">
                                                         {contributor.contribution_count} times
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-xs ml-4">
+                                                    <span className="text-gray-500 dark:text-gray-400">First Payment ({contributor.payment_period}):</span>
+                                                    <span className="font-medium text-amber-600 dark:text-amber-400">
+                                                        {contributor.earliest_payment_date.getFullYear() === 9999 ? 'No payments' : contributor.earliest_payment_date.toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             </div>
