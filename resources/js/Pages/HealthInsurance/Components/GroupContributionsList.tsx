@@ -2,6 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface Member {
     id: string;
@@ -331,60 +332,136 @@ export default function GroupContributionsList({ members, contributions = [], ap
                 </div>
             </CardHeader>
             <CardContent className="p-6 dark:bg-gray-900">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="hover:bg-transparent dark:border-gray-700">
-                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Group Name</TableHead>
-                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-center">Members</TableHead>
-                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Contributions</TableHead>
-                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Claims</TableHead>
-                            <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Net Balance</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedGroups.map(({ group, total_contribution, total_claims, net_balance }) => (
-                            <TableRow key={group} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:border-gray-700">
-                                <TableCell className="font-medium">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-4 h-4 rounded-md ${getGroupBgColor(group)} shadow-sm`}></div>
-                                        <span className={`${getGroupColor(group)} font-semibold text-lg tracking-wide`}>{group}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-center font-medium text-gray-700 dark:text-gray-300">
-                                    <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-sm font-semibold">
-                                        {groupStats[group].member_count}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
-                                    {appCurrency.symbol}{total_contribution.toLocaleString()}
-                                </TableCell>
-                                <TableCell className="text-right font-medium text-orange-600 dark:text-orange-400">
-                                    {appCurrency.symbol}{total_claims.toLocaleString()}
-                                </TableCell>
-                                <TableCell className={`text-right font-medium ${net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                    {appCurrency.symbol}{net_balance.toLocaleString()}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        <TableRow className="bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700">
-                            <TableCell className="font-bold text-gray-900 dark:text-gray-100">Total</TableCell>
-                            <TableCell className="text-center font-bold text-gray-900 dark:text-gray-100">
-                                <span className="bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-full text-sm font-semibold">
-                                    {members.length}
-                                </span>
-                            </TableCell>
-                            <TableCell className="text-right font-bold text-blue-600 dark:text-blue-400">
-                                {appCurrency.symbol}{grandTotal.total_contribution.toLocaleString()}
-                            </TableCell>
-                            <TableCell className="text-right font-bold text-orange-600 dark:text-orange-400">
-                                {appCurrency.symbol}{grandTotal.total_claims.toLocaleString()}
-                            </TableCell>
-                            <TableCell className={`text-right font-bold ${grandTotal.net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                                {appCurrency.symbol}{grandTotal.net_balance.toLocaleString()}
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Table Column */}
+                    <div>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="hover:bg-transparent dark:border-gray-700">
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Group Name</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-center">Members</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Contributions</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Total Claims</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 text-right">Net Balance</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {sortedGroups.map(({ group, total_contribution, total_claims, net_balance }) => (
+                                    <TableRow key={group} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 dark:border-gray-700">
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-4 h-4 rounded-md ${getGroupBgColor(group)} shadow-sm`}></div>
+                                                <span className={`${getGroupColor(group)} font-semibold text-lg tracking-wide`}>{group}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center font-medium text-gray-700 dark:text-gray-300">
+                                            <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-sm font-semibold">
+                                                {groupStats[group].member_count}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-right font-medium text-blue-600 dark:text-blue-400">
+                                            {appCurrency.symbol}{total_contribution.toLocaleString()}
+                                        </TableCell>
+                                        <TableCell className="text-right font-medium text-orange-600 dark:text-orange-400">
+                                            {appCurrency.symbol}{total_claims.toLocaleString()}
+                                        </TableCell>
+                                        <TableCell className={`text-right font-medium ${net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                            {appCurrency.symbol}{net_balance.toLocaleString()}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                <TableRow className="bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:border-gray-700">
+                                    <TableCell className="font-bold text-gray-900 dark:text-gray-100">Total</TableCell>
+                                    <TableCell className="text-center font-bold text-gray-900 dark:text-gray-100">
+                                        <span className="bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-full text-sm font-semibold">
+                                            {members.length}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-right font-bold text-blue-600 dark:text-blue-400">
+                                        {appCurrency.symbol}{grandTotal.total_contribution.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell className="text-right font-bold text-orange-600 dark:text-orange-400">
+                                        {appCurrency.symbol}{grandTotal.total_claims.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell className={`text-right font-bold ${grandTotal.net_balance < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                        {appCurrency.symbol}{grandTotal.net_balance.toLocaleString()}
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Chart Column */}
+                    <div className="space-y-6">
+                        {/* Bar Chart for Contributions vs Claims */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Contributions vs Claims by Group</h3>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={sortedGroups}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                    <XAxis 
+                                        dataKey="group" 
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={80}
+                                        tick={{ fontSize: 12, fill: '#6B7280' }}
+                                    />
+                                    <YAxis 
+                                        tick={{ fontSize: 12, fill: '#6B7280' }}
+                                        tickFormatter={(value) => `${appCurrency.symbol}${(value / 1000).toFixed(0)}k`}
+                                    />
+                                    <Tooltip 
+                                        formatter={(value: number) => [`${appCurrency.symbol}${value.toLocaleString()}`, '']}
+                                        labelStyle={{ color: '#374151' }}
+                                        contentStyle={{ 
+                                            backgroundColor: '#F9FAFB', 
+                                            border: '1px solid #E5E7EB',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                    <Legend />
+                                    <Bar dataKey="total_contribution" fill="#3B82F6" name="Contributions" />
+                                    <Bar dataKey="total_claims" fill="#F59E0B" name="Claims" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        {/* Pie Chart for Net Balance Distribution */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Net Balance Distribution</h3>
+                            <ResponsiveContainer width="100%" height={250}>
+                                <PieChart>
+                                    <Pie
+                                        data={sortedGroups}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        label={({ group, net_balance }) => `${group}: ${appCurrency.symbol}${net_balance.toLocaleString()}`}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="net_balance"
+                                    >
+                                        {sortedGroups.map((entry, index) => (
+                                            <Cell 
+                                                key={`cell-${index}`} 
+                                                fill={entry.net_balance >= 0 ? '#10B981' : '#EF4444'} 
+                                            />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip 
+                                        formatter={(value: number) => [`${appCurrency.symbol}${value.toLocaleString()}`, 'Net Balance']}
+                                        labelStyle={{ color: '#374151' }}
+                                        contentStyle={{ 
+                                            backgroundColor: '#F9FAFB', 
+                                            border: '1px solid #E5E7EB',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
 
