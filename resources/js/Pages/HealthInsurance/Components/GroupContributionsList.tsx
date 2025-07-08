@@ -9,6 +9,7 @@ interface Member {
     group: string;
     total_contribution: number;
     total_claims_amount: number;
+    contribution_frequency: string;
 }
 
 interface Props {
@@ -27,6 +28,7 @@ interface Contribution {
     payment_date: string;
     payment_method: string;
     reference_number: string;
+    created_at?: string;
 }
 
 // Function to generate a consistent color based on group name
@@ -109,7 +111,7 @@ export default function GroupContributionsList({ members, contributions = [], ap
     const [filterText, setFilterText] = useState('');
 
     // Helper function to get the earliest payment date within the current period for a member
-    const getEarliestPaymentInCurrentPeriod = (memberId: string) => {
+    const getEarliestPaymentInCurrentPeriod = (memberId: string, contributionFrequency: string) => {
         const memberContributions = contributions.filter(c => c.member_id === memberId);
         if (memberContributions.length === 0) return { date: new Date('9999-12-31'), period: 'No payments' };
         
@@ -118,14 +120,11 @@ export default function GroupContributionsList({ members, contributions = [], ap
         const currentMonth = now.getMonth();
         const currentQuarter = Math.floor(currentMonth / 3);
         
-        // Determine payment frequency based on contribution pattern
-        const paymentFrequency = determinePaymentFrequency(memberContributions);
-        
         let periodStart: Date;
         let periodEnd: Date;
         let periodLabel: string;
         
-        switch (paymentFrequency) {
+        switch (contributionFrequency.toLowerCase()) {
             case 'monthly':
                 periodStart = new Date(currentYear, currentMonth, 1);
                 periodEnd = new Date(currentYear, currentMonth + 1, 0);
@@ -137,13 +136,13 @@ export default function GroupContributionsList({ members, contributions = [], ap
                 periodEnd = new Date(currentYear, quarterStartMonth + 3, 0);
                 periodLabel = `Q${currentQuarter + 1} ${currentYear}`;
                 break;
-            case 'annual':
+            case 'annually':
                 periodStart = new Date(currentYear, 0, 1);
                 periodEnd = new Date(currentYear, 11, 31);
                 periodLabel = 'this year';
                 break;
             default:
-                // If we can't determine frequency, use all contributions
+                // If frequency is unknown, use all contributions
                 periodStart = new Date('1900-01-01');
                 periodEnd = new Date('9999-12-31');
                 periodLabel = 'all time';
@@ -159,38 +158,20 @@ export default function GroupContributionsList({ members, contributions = [], ap
             return { date: new Date('9999-12-31'), period: `No payments in ${periodLabel}` };
         }
         
-        // Find earliest payment in the period
-        const earliestDate = periodContributions.reduce((earliest, contribution) => {
+        // Find earliest payment in the period (use created_at for actual timestamp)
+        const earliestContribution = periodContributions.reduce((earliest, contribution) => {
             const paymentDate = new Date(contribution.payment_date);
-            return paymentDate < earliest ? paymentDate : earliest;
-        }, new Date('9999-12-31'));
+            const earliestPaymentDate = new Date(earliest.payment_date);
+            return paymentDate < earliestPaymentDate ? contribution : earliest;
+        }, periodContributions[0]);
         
-        return { date: earliestDate, period: periodLabel };
+        // Use created_at for the actual timestamp with time
+        const actualTimestamp = new Date(earliestContribution.created_at || earliestContribution.payment_date);
+        
+        return { date: actualTimestamp, period: periodLabel };
     };
     
-    // Helper function to determine payment frequency based on contribution pattern
-    const determinePaymentFrequency = (contributions: Contribution[]) => {
-        if (contributions.length < 2) return 'unknown';
-        
-        const sortedContributions = contributions
-            .map(c => new Date(c.payment_date))
-            .sort((a, b) => a.getTime() - b.getTime());
-        
-        const timeDiffs = [];
-        for (let i = 1; i < sortedContributions.length; i++) {
-            const diff = sortedContributions[i].getTime() - sortedContributions[i - 1].getTime();
-            timeDiffs.push(diff);
-        }
-        
-        const avgDiff = timeDiffs.reduce((sum, diff) => sum + diff, 0) / timeDiffs.length;
-        const avgDays = avgDiff / (1000 * 60 * 60 * 24);
-        
-        if (avgDays <= 35) return 'monthly';
-        if (avgDays <= 100) return 'quarterly';
-        if (avgDays <= 400) return 'annual';
-        
-        return 'unknown';
-    };
+
 
     // Calculate totals per group
     const groupStats = members.reduce((acc, member) => {
@@ -230,31 +211,51 @@ export default function GroupContributionsList({ members, contributions = [], ap
 
     // Find top 10 highest contributors overall with payment date consideration
     const top10OverallContributors = members
-        .sort((a, b) => {
-            // First sort by total contribution (descending)
-            if (b.total_contribution !== a.total_contribution) {
-                return b.total_contribution - a.total_contribution;
-            }
-            // If contributions are equal, sort by latest payment date (ascending)
-            const aLatestDate = getEarliestPaymentInCurrentPeriod(a.id).date;
-            const bLatestDate = getEarliestPaymentInCurrentPeriod(b.id).date;
-            return aLatestDate.getTime() - bLatestDate.getTime();
-        })
-        .slice(0, 10)
-        .map((member, index) => {
+        .map(member => {
             const memberContributions = contributions.filter(c => c.member_id === member.id);
-            const paymentInfo = getEarliestPaymentInCurrentPeriod(member.id);
+            const paymentInfo = getEarliestPaymentInCurrentPeriod(member.id, member.contribution_frequency);
             return {
-                rank: index + 1,
+                member,
                 name: member.name,
                 group: member.group || 'Ungrouped',
                 total_contribution: member.total_contribution,
                 total_claims: member.total_claims_amount,
                 contribution_count: memberContributions.length,
                 earliest_payment_date: paymentInfo.date,
-                payment_period: paymentInfo.period
+                payment_period: paymentInfo.period,
+                hasCurrentPeriodPayment: paymentInfo.date.getFullYear() !== 9999
             };
-        });
+        })
+        .sort((a, b) => {
+            // First priority: Members who have paid in current period (annual/monthly/quarterly)
+            if (a.hasCurrentPeriodPayment !== b.hasCurrentPeriodPayment) {
+                return b.hasCurrentPeriodPayment ? 1 : -1;
+            }
+            
+            // Second priority: Total contribution (descending)
+            if (b.total_contribution !== a.total_contribution) {
+                return b.total_contribution - a.total_contribution;
+            }
+            
+            // Third priority: Earliest payment date in current period (ascending - earlier is better)
+            if (a.hasCurrentPeriodPayment && b.hasCurrentPeriodPayment) {
+                return a.earliest_payment_date.getTime() - b.earliest_payment_date.getTime();
+            }
+            
+            // If no current period payments, sort by total contribution only
+            return 0;
+        })
+        .slice(0, 10)
+        .map((item, index) => ({
+            rank: index + 1,
+            name: item.name,
+            group: item.group,
+            total_contribution: item.total_contribution,
+            total_claims: item.total_claims,
+            contribution_count: item.contribution_count,
+            earliest_payment_date: item.earliest_payment_date,
+            payment_period: item.payment_period
+        }));
 
     // Find top 10 contributors per group with payment date consideration
     const top10PerGroup = Object.entries(groupStats).map(([groupName]) => {
@@ -262,30 +263,49 @@ export default function GroupContributionsList({ members, contributions = [], ap
         if (groupMembers.length === 0) return null;
         
         const top10InGroup = groupMembers
+            .map(member => {
+                const memberContributions = contributions.filter(c => c.member_id === member.id);
+                const paymentInfo = getEarliestPaymentInCurrentPeriod(member.id, member.contribution_frequency);
+                return {
+                    member,
+                    name: member.name,
+                    total_contribution: member.total_contribution,
+                    total_claims: member.total_claims_amount,
+                    contribution_count: memberContributions.length,
+                    earliest_payment_date: paymentInfo.date,
+                    payment_period: paymentInfo.period,
+                    hasCurrentPeriodPayment: paymentInfo.date.getFullYear() !== 9999
+                };
+            })
             .sort((a, b) => {
-                // First sort by total contribution (descending)
+                // First priority: Members who have paid in current period (annual/monthly/quarterly)
+                if (a.hasCurrentPeriodPayment !== b.hasCurrentPeriodPayment) {
+                    return b.hasCurrentPeriodPayment ? 1 : -1;
+                }
+                
+                // Second priority: Total contribution (descending)
                 if (b.total_contribution !== a.total_contribution) {
                     return b.total_contribution - a.total_contribution;
                 }
-                // If contributions are equal, sort by latest payment date (ascending)
-                const aLatestDate = getEarliestPaymentInCurrentPeriod(a.id).date;
-                const bLatestDate = getEarliestPaymentInCurrentPeriod(b.id).date;
-                return aLatestDate.getTime() - bLatestDate.getTime();
+                
+                // Third priority: Earliest payment date in current period (ascending - earlier is better)
+                if (a.hasCurrentPeriodPayment && b.hasCurrentPeriodPayment) {
+                    return a.earliest_payment_date.getTime() - b.earliest_payment_date.getTime();
+                }
+                
+                // If no current period payments, sort by total contribution only
+                return 0;
             })
             .slice(0, 10)
-            .map((member, index) => {
-                const memberContributions = contributions.filter(c => c.member_id === member.id);
-                            const paymentInfo = getEarliestPaymentInCurrentPeriod(member.id);
-            return {
+            .map((item, index) => ({
                 rank: index + 1,
-                name: member.name,
-                total_contribution: member.total_contribution,
-                total_claims: member.total_claims_amount,
-                contribution_count: memberContributions.length,
-                earliest_payment_date: paymentInfo.date,
-                payment_period: paymentInfo.period
-            };
-            });
+                name: item.name,
+                total_contribution: item.total_contribution,
+                total_claims: item.total_claims,
+                contribution_count: item.contribution_count,
+                earliest_payment_date: item.earliest_payment_date,
+                payment_period: item.payment_period
+            }));
         
         return {
             group: groupName,
@@ -406,9 +426,9 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400">First Payment ({contributor.payment_period}):</span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">Latest Payment ({contributor.payment_period}):</span>
                                         <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                                            {contributor.earliest_payment_date.getFullYear() === 9999 ? 'No payments' : contributor.earliest_payment_date.toLocaleDateString()}
+                                            {contributor.earliest_payment_date.getFullYear() === 9999 ? 'No payments' : contributor.earliest_payment_date.toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
@@ -459,9 +479,9 @@ export default function GroupContributionsList({ members, contributions = [], ap
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-xs ml-4">
-                                                    <span className="text-gray-500 dark:text-gray-400">First Payment ({contributor.payment_period}):</span>
+                                                    <span className="text-gray-500 dark:text-gray-400">Latest Payment ({contributor.payment_period}):</span>
                                                     <span className="font-medium text-amber-600 dark:text-amber-400">
-                                                        {contributor.earliest_payment_date.getFullYear() === 9999 ? 'No payments' : contributor.earliest_payment_date.toLocaleDateString()}
+                                                        {contributor.earliest_payment_date.getFullYear() === 9999 ? 'No payments' : contributor.earliest_payment_date.toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>

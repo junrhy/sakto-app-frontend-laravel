@@ -44,6 +44,7 @@ interface Contribution {
     payment_date: string;
     payment_method: string;
     reference_number: string;
+    created_at?: string;
 }
 
 interface Claim {
@@ -64,9 +65,9 @@ interface Props extends PageProps {
         modules?: string[];
     };
     initialMembers: (Member & {
-        contributions: Contribution[];
+        contributions: (Omit<Contribution, 'created_at'> & { created_at?: string })[];
     })[];
-    initialContributions: Contribution[];
+    initialContributions: (Omit<Contribution, 'created_at'> & { created_at?: string })[];
     initialClaims: Claim[];
     appCurrency: {
         code: string;
@@ -78,6 +79,10 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
     const { url } = usePage();
     const [members, setMembers] = useState<Member[]>(initialMembers.map(member => ({
         ...member,
+        contributions: member.contributions.map(contribution => ({
+            ...contribution,
+            created_at: contribution.created_at || new Date().toISOString()
+        })),
         total_contribution: member.contributions.reduce((sum, contribution) => sum + Number(contribution.amount), 0),
         total_claims_amount: initialClaims
             .filter(claim => claim.member_id === member.id)
@@ -87,7 +92,10 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
                 .filter(claim => claim.member_id === member.id)
                 .reduce((sum, claim) => sum + Number(claim.amount), 0)
     })));
-    const [contributions, setContributions] = useState<Contribution[]>(initialContributions);
+    const [contributions, setContributions] = useState<Contribution[]>(initialContributions.map(contribution => ({
+        ...contribution,
+        created_at: contribution.created_at || new Date().toISOString()
+    })));
     const [claims, setClaims] = useState<Claim[]>(initialClaims);
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
@@ -125,8 +133,12 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
         }]);
     };
 
-    const handleAddContribution = (newContribution: Contribution) => {
-        setContributions([...contributions, newContribution]);
+    const handleAddContribution = (newContribution: Omit<Contribution, 'created_at'>) => {
+        const contributionWithTimestamp: Contribution = {
+            ...newContribution,
+            created_at: new Date().toISOString()
+        };
+        setContributions([...contributions, contributionWithTimestamp]);
         // Update the member's total contribution
         setMembers(members.map(member => {
             if (member.id === newContribution.member_id) {
@@ -139,8 +151,12 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
         }));
     };
 
-    const handleBulkContributionsAdded = (newContributions: Contribution[]) => {
-        setContributions([...contributions, ...newContributions]);
+    const handleBulkContributionsAdded = (newContributions: Omit<Contribution, 'created_at'>[]) => {
+        const contributionsWithTimestamp: Contribution[] = newContributions.map(contribution => ({
+            ...contribution,
+            created_at: new Date().toISOString()
+        }));
+        setContributions([...contributions, ...contributionsWithTimestamp]);
         // Update each member's total contribution
         setMembers(members.map(member => {
             const memberContributions = newContributions.filter(c => c.member_id === member.id);
@@ -171,7 +187,7 @@ export default function HealthInsurance({ auth, initialMembers, initialContribut
         }));
     };
 
-    const handleMemberSelect = (member: Member) => {
+    const handleMemberSelect = (member: Member & { contributions: Contribution[] }) => {
         setSelectedMember(member);
         setIsEditMemberOpen(true);
     };
