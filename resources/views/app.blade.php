@@ -88,11 +88,19 @@
                 }
             };
 
-            // Check system dark mode preference and set class accordingly
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.classList.add('dark')
+            // Check user's theme preference first, then fall back to system preference
+            const userTheme = localStorage.getItem('sakto-theme');
+            if (userTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else if (userTheme === 'dark') {
+                document.documentElement.classList.add('dark');
             } else {
-                document.documentElement.classList.remove('dark')
+                // Fall back to system preference for 'system' theme or no preference
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
             }
 
             // Watch for system theme changes
