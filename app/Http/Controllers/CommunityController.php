@@ -8,6 +8,8 @@ use Illuminate\Foundation\Application;
 use Inertia\Inertia;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class CommunityController extends Controller
 {
@@ -184,7 +186,8 @@ class CommunityController extends Controller
             'contacts' => $contacts,
             'updates' => $updates,
             'products' => $products,
-            'orderHistory' => $orderHistory
+            'orderHistory' => $orderHistory,
+            'appUrl' => config('app.url')
         ]);
     }
 
@@ -446,6 +449,58 @@ class CommunityController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Network error occurred while searching mortuary records'
+            ], 500);
+        }
+    }
+
+    public function sendSignUpLink(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'member_id' => 'required|integer',
+            'registration_url' => 'required|url',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $email = $request->email;
+            $memberId = $request->member_id;
+            $registrationUrl = $request->registration_url;
+
+            // Get member details for email
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $memberId)
+                ->first();
+
+            if (!$member) {
+                return response()->json([
+                    'message' => 'Member not found'
+                ], 404);
+            }
+
+            // Send email with registration link
+            Mail::send('emails.signup-link', [
+                'registrationUrl' => $registrationUrl,
+                'email' => $email,
+                'memberName' => $member->name
+            ], function ($message) use ($email, $member) {
+                $message->to($email)
+                        ->subject("Complete Your Registration - {$member->name}'s App");
+            });
+
+            return response()->json([
+                'message' => 'Registration link sent successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to send registration link. Please try again.'
             ], 500);
         }
     }

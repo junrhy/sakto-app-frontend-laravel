@@ -32,9 +32,10 @@ interface PageProps {
     updates: any[];
     products: any[];
     orderHistory: any[];
+    appUrl: string;
 }
 
-export default function MemberRefactored({ member, challenges, events, pages, contacts, updates, products, orderHistory }: PageProps) {
+export default function Member({ member, challenges, events, pages, contacts, updates, products, orderHistory, appUrl }: PageProps) {
     // Get initial tab from URL
     const getInitialTab = () => {
         if (typeof window !== 'undefined') {
@@ -47,8 +48,12 @@ export default function MemberRefactored({ member, challenges, events, pages, co
     const [activeSection, setActiveSection] = useState(getInitialTab());
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [showVisitorForm, setShowVisitorForm] = useState(false);
+    const [showSignUpForm, setShowSignUpForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSignUpSubmitting, setIsSignUpSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [signUpError, setSignUpError] = useState('');
+    const [signUpSuccess, setSignUpSuccess] = useState(false);
     const [visitorInfo, setVisitorInfo] = useState({
         firstName: '',
         middleName: '',
@@ -56,6 +61,7 @@ export default function MemberRefactored({ member, challenges, events, pages, co
         email: '',
         phone: ''
     });
+    const [signUpEmail, setSignUpEmail] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [currentVisitor, setCurrentVisitor] = useState<{
         firstName: string;
@@ -148,6 +154,40 @@ export default function MemberRefactored({ member, challenges, events, pages, co
         });
     };
 
+    const handleSignUpSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSignUpSubmitting(true);
+        setSignUpError('');
+        setSignUpSuccess(false);
+
+        try {
+            const response = await fetch('/community/send-signup-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    email: signUpEmail,
+                    member_id: member.id,
+                    registration_url: `${appUrl}/contacts/self-registration?client_identifier=${member.identifier}`
+                })
+            });
+
+            if (response.ok) {
+                setSignUpSuccess(true);
+                setSignUpEmail('');
+            } else {
+                const errorData = await response.json();
+                setSignUpError(errorData.message || 'Failed to send signup link. Please try again.');
+            }
+        } catch (error) {
+            setSignUpError('Network error. Please try again.');
+        }
+
+        setIsSignUpSubmitting(false);
+    };
+
     const handleMenuClick = (sectionId: string) => {
         setActiveSection(sectionId);
         setIsMobileMenuOpen(false); // Close mobile menu when item is clicked
@@ -206,29 +246,17 @@ export default function MemberRefactored({ member, challenges, events, pages, co
             <>
                 <Head title={`${member.name}`} />
                 <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                    {/* Header */}
-                    <div className="bg-indigo-600 dark:bg-indigo-800 shadow-sm border-b border-indigo-700 dark:border-indigo-600">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
-                                    <span className="ml-2 text-xl font-bold text-white">{member.name}</span>
-                                </div>
-                                                            <div className="flex items-center space-x-4">
-                            </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Visitor Form */}
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
                             <div className="text-center mb-8">
-                                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome to {member.name}'s Page</h2>
+                                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Welcome to {member.name}'s App</h2>
                                 <p className="text-gray-600 dark:text-gray-400">Please enter your information to access this page.</p>
                             </div>
 
-                            <form onSubmit={handleVisitorSubmit} className="max-w-md mx-auto space-y-4">
+                            {!showSignUpForm ? (
+                                <>
+                                    <form onSubmit={handleVisitorSubmit} className="max-w-md mx-auto space-y-4">
                                 <div>
                                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         First Name
@@ -312,6 +340,96 @@ export default function MemberRefactored({ member, challenges, events, pages, co
                                     {isSubmitting ? 'Verifying...' : 'Continue'}
                                 </button>
                             </form>
+
+                            <div className="mt-6 text-center">
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowSignUpForm(true)}
+                                    className="mt-4 w-full px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Sign Up
+                                </button>
+                            </div>
+                        </>
+                            ) : (
+                                <>
+                                    {signUpSuccess ? (
+                                        <div className="max-w-md mx-auto text-center">
+                                            <div className="mb-4">
+                                                <svg className="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Check Your Email</h3>
+                                            <p className="text-gray-600 dark:text-gray-400 mb-6">
+                                                We've sent a registration link to your email address. Please check your inbox and click the link to complete your registration.
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    setShowSignUpForm(false);
+                                                    setSignUpSuccess(false);
+                                                }}
+                                                className="w-full px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                                            >
+                                                Back to Login
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="text-center mb-8">
+                                                <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Sign Up</h2>
+                                                <p className="text-gray-600 dark:text-gray-400">Enter your email to receive a registration link.</p>
+                                            </div>
+
+                                            <form onSubmit={handleSignUpSubmit} className="max-w-md mx-auto space-y-4">
+                                                <div>
+                                                    <label htmlFor="signUpEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                        Email Address
+                                                    </label>
+                                                    <input
+                                                        type="email"
+                                                        id="signUpEmail"
+                                                        value={signUpEmail}
+                                                        onChange={(e) => setSignUpEmail(e.target.value)}
+                                                        required
+                                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+                                                    />
+                                                </div>
+
+                                                {signUpError && (
+                                                    <div className="text-red-600 dark:text-red-400 text-sm mt-2">
+                                                        {signUpError}
+                                                    </div>
+                                                )}
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={isSignUpSubmitting}
+                                                    className="w-full px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {isSignUpSubmitting ? 'Sending...' : 'Send Registration Link'}
+                                                </button>
+                                            </form>
+
+                                            <div className="mt-6 text-center">
+                                                <button
+                                                    onClick={() => setShowSignUpForm(false)}
+                                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm"
+                                                >
+                                                    Back to Login
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

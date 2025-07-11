@@ -198,6 +198,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/m/{identifier}/search-lending', [CommunityController::class, 'searchLendingRecords'])->name('member.search-lending');
     Route::get('/m/{identifier}/search-healthcare', [CommunityController::class, 'searchHealthcareRecords'])->name('member.search-healthcare');
     Route::get('/m/{identifier}/search-mortuary', [CommunityController::class, 'searchMortuaryRecords'])->name('member.search-mortuary');
+    Route::post('/community/send-signup-link', [CommunityController::class, 'sendSignUpLink'])->name('api.send-signup-link');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
     Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
