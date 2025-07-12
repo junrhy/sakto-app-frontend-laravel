@@ -254,7 +254,10 @@ export default function Apps() {
                         <div className="w-full flex justify-between items-center mb-2">
                             <div className="flex items-center">
                                 <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
-                                <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">Sakto</span>
+                                <div className="ml-2">
+                                    <span className="text-xl font-bold text-gray-900 dark:text-white">{auth.user.name} Apps</span>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">powered by Sakto {auth.user.project_identifier.charAt(0).toUpperCase() + auth.user.project_identifier.slice(1)} Platform</div>
+                                </div>
                             </div>
                             <div className="flex items-center gap-2 sm:gap-4">
                                 <div className="hidden sm:flex items-center gap-2">

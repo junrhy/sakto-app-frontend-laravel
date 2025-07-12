@@ -34,13 +34,34 @@ const formatNumber = (num: number | undefined | null) => {
     return num?.toLocaleString() ?? '0';
 };
 
-const getHeaderColorClass = (url: string): string => {
+const getHeaderColorClass = (url: string, projectIdentifier?: string): string => {
+    // First check URL-based colors for specific pages
     if (url.includes('subscriptions')) {
         return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700';
     }
     if (url.includes('credits')) {
         return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
     }
+    
+    // Then check project-based colors
+    if (projectIdentifier) {
+        switch (projectIdentifier.toLowerCase()) {
+            case 'trial':
+                return 'from-green-600 via-green-500 to-green-400 dark:from-green-900 dark:via-green-800 dark:to-green-700';
+            case 'community':
+                return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700';
+            case 'logistics':
+                return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
+            case 'medical':
+                return 'from-red-600 via-red-500 to-red-400 dark:from-red-900 dark:via-red-800 dark:to-red-700';
+            case 'enterprise':
+                return 'from-indigo-600 via-indigo-500 to-indigo-400 dark:from-indigo-900 dark:via-indigo-800 dark:to-indigo-700';
+            default:
+                return 'from-rose-600 via-rose-500 to-rose-400 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700';
+        }
+    }
+    
+    // Default fallback
     return 'from-rose-600 via-rose-500 to-rose-400 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700';
 };
 
@@ -466,7 +487,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     />
                 )}
 
-                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
+                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project?.identifier)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
@@ -512,9 +533,12 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     <Link href="/home" className="transition-transform hover:scale-105">
                                         <div className="flex items-center">
                                             <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
-                                            <span className="text-xl font-black ml-2 text-white">
-                                                Sakto
-                                            </span>
+                                            <div className="ml-2">
+                                                <span className="text-xl font-black text-white">
+                                                    {authUser.name} Apps
+                                                </span>
+                                                <div className="text-xs text-white/90">powered by Sakto {authUser.project?.identifier?.charAt(0).toUpperCase() + authUser.project?.identifier?.slice(1)} Platform</div>
+                                            </div>
                                         </div>
                                     </Link>
                                 </div>
