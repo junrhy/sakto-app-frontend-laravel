@@ -108,22 +108,22 @@ const getTypeLabel = (type: string) => {
 
 const getStockStatus = (quantity?: number, type?: string) => {
     if (type === 'digital' || type === 'service' || type === 'subscription') {
-        return <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">Unlimited</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">Unlimited</Badge>;
     }
     
     if (quantity === undefined || quantity === null) {
-        return <Badge variant="secondary" className="bg-gray-100 text-gray-800 border-gray-200">N/A</Badge>;
+        return <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700">N/A</Badge>;
     }
     
     if (quantity === 0) {
-        return <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">Out of Stock</Badge>;
+        return <Badge variant="destructive" className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800">Out of Stock</Badge>;
     }
     
     if (quantity <= 10) {
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">Low Stock ({quantity})</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800">Low Stock ({quantity})</Badge>;
     }
     
-    return <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">In Stock ({quantity})</Badge>;
+    return <Badge variant="default" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">In Stock ({quantity})</Badge>;
 };
 
 export default function Show({ auth, product, currency }: Props) {
@@ -221,8 +221,8 @@ export default function Show({ auth, product, currency }: Props) {
                             <ArrowLeft className="w-4 h-4" />
                             <span>Back to Products</span>
                         </Button>
-                        <div className="h-6 w-px bg-gray-300" />
-                        <h2 className="font-semibold text-xl text-gray-800 leading-tight">Product Details</h2>
+                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                        <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">Product Details</h2>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
@@ -256,19 +256,19 @@ export default function Show({ auth, product, currency }: Props) {
             <div className="py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Breadcrumb */}
-                    <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-8">
-                        <Link href={route('products.index')} className="hover:text-gray-700">
+                    <nav className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-8">
+                        <Link href={route('products.index')} className="hover:text-gray-700 dark:hover:text-gray-300">
                             Products
                         </Link>
                         <span>/</span>
-                        <span className="text-gray-900 font-medium">{product.name}</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-medium">{product.name}</span>
                     </nav>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                         {/* Product Images */}
                         <div className="space-y-6">
                             {/* Main Image */}
-                            <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden shadow-lg">
+                            <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg">
                                 {images.length > 0 ? (
                                     <img
                                         src={images[selectedImage]}
@@ -276,8 +276,8 @@ export default function Show({ auth, product, currency }: Props) {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                                        <Package className="w-24 h-24 text-gray-400" />
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
+                                        <Package className="w-24 h-24 text-gray-400 dark:text-gray-500" />
                                     </div>
                                 )}
                             </div>
@@ -291,8 +291,8 @@ export default function Show({ auth, product, currency }: Props) {
                                             onClick={() => setSelectedImage(index)}
                                             className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                                                 selectedImage === index
-                                                    ? 'border-blue-500 shadow-md'
-                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    ? 'border-blue-500 dark:border-blue-400 shadow-md'
+                                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                                             }`}
                                         >
                                             <img
@@ -322,7 +322,7 @@ export default function Show({ auth, product, currency }: Props) {
                                     >
                                         {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
                                     </Badge>
-                                    <div className="flex items-center space-x-1 text-sm text-gray-500">
+                                    <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
                                         {getTypeIcon(product.type)}
                                         <span>{getTypeLabel(product.type)}</span>
                                     </div>
@@ -343,8 +343,8 @@ export default function Show({ auth, product, currency }: Props) {
                             {/* Product Header */}
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{product.name}</h1>
+                                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                         <span>SKU: {product.sku || 'N/A'}</span>
                                         <span>Category: {product.category}</span>
                                     </div>
@@ -352,14 +352,14 @@ export default function Show({ auth, product, currency }: Props) {
 
                                 {/* Price */}
                                 <div className="space-y-2">
-                                    <div className="text-3xl font-bold text-blue-600">
+                                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                                         {formatCurrency(product.price, currency.symbol)}
                                     </div>
                                     {product.type === 'physical' && (
                                         <div className="flex items-center space-x-2">
                                             {getStockStatus(product.stock_quantity, product.type)}
                                             {product.stock_quantity !== undefined && product.stock_quantity > 0 && (
-                                                <span className="text-sm text-gray-500">
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">
                                                     • Free shipping on orders over {formatCurrency(50, currency.symbol)}
                                                 </span>
                                             )}
@@ -368,15 +368,15 @@ export default function Show({ auth, product, currency }: Props) {
                                 </div>
 
                                 {/* Description */}
-                                <div className="prose prose-sm max-w-none">
-                                    <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                                <div className="prose prose-sm max-w-none dark:prose-invert">
+                                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{product.description}</p>
                                 </div>
 
                                 {/* Tags */}
                                 {product.tags && product.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-2">
                                         {product.tags.map((tag) => (
-                                            <Badge key={tag} variant="outline" className="bg-gray-50">
+                                            <Badge key={tag} variant="outline" className="bg-gray-50 dark:bg-gray-800">
                                                 {tag}
                                             </Badge>
                                         ))}
@@ -386,7 +386,7 @@ export default function Show({ auth, product, currency }: Props) {
 
                             {/* Variant Selection or Simple Add to Cart */}
                             {hasVariants && product.type === 'physical' && (
-                                <Card className="border-2 border-gray-100 shadow-sm">
+                                <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-sm">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-lg flex items-center space-x-2">
                                             <Package className="w-5 h-5" />
@@ -410,7 +410,7 @@ export default function Show({ auth, product, currency }: Props) {
                             )}
 
                             {!hasVariants && product.type === 'physical' && product.status === 'published' && (
-                                <Card className="border-2 border-gray-100 shadow-sm">
+                                <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-sm">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-lg flex items-center space-x-2">
                                             <ShoppingCart className="w-5 h-5" />
@@ -419,7 +419,7 @@ export default function Show({ auth, product, currency }: Props) {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium text-gray-700">Quantity</span>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</span>
                                             <div className="flex items-center space-x-2">
                                                 <Button
                                                     variant="outline"
@@ -463,46 +463,46 @@ export default function Show({ auth, product, currency }: Props) {
                             )}
 
                             {/* Product Features */}
-                            <Card className="border-2 border-gray-100 shadow-sm">
+                            <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-sm">
                                 <CardHeader>
                                     <CardTitle className="text-lg">Product Features</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <Truck className="w-5 h-5 text-blue-600" />
+                                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                                <Truck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-sm">Fast Shipping</div>
-                                                <div className="text-xs text-gray-500">Free on orders over {formatCurrency(50, currency.symbol)}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">Free on orders over {formatCurrency(50, currency.symbol)}</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                                <Shield className="w-5 h-5 text-green-600" />
+                                            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                                <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-sm">Secure Payment</div>
-                                                <div className="text-xs text-gray-500">100% secure checkout</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">100% secure checkout</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                                                <RotateCcw className="w-5 h-5 text-purple-600" />
+                                            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                                                <RotateCcw className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-sm">Easy Returns</div>
-                                                <div className="text-xs text-gray-500">30-day return policy</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">30-day return policy</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                                                <CheckCircle className="w-5 h-5 text-orange-600" />
+                                            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+                                                <CheckCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                                             </div>
                                             <div>
                                                 <div className="font-medium text-sm">Quality Guarantee</div>
-                                                <div className="text-xs text-gray-500">Premium quality products</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">Premium quality products</div>
                                             </div>
                                         </div>
                                     </div>
@@ -523,9 +523,9 @@ export default function Show({ auth, product, currency }: Props) {
                             <TabsContent value="details" className="mt-6">
                                 <Card>
                                     <CardContent className="p-6">
-                                        <div className="prose prose-sm max-w-none">
+                                        <div className="prose prose-sm max-w-none dark:prose-invert">
                                             <h3 className="text-lg font-semibold mb-4">Product Description</h3>
-                                            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{product.description}</p>
+                                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{product.description}</p>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -539,19 +539,19 @@ export default function Show({ auth, product, currency }: Props) {
                                                 <h3 className="text-lg font-semibold">Product Information</h3>
                                                 <div className="space-y-3">
                                                     <div className="flex justify-between">
-                                                        <span className="text-gray-600">SKU</span>
+                                                        <span className="text-gray-600 dark:text-gray-400">SKU</span>
                                                         <span className="font-medium">{product.sku || 'N/A'}</span>
                                                     </div>
                                                     <div className="flex justify-between">
-                                                        <span className="text-gray-600">Category</span>
+                                                        <span className="text-gray-600 dark:text-gray-400">Category</span>
                                                         <span className="font-medium">{product.category}</span>
                                                     </div>
                                                     <div className="flex justify-between">
-                                                        <span className="text-gray-600">Type</span>
+                                                        <span className="text-gray-600 dark:text-gray-400">Type</span>
                                                         <span className="font-medium">{getTypeLabel(product.type)}</span>
                                                     </div>
                                                     <div className="flex justify-between">
-                                                        <span className="text-gray-600">Status</span>
+                                                        <span className="text-gray-600 dark:text-gray-400">Status</span>
                                                         <span className="font-medium capitalize">{product.status}</span>
                                                     </div>
                                                 </div>
@@ -563,19 +563,19 @@ export default function Show({ auth, product, currency }: Props) {
                                                     <div className="space-y-3">
                                                         {product.weight && (
                                                             <div className="flex justify-between">
-                                                                <span className="text-gray-600">Weight</span>
+                                                                <span className="text-gray-600 dark:text-gray-400">Weight</span>
                                                                 <span className="font-medium">{product.weight} kg</span>
                                                             </div>
                                                         )}
                                                         {product.dimensions && (
                                                             <div className="flex justify-between">
-                                                                <span className="text-gray-600">Dimensions</span>
+                                                                <span className="text-gray-600 dark:text-gray-400">Dimensions</span>
                                                                 <span className="font-medium">{product.dimensions}</span>
                                                             </div>
                                                         )}
                                                         {product.stock_quantity !== undefined && (
                                                             <div className="flex justify-between">
-                                                                <span className="text-gray-600">Stock Quantity</span>
+                                                                <span className="text-gray-600 dark:text-gray-400">Stock Quantity</span>
                                                                 <span className="font-medium">{product.stock_quantity}</span>
                                                             </div>
                                                         )}
@@ -591,9 +591,9 @@ export default function Show({ auth, product, currency }: Props) {
                                 <Card>
                                     <CardContent className="p-6">
                                         <div className="text-center py-12">
-                                            <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                                            <p className="text-gray-500">Be the first to review this product!</p>
+                                            <Star className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Reviews Yet</h3>
+                                            <p className="text-gray-500 dark:text-gray-400">Be the first to review this product!</p>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -604,18 +604,18 @@ export default function Show({ auth, product, currency }: Props) {
                     {/* Cart Summary Sidebar */}
                     {cartState.items.length > 0 && (
                         <div className="fixed bottom-4 right-4 z-50">
-                            <Card className="w-80 shadow-xl border-2 border-blue-200">
+                            <Card className="w-80 shadow-xl border-2 border-blue-200 dark:border-blue-800">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-lg flex items-center justify-between">
                                         <span>Cart ({cartState.itemCount} items)</span>
-                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                        <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
                                             {formatCurrency(cartState.total, currency.symbol)}
                                         </Badge>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3 max-h-64 overflow-y-auto">
                                     {cartState.items.map((item: any, index: number) => (
-                                        <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-gray-50">
+                                        <div key={index} className="flex items-center gap-3 p-2 border rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
                                             {item.thumbnail_url && (
                                                 <img 
                                                     src={item.thumbnail_url} 
@@ -625,7 +625,7 @@ export default function Show({ auth, product, currency }: Props) {
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-medium text-sm truncate">{item.name}</div>
-                                                <div className="text-xs text-gray-500">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
                                                     {formatCurrency(item.price, currency.symbol)} each
                                                 </div>
                                             </div>
@@ -659,7 +659,7 @@ export default function Show({ auth, product, currency }: Props) {
                                         </div>
                                     ))}
                                 </CardContent>
-                                <div className="p-4 border-t bg-gray-50">
+                                <div className="p-4 border-t bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
                                     <Button 
                                         className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
                                         onClick={() => {
