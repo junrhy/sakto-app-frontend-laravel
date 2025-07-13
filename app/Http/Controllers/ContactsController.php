@@ -45,9 +45,11 @@ class ContactsController extends Controller
             }
 
             $contacts = $response->json();
+            $appCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Contacts/Index', [
-                'contacts' => $contacts
+                'contacts' => $contacts,
+                'appCurrency' => $appCurrency
             ]);
         } catch (\Exception $e) {
             Log::error('Exception in contacts index', [
@@ -109,20 +111,7 @@ class ContactsController extends Controller
             ->with('message', 'Contact created successfully');
     }
 
-    public function show($id)
-    {
-        $response = Http::withToken($this->apiToken)
-            ->get("{$this->apiUrl}/contacts/{$id}");
-        
-        if (!$response->successful()) {
-            return redirect()->route('contacts.index')
-                ->with('error', 'Contact not found');
-        }
 
-        return Inertia::render('Contacts/Show', [
-            'contact' => $response->json()
-        ]);
-    }
 
     public function edit($id)
     {
@@ -465,5 +454,191 @@ class ContactsController extends Controller
             return back()->withErrors(['error' => 'Failed to bulk delete contacts.']);
         }
         return redirect()->route('contacts.index')->with('message', 'Contacts deleted successfully.');
+    }
+
+    public function getWalletBalance($contactId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/balance");
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch wallet balance'
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getWalletBalance', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching wallet balance'
+            ], 500);
+        }
+    }
+
+    public function addFunds(Request $request, $contactId)
+    {
+        try {
+            $validated = $request->validate([
+                'amount' => 'required|numeric|min:0.01',
+                'description' => 'nullable|string|max:255',
+                'reference' => 'nullable|string|max:255',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/contact-wallets/{$contactId}/add-funds", $validated);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to add funds: ' . ($response->json()['message'] ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in addFunds', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while adding funds'
+            ], 500);
+        }
+    }
+
+    public function deductFunds(Request $request, $contactId)
+    {
+        try {
+            $validated = $request->validate([
+                'amount' => 'required|numeric|min:0.01',
+                'description' => 'nullable|string|max:255',
+                'reference' => 'nullable|string|max:255',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/contact-wallets/{$contactId}/deduct-funds", $validated);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to deduct funds: ' . ($response->json()['message'] ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in deductFunds', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while deducting funds'
+            ], 500);
+        }
+    }
+
+    public function getTransactionHistory($contactId, Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/transactions", [
+                    'per_page' => $request->get('per_page', 15)
+                ]);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch transaction history'
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getTransactionHistory', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching transaction history'
+            ], 500);
+        }
+    }
+
+    public function getClientWallets(Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contact-wallets/client-summary", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch client wallets'
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getClientWallets', [
+                'message' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching client wallets'
+            ], 500);
+        }
+    }
+
+    public function transferFunds(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'from_contact_id' => 'required|exists:contacts,id',
+                'to_contact_id' => 'required|exists:contacts,id',
+                'amount' => 'required|numeric|min:0.01',
+                'description' => 'nullable|string|max:255',
+                'reference' => 'nullable|string|max:255',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/contact-wallets/transfer", $validated);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to transfer funds: ' . ($response->json()['message'] ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in transferFunds', [
+                'message' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while transferring funds'
+            ], 500);
+        }
     }
 }

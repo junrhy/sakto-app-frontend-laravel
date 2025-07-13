@@ -11,8 +11,8 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import { Link } from '@inertiajs/react';
-import { PlusIcon, SearchIcon, FileDown, Trash2, Eye, Users, Filter } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { PlusIcon, SearchIcon, FileDown, Trash2, Eye, Users, Filter, Wallet } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -42,6 +42,7 @@ import {
 } from "@/Components/ui/tabs";
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import ContactWallet from '@/Components/ContactWallet';
 
 interface IdNumber {
     id: number;
@@ -79,6 +80,11 @@ interface Contact {
 interface Props {
     auth: { user: any };
     contacts: Contact[];
+    appCurrency: {
+        symbol: string;
+        decimal_separator: string;
+        thousands_separator: string;
+    };
 }
 
 const formatDate = (dateString?: string) => {
@@ -92,13 +98,14 @@ const formatDate = (dateString?: string) => {
     });
 };
 
-export default function Index({ auth, contacts }: Props) {
+export default function Index({ auth, contacts, appCurrency }: Props) {
     const [search, setSearch] = useState('');
     const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [groupFilter, setGroupFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<string>('details');
+    const [walletBalances, setWalletBalances] = useState<{[key: number]: number}>({});
 
     // Parse id_numbers if it's a string
     const parseIdNumbers = (idNumbers: any) => {
@@ -111,6 +118,35 @@ export default function Index({ auth, contacts }: Props) {
             return [];
         }
     };
+
+    const fetchWalletBalances = async () => {
+        try {
+            const balances: {[key: number]: number} = {};
+            for (const contact of contacts) {
+                try {
+                    const response = await fetch(`/contacts/${contact.id}/wallet/balance`);
+                    const data = await response.json();
+                    if (data.success && data.data?.wallet) {
+                        balances[contact.id] = data.data.wallet.balance;
+                    } else {
+                        balances[contact.id] = 0;
+                    }
+                } catch (error) {
+                    balances[contact.id] = 0;
+                }
+            }
+            setWalletBalances(balances);
+        } catch (error) {
+            console.error('Error fetching wallet balances:', error);
+        }
+    };
+
+    // Fetch wallet balances when component mounts
+    useEffect(() => {
+        if (contacts.length > 0) {
+            fetchWalletBalances();
+        }
+    }, [contacts]);
 
     const filteredContacts = useMemo(() => {
         if (!search.trim() && groupFilter === 'all') return contacts;
@@ -358,7 +394,7 @@ export default function Index({ auth, contacts }: Props) {
             <div className="py-8">
                 <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
@@ -425,6 +461,25 @@ export default function Index({ auth, contacts }: Props) {
                                 </div>
                             </CardContent>
                         </Card>
+                        
+                        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
+                            <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Total Wallet Balance</p>
+                                        <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
+                                            {appCurrency.symbol}{Object.values(walletBalances)
+                                                .filter(balance => typeof balance === 'number' && !isNaN(balance))
+                                                .reduce((sum, balance) => sum + balance, 0)
+                                                .toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-emerald-500 rounded-lg">
+                                        <Wallet className="h-6 w-6 text-white" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* Main Table Card */}
@@ -450,6 +505,7 @@ export default function Index({ auth, contacts }: Props) {
                                             <TableHead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">Name</TableHead>
                                             <TableHead className="hidden md:table-cell bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">Email</TableHead>
                                             <TableHead className="hidden lg:table-cell bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">Contact</TableHead>
+                                            <TableHead className="hidden xl:table-cell bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">Wallet</TableHead>
                                             <TableHead className="w-[180px] bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -521,6 +577,14 @@ export default function Index({ auth, contacts }: Props) {
                                                     <div className="flex items-center space-x-2">
                                                         <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                                                         <span className="font-medium">{contact.call_number || contact.sms_number || contact.whatsapp || '-'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="hidden xl:table-cell bg-white dark:bg-gray-900/40 text-gray-700 dark:text-gray-300">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Wallet className="h-4 w-4 text-green-600" />
+                                                        <span className="font-medium text-green-600">
+                                                            {appCurrency.symbol}{(typeof walletBalances[contact.id] === 'number' && !isNaN(walletBalances[contact.id]) ? walletBalances[contact.id] : 0).toFixed(2)}
+                                                        </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="bg-white dark:bg-gray-900/40">
@@ -647,7 +711,7 @@ export default function Index({ auth, contacts }: Props) {
 
                             {/* Tabs with enhanced styling */}
                             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                                <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 p-1 rounded-lg">
+                                <TabsList className="grid w-full grid-cols-6 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 p-1 rounded-lg">
                                     <TabsTrigger 
                                         value="details" 
                                         className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm transition-all duration-200"
@@ -665,6 +729,13 @@ export default function Index({ auth, contacts }: Props) {
                                         className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm transition-all duration-200"
                                     >
                                         Social
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="wallet" 
+                                        className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm transition-all duration-200"
+                                    >
+                                        <Wallet className="h-4 w-4 mr-1" />
+                                        Wallet
                                     </TabsTrigger>
                                     <TabsTrigger 
                                         value="qr" 
@@ -866,6 +937,14 @@ export default function Index({ auth, contacts }: Props) {
                                             </div>
                                         </CardContent>
                                     </Card>
+                                </TabsContent>
+
+                                <TabsContent value="wallet" className="space-y-8 mt-8">
+                                    <ContactWallet 
+                                        contactId={selectedContact.id} 
+                                        contactName={`${selectedContact.first_name} ${selectedContact.last_name}`}
+                                        appCurrency={appCurrency}
+                                    />
                                 </TabsContent>
 
                                 <TabsContent value="qr" className="space-y-8 mt-8">
