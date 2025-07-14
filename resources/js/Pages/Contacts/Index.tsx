@@ -12,7 +12,7 @@ import {
 } from '@/Components/ui/table';
 import { Link } from '@inertiajs/react';
 import { PlusIcon, SearchIcon, FileDown, Trash2, Eye, Users, Filter, Wallet } from 'lucide-react';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -73,6 +73,9 @@ interface Contact {
     id_picture?: string;
     id_numbers?: IdNumber[];  // Make id_numbers optional
     group?: string[];  // Add group field
+    wallet_balance?: number;
+    wallet_currency?: string;
+    wallet_status?: string;
     created_at: string;
     updated_at: string;
 }
@@ -105,8 +108,6 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [groupFilter, setGroupFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<string>('details');
-    const [walletBalances, setWalletBalances] = useState<{[key: number]: number}>({});
-
     // Parse id_numbers if it's a string
     const parseIdNumbers = (idNumbers: any) => {
         if (!idNumbers) return [];
@@ -119,40 +120,13 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
         }
     };
 
-    const fetchWalletBalances = async () => {
-        try {
-            const balances: {[key: number]: number} = {};
-            for (const contact of contacts) {
-                try {
-                    const response = await fetch(`/contacts/${contact.id}/wallet/balance`);
-                    const data = await response.json();
-                    if (data.success && data.data?.wallet) {
-                        balances[contact.id] = data.data.wallet.balance;
-                    } else {
-                        balances[contact.id] = 0;
-                    }
-                } catch (error) {
-                    balances[contact.id] = 0;
-                }
-            }
-            setWalletBalances(balances);
-        } catch (error) {
-            console.error('Error fetching wallet balances:', error);
-        }
-    };
 
-    // Fetch wallet balances when component mounts
-    useEffect(() => {
-        if (contacts.length > 0) {
-            fetchWalletBalances();
-        }
-    }, [contacts]);
 
     const filteredContacts = useMemo(() => {
-        if (!search.trim() && groupFilter === 'all') return contacts;
+        if (!search.trim() && groupFilter === 'all') return contacts || [];
 
         const searchLower = search.toLowerCase();
-        return contacts.filter(contact => {
+        return (contacts || []).filter(contact => {
             const matchesSearch = contact.first_name.toLowerCase().includes(searchLower) ||
                 (contact.middle_name || '').toLowerCase().includes(searchLower) ||
                 contact.last_name.toLowerCase().includes(searchLower) ||
@@ -186,7 +160,7 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
         if (selectedContacts.length === filteredContacts.length) {
             setSelectedContacts([]);
         } else {
-            setSelectedContacts(filteredContacts.map(contact => contact.id));
+            setSelectedContacts((filteredContacts || []).map(contact => contact.id));
         }
     };
 
@@ -394,13 +368,13 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
             <div className="py-8">
                 <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Contacts</p>
-                                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{contacts.length}</p>
+                                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{(contacts || []).length}</p>
                                     </div>
                                     <div className="p-3 bg-blue-500 rounded-lg">
                                         <Users className="h-6 w-6 text-white" />
@@ -441,37 +415,17 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                             </CardContent>
                         </Card>
                         
-                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-orange-600 dark:text-orange-400">With ID Numbers</p>
-                                        <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                                            {contacts.filter(c => {
-                                                const idNumbers = parseIdNumbers(c.id_numbers);
-                                                return Array.isArray(idNumbers) && idNumbers.length > 0;
-                                            }).length}
-                                        </p>
-                                    </div>
-                                    <div className="p-3 bg-orange-500 rounded-lg">
-                                        <svg className="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 114 0v2m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        
                         <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Total Wallet Balance</p>
                                         <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">
-                                            {appCurrency.symbol}{Object.values(walletBalances)
-                                                .filter(balance => typeof balance === 'number' && !isNaN(balance))
-                                                .reduce((sum, balance) => sum + balance, 0)
-                                                .toFixed(2)}
+                                            {appCurrency.symbol}{((contacts || [])
+                                                .reduce((sum, contact) => {
+                                                    const balance = Number(contact.wallet_balance) || 0;
+                                                    return sum + balance;
+                                                }, 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </p>
                                     </div>
                                     <div className="p-3 bg-emerald-500 rounded-lg">
@@ -583,7 +537,7 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                     <div className="flex items-center space-x-2">
                                                         <Wallet className="h-4 w-4 text-green-600" />
                                                         <span className="font-medium text-green-600">
-                                                            {appCurrency.symbol}{(typeof walletBalances[contact.id] === 'number' && !isNaN(walletBalances[contact.id]) ? walletBalances[contact.id] : 0).toFixed(2)}
+                                                            {appCurrency.symbol}{(Number(contact.wallet_balance) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
                                                     </div>
                                                 </TableCell>

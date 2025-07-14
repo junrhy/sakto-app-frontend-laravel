@@ -44,7 +44,20 @@ class ContactsController extends Controller
                 return back()->withErrors(['error' => 'Failed to fetch contacts']);
             }
 
-            $contacts = $response->json();
+            $responseData = $response->json();
+            $contacts = $responseData['data'] ?? $responseData; // Handle both new and old response formats
+            
+            // Ensure wallet_balance is properly formatted as numbers
+            if (is_array($contacts)) {
+                foreach ($contacts as &$contact) {
+                    if (isset($contact['wallet_balance'])) {
+                        $contact['wallet_balance'] = is_numeric($contact['wallet_balance']) ? (float)$contact['wallet_balance'] : 0;
+                    } else {
+                        $contact['wallet_balance'] = 0;
+                    }
+                }
+            }
+            
             $appCurrency = json_decode(auth()->user()->app_currency);
 
             return Inertia::render('Contacts/Index', [
@@ -397,7 +410,8 @@ class ContactsController extends Controller
                 ], 500);
             }
 
-            $contacts = $response->json();
+            $responseData = $response->json();
+            $contacts = $responseData['data'] ?? $responseData; // Handle both new and old response formats
 
             // Transform the contacts data to include only necessary fields
             $transformedContacts = collect($contacts)->map(function ($contact) {
@@ -420,7 +434,10 @@ class ContactsController extends Controller
                     'twitter' => $contact['twitter'],
                     'linkedin' => $contact['linkedin'],
                     'group' => $contact['group'],
-                    'notes' => $contact['notes']
+                    'notes' => $contact['notes'],
+                    'wallet_balance' => is_numeric($contact['wallet_balance'] ?? 0) ? (float)($contact['wallet_balance'] ?? 0) : 0,
+                    'wallet_currency' => $contact['wallet_currency'] ?? 'PHP',
+                    'wallet_status' => $contact['wallet_status'] ?? 'active'
                 ];
             });
 
