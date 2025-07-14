@@ -312,6 +312,14 @@ Route::get('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 's
 Route::post('/admin/login', [App\Http\Controllers\Admin\AuthController::class, 'login'])->name('admin.login.attempt');
 Route::post('/admin/logout', [App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('admin.logout');
 
+// Public Wallet Routes (no authentication required)
+Route::prefix('public/contacts/{contactId}/wallet')->group(function () {
+    Route::get('/balance', [ContactsController::class, 'getPublicWalletBalance'])->name('public.contacts.wallet.balance');
+    Route::get('/transactions', [ContactsController::class, 'getPublicTransactionHistory'])->name('public.contacts.wallet.transactions');
+    Route::post('/transfer', [ContactsController::class, 'publicTransferFunds'])->name('public.contacts.wallet.transfer');
+    Route::get('/available-contacts', [ContactsController::class, 'getPublicAvailableContacts'])->name('public.contacts.wallet.available-contacts');
+});
+
 // Routes that require authentication but not subscription
 Route::middleware(['auth', 'verified'])->group(function () {
     // Core features

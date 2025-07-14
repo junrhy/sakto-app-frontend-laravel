@@ -641,4 +641,163 @@ class ContactsController extends Controller
             ], 500);
         }
     }
+
+    // Public wallet methods that don't require authentication
+    public function getPublicWalletBalance($contactId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/balance");
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch wallet balance'
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getPublicWalletBalance', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching wallet balance'
+            ], 500);
+        }
+    }
+
+    public function getPublicTransactionHistory($contactId, Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/transactions", [
+                    'per_page' => $request->get('per_page', 15)
+                ]);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch transaction history'
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getPublicTransactionHistory', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching transaction history'
+            ], 500);
+        }
+    }
+
+    public function publicTransferFunds(Request $request, $contactId)
+    {
+        try {
+            $validated = $request->validate([
+                'to_contact_id' => 'required|exists:contacts,id',
+                'amount' => 'required|numeric|min:0.01',
+                'description' => 'nullable|string|max:255',
+                'reference' => 'nullable|string|max:255',
+            ]);
+
+            // Set the from_contact_id to the current contact
+            $validated['from_contact_id'] = $contactId;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/contact-wallets/transfer", $validated);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to transfer funds: ' . ($response->json()['message'] ?? 'Unknown error')
+                ], $response->status());
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in publicTransferFunds', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while transferring funds'
+            ], 500);
+        }
+    }
+
+    public function getPublicAvailableContacts($contactId)
+    {
+        try {
+            // Get the current contact to find their client_identifier
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contacts/{$contactId}");
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch contact information'
+                ], $response->status());
+            }
+
+            $contactData = $response->json();
+            $clientIdentifier = $contactData['data']['client_identifier'];
+
+            // Get all contacts for the same client
+            $contactsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contacts", [
+                    'client_identifier' => $clientIdentifier
+                ]);
+
+            if (!$contactsResponse->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch available contacts'
+                ], $contactsResponse->status());
+            }
+
+            $contacts = $contactsResponse->json()['data'] ?? [];
+            
+            // Filter out the current contact and format the response
+            $availableContacts = collect($contacts)
+                ->filter(function ($contact) use ($contactId) {
+                    return $contact['id'] != $contactId;
+                })
+                ->map(function ($contact) {
+                    return [
+                        'id' => $contact['id'],
+                        'name' => $contact['first_name'] . ' ' . $contact['last_name'],
+                        'email' => $contact['email']
+                    ];
+                })
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'success' => true,
+                'data' => $availableContacts
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Exception in getPublicAvailableContacts', [
+                'message' => $e->getMessage(),
+                'contact_id' => $contactId
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching available contacts'
+            ], 500);
+        }
+    }
 }

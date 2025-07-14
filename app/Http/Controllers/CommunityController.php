@@ -491,6 +491,7 @@ class CommunityController extends Controller
                 'memberName' => $member->name
             ], function ($message) use ($email, $member) {
                 $message->to($email)
+                        ->from(config('mail.from.address'), $member->name)
                         ->subject("Complete Your Registration - {$member->name}'s App");
             });
 

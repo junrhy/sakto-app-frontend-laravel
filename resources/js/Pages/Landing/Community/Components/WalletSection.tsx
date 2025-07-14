@@ -58,6 +58,17 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
     const [transactionHistory, setTransactionHistory] = useState<TransactionHistory | null>(null);
     const [loadingTransactions, setLoadingTransactions] = useState(false);
     const [transactionError, setTransactionError] = useState('');
+    
+    // Transfer state
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [availableContacts, setAvailableContacts] = useState<Array<{id: number, name: string, email: string}>>([]);
+    const [loadingContacts, setLoadingContacts] = useState(false);
+    const [transferAmount, setTransferAmount] = useState('');
+    const [transferToContactId, setTransferToContactId] = useState('');
+    const [transferDescription, setTransferDescription] = useState('');
+    const [transferReference, setTransferReference] = useState('');
+    const [transferring, setTransferring] = useState(false);
+    const [transferError, setTransferError] = useState('');
 
     useEffect(() => {
         if (contactId) {
@@ -72,11 +83,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
             setLoading(true);
             setError('');
             
-            const response = await fetch(`/contacts/${contactId}/wallet/balance`, {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
+            const response = await fetch(`/public/contacts/${contactId}/wallet/balance`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -102,11 +109,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
             setLoadingTransactions(true);
             setTransactionError('');
             
-            const response = await fetch(`/contacts/${contactId}/wallet/transactions`, {
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
+            const response = await fetch(`/public/contacts/${contactId}/wallet/transactions`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -123,6 +126,98 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
         } finally {
             setLoadingTransactions(false);
         }
+    };
+
+    const fetchAvailableContacts = async () => {
+        if (!contactId) return;
+        
+        try {
+            setLoadingContacts(true);
+            
+            const response = await fetch(`/public/contacts/${contactId}/wallet/available-contacts`);
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    setAvailableContacts(data.data);
+                } else {
+                    console.error('Failed to fetch available contacts:', data.message);
+                }
+            } else {
+                console.error('Failed to fetch available contacts');
+            }
+        } catch (err) {
+            console.error('Network error occurred while fetching contacts');
+        } finally {
+            setLoadingContacts(false);
+        }
+    };
+
+    const handleTransfer = async () => {
+        if (!contactId || !transferToContactId || !transferAmount) {
+            setTransferError('Please fill in all required fields');
+            return;
+        }
+
+        const amount = parseFloat(transferAmount);
+        if (isNaN(amount) || amount <= 0) {
+            setTransferError('Please enter a valid amount');
+            return;
+        }
+
+        if (walletData && walletData.wallet.balance !== null && amount > (typeof walletData.wallet.balance === 'string' ? parseFloat(walletData.wallet.balance) : walletData.wallet.balance)) {
+            setTransferError('Insufficient funds');
+            return;
+        }
+
+        try {
+            setTransferring(true);
+            setTransferError('');
+
+            const response = await fetch(`/public/contacts/${contactId}/wallet/transfer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    to_contact_id: parseInt(transferToContactId),
+                    amount: amount,
+                    description: transferDescription || undefined,
+                    reference: transferReference || undefined,
+                }),
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Reset form
+                setTransferAmount('');
+                setTransferToContactId('');
+                setTransferDescription('');
+                setTransferReference('');
+                setShowTransferModal(false);
+                
+                // Refresh wallet data and transaction history
+                await fetchWalletBalance();
+                await fetchTransactionHistory();
+                
+                // Show success message (you might want to add a toast library)
+                alert('Transfer completed successfully!');
+            } else {
+                setTransferError(data.message || 'Transfer failed');
+            }
+        } catch (err) {
+            setTransferError('Network error occurred');
+        } finally {
+            setTransferring(false);
+        }
+    };
+
+    const openTransferModal = () => {
+        setShowTransferModal(true);
+        setTransferError('');
+        fetchAvailableContacts();
     };
 
     const formatPrice = (price: number | string | null | undefined): string => {
@@ -251,7 +346,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <button
                         disabled
                         className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors opacity-50 cursor-not-allowed"
@@ -259,7 +354,16 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                         <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Add Funds</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Cash In</span>
+                    </button>
+                    <button
+                        onClick={openTransferModal}
+                        className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Transfer</span>
                     </button>
                     <button
                         onClick={() => {
@@ -359,6 +463,147 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                                     <p className="text-gray-600 dark:text-gray-400">No transactions found</p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Transfer Modal */}
+            {showTransferModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Transfer Funds</h3>
+                            <button
+                                onClick={() => setShowTransferModal(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                            >
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                            {transferError && (
+                                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                    <p className="text-red-600 dark:text-red-400 text-sm">{transferError}</p>
+                                </div>
+                            )}
+
+                            <div className="space-y-4">
+                                {/* Available Balance */}
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                                    <p className="text-blue-600 dark:text-blue-400 text-sm font-medium">Available Balance</p>
+                                    <p className="text-blue-800 dark:text-blue-200 text-lg font-bold">
+                                        {walletData ? formatPrice(walletData.wallet.balance) : formatPrice(0)}
+                                    </p>
+                                </div>
+
+                                {/* Amount */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Amount *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        max={walletData?.wallet.balance || 0}
+                                        value={transferAmount}
+                                        onChange={(e) => setTransferAmount(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                        placeholder="Enter amount"
+                                    />
+                                </div>
+
+                                {/* Recipient */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Transfer To *
+                                    </label>
+                                    {loadingContacts ? (
+                                        <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                                            <div className="flex items-center">
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                                <span className="text-gray-500 dark:text-gray-400 text-sm">Loading contacts...</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={transferToContactId}
+                                            onChange={(e) => setTransferToContactId(e.target.value)}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                        >
+                                            <option value="">Select a contact</option>
+                                            {availableContacts.map((contact) => (
+                                                <option key={contact.id} value={contact.id}>
+                                                    {contact.name} ({contact.email})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    {availableContacts.length === 0 && !loadingContacts && (
+                                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                                            No other contacts available for transfer
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Description */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Description (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={transferDescription}
+                                        onChange={(e) => setTransferDescription(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                        placeholder="Enter description"
+                                        maxLength={255}
+                                    />
+                                </div>
+
+                                {/* Reference */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Reference (Optional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={transferReference}
+                                        onChange={(e) => setTransferReference(e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                        placeholder="Enter reference"
+                                        maxLength={255}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+                            <button
+                                onClick={() => setShowTransferModal(false)}
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                disabled={transferring}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleTransfer}
+                                disabled={transferring || !transferAmount || !transferToContactId || availableContacts.length === 0}
+                                className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                            >
+                                {transferring ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                        Transferring...
+                                    </>
+                                ) : (
+                                    'Transfer Funds'
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
