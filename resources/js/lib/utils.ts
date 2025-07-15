@@ -5,6 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function getHost(): string {
+  if (typeof window !== 'undefined') {
+    return window.location.hostname
+  }
+  return 'Sakto.app' // fallback for SSR
+}
+
 export function formatCurrency(amount: number, currencySymbol: string = '$'): string {
     const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return `${currencySymbol}${numericAmount.toLocaleString(undefined, {

@@ -6,6 +6,7 @@ import {
     HeartIcon
 } from '@heroicons/react/24/outline';
 import { useEffect, useState, useRef } from 'react';
+import { getHost } from '@/lib/utils';
 
 interface PageProps {
     auth: {
@@ -21,6 +22,7 @@ export default function Pricing({ auth }: PageProps) {
     const [isLegalDropdownOpen, setIsLegalDropdownOpen] = useState(false);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
+    const hostname = getHost();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -179,15 +181,15 @@ export default function Pricing({ auth }: PageProps) {
 
     return (
         <>
-            <Head title="Pricing - Sakto" />
-            <div className="min-h-screen bg-gradient-to-b from-white via-indigo-50/30 to-white dark:bg-gray-950">
+            <Head title={`Pricing - ${hostname}`} />
+            <div className="min-h-screen from-white via-indigo-50/30 to-white dark:bg-gray-900">
                 {/* Navigation */}
-                <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 shadow-sm">
+                <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/90 shadow-sm">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex items-center">
                                 <Link href="/" className="flex items-center">
-                                    <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-transparent dark:text-gray-100">Sakto</span>
+                                    <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-transparent dark:text-gray-100">{hostname}</span>
                                 </Link>
                             </div>
                             <div className="flex items-center">
@@ -248,7 +250,7 @@ export default function Pricing({ auth }: PageProps) {
                                         </Link>
                                         <Link
                                             href={route('pricing')}
-                                            className="text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-indigo-50 dark:bg-indigo-900/20"
+                                            className="text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 bg-indigo-50 dark:bg-indigo-900/30"
                                         >
                                             Pricing
                                         </Link>
@@ -288,7 +290,7 @@ export default function Pricing({ auth }: PageProps) {
                                         <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
                                         <Link
                                             href={route('login')}
-                                            className="group inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                            className="group inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-600 dark:hover:bg-indigo-700"
                                         >
                                             <span>Log in</span>
                                             <svg className="ml-2 -mr-1 w-4 h-4 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -328,7 +330,7 @@ export default function Pricing({ auth }: PageProps) {
                                         <div className={`relative p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg hover:shadow-indigo-500/10 transition duration-200 h-full flex flex-col ${plan.name === 'Pro' || plan.name === 'Enterprise' ? 'border-2 border-indigo-500 dark:border-indigo-400' : ''}`}>
                                             {(plan.name === 'Pro' || plan.name === 'Enterprise') && (
                                                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200">
                                                         {plan.name === 'Pro' ? 'Most Popular' : 'Premium'}
                                                     </span>
                                                 </div>
@@ -343,7 +345,7 @@ export default function Pricing({ auth }: PageProps) {
                                                 {!auth.user && (
                                                     <Link
                                                         href={`/register?project=${project.name.toLowerCase()}&plan=${plan.name.toLowerCase()}`}
-                                                        className="mt-4 block w-full py-2 px-4 border border-transparent rounded-md shadow text-center text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                                        className="mt-4 block w-full py-2 px-4 border border-transparent rounded-md shadow text-center text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 dark:bg-indigo-600 dark:hover:bg-indigo-700"
                                                     >
                                                         Get Started
                                                     </Link>
@@ -413,11 +415,11 @@ export default function Pricing({ auth }: PageProps) {
                 </div>
 
                 {/* Footer */}
-                <footer className="bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 border-t border-gray-100 dark:border-gray-800">
+                <footer className="bg-white/80 backdrop-blur-sm dark:bg-gray-900/90 border-t border-gray-100 dark:border-gray-800">
                     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-gray-500 dark:text-gray-500">
-                                © {new Date().getFullYear()} Sakto. All rights reserved.
+                                © {new Date().getFullYear()} {hostname}. All rights reserved.
                             </p>
                             <div className="flex items-center space-x-6">
                                 <Link
