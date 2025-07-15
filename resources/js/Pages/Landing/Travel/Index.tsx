@@ -469,15 +469,15 @@ export default function WelcomeTravel({ auth }: PageProps) {
                                     <li><a href="#" className="hover:text-white">Help Center</a></li>
                                     <li><a href="#" className="hover:text-white">Contact Us</a></li>
                                     <li><a href="#" className="hover:text-white">Travel Tips</a></li>
-                                    <li><a href="#" className="hover:text-white">FAQ</a></li>
+                                    <li><Link href={route('faq')} className="hover:text-white">FAQ</Link></li>
                                 </ul>
                             </div>
                             <div>
                                 <h3 className="text-white font-medium mb-4">Legal</h3>
                                 <ul className="space-y-2 text-gray-400">
-                                    <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                                    <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-                                    <li><a href="#" className="hover:text-white">Cookie Policy</a></li>
+                                    <li><Link href={route('privacy-policy')} className="hover:text-white">Privacy Policy</Link></li>
+                                    <li><Link href={route('terms-and-conditions')} className="hover:text-white">Terms of Service</Link></li>
+                                    <li><Link href={route('cookie-policy')} className="hover:text-white">Cookie Policy</Link></li>
                                 </ul>
                             </div>
                         </div>

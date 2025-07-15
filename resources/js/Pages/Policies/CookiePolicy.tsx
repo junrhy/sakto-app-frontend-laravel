@@ -3,7 +3,11 @@ import { Head } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import DownloadPdfButton from '@/Components/DownloadPdfButton';
 
-export default function CookiePolicy() {
+interface PageProps {
+    hostname: string;
+}
+
+export default function CookiePolicy({ hostname }: PageProps) {
     return (
         <GuestLayout>
             <Head title="Cookie Policy" />
@@ -14,7 +18,7 @@ export default function CookiePolicy() {
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-8">
                                 <h1 className="text-3xl font-bold">Cookie Policy</h1>
-                                <DownloadPdfButton contentId="cookie-content" fileName="sakto-cookie-policy" />
+                                <DownloadPdfButton contentId="cookie-content" fileName={`${hostname}-cookie-policy`} />
                             </div>
                             
                             <div id="cookie-content" className="space-y-6">

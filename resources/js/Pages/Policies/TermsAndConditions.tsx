@@ -3,7 +3,11 @@ import { Head } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import DownloadPdfButton from '@/Components/DownloadPdfButton';
 
-export default function TermsAndConditions() {
+interface PageProps {
+    hostname: string;
+}
+
+export default function TermsAndConditions({ hostname }: PageProps) {
     return (
         <GuestLayout>
             <Head title="Terms and Conditions" />
@@ -14,29 +18,29 @@ export default function TermsAndConditions() {
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-8">
                                 <h1 className="text-3xl font-bold">Terms and Conditions</h1>
-                                <DownloadPdfButton contentId="terms-content" fileName="sakto-terms-and-conditions" />
+                                <DownloadPdfButton contentId="terms-content" fileName={`${hostname}-terms-and-conditions`} />
                             </div>
                             
                             <div id="terms-content" className="space-y-6">
                                 <section>
                                     <h2 className="text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
-                                    <p>By accessing and using Sakto App, you agree to be bound by these Terms and Conditions and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
+                                    <p>By accessing and using {hostname} App, you agree to be bound by these Terms and Conditions and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
                                 </section>
 
                                 <section>
                                     <h2 className="text-xl font-semibold mb-3">2. Use License</h2>
-                                    <p>Permission is granted to temporarily access the materials within Sakto App for personal, non-commercial use. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+                                    <p>Permission is granted to temporarily access the materials within {hostname} App for personal, non-commercial use. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
                                     <ul className="list-disc ml-6 mt-2">
                                         <li>Modify or copy the materials</li>
                                         <li>Use the materials for any commercial purpose</li>
-                                        <li>Attempt to decompile or reverse engineer any software contained in Sakto App</li>
+                                        <li>Attempt to decompile or reverse engineer any software contained in {hostname} App</li>
                                         <li>Remove any copyright or other proprietary notations from the materials</li>
                                     </ul>
                                 </section>
 
                                 <section>
                                     <h2 className="text-xl font-semibold mb-3">3. User Account</h2>
-                                    <p>To access certain features of Sakto App, you may be required to create an account. You agree to:</p>
+                                    <p>To access certain features of {hostname} App, you may be required to create an account. You agree to:</p>
                                     <ul className="list-disc ml-6 mt-2">
                                         <li>Provide accurate and complete information</li>
                                         <li>Maintain the security of your account credentials</li>
@@ -52,7 +56,7 @@ export default function TermsAndConditions() {
 
                                 <section>
                                     <h2 className="text-xl font-semibold mb-3">5. Limitation of Liability</h2>
-                                    <p>Sakto App and its suppliers shall not be liable for any damages arising out of or in connection with the use or inability to use the materials on Sakto App, even if we have been notified of the possibility of such damage.</p>
+                                    <p>{hostname} App and its suppliers shall not be liable for any damages arising out of or in connection with the use or inability to use the materials on {hostname} App, even if we have been notified of the possibility of such damage.</p>
                                 </section>
 
                                 <section>

@@ -3,7 +3,11 @@ import { Head } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import DownloadPdfButton from '@/Components/DownloadPdfButton';
 
-export default function PrivacyPolicy() {
+interface PageProps {
+    hostname: string;
+}
+
+export default function PrivacyPolicy({ hostname }: PageProps) {
     return (
         <GuestLayout>
             <Head title="Privacy Policy" />
@@ -14,13 +18,13 @@ export default function PrivacyPolicy() {
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-8">
                                 <h1 className="text-3xl font-bold">Privacy Policy</h1>
-                                <DownloadPdfButton contentId="privacy-content" fileName="sakto-privacy-policy" />
+                                <DownloadPdfButton contentId="privacy-content" fileName={`${hostname}-privacy-policy`} />
                             </div>
                             
                             <div id="privacy-content" className="space-y-6">
                                 <section>
                                     <h2 className="text-xl font-semibold mb-3">1. Introduction</h2>
-                                    <p>Welcome to Sakto App. We are committed to protecting your personal information and your right to privacy. This policy specifically details how we handle your data, including information obtained through Google services integration.</p>
+                                    <p>Welcome to {hostname} App. We are committed to protecting your personal information and your right to privacy. This policy specifically details how we handle your data, including information obtained through Google services integration.</p>
                                 </section>
 
                                 <section>
@@ -92,7 +96,7 @@ export default function PrivacyPolicy() {
 
                                 <section>
                                     <h2 className="text-xl font-semibold mb-3">6. Data Retention and Deletion</h2>
-                                    <p>We retain Google user data only for as long as necessary to provide our services. When you disconnect your Google account or delete your Sakto account:</p>
+                                    <p>We retain Google user data only for as long as necessary to provide our services. When you disconnect your Google account or delete your {hostname} account:</p>
                                     <ul className="list-disc ml-6 mt-2">
                                         <li>We immediately revoke our access to your Google account</li>
                                         <li>Your Google data is deleted from our active systems within 30 days</li>

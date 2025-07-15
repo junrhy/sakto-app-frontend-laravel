@@ -3,7 +3,11 @@ import { Head } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import DownloadPdfButton from '@/Components/DownloadPdfButton';
 
-export default function FAQ() {
+interface PageProps {
+    hostname: string;
+}
+
+export default function FAQ({ hostname }: PageProps) {
     return (
         <GuestLayout>
             <Head title="FAQ" />
@@ -14,17 +18,17 @@ export default function FAQ() {
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-8">
                                 <h1 className="text-3xl font-bold">Frequently Asked Questions</h1>
-                                <DownloadPdfButton contentId="faq-content" fileName="sakto-faq" />
+                                <DownloadPdfButton contentId="faq-content" fileName={`${hostname}-faq`} />
                             </div>
                             
                             <div id="faq-content" className="space-y-8">
                                 <section>
-                                    <h2 className="text-xl font-semibold mb-2">What is Sakto App?</h2>
-                                    <p className="text-gray-600">Sakto App is a comprehensive business management platform that offers various modules including POS systems, inventory management, clinic management, rental management, and more. It's designed to help businesses streamline their operations and improve efficiency.</p>
+                                <h2 className="text-xl font-semibold mb-2">What is {hostname} App?</h2>
+                                <p className="text-gray-600">{hostname} App is a comprehensive business management platform that offers various modules including POS systems, inventory management, clinic management, rental management, and more. It's designed to help businesses streamline their operations and improve efficiency.</p>
                                 </section>
 
                                 <section>
-                                    <h2 className="text-xl font-semibold mb-2">How do I get started with Sakto App?</h2>
+                                    <h2 className="text-xl font-semibold mb-2">How do I get started with {hostname} App?</h2>
                                     <p className="text-gray-600">Getting started is easy! Simply register for an account, choose the modules you need for your business, and follow our setup guides. Our intuitive interface makes it simple to begin managing your business operations right away.</p>
                                 </section>
 
@@ -34,8 +38,8 @@ export default function FAQ() {
                                 </section>
 
                                 <section>
-                                    <h2 className="text-xl font-semibold mb-2">Can I use Sakto App on mobile devices?</h2>
-                                    <p className="text-gray-600">Yes! Sakto App is fully responsive and works on all modern devices including smartphones and tablets. You can access your business data anytime, anywhere.</p>
+                                                                    <h2 className="text-xl font-semibold mb-2">Can I use {hostname} App on mobile devices?</h2>
+                                <p className="text-gray-600">Yes! {hostname} App is fully responsive and works on all modern devices including smartphones and tablets. You can access your business data anytime, anywhere.</p>
                                 </section>
 
                                 <section>
