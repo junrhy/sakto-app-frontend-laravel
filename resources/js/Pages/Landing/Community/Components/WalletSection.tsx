@@ -142,12 +142,16 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                     setAvailableContacts(data.data);
                 } else {
                     console.error('Failed to fetch available contacts:', data.message);
+                    setTransferError(`Failed to load contacts: ${data.message}`);
                 }
             } else {
-                console.error('Failed to fetch available contacts');
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Failed to fetch available contacts:', response.status, errorData);
+                setTransferError(`Failed to load contacts (${response.status}): ${errorData.message || 'Unknown error'}`);
             }
         } catch (err) {
-            console.error('Network error occurred while fetching contacts');
+            console.error('Network error occurred while fetching contacts:', err);
+            setTransferError('Network error occurred while loading contacts');
         } finally {
             setLoadingContacts(false);
         }
@@ -346,16 +350,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                    <button
-                        disabled
-                        className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors opacity-50 cursor-not-allowed"
-                    >
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Cash In</span>
-                    </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <button
                         onClick={openTransferModal}
                         className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

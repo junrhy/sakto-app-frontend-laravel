@@ -119,7 +119,8 @@ class CommunityController extends Controller
                     'client_identifier' => $member->identifier
                 ]);
             if ($response->successful()) {
-                $contacts = $response->json();
+                $responseData = $response->json();
+                $contacts = $responseData['data'] ?? [];
             }
         } catch (\Exception $e) {
             // Optionally log error

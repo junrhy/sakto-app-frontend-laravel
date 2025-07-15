@@ -756,19 +756,48 @@ class ContactsController extends Controller
     public function getPublicAvailableContacts($contactId)
     {
         try {
+            Log::info('getPublicAvailableContacts called', [
+                'contact_id' => $contactId,
+                'api_url' => $this->apiUrl
+            ]);
+
             // Get the current contact to find their client_identifier
             $response = Http::withToken($this->apiToken)
                 ->get("{$this->apiUrl}/contacts/{$contactId}");
 
+            Log::info('Single contact API response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
             if (!$response->successful()) {
+                Log::error('Failed to fetch single contact', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to fetch contact information'
+                    'message' => 'Failed to fetch contact information: ' . $response->body()
                 ], $response->status());
             }
 
             $contactData = $response->json();
-            $clientIdentifier = $contactData['data']['client_identifier'];
+            Log::info('Contact data received', [
+                'contact_data' => $contactData
+            ]);
+
+            // The backend returns the contact directly, not wrapped in a 'data' key
+            $clientIdentifier = $contactData['client_identifier'] ?? null;
+            
+            if (!$clientIdentifier) {
+                Log::error('No client_identifier found in contact data', [
+                    'contact_data' => $contactData
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Contact does not have a client identifier'
+                ], 400);
+            }
 
             // Get all contacts for the same client
             $contactsResponse = Http::withToken($this->apiToken)
@@ -776,14 +805,27 @@ class ContactsController extends Controller
                     'client_identifier' => $clientIdentifier
                 ]);
 
+            Log::info('Contacts list API response', [
+                'status' => $contactsResponse->status(),
+                'body' => $contactsResponse->body()
+            ]);
+
             if (!$contactsResponse->successful()) {
+                Log::error('Failed to fetch contacts list', [
+                    'status' => $contactsResponse->status(),
+                    'body' => $contactsResponse->body()
+                ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to fetch available contacts'
+                    'message' => 'Failed to fetch available contacts: ' . $contactsResponse->body()
                 ], $contactsResponse->status());
             }
 
             $contacts = $contactsResponse->json()['data'] ?? [];
+            Log::info('Contacts list received', [
+                'contacts_count' => count($contacts),
+                'contacts' => $contacts
+            ]);
             
             // Filter out the current contact and format the response
             $availableContacts = collect($contacts)
@@ -800,6 +842,10 @@ class ContactsController extends Controller
                 ->values()
                 ->toArray();
 
+            Log::info('Available contacts processed', [
+                'available_contacts' => $availableContacts
+            ]);
+
             return response()->json([
                 'success' => true,
                 'data' => $availableContacts
@@ -808,12 +854,13 @@ class ContactsController extends Controller
         } catch (\Exception $e) {
             Log::error('Exception in getPublicAvailableContacts', [
                 'message' => $e->getMessage(),
-                'contact_id' => $contactId
+                'contact_id' => $contactId,
+                'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while fetching available contacts'
+                'message' => 'An error occurred while fetching available contacts: ' . $e->getMessage()
             ], 500);
         }
     }
