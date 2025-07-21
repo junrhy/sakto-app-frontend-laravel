@@ -21,11 +21,13 @@ import {
 import { Badge } from '@/Components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { Plus, Minus, ArrowRightLeft, Wallet, History, TrendingUp } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { Calendar } from "@/Components/ui/calendar";
+import { Plus, Minus, ArrowRightLeft, Wallet, History, TrendingUp, Calendar as CalendarIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { Calendar } from '@/Components/ui/calendar';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface WalletData {
     wallet: {
@@ -78,16 +80,25 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
     const [availableContacts, setAvailableContacts] = useState<any[]>([]);
     // Add a new state for field-level contact search error
     const [contactSearchError, setContactSearchError] = useState('');
-    const [transactionHistoryOpen, setTransactionHistoryOpen] = useState(false);
     const [historyDate, setHistoryDate] = useState<Date>(new Date());
     const [historyTransactions, setHistoryTransactions] = useState<Transaction[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     useEffect(() => {
         fetchWalletData();
-        fetchTransactionHistory();
         fetchAvailableContacts();
     }, [contactId]);
+
+    // Fetch transaction history for today when component mounts
+    useEffect(() => {
+        if (contactId) {
+            fetchTransactionHistory(historyDate);
+        }
+    }, [contactId]); // Only run when contactId changes, not when historyDate changes
 
     const fetchWalletData = async () => {
         try {
@@ -116,21 +127,35 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
             const response = await fetch(url);
             const data = await response.json();
             if (data.success) {
-                setTransactions(data.data.data || []);
-                if (date) setHistoryTransactions(data.data.data || []);
+                setTransactions(data.data || []);
+                setHistoryTransactions(data.data || []);
+            } else {
+                setHistoryTransactions([]);
             }
         } catch (error) {
-            console.error('Error fetching transaction history:', error);
+            setHistoryTransactions([]);
         }
     };
 
-    // Fetch history transactions when dialog opens or date changes
+    // Fetch history transactions when date changes
     useEffect(() => {
-        if (transactionHistoryOpen) {
+        if (contactId) {
             setHistoryLoading(true);
+            setCurrentPage(1); // Reset to first page when date changes
             fetchTransactionHistory(historyDate).finally(() => setHistoryLoading(false));
         }
-    }, [transactionHistoryOpen, historyDate, contactId]);
+    }, [historyDate, contactId]);
+
+    // Pagination logic
+    const paginatedTransactions = historyTransactions.slice(
+        (currentPage - 1) * itemsPerPage, 
+        currentPage * itemsPerPage
+    );
+    const totalPages = Math.ceil(historyTransactions.length / itemsPerPage);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const fetchAvailableContacts = async () => {
         try {
@@ -549,115 +574,145 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
                     </DialogContent>
                 </Dialog>
 
-                <Dialog open={transactionHistoryOpen} onOpenChange={setTransactionHistoryOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="flex items-center gap-2">
-                            <History className="h-4 w-4" />
-                            View Transaction History
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Transaction History</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="history-date">Date</Label>
+            </div>
+
+            {/* Transaction History Section */}
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between w-full">
+                        <CardTitle className="flex items-center gap-2">
+                            <History className="h-5 w-5" />
+                            Transaction History
+                        </CardTitle>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "w-[240px] justify-start text-left font-normal border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700",
+                                        !historyDate && "text-slate-500 dark:text-slate-400",
+                                        historyDate && "border-blue-500 bg-blue-50 dark:border-blue-500 dark:bg-blue-500/10"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {historyDate ? format(historyDate, "PPP") : "Select date"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700" align="start">
                                 <Calendar
                                     mode="single"
                                     selected={historyDate}
-                                    onSelect={(date) => { if (date) setHistoryDate(date); }}
-                                    className="rounded-md border"
+                                    onSelect={(date) => date && setHistoryDate(date)}
+                                    initialFocus
                                 />
-                            </div>
-                            {historyLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                                </div>
-                            ) : historyTransactions.length > 0 ? (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Amount</TableHead>
-                                            <TableHead>Description</TableHead>
-                                            <TableHead>Reference</TableHead>
-                                            <TableHead>Balance After</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {historyTransactions.map((transaction) => (
-                                            <TableRow key={transaction.id}>
-                                                <TableCell>{formatDate(transaction.transaction_date)}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={transaction.type === 'credit' ? 'default' : 'secondary'}>
-                                                        {transaction.type.toUpperCase()}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className={transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                                                    {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                                                </TableCell>
-                                                <TableCell>{transaction.description || '-'}</TableCell>
-                                                <TableCell>{transaction.reference || '-'}</TableCell>
-                                                <TableCell>{formatCurrency(transaction.balance_after)}</TableCell>
-                                            </TableRow>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    
+                    {historyLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <span className="ml-2 text-gray-600 dark:text-gray-400">Loading transactions...</span>
+                        </div>
+                    ) : historyTransactions.length > 0 ? (
+                        <div className="space-y-0">
+                            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reference</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                        {paginatedTransactions.map((transaction) => (
+                                            <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td className="px-3 py-2 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                        transaction.type === 'credit' 
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                    }`}>
+                                                        {transaction.type === 'credit' ? 'Credit' : 'Debit'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                                                    <span className={transaction.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                                                        {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-xs truncate">
+                                                    {transaction.description || '-'}
+                                                </td>
+                                                <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 font-mono text-xs">
+                                                    {transaction.reference || '-'}
+                                                </td>
+                                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    {new Date(transaction.transaction_date).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                    {formatCurrency(transaction.balance_after)}
+                                                </td>
+                                            </tr>
                                         ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <div className="text-center text-gray-500 py-8">
-                                    No transactions found for this date
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="mt-4 flex items-center justify-between">
+                                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, historyTransactions.length)} of {historyTransactions.length} transactions
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            Previous
+                                        </button>
+                                        <div className="flex items-center space-x-1">
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className={`px-3 py-1 text-sm border rounded-md ${
+                                                        currentPage === page
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
-                    </DialogContent>
-                </Dialog>
-            </div>
-
-            {/* Transaction History */}
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <History className="h-5 w-5" />
-                        Transaction History
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {transactions.length > 0 ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead>Reference</TableHead>
-                                    <TableHead>Balance After</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {transactions.map((transaction) => (
-                                    <TableRow key={transaction.id}>
-                                        <TableCell>{formatDate(transaction.transaction_date)}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={transaction.type === 'credit' ? 'default' : 'secondary'}>
-                                                {transaction.type.toUpperCase()}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className={transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                                            {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                                        </TableCell>
-                                        <TableCell>{transaction.description || '-'}</TableCell>
-                                        <TableCell>{transaction.reference || '-'}</TableCell>
-                                        <TableCell>{formatCurrency(transaction.balance_after)}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
                     ) : (
-                        <div className="text-center text-gray-500 py-8">
-                            No transactions found
+                        <div className="text-center py-8">
+                            <div className="text-gray-400 mb-4">
+                                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400">No transactions found for this date</p>
                         </div>
                     )}
                 </CardContent>

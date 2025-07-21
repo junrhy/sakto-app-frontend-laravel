@@ -657,10 +657,15 @@ class ContactsController extends Controller
     public function getTransactionHistory($contactId, Request $request)
     {
         try {
+            $params = [];
+            
+            // Add date parameter if provided
+            if ($request->has('date')) {
+                $params['date'] = $request->get('date');
+            }
+            
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/transactions", [
-                    'per_page' => $request->get('per_page', 15)
-                ]);
+                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/transactions", $params);
 
             if (!$response->successful()) {
                 return response()->json([
