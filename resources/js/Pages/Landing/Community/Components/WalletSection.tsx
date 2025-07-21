@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface WalletSectionProps {
     member: {
@@ -50,6 +52,16 @@ interface TransactionHistory {
     total: number;
 }
 
+// Helper to generate reference
+function generateReference() {
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const date = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`;
+    const time = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `TRF-${date}-${time}-${rand}`;
+}
+
 export default function WalletSection({ member, contactId }: WalletSectionProps) {
     const [walletData, setWalletData] = useState<WalletData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -61,14 +73,66 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
     
     // Transfer state
     const [showTransferModal, setShowTransferModal] = useState(false);
-    const [availableContacts, setAvailableContacts] = useState<Array<{id: number, name: string, email: string}>>([]);
+    const [availableContacts, setAvailableContacts] = useState<Array<{id: number, name: string, sms_number: string}>>([]);
     const [loadingContacts, setLoadingContacts] = useState(false);
     const [transferAmount, setTransferAmount] = useState('');
     const [transferToContactId, setTransferToContactId] = useState('');
+    const [transferToContactNumber, setTransferToContactNumber] = useState('');
+    const [transferToContactName, setTransferToContactName] = useState('');
     const [transferDescription, setTransferDescription] = useState('');
     const [transferReference, setTransferReference] = useState('');
     const [transferring, setTransferring] = useState(false);
     const [transferError, setTransferError] = useState('');
+
+    // Add a new state for field-level contact search error
+    const [contactSearchError, setContactSearchError] = useState('');
+
+    // Add success message state
+    const [successMessage, setSuccessMessage] = useState('');
+
+    // Add pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+
+    // Add pagination logic
+    const paginatedTransactions = transactionHistory?.data ? 
+        transactionHistory.data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) : [];
+
+    const totalPages = transactionHistory?.data ? 
+        Math.ceil(transactionHistory.data.length / itemsPerPage) : 0;
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const [transactionHistoryOpen, setTransactionHistoryOpen] = useState(false);
+    const [historyDate, setHistoryDate] = useState<Date>(new Date());
+    const [historyTransactions, setHistoryTransactions] = useState<Transaction[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+
+    // Fetch transaction history for a specific date
+    const fetchTransactionHistoryByDate = async (date?: Date) => {
+        if (!contactId) return;
+        try {
+            setHistoryLoading(true);
+            let url = `/public/contacts/${contactId}/wallet/transactions`;
+            if (date) {
+                const dateStr = format(date, 'yyyy-MM-dd');
+                url += `?date=${dateStr}`;
+            }
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.success) {
+                setHistoryTransactions(data.data.data || data.data || []);
+            } else {
+                setHistoryTransactions([]);
+            }
+        } catch (err) {
+            setHistoryTransactions([]);
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (contactId) {
@@ -77,6 +141,12 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
             setLoading(false);
         }
     }, [contactId]);
+
+    useEffect(() => {
+        if (transactionHistoryOpen) {
+            fetchTransactionHistoryByDate(historyDate);
+        }
+    }, [transactionHistoryOpen, historyDate, contactId]);
 
     const fetchWalletBalance = async () => {
         try {
@@ -102,12 +172,14 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
         }
     };
 
+    // In fetchTransactionHistory, reset pagination
     const fetchTransactionHistory = async () => {
         if (!contactId) return;
         
         try {
             setLoadingTransactions(true);
             setTransactionError('');
+            setCurrentPage(1); // Reset to first page
             
             const response = await fetch(`/public/contacts/${contactId}/wallet/transactions`);
 
@@ -157,6 +229,19 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
         }
     };
 
+    const searchContactByNumber = (smsNumber: string) => {
+        const contact = availableContacts.find(c => c.sms_number === smsNumber);
+        if (contact) {
+            setTransferToContactId(contact.id.toString());
+            setTransferToContactName(contact.name);
+            setContactSearchError('');
+        } else {
+            setTransferToContactId('');
+            setTransferToContactName('');
+            setContactSearchError('Member not found with this number');
+        }
+    };
+
     const handleTransfer = async () => {
         if (!contactId || !transferToContactId || !transferAmount) {
             setTransferError('Please fill in all required fields');
@@ -188,7 +273,6 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                     to_contact_id: parseInt(transferToContactId),
                     amount: amount,
                     description: transferDescription || undefined,
-                    reference: transferReference || undefined,
                 }),
             });
 
@@ -198,16 +282,21 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                 // Reset form
                 setTransferAmount('');
                 setTransferToContactId('');
+                setTransferToContactNumber('');
+                setTransferToContactName('');
                 setTransferDescription('');
                 setTransferReference('');
                 setShowTransferModal(false);
+                
+                // Set success message
+                setSuccessMessage('Transfer completed successfully! Reference: ' + (data.data?.reference || 'N/A'));
                 
                 // Refresh wallet data and transaction history
                 await fetchWalletBalance();
                 await fetchTransactionHistory();
                 
-                // Show success message (you might want to add a toast library)
-                alert('Transfer completed successfully!');
+                // Clear success message after 5 seconds
+                setTimeout(() => setSuccessMessage(''), 5000);
             } else {
                 setTransferError(data.message || 'Transfer failed');
             }
@@ -221,6 +310,10 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
     const openTransferModal = () => {
         setShowTransferModal(true);
         setTransferError('');
+        setTransferToContactNumber('');
+        setTransferToContactName('');
+        setTransferToContactId('');
+        setTransferReference(generateReference());
         fetchAvailableContacts();
     };
 
@@ -315,6 +408,24 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                 </div>
             </div>
 
+            {/* Success Message */}
+            {successMessage && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                                {successMessage}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Wallet Status */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Wallet Information</h3>
@@ -362,8 +473,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                     </button>
                     <button
                         onClick={() => {
-                            setShowTransactionHistory(true);
-                            fetchTransactionHistory();
+                            setTransactionHistoryOpen(true);
                         }}
                         className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
@@ -375,14 +485,14 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                 </div>
             </div>
 
-            {/* Transaction History Modal */}
-            {showTransactionHistory && (
+            {/* Transaction History Dialog */}
+            {transactionHistoryOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Transaction History</h3>
                             <button
-                                onClick={() => setShowTransactionHistory(false)}
+                                onClick={() => setTransactionHistoryOpen(false)}
                                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
                             >
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,63 +500,74 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                                 </svg>
                             </button>
                         </div>
-                        
                         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                            {loadingTransactions ? (
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                                <input
+                                    type="date"
+                                    value={format(historyDate, 'yyyy-MM-dd')}
+                                    onChange={(e) => {
+                                        const date = new Date(e.target.value);
+                                        if (!isNaN(date.getTime())) {
+                                            setHistoryDate(date);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                />
+                            </div>
+                            {historyLoading ? (
                                 <div className="flex items-center justify-center py-8">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                                     <span className="ml-2 text-gray-600 dark:text-gray-400">Loading transactions...</span>
                                 </div>
-                            ) : transactionError ? (
-                                <div className="text-center py-8">
-                                    <div className="text-red-500 mb-4">
-                                        <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                            ) : historyTransactions.length > 0 ? (
+                                <div className="space-y-0">
+                                    <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                            <thead className="bg-gray-50 dark:bg-gray-700">
+                                                <tr>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reference</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Balance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                                {historyTransactions.map((transaction) => (
+                                                    <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                        <td className="px-3 py-2 whitespace-nowrap">
+                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                                transaction.type === 'credit' 
+                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                            }`}>
+                                                                {transaction.type === 'credit' ? 'Credit' : 'Debit'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                                                            <span className={transaction.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                                                                {transaction.type === 'credit' ? '+' : '-'}{formatPrice(transaction.amount)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-xs truncate">
+                                                            {transaction.description || '-'}
+                                                        </td>
+                                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 font-mono text-xs">
+                                                            {transaction.reference || '-'}
+                                                        </td>
+                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                            {new Date(transaction.transaction_date).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                                            {formatPrice(transaction.balance_after)}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-4">{transactionError}</p>
-                                    <button
-                                        onClick={fetchTransactionHistory}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                    >
-                                        Try Again
-                                    </button>
-                                </div>
-                            ) : transactionHistory && transactionHistory.data.length > 0 ? (
-                                <div className="space-y-3 sm:space-y-4">
-                                    {transactionHistory.data.map((transaction) => (
-                                        <div key={transaction.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 bg-white dark:bg-gray-800">
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                                                <div className="flex items-center">
-                                                    <div className={`w-3 h-3 rounded-full mr-3 flex-shrink-0 ${
-                                                        transaction.type === 'credit' 
-                                                            ? 'bg-green-500' 
-                                                            : 'bg-red-500'
-                                                    }`}></div>
-                                                    <span className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">
-                                                        {transaction.type === 'credit' ? 'Credit' : 'Debit'}
-                                                    </span>
-                                                </div>
-                                                <span className={`font-bold text-sm sm:text-base ${
-                                                    transaction.type === 'credit' 
-                                                        ? 'text-green-600 dark:text-green-400' 
-                                                        : 'text-red-600 dark:text-red-400'
-                                                }`}>
-                                                    {transaction.type === 'credit' ? '+' : '-'}{formatPrice(transaction.amount)}
-                                                </span>
-                                            </div>
-                                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                                                {transaction.description && (
-                                                    <p className="break-words"><strong>Description:</strong> {transaction.description}</p>
-                                                )}
-                                                {transaction.reference && (
-                                                    <p className="break-words"><strong>Reference:</strong> {transaction.reference}</p>
-                                                )}
-                                                <p><strong>Balance After:</strong> {formatPrice(transaction.balance_after)}</p>
-                                                <p><strong>Date:</strong> {new Date(transaction.transaction_date).toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    ))}
                                 </div>
                             ) : (
                                 <div className="text-center py-8">
@@ -455,7 +576,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                     </div>
-                                    <p className="text-gray-600 dark:text-gray-400">No transactions found</p>
+                                    <p className="text-gray-600 dark:text-gray-400">No transactions found for this date</p>
                                 </div>
                             )}
                         </div>
@@ -515,32 +636,38 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                                 {/* Recipient */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Transfer To *
+                                        Recipient Contact Number *
                                     </label>
-                                    {loadingContacts ? (
-                                        <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                                            <div className="flex items-center">
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                                                <span className="text-gray-500 dark:text-gray-400 text-sm">Loading contacts...</span>
-                                            </div>
+                                    <input
+                                        type="tel"
+                                        value={transferToContactNumber}
+                                        onChange={(e) => {
+                                            setTransferToContactNumber(e.target.value);
+                                            if (e.target.value.length >= 10) {
+                                                searchContactByNumber(e.target.value);
+                                            } else {
+                                                setTransferToContactId('');
+                                                setTransferToContactName('');
+                                            }
+                                        }}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                                        placeholder="Enter contact number"
+                                    />
+                                    {transferToContactName && (
+                                        <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                            <p className="text-green-600 dark:text-green-400 text-sm">
+                                                {transferToContactName.split(' ').map(name => {
+                                                    if (name.length === 2) return name[0] + '*';
+                                                    if (name.length === 3) return name[0] + '**';
+                                                    if (name.length > 3) return name[0] + '**' + name.slice(3);
+                                                    return name;
+                                                }).join(' ')}
+                                            </p>
                                         </div>
-                                    ) : (
-                                        <select
-                                            value={transferToContactId}
-                                            onChange={(e) => setTransferToContactId(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                        >
-                                            <option value="">Select a contact</option>
-                                            {availableContacts.map((contact) => (
-                                                <option key={contact.id} value={contact.id}>
-                                                    {contact.name} ({contact.email})
-                                                </option>
-                                            ))}
-                                        </select>
                                     )}
-                                    {availableContacts.length === 0 && !loadingContacts && (
-                                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                                            No other contacts available for transfer
+                                    {contactSearchError && (
+                                        <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                                            {contactSearchError}
                                         </p>
                                     )}
                                 </div>
@@ -559,21 +686,6 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                                         maxLength={255}
                                     />
                                 </div>
-
-                                {/* Reference */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Reference (Optional)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={transferReference}
-                                        onChange={(e) => setTransferReference(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Enter reference"
-                                        maxLength={255}
-                                    />
-                                </div>
                             </div>
                         </div>
 
@@ -587,7 +699,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                             </button>
                             <button
                                 onClick={handleTransfer}
-                                disabled={transferring || !transferAmount || !transferToContactId || availableContacts.length === 0}
+                                disabled={transferring || !transferAmount || !transferToContactId}
                                 className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                             >
                                 {transferring ? (

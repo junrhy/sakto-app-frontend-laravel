@@ -24,6 +24,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Minus, ArrowRightLeft, Wallet, History, TrendingUp } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
+import { Calendar } from '@/Components/ui/calendar';
+import { format } from 'date-fns';
 
 interface WalletData {
     wallet: {
@@ -71,7 +73,15 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
     const [description, setDescription] = useState('');
     const [reference, setReference] = useState('');
     const [toContactId, setToContactId] = useState('');
+    const [toContactNumber, setToContactNumber] = useState('');
+    const [toContactName, setToContactName] = useState('');
     const [availableContacts, setAvailableContacts] = useState<any[]>([]);
+    // Add a new state for field-level contact search error
+    const [contactSearchError, setContactSearchError] = useState('');
+    const [transactionHistoryOpen, setTransactionHistoryOpen] = useState(false);
+    const [historyDate, setHistoryDate] = useState<Date>(new Date());
+    const [historyTransactions, setHistoryTransactions] = useState<Transaction[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
 
     useEffect(() => {
         fetchWalletData();
@@ -96,18 +106,31 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
         }
     };
 
-    const fetchTransactionHistory = async () => {
+    const fetchTransactionHistory = async (date?: Date) => {
         try {
-            const response = await fetch(`/contacts/${contactId}/wallet/transactions`);
+            let url = `/contacts/${contactId}/wallet/transactions`;
+            if (date) {
+                const dateStr = format(date, 'yyyy-MM-dd');
+                url += `?date=${dateStr}`;
+            }
+            const response = await fetch(url);
             const data = await response.json();
-            
             if (data.success) {
                 setTransactions(data.data.data || []);
+                if (date) setHistoryTransactions(data.data.data || []);
             }
         } catch (error) {
             console.error('Error fetching transaction history:', error);
         }
     };
+
+    // Fetch history transactions when dialog opens or date changes
+    useEffect(() => {
+        if (transactionHistoryOpen) {
+            setHistoryLoading(true);
+            fetchTransactionHistory(historyDate).finally(() => setHistoryLoading(false));
+        }
+    }, [transactionHistoryOpen, historyDate, contactId]);
 
     const fetchAvailableContacts = async () => {
         try {
@@ -119,6 +142,19 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
             }
         } catch (error) {
             console.error('Error fetching contacts:', error);
+        }
+    };
+
+    const searchContactByNumber = (smsNumber: string) => {
+        const contact = availableContacts.find((c: any) => c.sms_number === smsNumber);
+        if (contact) {
+            setToContactId(contact.id.toString());
+            setToContactName(`${contact.first_name} ${contact.last_name}`);
+            setContactSearchError('');
+        } else {
+            setToContactId('');
+            setToContactName('');
+            setContactSearchError('Member not found with this number');
         }
     };
 
@@ -231,19 +267,20 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
                     to_contact_id: parseInt(toContactId),
                     amount: parseFloat(amount),
                     description,
-                    reference,
                 }),
             });
 
             const data = await response.json();
             
             if (data.success) {
-                toast.success('Transfer completed successfully');
+                toast.success('Transfer completed successfully! Reference: ' + (data.data?.reference || 'N/A'));
                 setTransferFundsOpen(false);
                 setAmount('');
                 setDescription('');
                 setReference('');
                 setToContactId('');
+                setToContactNumber('');
+                setToContactName('');
                 fetchWalletData();
                 fetchTransactionHistory();
             } else {
@@ -462,19 +499,39 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="to-contact">To Contact</Label>
-                                <Select value={toContactId} onValueChange={setToContactId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a contact" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {availableContacts.map((contact) => (
-                                            <SelectItem key={contact.id} value={contact.id.toString()}>
-                                                {contact.first_name} {contact.last_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Label htmlFor="to-contact">Recipient Contact Number</Label>
+                                <Input
+                                    type="tel"
+                                    value={toContactNumber}
+                                    onChange={(e) => {
+                                        setToContactNumber(e.target.value);
+                                        if (e.target.value.length >= 10) {
+                                            searchContactByNumber(e.target.value);
+                                        } else {
+                                            setToContactId('');
+                                            setToContactName('');
+                                            setContactSearchError(''); // Clear error when input is empty
+                                        }
+                                    }}
+                                    placeholder="Enter contact number"
+                                />
+                                {contactSearchError && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {contactSearchError}
+                                    </p>
+                                )}
+                                {toContactName && (
+                                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                        <p className="text-green-600 text-sm">
+                                            {toContactName.split(' ').map(name => {
+                                                if (name.length === 2) return name[0] + '*';
+                                                if (name.length === 3) return name[0] + '**';
+                                                if (name.length > 3) return name[0] + '**' + name.slice(3);
+                                                return name;
+                                            }).join(' ')}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                             <div>
                                 <Label htmlFor="transfer-description">Description</Label>
@@ -485,18 +542,74 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
                                     placeholder="Optional description"
                                 />
                             </div>
-                            <div>
-                                <Label htmlFor="transfer-reference">Reference</Label>
-                                <Input
-                                    id="transfer-reference"
-                                    value={reference}
-                                    onChange={(e) => setReference(e.target.value)}
-                                    placeholder="Optional reference"
-                                />
-                            </div>
                             <Button onClick={handleTransferFunds} className="w-full">
                                 Transfer Funds
                             </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={transactionHistoryOpen} onOpenChange={setTransactionHistoryOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="flex items-center gap-2">
+                            <History className="h-4 w-4" />
+                            View Transaction History
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Transaction History</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="history-date">Date</Label>
+                                <Calendar
+                                    mode="single"
+                                    selected={historyDate}
+                                    onSelect={(date) => { if (date) setHistoryDate(date); }}
+                                    className="rounded-md border"
+                                />
+                            </div>
+                            {historyLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                                </div>
+                            ) : historyTransactions.length > 0 ? (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Description</TableHead>
+                                            <TableHead>Reference</TableHead>
+                                            <TableHead>Balance After</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {historyTransactions.map((transaction) => (
+                                            <TableRow key={transaction.id}>
+                                                <TableCell>{formatDate(transaction.transaction_date)}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={transaction.type === 'credit' ? 'default' : 'secondary'}>
+                                                        {transaction.type.toUpperCase()}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className={transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+                                                    {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                                </TableCell>
+                                                <TableCell>{transaction.description || '-'}</TableCell>
+                                                <TableCell>{transaction.reference || '-'}</TableCell>
+                                                <TableCell>{formatCurrency(transaction.balance_after)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            ) : (
+                                <div className="text-center text-gray-500 py-8">
+                                    No transactions found for this date
+                                </div>
+                            )}
                         </div>
                     </DialogContent>
                 </Dialog>

@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WalletTransferNotification;
 use App\Models\User;
 
 class ContactsController extends Controller
@@ -106,12 +108,40 @@ class ContactsController extends Controller
             'id_picture' => 'nullable|image|max:2048', // max 2MB
         ]);
 
+        // Custom validation to check if email and SMS number don't already exist
+        $clientIdentifier = auth()->user()->identifier;
+        
+        // Get all contacts for the current client
+        $contactsResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/contacts", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if ($contactsResponse->successful()) {
+            $contacts = $contactsResponse->json()['data'] ?? $contactsResponse->json();
+            
+            // Check if email already exists for another contact
+            if (!empty($validated['email'])) {
+                $emailExists = collect($contacts)->where('email', $validated['email'])->first();
+                if ($emailExists) {
+                    return back()->withErrors(['email' => 'This email address is already registered with another contact.']);
+                }
+            }
+            
+            // Check if SMS number already exists for another contact
+            if (!empty($validated['sms_number'])) {
+                $smsExists = collect($contacts)->where('sms_number', $validated['sms_number'])->first();
+                if ($smsExists) {
+                    return back()->withErrors(['sms_number' => 'This SMS number is already registered with another contact.']);
+                }
+            }
+        }
+
         if ($request->hasFile('id_picture')) {
             $path = $request->file('id_picture')->store('id_pictures', 'public');
             $validated['id_picture'] = Storage::disk('public')->url($path);
         }
 
-        $clientIdentifier = auth()->user()->identifier;
         $validated['client_identifier'] = $clientIdentifier;
         $response = Http::withToken($this->apiToken)
             ->post("{$this->apiUrl}/contacts", $validated);
@@ -176,6 +206,35 @@ class ContactsController extends Controller
         }
 
         $validated = $request->validate($rules);
+
+        // Custom validation to check if email and SMS number don't already exist
+        $clientIdentifier = auth()->user()->identifier;
+        
+        // Get all contacts for the current client
+        $contactsResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/contacts", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if ($contactsResponse->successful()) {
+            $contacts = $contactsResponse->json()['data'] ?? $contactsResponse->json();
+            
+            // Check if email already exists for another contact
+            if (!empty($validated['email'])) {
+                $emailExists = collect($contacts)->where('id', '!=', $id)->where('email', $validated['email'])->first();
+                if ($emailExists) {
+                    return back()->withErrors(['email' => 'This email address is already registered with another contact.']);
+                }
+            }
+            
+            // Check if SMS number already exists for another contact
+            if (!empty($validated['sms_number'])) {
+                $smsExists = collect($contacts)->where('id', '!=', $id)->where('sms_number', $validated['sms_number'])->first();
+                if ($smsExists) {
+                    return back()->withErrors(['sms_number' => 'This SMS number is already registered with another contact.']);
+                }
+            }
+        }
 
         if ($request->hasFile('id_picture')) {
             // Get the old contact data to delete previous image if it exists
@@ -314,6 +373,35 @@ class ContactsController extends Controller
             'id_numbers.*.notes' => 'nullable|string|max:500',
             'client_identifier' => 'required|string|max:255',
         ]);
+
+        // Custom validation to check if email and SMS number don't already exist
+        $clientIdentifier = $validated['client_identifier'];
+        
+        // Get all contacts for the current client
+        $contactsResponse = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/contacts", [
+                'client_identifier' => $clientIdentifier
+            ]);
+
+        if ($contactsResponse->successful()) {
+            $contacts = $contactsResponse->json()['data'] ?? $contactsResponse->json();
+            
+            // Check if email already exists for another contact
+            if (!empty($validated['email'])) {
+                $emailExists = collect($contacts)->where('email', $validated['email'])->first();
+                if ($emailExists) {
+                    return back()->withErrors(['email' => 'This email address is already registered with another contact.']);
+                }
+            }
+            
+            // Check if SMS number already exists for another contact
+            if (!empty($validated['sms_number'])) {
+                $smsExists = collect($contacts)->where('sms_number', $validated['sms_number'])->first();
+                if ($smsExists) {
+                    return back()->withErrors(['sms_number' => 'This SMS number is already registered with another contact.']);
+                }
+            }
+        }
 
         if ($request->hasFile('id_picture')) {
             $path = $request->file('id_picture')->store('id_pictures', 'public');
@@ -629,24 +717,118 @@ class ContactsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'from_contact_id' => 'required|exists:contacts,id',
-                'to_contact_id' => 'required|exists:contacts,id',
+                'from_contact_id' => 'required|numeric|min:1',
+                'to_contact_id' => 'required|numeric|min:1',
                 'amount' => 'required|numeric|min:0.01',
                 'description' => 'nullable|string|max:255',
                 'reference' => 'nullable|string|max:255',
             ]);
 
-            $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/contact-wallets/transfer", $validated);
-
-            if (!$response->successful()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to transfer funds: ' . ($response->json()['message'] ?? 'Unknown error')
-                ], $response->status());
+            if (empty($validated['reference'])) {
+                $validated['reference'] = $this->generateReference();
             }
 
-            return response()->json($response->json());
+            // In transferFunds, update the description format
+            // Get recipient contact details for email and description
+            try {
+                $recipientResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/contacts/{$validated['to_contact_id']}");
+                
+                if ($recipientResponse->successful()) {
+                    $recipientData = $recipientResponse->json();
+                    $recipientEmail = $recipientData['email'] ?? null;
+                    $recipientName = ($recipientData['first_name'] ?? '') . ' ' . ($recipientData['last_name'] ?? '');
+                    $recipientNumber = $recipientData['sms_number'] ?? 'Unknown';
+                    
+                    // Get sender contact details
+                    $senderResponse = Http::withToken($this->apiToken)
+                        ->get("{$this->apiUrl}/contacts/{$validated['from_contact_id']}");
+                    
+                    if ($senderResponse->successful()) {
+                        $senderData = $senderResponse->json();
+                        $senderName = ($senderData['first_name'] ?? '') . ' ' . ($senderData['last_name'] ?? '');
+                        $senderNumber = $senderData['sms_number'] ?? 'Unknown';
+                        
+                        // Update the transfer request with contact number in description
+                        $transferRequest = [
+                            'from_contact_id' => $validated['from_contact_id'],
+                            'to_contact_id' => $validated['to_contact_id'],
+                            'amount' => $validated['amount'],
+                            'description' => $validated['description'] ?? "Transfer to {$recipientNumber}",
+                            'reference' => $validated['reference'],
+                        ];
+                        
+                        $response = Http::withToken($this->apiToken)
+                            ->post("{$this->apiUrl}/contact-wallets/transfer", $transferRequest);
+                        
+                        if ($response->successful()) {
+                            $responseData = $response->json();
+                            
+                            // Send email notification to recipient
+                            if ($recipientEmail) {
+                                Mail::to($recipientEmail)->send(new WalletTransferNotification(
+                                    $responseData,
+                                    trim($recipientName),
+                                    trim($senderName),
+                                    $validated['amount'],
+                                    'PHP', // Default currency
+                                    $validated['reference'],
+                                    $validated['description'] ?? "Transfer from {$senderNumber}"
+                                ));
+                            }
+                            
+                            return response()->json([
+                                'success' => true,
+                                'message' => 'Transfer completed successfully',
+                                'data' => [
+                                    'reference' => $validated['reference'],
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send wallet transfer email notification', [
+                    'error' => $e->getMessage(),
+                    'recipient_id' => $validated['to_contact_id'],
+                    'sender_id' => $validated['from_contact_id']
+                ]);
+                // Don't fail the transfer if email fails
+            }
+            
+            // Fallback if contact details can't be fetched
+            // Ensure we have a proper description even in fallback
+            $fallbackData = $validated;
+            if (empty($fallbackData['description'])) {
+                // Try to get recipient SMS number for fallback description
+                try {
+                    $recipientResponse = Http::withToken($this->apiToken)
+                        ->get("{$this->apiUrl}/contacts/{$validated['to_contact_id']}");
+                    
+                    if ($recipientResponse->successful()) {
+                        $recipientData = $recipientResponse->json();
+                        $recipientNumber = $recipientData['sms_number'] ?? 'Unknown';
+                        $fallbackData['description'] = "Transfer to {$recipientNumber}";
+                    } else {
+                        $fallbackData['description'] = 'Transfer to recipient';
+                    }
+                } catch (\Exception $e) {
+                    $fallbackData['description'] = 'Transfer to recipient';
+                }
+            }
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/contact-wallets/transfer", $fallbackData);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transfer completed successfully',
+                    'data' => [
+                        'reference' => $validated['reference'],
+                    ]
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error('Exception in transferFunds', [
                 'message' => $e->getMessage()
@@ -690,10 +872,15 @@ class ContactsController extends Controller
     public function getPublicTransactionHistory($contactId, Request $request)
     {
         try {
+            $params = [];
+            
+            // Add date parameter if provided
+            if ($request->has('date')) {
+                $params['date'] = $request->get('date');
+            }
+            
             $response = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/transactions", [
-                    'per_page' => $request->get('per_page', 15)
-                ]);
+                ->get("{$this->apiUrl}/contact-wallets/{$contactId}/transactions", $params);
 
             if (!$response->successful()) {
                 return response()->json([
@@ -720,26 +907,118 @@ class ContactsController extends Controller
     {
         try {
             $validated = $request->validate([
-                'to_contact_id' => 'required|exists:contacts,id',
+                'to_contact_id' => 'required|numeric|min:1',
                 'amount' => 'required|numeric|min:0.01',
                 'description' => 'nullable|string|max:255',
                 'reference' => 'nullable|string|max:255',
             ]);
 
+            if (empty($validated['reference'])) {
+                $validated['reference'] = $this->generateReference();
+            }
+
             // Set the from_contact_id to the current contact
             $validated['from_contact_id'] = $contactId;
 
-            $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/contact-wallets/transfer", $validated);
-
-            if (!$response->successful()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to transfer funds: ' . ($response->json()['message'] ?? 'Unknown error')
-                ], $response->status());
+            // Get recipient contact details for email and description
+            try {
+                $recipientResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/contacts/{$validated['to_contact_id']}");
+                
+                if ($recipientResponse->successful()) {
+                    $recipientData = $recipientResponse->json();
+                    $recipientEmail = $recipientData['email'] ?? null;
+                    $recipientName = ($recipientData['first_name'] ?? '') . ' ' . ($recipientData['last_name'] ?? '');
+                    $recipientNumber = $recipientData['sms_number'] ?? 'Unknown';
+                    
+                    // Get sender contact details
+                    $senderResponse = Http::withToken($this->apiToken)
+                        ->get("{$this->apiUrl}/contacts/{$contactId}");
+                    
+                    if ($senderResponse->successful()) {
+                        $senderData = $senderResponse->json();
+                        $senderName = ($senderData['first_name'] ?? '') . ' ' . ($senderData['last_name'] ?? '');
+                        $senderNumber = $senderData['sms_number'] ?? 'Unknown';
+                        
+                        // Update the transfer request with contact number in description
+                        $transferRequest = [
+                            'to_contact_id' => $validated['to_contact_id'],
+                            'amount' => $validated['amount'],
+                            'description' => $validated['description'] ?? "Transfer to {$recipientNumber}",
+                            'reference' => $validated['reference'],
+                        ];
+                        
+                        $response = Http::withToken($this->apiToken)
+                            ->post("{$this->apiUrl}/contact-wallets/transfer", $transferRequest);
+                        
+                        if ($response->successful()) {
+                            $responseData = $response->json();
+                            
+                            // Send email notification to recipient
+                            if ($recipientEmail) {
+                                Mail::to($recipientEmail)->send(new WalletTransferNotification(
+                                    $responseData,
+                                    trim($recipientName),
+                                    trim($senderName),
+                                    $validated['amount'],
+                                    'PHP', // Default currency
+                                    $validated['reference'],
+                                    $validated['description'] ?? "Transfer from {$senderNumber}"
+                                ));
+                            }
+                            
+                            return response()->json([
+                                'success' => true,
+                                'message' => 'Transfer completed successfully',
+                                'data' => [
+                                    'reference' => $validated['reference'],
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send wallet transfer email notification', [
+                    'error' => $e->getMessage(),
+                    'recipient_id' => $validated['to_contact_id'],
+                    'sender_id' => $contactId
+                ]);
+                // Don't fail the transfer if email fails
             }
+            
+            // Fallback if contact details can't be fetched
+            // Ensure we have a proper description even in fallback
+            $fallbackData = $validated;
+            if (empty($fallbackData['description'])) {
+                // Try to get recipient SMS number for fallback description
+                try {
+                    $recipientResponse = Http::withToken($this->apiToken)
+                        ->get("{$this->apiUrl}/contacts/{$validated['to_contact_id']}");
+                    
+                    if ($recipientResponse->successful()) {
+                        $recipientData = $recipientResponse->json();
+                        $recipientNumber = $recipientData['sms_number'] ?? 'Unknown';
+                        $fallbackData['description'] = "Transfer to {$recipientNumber}";
+                    } else {
+                        $fallbackData['description'] = 'Transfer to recipient';
+                    }
+                } catch (\Exception $e) {
+                    $fallbackData['description'] = 'Transfer to recipient';
+                }
+            }
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/contact-wallets/transfer", $fallbackData);
 
-            return response()->json($response->json());
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transfer completed successfully',
+                    'data' => [
+                        'reference' => $validated['reference'],
+                    ]
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error('Exception in publicTransferFunds', [
                 'message' => $e->getMessage(),
@@ -836,7 +1115,7 @@ class ContactsController extends Controller
                     return [
                         'id' => $contact['id'],
                         'name' => $contact['first_name'] . ' ' . $contact['last_name'],
-                        'email' => $contact['email']
+                        'sms_number' => $contact['sms_number']
                     ];
                 })
                 ->values()
@@ -863,5 +1142,13 @@ class ContactsController extends Controller
                 'message' => 'An error occurred while fetching available contacts: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function generateReference() {
+        $now = now();
+        $date = $now->format('Ymd');
+        $time = $now->format('His');
+        $rand = rand(1000, 9999);
+        return "TRF-{$date}-{$time}-{$rand}";
     }
 }
