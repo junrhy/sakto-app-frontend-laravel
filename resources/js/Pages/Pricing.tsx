@@ -39,12 +39,13 @@ export default function Pricing({ auth }: PageProps) {
     }, []);
 
     const productsMenuItems = [
-        { name: 'Community', href: route('community') },
-        { name: 'Logistics', href: route('logistics') },
-        { name: 'Medical', href: route('medical') },
-        { name: 'Retail Delivery', href: route('delivery') },
-        { name: 'Human Resources', href: route('jobs') },
-        { name: 'E-Commerce', href: route('shop') },
+        { name: 'Komunidad', href: route('community') },
+        { name: 'Logistika', href: route('logistics') },
+        { name: 'Medikal', href: route('medical') },
+        { name: 'Lakbay', href: route('travel.landing') },
+        { name: 'Hatid', href: route('delivery') },
+        { name: 'Taohan', href: route('jobs') },
+        { name: 'Merkado', href: route('shop') },
     ];
 
     const legalMenuItems = [
@@ -54,8 +55,8 @@ export default function Pricing({ auth }: PageProps) {
         { name: 'FAQ', href: route('faq') },
     ];
     const projectPlans = {
-        Community: {
-            name: 'Community',
+        Komunidad: {
+            name: 'Komunidad',
             icon: UserGroupIcon,
             plans: [
                 {
@@ -95,8 +96,8 @@ export default function Pricing({ auth }: PageProps) {
                 }
             ]
         },
-        Logistics: {
-            name: 'Logistics',
+        Logistika: {
+            name: 'Logistika',
             icon: TruckIcon,
             plans: [
                 {
@@ -136,8 +137,8 @@ export default function Pricing({ auth }: PageProps) {
                 }
             ]
         },
-        Medical: {
-            name: 'Medical',
+        Medikal: {
+            name: 'Medikal',
             icon: HeartIcon,
             plans: [
                 {

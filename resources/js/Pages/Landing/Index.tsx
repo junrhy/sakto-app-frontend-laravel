@@ -1,6 +1,7 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState, useRef } from 'react';
+import { getHost } from '@/lib/utils';
 
 interface PageProps extends Record<string, any> {
     auth: {
@@ -23,6 +24,7 @@ export default function Welcome({
     const containerRef = useRef<HTMLDivElement>(null);
     const productsDropdownRef = useRef<HTMLDivElement>(null);
     const legalDropdownRef = useRef<HTMLDivElement>(null);
+    const hostname = getHost();
 
     useEffect(() => {
         const checkMobile = () => {
@@ -61,13 +63,13 @@ export default function Welcome({
     }, []);
 
     const productsMenuItems = [
-        { name: 'Community', href: route('community') },
-        { name: 'Logistics', href: route('logistics') },
-        { name: 'Medical', href: route('medical') },
-        { name: 'Travel', href: route('travel.landing') },
-        { name: 'Retail Delivery', href: route('delivery') },
-        { name: 'Human Resources', href: route('jobs') },
-        { name: 'E-Commerce', href: route('shop') },
+        { name: 'Komunidad', href: route('community') },
+        { name: 'Logistika', href: route('logistics') },
+        { name: 'Medikal', href: route('medical') },
+        { name: 'Lakbay', href: route('travel.landing') },
+        { name: 'Hatid', href: route('delivery') },
+        { name: 'Taohan', href: route('jobs') },
+        { name: 'Merkado', href: route('shop') },
     ];
 
     const legalMenuItems = [
@@ -87,7 +89,7 @@ export default function Welcome({
                         <div className="flex justify-between h-16">
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-100" />
-                                <span className="ml-2 text-xl font-bold bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-transparent dark:text-gray-100">Sakto</span>
+                                <span className="ml-2 text-xl font-bold bg-gradient-to-r from-gray-900 to-indigo-600 bg-clip-text text-transparent dark:text-gray-100">{hostname}</span>
                             </div>
                             <div className="flex items-center">
                                 {auth.user ? (
@@ -107,7 +109,7 @@ export default function Welcome({
                                                     onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
                                                     className="text-gray-600 hover:text-indigo-600 dark:text-gray-200 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
                                                 >
-                                                    Solutions
+                                                    Apps
                                                     <svg
                                                         className={`ml-1 h-4 w-4 transition-transform duration-200 ${isProductsDropdownOpen ? 'rotate-180' : ''}`}
                                                         xmlns="http://www.w3.org/2000/svg"

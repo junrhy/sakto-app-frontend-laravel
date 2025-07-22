@@ -39,12 +39,13 @@ export default function Features({ auth }: PageProps) {
     }, []);
 
     const productsMenuItems = [
-        { name: 'Community', href: route('community') },
-        { name: 'Logistics', href: route('logistics') },
-        { name: 'Medical', href: route('medical') },
-        { name: 'Retail Delivery', href: route('delivery') },
-        { name: 'Human Resources', href: route('jobs') },
-        { name: 'E-Commerce', href: route('shop') },
+        { name: 'Komunidad', href: route('community') },
+        { name: 'Logistika', href: route('logistics') },
+        { name: 'Medikal', href: route('medical') },
+        { name: 'Lakbay', href: route('travel.landing') },
+        { name: 'Hatid', href: route('delivery') },
+        { name: 'Taohan', href: route('jobs') },
+        { name: 'Merkado', href: route('shop') },
     ];
 
     const legalMenuItems = [
@@ -55,7 +56,7 @@ export default function Features({ auth }: PageProps) {
     ];
 
     const projects = {
-        Community: [
+        Komunidad: [
             {
                 title: 'Genealogy',
                 description: 'Create and manage family trees with an interactive viewer, relationship mapping, and genealogy tracking features.'
@@ -93,7 +94,7 @@ export default function Features({ auth }: PageProps) {
                 description: 'Manage healthcare services, patient records, and medical appointments.'
             }
         ],
-        Logistics: [
+        Logistika: [
             {
                 title: 'Payroll System',
                 description: 'Employee payroll system with tax calculation, attendance tracking, and automated salary disbursement.'
@@ -119,7 +120,7 @@ export default function Features({ auth }: PageProps) {
                 description: 'Fleet management system with route optimization, vehicle maintenance tracking, and driver scheduling.'
             }
         ],
-        Medical: [
+        Medikal: [
             {
                 title: 'Clinical Management',
                 description: 'Medical practice management with patient records, appointment scheduling, and billing system.'

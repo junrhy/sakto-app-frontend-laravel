@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import SearchBar from '@/Components/ui/SearchBar';
 import { useState, useMemo } from 'react';
 import MemberCard from './Components/MemberCard';
 
@@ -16,9 +17,10 @@ interface PageProps {
         email: string;
         created_at: string;
     }[];
+    totalContacts: number;
 }
 
-export default function Community({ auth, communityUsers }: PageProps) {
+export default function Community({ auth, communityUsers, totalContacts }: PageProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
     // Filter community users based on search query using useMemo for better performance
@@ -32,14 +34,15 @@ export default function Community({ auth, communityUsers }: PageProps) {
         );
     }, [communityUsers, searchQuery]);
 
-    // Calculate total members count
-    const totalMembers = communityUsers.length;
+    // Use totalContacts from backend instead of calculating from communityUsers
+    const totalMembers = totalContacts;
+    const totalCommunities = communityUsers.length;
     const filteredCount = filteredUsers.length;
 
     return (
         <>
             <Head title="Community - Connect and Share" />
-            <div className="min-h-screen bg-slate-50">
+            <div className="min-h-screen bg-slate-50 scroll-smooth">
                 {/* Header */}
                 <div className="bg-blue-600 shadow-sm border-b border-blue-700">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -47,30 +50,38 @@ export default function Community({ auth, communityUsers }: PageProps) {
                             <div className="flex items-center">
                                 <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
                                 <div className="ml-3">
-                                    <div className="text-xl font-bold text-white leading-tight">Sakto</div>
-                                    <div className="text-sm font-medium text-blue-100 leading-tight">Community</div>
+                                    <div className="text-2xl font-bold text-white leading-tight">Komunidad</div>
                                 </div>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-center gap-4">
-                                <div className="relative w-full sm:min-w-96">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Search communities..."
-                                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                    />
-                                </div>
+                            
+                            {/* Navigation Menu - Left Aligned */}
+                            <div className="hidden lg:flex items-center space-x-8 ml-8">
+                                <Link
+                                    href="#features"
+                                    className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
+                                >
+                                    How it works
+                                </Link>
+                                <Link
+                                    href="#pricing"
+                                    className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
+                                >
+                                    Pricing
+                                </Link>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row items-center gap-4 ml-auto">
+                                <Link
+                                    href={route('login', { project: 'community' })}
+                                    className="inline-flex items-center px-4 py-2 border border-white text-sm font-medium rounded-md text-white hover:bg-white hover:text-blue-600 transition-colors duration-200 w-full sm:w-auto justify-center whitespace-nowrap"
+                                >
+                                    Login
+                                </Link>
                                 <Link
                                     href={route('register', { project: 'community' })}
                                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200 w-full sm:w-auto justify-center whitespace-nowrap"
                                 >
-                                    New Community
+                                    Get Started
                                 </Link>
                             </div>
                         </div>
@@ -87,7 +98,7 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                 <div>
                                     <h1 className="text-4xl font-bold text-white mb-4">Join Our Thriving Community</h1>
                                     <p className="text-xl text-blue-100 mb-6">
-                                        Connect with {totalMembers}+ members, share experiences, and grow together in our vibrant community platform.
+                                        Connect with {totalMembers.toLocaleString()}+ members, share experiences, and grow together in our vibrant community platform.
                                     </p>
                                     <div className="flex flex-wrap gap-4">
                                         <div className="flex items-center text-white">
@@ -116,11 +127,11 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                         <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
                                             <div className="grid grid-cols-3 gap-4">
                                                 <div className="bg-white/20 rounded-lg p-4 text-center">
-                                                    <div className="text-2xl font-bold text-white">{totalMembers}</div>
+                                                    <div className="text-2xl font-bold text-white">{totalMembers.toLocaleString()}</div>
                                                     <div className="text-xs text-blue-100">Members</div>
                                                 </div>
                                                 <div className="bg-white/20 rounded-lg p-4 text-center">
-                                                    <div className="text-2xl font-bold text-white">50+</div>
+                                                    <div className="text-2xl font-bold text-white">{totalCommunities}</div>
                                                     <div className="text-xs text-blue-100">Communities</div>
                                                 </div>
                                                 <div className="bg-white/20 rounded-lg p-4 text-center">
@@ -135,58 +146,100 @@ export default function Community({ auth, communityUsers }: PageProps) {
                         </div>
                     </div>
 
-                    {/* Featured Communities Banner */}
-                    <div className="mb-8">
-                        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <h2 className="text-xl font-semibold text-emerald-900">Featured Communities</h2>
-                                    <p className="text-emerald-700">Discover trending and popular communities</p>
+                    {/* How It Works Section */}
+                    <div id="features" className="mb-16">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold text-slate-900 mb-4">How It Works</h2>
+                            <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+                                Get started with our community platform in just a few simple steps. Build, grow, and manage your community with ease.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+                            {/* Step 1 */}
+                            <div className="text-center">
+                                <div className="relative mb-6">
+                                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-2xl font-bold text-blue-600">1</span>
+                                    </div>
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
                                 </div>
-                                <div className="flex space-x-2">
-                                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                                    <div className="w-2 h-2 bg-emerald-300 rounded-full"></div>
-                                    <div className="w-2 h-2 bg-emerald-200 rounded-full"></div>
-                                </div>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-3">Sign Up</h3>
+                                <p className="text-slate-600">
+                                    Create your account and choose your community plan. Get started in minutes with our simple registration process.
+                                </p>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white rounded-lg p-4 border border-emerald-100">
-                                    <div className="flex items-center mb-3">
-                                        <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center mr-3">
-                                            <span className="text-white font-bold">T</span>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">Tech Enthusiasts</h3>
-                                            <p className="text-xs text-slate-500">1.2k members</p>
-                                        </div>
+
+                            {/* Step 2 */}
+                            <div className="text-center">
+                                <div className="relative mb-6">
+                                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-2xl font-bold text-emerald-600">2</span>
                                     </div>
-                                    <p className="text-sm text-slate-600">Latest in technology, programming, and innovation</p>
-                                </div>
-                                <div className="bg-white rounded-lg p-4 border border-emerald-100">
-                                    <div className="flex items-center mb-3">
-                                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                                            <span className="text-white font-bold">B</span>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">Business Network</h3>
-                                            <p className="text-xs text-slate-500">856 members</p>
-                                        </div>
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
                                     </div>
-                                    <p className="text-sm text-slate-600">Connect with entrepreneurs and professionals</p>
                                 </div>
-                                <div className="bg-white rounded-lg p-4 border border-emerald-100">
-                                    <div className="flex items-center mb-3">
-                                        <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mr-3">
-                                            <span className="text-white font-bold">C</span>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-900">Creative Hub</h3>
-                                            <p className="text-xs text-slate-500">634 members</p>
-                                        </div>
-                                    </div>
-                                    <p className="text-sm text-slate-600">Art, design, and creative inspiration</p>
-                                </div>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-3">Set Up Your Community</h3>
+                                <p className="text-slate-600">
+                                    Customize your community profile, add members, and configure your settings to match your needs.
+                                </p>
                             </div>
+
+                            {/* Step 3 */}
+                            <div className="text-center">
+                                <div className="relative mb-6">
+                                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-2xl font-bold text-purple-600">3</span>
+                                    </div>
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-3">Start Engaging</h3>
+                                <p className="text-slate-600">
+                                    Launch events, share content, and connect with your members. Use our tools to foster meaningful interactions.
+                                </p>
+                            </div>
+
+                            {/* Step 4 */}
+                            <div className="text-center">
+                                <div className="relative mb-6">
+                                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-2xl font-bold text-orange-600">4</span>
+                                    </div>
+                                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-semibold text-slate-900 mb-3">Grow & Scale</h3>
+                                <p className="text-slate-600">
+                                    Watch your community thrive! Monitor growth, analyze engagement, and scale your success with advanced features.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Call to Action */}
+                        <div className="text-center mt-12">
+                            <Link
+                                href={route('register', { project: 'community' })}
+                                className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                            >
+                                Get Started Today
+                                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </Link>
                         </div>
                     </div>
 
@@ -194,6 +247,19 @@ export default function Community({ auth, communityUsers }: PageProps) {
                     <div className="mb-8">
                         <h2 className="text-3xl font-bold text-slate-900 mb-2">Community Directory</h2>
                         <p className="text-slate-600">Discover and connect with amazing communities</p>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="mb-8">
+                        <div className="max-w-2xl mx-auto">
+                            <SearchBar
+                                placeholder="Search communities by name..."
+                                value={searchQuery}
+                                onChange={setSearchQuery}
+                                size="lg"
+                                className="w-full"
+                            />
+                        </div>
                     </div>
 
                     {/* Communities Grid Section */}
@@ -207,7 +273,7 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                 <p className="text-sm text-slate-600">
                                     {searchQuery.trim() 
                                         ? `Found ${filteredCount} community${filteredCount !== 1 ? 's' : ''} matching "${searchQuery}"`
-                                        : `Showing all ${totalMembers} communities`
+                                        : `Showing all ${totalMembers.toLocaleString()} communities`
                                     }
                                 </p>
                             </div>
@@ -320,110 +386,233 @@ export default function Community({ auth, communityUsers }: PageProps) {
                         </div>
                     </div>
 
-                    {/* Promotional Banner */}
-                    <div className="mt-12 mb-8">
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl overflow-hidden">
-                            <div className="relative px-8 py-12">
-                                <div className="absolute inset-0 bg-black/10"></div>
-                                <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    {/* Pricing Section */}
+                    <div id="pricing" className="mt-16 mb-16">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold text-slate-900 mb-4">Choose Your Community Plan</h2>
+                            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                                Select the perfect plan for your community needs. All plans include our core community features with different levels of support and integrations.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                            {/* Basic Plan */}
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition duration-200"></div>
+                                <div className="relative p-8 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition duration-200 h-full flex flex-col">
                                     <div>
-                                        <div className="inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-white text-sm font-medium mb-4">
-                                            <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                            </svg>
-                                            Limited Time Offer
-                                        </div>
-                                        <h3 className="text-3xl font-bold text-white mb-4">Create Your Own Community</h3>
-                                        <p className="text-xl text-orange-100 mb-6">
-                                            Start building your community today and connect with like-minded people. Get 50% off your first month!
+                                        <h3 className="text-xl font-bold text-slate-900 mb-2">Basic</h3>
+                                        <p className="text-sm text-slate-600 mb-6">Perfect for small communities and organizations</p>
+                                        <p className="mb-6">
+                                            <span className="text-3xl font-extrabold text-slate-900">₱99</span>
+                                            <span className="text-sm text-slate-600">/month</span>
                                         </p>
-                                        <div className="flex flex-wrap gap-4">
-                                            <button className="bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-orange-50 transition-colors">
-                                                Start Free Trial
-                                            </button>
-                                            <button className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors">
-                                                Learn More
-                                            </button>
-                                        </div>
+                                        <Link
+                                            href={route('register', { project: 'community', plan: 'basic' })}
+                                            className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                                        >
+                                            Get Started
+                                        </Link>
                                     </div>
-                                    <div className="hidden lg:block">
-                                        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-                                            <div className="text-center">
-                                                <div className="text-4xl font-bold text-white mb-2">50% OFF</div>
-                                                <div className="text-orange-100 mb-4">First Month</div>
-                                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                                    <div className="bg-white/20 rounded-lg p-3">
-                                                        <div className="text-white font-semibold">Unlimited</div>
-                                                        <div className="text-orange-100">Members</div>
-                                                    </div>
-                                                    <div className="bg-white/20 rounded-lg p-3">
-                                                        <div className="text-white font-semibold">Premium</div>
-                                                        <div className="text-orange-100">Features</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div className="flex-grow mt-6">
+                                        <ul className="space-y-3">
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-blue-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">All Community Apps</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-blue-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Basic Support</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-blue-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Email Support</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Pro Plan */}
+                            <div className="relative group lg:-mt-4 lg:mb-4">
+                                <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 opacity-20 transition duration-200"></div>
+                                <div className="relative p-8 bg-white rounded-xl border-2 border-indigo-500 shadow-lg h-full flex flex-col">
+                                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            Most Popular
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900 mb-2">Pro</h3>
+                                        <p className="text-sm text-slate-600 mb-6">Ideal for growing communities</p>
+                                        <p className="mb-6">
+                                            <span className="text-3xl font-extrabold text-slate-900">₱199</span>
+                                            <span className="text-sm text-slate-600">/month</span>
+                                        </p>
+                                        <Link
+                                            href={route('register', { project: 'community', plan: 'pro' })}
+                                            className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
+                                        >
+                                            Get Started
+                                        </Link>
+                                    </div>
+                                    <div className="flex-grow mt-6">
+                                        <ul className="space-y-3">
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-indigo-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">All Community Apps</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-indigo-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Email Integration</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-indigo-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">SMS Integration</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-indigo-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Priority Support</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-indigo-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">24/7 Support</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Business Plan */}
+                            <div className="relative group">
+                                <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition duration-200"></div>
+                                <div className="relative p-8 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition duration-200 h-full flex flex-col">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900 mb-2">Business</h3>
+                                        <p className="text-sm text-slate-600 mb-6">Perfect for established communities with advanced needs</p>
+                                        <p className="mb-6">
+                                            <span className="text-3xl font-extrabold text-slate-900">₱299</span>
+                                            <span className="text-sm text-slate-600">/month</span>
+                                        </p>
+                                        <Link
+                                            href={route('register', { project: 'community', plan: 'business' })}
+                                            className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200"
+                                        >
+                                            Get Started
+                                        </Link>
+                                    </div>
+                                    <div className="flex-grow mt-6">
+                                        <ul className="space-y-3">
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-purple-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">All Community Apps</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-purple-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Email Integration</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-purple-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">SMS Integration</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-purple-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Priority Support</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-purple-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">24/7 Support</span>
+                                            </li>
+                                            <li className="flex items-center text-sm">
+                                                <svg className="h-4 w-4 text-purple-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                <span className="text-slate-600">Virtual Assistant</span>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Community Stats Section */}
-                    <div className="mb-8">
-                        <div className="bg-slate-50 rounded-2xl p-8">
-                            <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">Community Impact</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
+                        {/* FAQ Section */}
+                        <div className="mt-16">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-8 text-center">Frequently Asked Questions</h3>
+                            <div className="max-w-3xl mx-auto">
+                                <dl className="space-y-6">
+                                    <div className="bg-white rounded-lg p-6 border border-slate-200">
+                                        <dt className="text-lg font-medium text-slate-900 mb-2">
+                                            Can I change plans later?
+                                        </dt>
+                                        <dd className="text-slate-600">
+                                            Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.
+                                        </dd>
                                     </div>
-                                    <div className="text-2xl font-bold text-slate-900">{totalMembers}+</div>
-                                    <div className="text-slate-600">Active Members</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                        </svg>
+                                    <div className="bg-white rounded-lg p-6 border border-slate-200">
+                                        <dt className="text-lg font-medium text-slate-900 mb-2">
+                                            What payment methods do you accept?
+                                        </dt>
+                                        <dd className="text-slate-600">
+                                            We accept Visa, Mastercard, JCB, or AMEX credit or debit card. You can also use e-Wallets such as Maya, GCash, WeChat Pay, ShopeePay, and more via QR Ph.
+                                        </dd>
                                     </div>
-                                    <div className="text-2xl font-bold text-slate-900">10k+</div>
-                                    <div className="text-slate-600">Messages Daily</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
+                                    <div className="bg-white rounded-lg p-6 border border-slate-200">
+                                        <dt className="text-lg font-medium text-slate-900 mb-2">
+                                            Do you offer refunds?
+                                        </dt>
+                                        <dd className="text-slate-600">
+                                            Yes, we offer a 30-day money-back guarantee for all paid plans.
+                                        </dd>
                                     </div>
-                                    <div className="text-2xl font-bold text-slate-900">24/7</div>
-                                    <div className="text-slate-600">Active Support</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg className="h-8 w-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                                    <div className="bg-white rounded-lg p-6 border border-slate-200">
+                                        <dt className="text-lg font-medium text-slate-900 mb-2">
+                                            What kind of support do you provide?
+                                        </dt>
+                                        <dd className="text-slate-600">
+                                            All plans include email support. Pro and Business plans include 24/7 support with priority response times.
+                                        </dd>
                                     </div>
-                                    <div className="text-2xl font-bold text-slate-900">99.9%</div>
-                                    <div className="text-slate-600">Uptime</div>
-                                </div>
+                                </dl>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <footer className="bg-slate-900 text-white mt-16">
+                <footer id="contact" className="bg-slate-900 text-white mt-16">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                             {/* Company Info */}
                             <div className="col-span-1 md:col-span-2">
                                 <div className="flex items-center mb-4">
                                     <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
-                                    <span className="ml-2 text-xl font-bold">Sakto Community</span>
+                                    <span className="ml-2 text-xl font-bold">Komunidad</span>
                                 </div>
                                 <p className="text-slate-300 mb-4 max-w-md">
                                     Connecting communities and fostering meaningful relationships through our secure and trusted platform.
@@ -433,12 +622,6 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                         <span className="sr-only">Facebook</span>
                                         <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                                             <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                                        </svg>
-                                    </a>
-                                    <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                                        <span className="sr-only">Twitter</span>
-                                        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                                         </svg>
                                     </a>
                                     <a href="#" className="text-slate-400 hover:text-white transition-colors">
@@ -457,16 +640,6 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                     <li>
                                         <a href="#" className="text-slate-300 hover:text-white transition-colors text-sm">
                                             About Us
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="text-slate-300 hover:text-white transition-colors text-sm">
-                                            Contact Support
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="text-slate-300 hover:text-white transition-colors text-sm">
-                                            Community Guidelines
                                         </a>
                                     </li>
                                     <li>
@@ -496,16 +669,6 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                             Cookie Policy
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="#" className="text-slate-300 hover:text-white transition-colors text-sm">
-                                            Data Protection
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#" className="text-slate-300 hover:text-white transition-colors text-sm">
-                                            Accessibility
-                                        </a>
-                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -514,7 +677,7 @@ export default function Community({ auth, communityUsers }: PageProps) {
                         <div className="border-t border-slate-800 mt-12 pt-8">
                             <div className="flex flex-col md:flex-row justify-between items-center">
                                 <div className="text-slate-400 text-sm">
-                                    © 2024 Sakto Community. All rights reserved.
+                                    © {new Date().getFullYear()} Komunidad. All rights reserved.
                                 </div>
                                 <div className="flex items-center space-x-6 mt-4 md:mt-0">
                                     <div className="flex items-center text-slate-400 text-sm">
@@ -527,7 +690,7 @@ export default function Community({ auth, communityUsers }: PageProps) {
                                         <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                         </svg>
-                                        GDPR Compliant
+                                        A subsidiary of Sakto Technologies
                                     </div>
                                 </div>
                             </div>
