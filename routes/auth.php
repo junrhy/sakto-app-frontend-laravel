@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TeamMemberController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -64,4 +65,20 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Team Member Routes
+    Route::get('team-member/select', [TeamMemberController::class, 'showSelection'])
+        ->name('team-member.select');
+    
+    Route::get('team-member/authenticate', [TeamMemberController::class, 'showAuthentication'])
+        ->name('team-member.authenticate');
+    
+    Route::post('team-member/authenticate', [TeamMemberController::class, 'authenticate'])
+        ->name('team-member.authenticate');
+    
+    Route::post('team-member/switch', [TeamMemberController::class, 'switch'])
+        ->name('team-member.switch');
+    
+    Route::post('team-member/clear', [TeamMemberController::class, 'clear'])
+        ->name('team-member.clear');
 });

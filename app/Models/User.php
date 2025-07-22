@@ -86,6 +86,74 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the user's subscription data for frontend consumption.
+     */
+    public function getSubscriptionDataAttribute()
+    {
+        $subscription = $this->subscription;
+        
+        if (!$subscription) {
+            return null;
+        }
+        
+        return [
+            'id' => $subscription->id,
+            'identifier' => $subscription->identifier,
+            'status' => $subscription->status,
+            'start_date' => $subscription->start_date,
+            'end_date' => $subscription->end_date,
+            'plan' => $subscription->plan ? [
+                'id' => $subscription->plan->id,
+                'name' => $subscription->plan->name,
+                'unlimited_access' => $subscription->plan->unlimited_access,
+                'features' => $subscription->plan->features,
+            ] : null,
+        ];
+    }
+
+    /**
+     * Get the user's project data for frontend consumption.
+     */
+    public function getProjectDataAttribute()
+    {
+        $project = $this->project;
+        
+        if (!$project) {
+            return null;
+        }
+        
+        return [
+            'id' => $project->id,
+            'name' => $project->name,
+            'identifier' => $project->identifier,
+            'enabledModules' => $project->enabledModules,
+        ];
+    }
+
+    /**
+     * Get the user's team members data for frontend consumption.
+     */
+    public function getTeamMembersDataAttribute()
+    {
+        return \App\Models\TeamMember::where('user_identifier', $this->identifier)
+            ->where('project_identifier', $this->project_identifier)
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($member) {
+                return [
+                    'identifier' => $member->identifier,
+                    'first_name' => $member->first_name,
+                    'last_name' => $member->last_name,
+                    'full_name' => $member->full_name,
+                    'email' => $member->email,
+                    'roles' => $member->roles ?? [],
+                    'allowed_apps' => $member->allowed_apps ?? [],
+                    'profile_picture' => $member->profile_picture,
+                ];
+            });
+    }
+
+    /**
      * Check if the user is an admin.
      *
      * @return bool

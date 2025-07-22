@@ -17,11 +17,32 @@ interface Props {
             credits?: number;
             identifier?: string;
             theme?: 'light' | 'dark' | 'system';
-            project: {
-                enabledModules: string[];
-                identifier: string;
-            };
         };
+        project: {
+            enabledModules: string[];
+            identifier: string;
+        };
+        modules: string[];
+        teamMembers: Array<{
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        }>;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        } | null;
     };
 }
 
@@ -29,7 +50,7 @@ interface Subscription {
     plan: {
         name: string;
         unlimited_access: boolean;
-        slug: string;
+        slug?: string;
     };
     end_date: string;
 }
@@ -41,6 +62,8 @@ export default function Home({ auth }: Props) {
     const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
+
+    console.log(auth);
 
     useEffect(() => {
         const fetchApps = async () => {
@@ -147,8 +170,7 @@ export default function Home({ auth }: Props) {
                                 <div className="flex items-center">
                                     <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
                                     <div className="ml-2">
-                                        <span className="text-xl font-bold text-gray-900 dark:text-white">{auth.user.name} Apps</span>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">powered by Sakto {auth.user.project.identifier.charAt(0).toUpperCase() + auth.user.project.identifier.slice(1)} Platform</div>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-white">{auth.user.name}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-4">
@@ -197,7 +219,7 @@ export default function Home({ auth }: Props) {
                                                     className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                                 >
                                                     <UserIcon className="w-5 h-5" />
-                                                    <span>{auth.user.name}</span>
+                                                    <span>{auth.selectedTeamMember?.full_name || auth.selectedTeamMember?.full_name}</span>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent 
@@ -221,7 +243,7 @@ export default function Home({ auth }: Props) {
                                                 <DropdownMenuItem>
                                                     <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
                                                     <InertiaLink 
-                                                        href={route('logout', { project: auth.user.project.identifier })} 
+                                                        href={route('logout', { project: auth.project.identifier })} 
                                                         method="post" 
                                                         as="button"
                                                         className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -266,7 +288,7 @@ export default function Home({ auth }: Props) {
                             const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
                             
                             // Only show apps that are in enabledModules
-                            if (!auth.user.project.enabledModules.includes(normalizedAppTitle)) {
+                            if (!auth.project.enabledModules.includes(normalizedAppTitle)) {
                                 return false;
                             }
                             
@@ -274,7 +296,7 @@ export default function Home({ auth }: Props) {
                             if (app.visible) return true;
                             
                             // Show subscription apps if user has an active subscription that includes this app
-                            if (app.pricingType === 'subscription' && subscription && app.includedInPlans?.includes(subscription.plan.slug)) {
+                            if (app.pricingType === 'subscription' && subscription && subscription.plan.slug && app.includedInPlans?.includes(subscription.plan.slug)) {
                                 return true;
                             }
                             

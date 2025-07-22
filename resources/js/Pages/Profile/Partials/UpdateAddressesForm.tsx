@@ -11,6 +11,7 @@ import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 interface Props {
     className?: string;
     addresses: Address[];
+    hideHeader?: boolean;
 }
 
 interface Address {
@@ -36,7 +37,7 @@ const ADDRESS_TYPES = [
     'Other'
 ];
 
-export default function UpdateAddressesForm({ className = '', addresses = [] }: Props) {
+export default function UpdateAddressesForm({ className = '', addresses = [], hideHeader = false }: Props) {
     const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     const { data, setData, post, processing, errors } = useForm<{ addresses: Address[] }>({
@@ -121,14 +122,16 @@ export default function UpdateAddressesForm({ className = '', addresses = [] }: 
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Delivery Addresses
-                </h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Manage your delivery addresses. You can add multiple addresses and set one as primary.
-                </p>
-            </header>
+            {!hideHeader && (
+                <header>
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Delivery Addresses
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Manage your delivery addresses. You can add multiple addresses and set one as primary.
+                    </p>
+                </header>
+            )}
 
             {alert && (
                 <div className={`mt-4 p-4 rounded-md ${

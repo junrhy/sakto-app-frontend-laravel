@@ -4,7 +4,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 
-export default function UpdateCurrencyForm({ className = '', currency }: { className?: string, currency: any }) {
+export default function UpdateCurrencyForm({ className = '', currency, hideHeader = false }: { className?: string, currency: any, hideHeader?: boolean }) {
     const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     const { data, setData, patch, errors, processing } = useForm({
@@ -35,14 +35,16 @@ export default function UpdateCurrencyForm({ className = '', currency }: { class
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Currency Settings
-                </h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Update your currency preferences and format settings.
-                </p>
-            </header>
+            {!hideHeader && (
+                <header>
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Currency Settings
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Update your currency preferences and format settings.
+                    </p>
+                </header>
+            )}
 
             {alert && (
                 <div className={`mt-4 p-4 rounded-md ${

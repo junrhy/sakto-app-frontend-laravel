@@ -15,20 +15,6 @@ class AppsController extends Controller
         $project = Project::where('identifier', auth()->user()->project_identifier)->first();
 
         return Inertia::render('Apps', [
-            'auth' => [
-                'user' => [
-                    'name' => auth()->user()->name,
-                    'email' => auth()->user()->email,
-                    'identifier' => auth()->user()->identifier,
-                    'app_currency' => $appCurrency,
-                    'credits' => auth()->user()->credits,
-                    'is_admin' => auth()->user()->is_admin,
-                    'project_identifier' => auth()->user()->project_identifier,
-                    'theme' => auth()->user()->theme,
-                    'theme_color' => auth()->user()->theme_color,
-                ],
-                'modules' => $project ? $project->enabledModules : []
-            ],
             'apps' => config('apps')
         ]);
     }

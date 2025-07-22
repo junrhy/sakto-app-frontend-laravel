@@ -18,9 +18,10 @@ interface Props {
     mustVerifyEmail: boolean;
     status?: string;
     className?: string;
+    hideHeader?: boolean;
 }
 
-export default function UpdateProfileInformationForm({ mustVerifyEmail, status, className = '' }: Props) {
+export default function UpdateProfileInformationForm({ mustVerifyEmail, status, className = '', hideHeader = false }: Props) {
     const user = usePage<{ auth: { user: any } }>().props.auth.user;
     const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     
@@ -53,15 +54,17 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Profile Information
-                </h2>
+            {!hideHeader && (
+                <header>
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Profile Information
+                    </h2>
 
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Update your account's profile information and email address.
-                </p>
-            </header>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Update your account's profile information and email address.
+                    </p>
+                </header>
+            )}
 
             {alert && (
                 <div className={`mt-4 p-4 rounded-md ${

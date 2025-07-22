@@ -8,8 +8,10 @@ import { FormEventHandler, useRef, useState } from 'react';
 
 export default function UpdatePasswordForm({
     className = '',
+    hideHeader = false,
 }: {
     className?: string;
+    hideHeader?: boolean;
 }) {
     const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
@@ -58,16 +60,18 @@ export default function UpdatePasswordForm({
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Update Password
-                </h2>
+            {!hideHeader && (
+                <header>
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Update Password
+                    </h2>
 
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Ensure your account is using a long, random password to stay
-                    secure.
-                </p>
-            </header>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Ensure your account is using a long, random password to stay
+                        secure.
+                    </p>
+                </header>
+            )}
 
             {alert && (
                 <div className={`mt-4 p-4 rounded-md ${

@@ -75,9 +75,6 @@ class InboxController extends Controller
             }
 
             return Inertia::render('Inbox', [
-                'auth' => [
-                    'user' => auth()->user()
-                ],
                 'messages' => $transformedMessages,
                 'unreadCount' => $unreadCount
             ]);

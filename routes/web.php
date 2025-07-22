@@ -41,6 +41,7 @@ use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductVariantController;
 use App\Http\Controllers\MortuaryController;
 use App\Http\Controllers\CommunityKioskTerminalController;
+use App\Http\Controllers\TeamsController;
 
 use App\Models\User;
 
@@ -53,6 +54,14 @@ use Illuminate\Support\Facades\Auth;
 
 // Public routes
 Route::group(['middleware' => ['web']], function () {
+    // Test route for team member functionality
+    Route::get('/test-team-member', function () {
+        return response()->json([
+            'message' => 'Team member middleware test',
+            'user' => auth()->user(),
+            'team_members' => auth()->user() ? \App\Models\TeamMember::where('user_identifier', auth()->user()->identifier)->get() : null
+        ]);
+    })->middleware('auth');
     // Add this new route for member manifest
     Route::get('/manifest/member/{identifier}.json', function ($identifier) {
         // Check if identifier is numeric (ID) or string (slug)
@@ -225,19 +234,11 @@ Route::group(['middleware' => ['web']], function () {
     });
 
     Route::get('/pricing', function () {
-        return Inertia::render('Pricing', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
+        return Inertia::render('Pricing');
     })->name('pricing');
 
     Route::get('/features', function () {
-        return Inertia::render('Features', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
+        return Inertia::render('Features');
     })->name('features');
 
     // Policy Routes
@@ -348,8 +349,20 @@ Route::prefix('public/contacts/{contactId}/wallet')->group(function () {
     Route::get('/available-contacts', [ContactsController::class, 'getPublicAvailableContacts'])->name('public.contacts.wallet.available-contacts');
 });
 
+// Debug route to test authentication (remove in production)
+Route::get('/debug-auth', function () {
+    return response()->json([
+        'request_user' => request()->user()?->id,
+        'auth_user' => auth()->user()?->id,
+        'auth_check' => auth()->check(),
+        'session_id' => session()->getId(),
+        'session_has_user' => session()->has('auth.user'),
+        'session_user_id' => session()->get('auth.user'),
+    ]);
+});
+
 // Routes that require authentication but not subscription
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     // Core features
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -517,13 +530,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/spend', [CreditsController::class, 'spendCredit'])->name('credits.spend');
     });
 
+    // Teams
+    Route::prefix('teams')->group(function () {
+        Route::get('/', [TeamsController::class, 'index'])->name('teams.index');
+        Route::get('/create', [TeamsController::class, 'create'])->name('teams.create');
+        Route::post('/', [TeamsController::class, 'store'])->name('teams.store');
+        Route::get('/{identifier}', [TeamsController::class, 'show'])->name('teams.show');
+        Route::get('/{identifier}/edit', [TeamsController::class, 'edit'])->name('teams.edit');
+        Route::put('/{identifier}', [TeamsController::class, 'update'])->name('teams.update');
+        Route::delete('/{identifier}', [TeamsController::class, 'destroy'])->name('teams.destroy');
+        Route::get('/settings', [TeamsController::class, 'settings'])->name('teams.settings');
+        Route::get('/list', [TeamsController::class, 'getTeamMembers'])->name('teams.list');
+        Route::patch('/{identifier}/toggle-status', [TeamsController::class, 'toggleStatus'])->name('teams.toggle-status');
+        Route::post('/{identifier}/reset-password', [TeamsController::class, 'resetPassword'])->name('teams.reset-password');
+        Route::get('/password/update', [TeamsController::class, 'showPasswordUpdate'])->name('team-member.password');
+        Route::post('/password/update', [TeamsController::class, 'updatePassword'])->name('team-member.password.update');
+    });
+
     // Home route
     Route::get('/home', function () {
-        return Inertia::render('Home', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
+        return Inertia::render('Home');
     })->name('home');
 
     // Inbox
@@ -595,14 +621,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Routes that require subscription
-Route::middleware(['auth', 'verified', 'subscription.access'])->group(function () {
+Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.access'])->group(function () {
     // Help route
     Route::get('/help', function () {
-        return Inertia::render('Help', [
-            'auth' => [
-                'user' => Auth::user()
-            ]
-        ]);
+        return Inertia::render('Help');
     })->name('help');
     
     // Products (subscription required)

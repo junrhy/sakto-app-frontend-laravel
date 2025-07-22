@@ -7,13 +7,17 @@ import UpdateCurrencyForm from './Partials/UpdateCurrencyForm';
 import UpdateAddressesForm from './Partials/UpdateAddressesForm';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link as InertiaLink } from '@inertiajs/react';
-import { ArrowLeft, Link } from 'lucide-react';
+import { ArrowLeft, Link, Users, UserPlus, Settings, Shield, CreditCard, MapPin, Globe } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import BottomNav from '@/Components/BottomNav';
 import { useState, useEffect } from 'react';
 import { CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 interface Subscription {
     plan: {
@@ -21,6 +25,19 @@ interface Subscription {
         unlimited_access: boolean;
     };
     end_date: string;
+}
+
+interface TeamMember {
+    identifier: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+    email: string;
+    roles: string[];
+    allowed_apps: string[];
+    is_active: boolean;
+    last_logged_in: string;
+    profile_picture?: string;
 }
 
 export default function Edit({
@@ -39,15 +56,36 @@ export default function Edit({
             name: string;
             credits?: number;
             identifier?: string;
-            project: {
-                identifier: string;
-            };
         };
+        project: {
+            identifier: string;
+        };
+        selectedTeamMember: {
+            full_name: string;
+            profile_picture?: string;
+            roles?: string[];
+            email?: string;
+            contact_number?: string;
+            allowed_apps?: string[];
+            email_verified?: boolean;
+            last_logged_in?: string;
+            timezone?: string;
+            language?: string;
+            notes?: string;
+        };
+        teamMembers: TeamMember[];
     };
 }) {
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isLoadingSubscription, setIsLoadingSubscription] = useState<boolean>(true);
+    const [activeTab, setActiveTab] = useState<string>('team');
+
+    // Check if current team member has administrator role
+    const isAdministrator = auth.selectedTeamMember?.roles?.includes('admin') || false;
+
+    // Check if team members exist
+    const hasTeamMembers = auth.teamMembers && auth.teamMembers.length > 0;
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -87,6 +125,13 @@ export default function Edit({
         fetchSubscription();
     }, [auth.user.identifier]);
 
+    // Redirect to team tab if non-administrator tries to access restricted tabs
+    useEffect(() => {
+        if (!isAdministrator && hasTeamMembers && ['account', 'security', 'preferences', 'danger'].includes(activeTab)) {
+            setActiveTab('team');
+        }
+    }, [isAdministrator, hasTeamMembers, activeTab]);
+
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
     };
@@ -96,8 +141,24 @@ export default function Edit({
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     };
 
+    const getInitials = (firstName: string, lastName: string) => {
+        return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    };
+
+    const getStatusBadge = (isActive: boolean) => {
+        return isActive ? (
+            <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                Active
+            </Badge>
+        ) : (
+            <Badge variant="secondary" className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                Inactive
+            </Badge>
+        );
+    };
+
     return (
-        <div className="relative min-h-screen pb-16 bg-white dark:bg-gray-900">
+        <div className="relative min-h-screen pb-16 bg-gray-50 dark:bg-gray-900">
             {/* Message for users without subscription */}
             {!isLoadingSubscription && !subscription && (
                 <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
@@ -120,8 +181,7 @@ export default function Edit({
                             <div className="flex items-center">
                                 <ApplicationLogo className="h-10 w-auto fill-current text-gray-900 dark:text-white" />
                                 <div className="ml-2">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">{auth.user.name} Apps</span>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">powered by Sakto {auth.user.project.identifier.charAt(0).toUpperCase() + auth.user.project.identifier.slice(1)} Platform</div>
+                                    <span className="text-xl font-bold text-gray-900 dark:text-white">{auth.user.name}</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 sm:gap-4">
@@ -170,7 +230,7 @@ export default function Edit({
                                                 className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                             >
                                                 <UserIcon className="w-5 h-5" />
-                                                <span>{auth.user.name}</span>
+                                                <span>{auth.selectedTeamMember?.full_name}</span>
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent 
@@ -185,11 +245,12 @@ export default function Edit({
                                                 <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink href="/help" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Help</InertiaLink>
                                             </DropdownMenuItem>
+
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem>
                                                 <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink 
-                                                    href={route('logout', { project: auth.user.project.identifier })} 
+                                                    href={route('logout', { project: auth.project?.identifier || '' })} 
                                                     method="post" 
                                                     as="button"
                                                     className="w-full text-left text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -207,37 +268,472 @@ export default function Edit({
             </div>
 
             <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[120px]' : 'pt-[100px]'} landscape:pt-[80px] md:pt-[100px]`}>
-                <div className="py-12">
-                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                        <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                            <UpdateProfileInformationForm
-                                mustVerifyEmail={mustVerifyEmail}
-                                status={status}
-                                className="max-w-xl"
-                            />
+                <div className="py-8">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <div className="mb-8">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
+                            <p className="text-gray-600 dark:text-gray-400 mt-2">
+                                Manage your account settings, team members, and preferences
+                            </p>
+
                         </div>
 
-                        <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                            <UpdateAddressesForm 
-                                addresses={addresses}
-                                className="w-full" 
-                            />
-                        </div>
+                        {/* Tabs */}
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                            <TabsList className="flex w-auto overflow-x-auto bg-gray-100 dark:bg-gray-800 p-1 rounded-lg justify-start">
+                                <TabsTrigger value="team" className="flex items-center gap-2 whitespace-nowrap">
+                                    <Users className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Team</span>
+                                </TabsTrigger>
+                                {(isAdministrator || !hasTeamMembers) && (
+                                    <>
+                                        <TabsTrigger value="account" className="flex items-center gap-2 whitespace-nowrap">
+                                            <UserIcon className="w-4 h-4" />
+                                            <span className="hidden sm:inline">Account</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger value="security" className="flex items-center gap-2 whitespace-nowrap">
+                                            <Shield className="w-4 h-4" />
+                                            <span className="hidden sm:inline">Security</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger value="preferences" className="flex items-center gap-2 whitespace-nowrap">
+                                            <Settings className="w-4 h-4" />
+                                            <span className="hidden sm:inline">Preferences</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger value="danger" className="flex items-center gap-2 text-red-600 dark:text-red-400 whitespace-nowrap">
+                                            <span className="hidden sm:inline">Danger</span>
+                                        </TabsTrigger>
+                                    </>
+                                )}
+                            </TabsList>
 
-                        <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                            <UpdatePasswordForm className="max-w-xl" />
-                        </div>
+                            {/* Account Tab */}
+                            <TabsContent value="account" className="space-y-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <UserIcon className="w-5 h-5" />
+                                            Profile Information
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Update your account's profile information and email address.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <UpdateProfileInformationForm
+                                            mustVerifyEmail={mustVerifyEmail}
+                                            status={status}
+                                            className="max-w-xl"
+                                            hideHeader={true}
+                                        />
+                                    </CardContent>
+                                </Card>
 
-                        <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                            <UpdateCurrencyForm 
-                                currency={currency}
-                                className="max-w-xl" 
-                            />
-                        </div>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <MapPin className="w-5 h-5" />
+                                            Addresses
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Manage your delivery and billing addresses.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <UpdateAddressesForm 
+                                            addresses={addresses}
+                                            className="w-full" 
+                                            hideHeader={true}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
 
-                        <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                            <DeleteUserForm className="max-w-xl" />
-                        </div>
+                            {/* Team Tab */}
+                            <TabsContent value="team" className="space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Team Management</h2>
+                                        <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                            {isAdministrator 
+                                                ? "Manage your team members and their access permissions"
+                                                : "View your current team member information"
+                                            }
+                                        </p>
+                                    </div>
+                                    {isAdministrator && (
+                                        <Button
+                                            onClick={() => window.location.href = route('teams.create')}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                            <UserPlus className="w-4 h-4 mr-2" />
+                                            Add Team Member
+                                        </Button>
+                                    )}
+                                </div>
+
+                                {/* Current Team Member */}
+                                {hasTeamMembers && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <UserIcon className="w-5 h-5" />
+                                                Current Team Member
+                                            </CardTitle>
+                                            <CardDescription>
+                                                You are currently logged in as this team member
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-8">
+                                                {/* Profile Header */}
+                                                <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                                    <Avatar className="h-20 w-20 ring-4 ring-white dark:ring-gray-800 shadow-lg">
+                                                        <AvatarImage src={auth.selectedTeamMember?.profile_picture} />
+                                                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xl font-bold">
+                                                            {getInitials(auth.selectedTeamMember?.full_name?.split(' ')[0] || '', auth.selectedTeamMember?.full_name?.split(' ')[1] || '')}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1">
+                                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                                                            {auth.selectedTeamMember?.full_name}
+                                                        </h3>
+                                                        <p className="text-gray-600 dark:text-gray-400 mb-3">
+                                                            {auth.selectedTeamMember?.email}
+                                                        </p>
+                                                        <div className="flex items-center gap-3">
+                                                            <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-3 py-1">
+                                                                Active
+                                                            </Badge>
+                                                            {auth.selectedTeamMember?.roles?.map((role) => (
+                                                                <Badge key={role} variant="outline" className="px-3 py-1">
+                                                                    {role}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Information Grid */}
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                    {/* Contact Information Card */}
+                                                    <Card className="bg-blue-50/50 dark:bg-blue-900/10 border-0 shadow-sm">
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                                <UserIcon className="w-5 h-5 text-blue-600" />
+                                                                Contact Information
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-3">
+                                                            <div className="flex items-center justify-between py-2 border-b border-blue-100 dark:border-blue-800/30">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Email</span>
+                                                                <span className="text-gray-900 dark:text-white font-semibold">
+                                                                    {auth.selectedTeamMember?.email || 'Not provided'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between py-2">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Contact Number</span>
+                                                                <span className="text-gray-900 dark:text-white font-semibold">
+                                                                    {auth.selectedTeamMember?.contact_number || 'Not provided'}
+                                                                </span>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    {/* Account Status Card */}
+                                                    <Card className="bg-green-50/50 dark:bg-green-900/10 border-0 shadow-sm">
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                                <Settings className="w-5 h-5 text-green-600" />
+                                                                Account Status
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-3">
+                                                            <div className="flex items-center justify-between py-2 border-b border-green-100 dark:border-green-800/30">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Status</span>
+                                                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                                    Active
+                                                                </Badge>
+                                                            </div>
+                                                            <div className="flex items-center justify-between py-2 border-b border-green-100 dark:border-green-800/30">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Email Verified</span>
+                                                                <span className={`font-semibold ${auth.selectedTeamMember?.email_verified ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                                    {auth.selectedTeamMember?.email_verified ? '✓ Verified' : '✗ Not Verified'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between py-2">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Last Login</span>
+                                                                <span className="text-gray-900 dark:text-white font-semibold">
+                                                                    {auth.selectedTeamMember?.last_logged_in ? formatDate(auth.selectedTeamMember.last_logged_in) : 'Never'}
+                                                                </span>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    {/* Roles & Permissions Card */}
+                                                    <Card className="bg-purple-50/50 dark:bg-purple-900/10 border-0 shadow-sm">
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                                <Shield className="w-5 h-5 text-purple-600" />
+                                                                Roles & Permissions
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-4">
+                                                            <div>
+                                                                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Roles</h5>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    {auth.selectedTeamMember?.roles?.length ? (
+                                                                        auth.selectedTeamMember.roles.map((role) => (
+                                                                            <Badge key={role} variant="default" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                                                {role}
+                                                                            </Badge>
+                                                                        ))
+                                                                    ) : (
+                                                                        <span className="text-sm text-gray-500 dark:text-gray-400">No roles assigned</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allowed Applications</h5>
+                                                                {auth.selectedTeamMember?.allowed_apps?.length ? (
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {auth.selectedTeamMember.allowed_apps.slice(0, 4).map((app) => (
+                                                                            <Badge key={app} variant="outline" className="text-xs">
+                                                                                {app}
+                                                                            </Badge>
+                                                                        ))}
+                                                                        {auth.selectedTeamMember.allowed_apps.length > 4 && (
+                                                                            <Badge variant="outline" className="text-xs">
+                                                                                +{auth.selectedTeamMember.allowed_apps.length - 4} more
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm text-gray-500 dark:text-gray-400">No apps assigned</span>
+                                                                )}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+
+                                                    {/* Preferences Card */}
+                                                    <Card className="bg-orange-50/50 dark:bg-orange-900/10 border-0 shadow-sm">
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                                <Globe className="w-5 h-5 text-orange-600" />
+                                                                Preferences
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-3">
+                                                            <div className="flex items-center justify-between py-2 border-b border-orange-100 dark:border-orange-800/30">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Timezone</span>
+                                                                <span className="text-gray-900 dark:text-white font-semibold">
+                                                                    {auth.selectedTeamMember?.timezone || 'Default'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between py-2">
+                                                                <span className="text-gray-600 dark:text-gray-400 font-medium">Language</span>
+                                                                <span className="text-gray-900 dark:text-white font-semibold">
+                                                                    {auth.selectedTeamMember?.language || 'Default'}
+                                                                </span>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </div>
+
+                                                {/* Notes Section */}
+                                                {auth.selectedTeamMember?.notes && (
+                                                    <Card className="bg-yellow-50/50 dark:bg-yellow-900/10 border-0 shadow-sm">
+                                                        <CardHeader className="pb-3">
+                                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                                <span className="text-xl">📝</span>
+                                                                Notes
+                                                            </CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <div className="p-4 bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200/50 dark:border-yellow-800/30">
+                                                                <p className="text-gray-700 dark:text-gray-300">
+                                                                    {auth.selectedTeamMember.notes}
+                                                                </p>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                )}
+
+                                                {/* Password Update Section */}
+                                                <Card className="bg-red-50/50 dark:bg-red-900/10 border-0 shadow-sm">
+                                                    <CardHeader className="pb-3">
+                                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                                            <Shield className="w-5 h-5 text-red-600" />
+                                                            Security Settings
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <div className="p-4 bg-red-100/50 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/30 rounded-lg">
+                                                            <p className="text-red-800 dark:text-red-200 mb-3 font-medium">
+                                                                Update your team member password to maintain account security.
+                                                            </p>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => window.location.href = route('team-member.password')}
+                                                                className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30"
+                                                            >
+                                                                <Shield className="w-4 h-4 mr-2" />
+                                                                Update Team Member Password
+                                                            </Button>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* All Team Members */}
+                                {(isAdministrator || !hasTeamMembers) && (
+                                    <Card className="bg-indigo-50/50 dark:bg-indigo-900/10 border-0 shadow-sm">
+                                        <CardHeader className="pb-4">
+                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                <Users className="w-5 h-5 text-indigo-600" />
+                                                All Team Members ({auth.teamMembers?.length || 0})
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-600 dark:text-gray-400">
+                                                View and manage all team members in your account
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-4">
+                                                {auth.teamMembers?.map((member) => (
+                                                    <div key={member.identifier} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-indigo-100 dark:border-indigo-800/30 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                                        <div className="flex items-center gap-4">
+                                                            <Avatar className="h-12 w-12 ring-2 ring-indigo-100 dark:ring-indigo-800/30">
+                                                                <AvatarImage src={member.profile_picture} />
+                                                                <AvatarFallback className="bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 font-semibold">
+                                                                    {getInitials(member.first_name, member.last_name)}
+                                                                </AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex-1">
+                                                                <h4 className="font-semibold text-gray-900 dark:text-white text-lg">
+                                                                    {member.full_name}
+                                                                </h4>
+                                                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                                    {member.email}
+                                                                </p>
+                                                                <div className="flex items-center gap-2">
+                                                                    {member.roles?.map((role) => (
+                                                                        <Badge key={role} variant="default" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs px-2 py-1">
+                                                                            {role}
+                                                                        </Badge>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            {getStatusBadge(member.is_active)}
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => window.location.href = route('teams.show', { identifier: member.identifier })}
+                                                                className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                                                            >
+                                                                View Details
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                {(!auth.teamMembers || auth.teamMembers.length === 0) && (
+                                                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                                                        <div className="bg-gray-100 dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                                                            <Users className="w-8 h-8 opacity-50" />
+                                                        </div>
+                                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Team Members</h3>
+                                                        <p className="text-gray-600 dark:text-gray-400 mb-6">Get started by adding your first team member to collaborate together.</p>
+                                                        <Button
+                                                            variant="default"
+                                                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                            onClick={() => window.location.href = route('teams.create')}
+                                                        >
+                                                            <UserPlus className="w-4 h-4 mr-2" />
+                                                            Add First Team Member
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {isAdministrator && (
+                                    <div className="flex justify-center pt-4">
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => window.location.href = route('teams.index')}
+                                            className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                                        >
+                                            <Settings className="w-4 h-4 mr-2" />
+                                            Manage Team Settings
+                                        </Button>
+                                    </div>
+                                )}
+                            </TabsContent>
+
+                            {/* Security Tab */}
+                            <TabsContent value="security" className="space-y-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Shield className="w-5 h-5" />
+                                            Password
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Ensure your account is using a long, random password to stay secure.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <UpdatePasswordForm className="max-w-xl" hideHeader={true} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            {/* Preferences Tab */}
+                            <TabsContent value="preferences" className="space-y-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Globe className="w-5 h-5" />
+                                            Currency Settings
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Set your preferred currency for transactions and displays.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <UpdateCurrencyForm 
+                                            currency={currency}
+                                            className="max-w-xl" 
+                                            hideHeader={true}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            {/* Danger Tab */}
+                            <TabsContent value="danger" className="space-y-6">
+                                <Card className="border-red-200 dark:border-red-800">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                                            Delete Account
+                                        </CardTitle>
+                                        <CardDescription className="text-red-600 dark:text-red-400">
+                                            Permanently delete your account and all of its data.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <DeleteUserForm className="max-w-xl" hideHeader={true} />
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </div>
             </div>

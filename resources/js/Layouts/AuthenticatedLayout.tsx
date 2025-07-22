@@ -128,8 +128,14 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const authUser = user || auth.user;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
 
+    console.log(auth);
+
     // Parse enabled modules from project
-    const enabledModules = auth?.user?.project?.enabledModules ? JSON.parse(auth.user.project.enabledModules) : [];
+    const enabledModules = auth?.project?.enabledModules 
+        ? (Array.isArray(auth.project.enabledModules) 
+            ? auth.project.enabledModules 
+            : JSON.parse(auth.project.enabledModules))
+        : [];
 
     useEffect(() => {
         const fetchCredits = async () => {
@@ -535,9 +541,8 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                             <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
                                             <div className="ml-2">
                                                 <span className="text-xl font-black text-white">
-                                                    {authUser.name} Apps
+                                                    {authUser.name}
                                                 </span>
-                                                <div className="text-xs text-white/90">powered by Sakto {authUser.project?.identifier?.charAt(0).toUpperCase() + authUser.project?.identifier?.slice(1)} Platform</div>
                                             </div>
                                         </div>
                                     </Link>

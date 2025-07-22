@@ -59,4 +59,29 @@ export interface Setting {
   description?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface TeamMember {
+  id: number;
+  identifier: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  contact_number?: string;
+  roles: string[];
+  allowed_apps: string[];
+  last_logged_in?: string;
+  is_active: boolean;
+  email_verified: boolean;
+  email_verified_at?: string;
+  profile_picture?: string;
+  notes?: string;
+  permissions?: string[];
+  timezone: string;
+  language: string;
+  password_changed_at?: string;
+  last_activity_at?: string;
+  created_at: string;
+  updated_at: string;
 } 
