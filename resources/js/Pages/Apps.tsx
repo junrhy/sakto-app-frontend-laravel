@@ -283,25 +283,26 @@ export default function Apps() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 sm:gap-4">
-                                <div className="hidden sm:flex items-center gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
-                                        className="text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
-                                    >
-                                        <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
-                                        onClick={() => window.location.href = route('credits.buy')}
-                                    >
-                                        <CreditCardIcon className="w-4 h-4" />
-                                        Buy Credits
-                                    </Button>
-
+                                <div className="hidden sm:flex items-center">
+                                    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shadow-sm">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => window.location.href = route('credits.spent-history', { clientIdentifier: auth.user.identifier })}
+                                            className="text-gray-900 dark:text-white px-3 py-1.5 rounded-l-lg rounded-r-none hover:bg-gray-200 dark:hover:bg-gray-700 border-r border-gray-200 dark:border-gray-700"
+                                        >
+                                            <span className="text-sm font-medium">{formatNumber(credits)} Credits</span>
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white dark:from-orange-500 dark:to-orange-600 dark:hover:from-orange-600 dark:hover:to-orange-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 rounded-l-none rounded-r-lg [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
+                                            onClick={() => window.location.href = route('credits.buy')}
+                                        >
+                                            <CreditCardIcon className="w-4 h-4" />
+                                            Buy
+                                        </Button>
+                                    </div>
                                 </div>
                                 {/* Mobile Credits Button */}
                                 <Button

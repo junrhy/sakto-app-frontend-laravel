@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import CreditsLayout from '@/Layouts/CreditsLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -51,7 +51,7 @@ export default function History({ auth, history: initialHistory }: Props) {
     };
 
     return (
-        <AuthenticatedLayout
+        <CreditsLayout
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Credit Spent History</h2>}
         >
             <Head title="Credit Spent History" />
@@ -154,6 +154,6 @@ export default function History({ auth, history: initialHistory }: Props) {
                     </Card>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </CreditsLayout>
     );
 } 

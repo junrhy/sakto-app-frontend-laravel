@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import CreditsLayout from '@/Layouts/CreditsLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { SparklesIcon, ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { CreditCard, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -166,83 +167,116 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
     };
 
     return (
-        <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Buy Credits</h2>}
+        <CreditsLayout
+            header={
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
+                            <CreditCard className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Buy Credits</h1>
+                            <p className="text-gray-600 dark:text-gray-400 mt-1">Purchase credits to unlock premium features and services</p>
+                        </div>
+                    </div>
+                </div>
+            }
         >
             <Head title="Buy Credits" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div className="py-8">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
                     {/* Purchase Section */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div className="flex flex-col lg:flex-row gap-8">
-                            {/* Left side - Packages */}
-                            <div className="w-full lg:w-1/4 space-y-4">
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                    Select Package
-                                </h2>
+                    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <div className="p-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                {/* Left side - Packages */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2 bg-gradient-to-r from-green-500 to-green-600 rounded-lg">
+                                            <SparklesIcon className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Select Package</h2>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Choose the credit package that suits your needs</p>
+                                        </div>
+                                    </div>
                                 {packages.map((pkg) => (
                                     <div 
                                         key={pkg.id}
-                                        className={`p-4 rounded-lg border cursor-pointer transition-all
+                                        className={`p-6 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]
                                             ${selectedPackage?.id === pkg.id 
-                                                ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' 
-                                                : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
+                                                ? 'border-green-500 dark:border-green-400 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 shadow-lg' 
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 bg-white dark:bg-gray-800'
                                             }`}
                                         onClick={() => handlePackageSelect(pkg)}
                                     >
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-xl font-bold">{pkg.credits.toLocaleString()} Credits</span>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <span className="text-2xl font-bold text-gray-900 dark:text-white">{pkg.credits.toLocaleString()} Credits</span>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    No expiration • Use across all services
+                                                </div>
+                                            </div>
                                             {pkg.popular && (
-                                                <Badge className="bg-blue-500">Popular</Badge>
+                                                <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1">Popular</Badge>
                                             )}
                                         </div>
-                                        <div className="flex justify-between items-baseline mb-2">
-                                            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                        <div className="flex justify-between items-baseline">
+                                            <span className="text-3xl font-bold text-green-600 dark:text-green-400">
                                                 ₱{pkg.price.toFixed(2)}
                                             </span>
                                             {pkg.savings && (
-                                                <Badge variant="secondary">Save {pkg.savings}</Badge>
+                                                <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">
+                                                    Save {pkg.savings}
+                                                </Badge>
                                             )}
-                                        </div>
-                                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                                            No expiration • Use across all services
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
                             {/* Middle - Payment Methods */}
-                            <div className="w-full lg:w-2/5">
+                            <div className="space-y-6">
                                 <div className="space-y-6">
-                                    <div>
-                                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                                            Payment Methods
-                                        </h2>
-                                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                                            Send your payment to any of these accounts
-                                        </p>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg">
+                                            <CreditCard className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Payment Methods</h2>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Send your payment to any of these accounts</p>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-4">
                                         {paymentMethods.map((method) => (
                                             <div 
                                                 key={method.id}
-                                                className={`p-4 rounded-lg border cursor-pointer transition-all
+                                                className={`p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]
                                                     ${paymentMethod === method.id
-                                                        ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20' 
-                                                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600'
+                                                        ? 'border-blue-500 dark:border-blue-400 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 shadow-lg' 
+                                                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white dark:bg-gray-800'
                                                     }`}
                                                 onClick={() => setPaymentMethod(method.id)}
                                             >
-                                                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                                                <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-3">
                                                     {method.name}
                                                 </h3>
-                                                <div className="space-y-1 text-sm">
-                                                    <p>Account Name: <span className="font-medium">{method.accountName}</span></p>
-                                                    <p>Account Number: <span className="font-medium">{method.accountNumber}</span></p>
+                                                <div className="space-y-2 text-sm">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600 dark:text-gray-400">Account Name:</span>
+                                                        <span className="font-semibold text-gray-900 dark:text-white">{method.accountName}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600 dark:text-gray-400">Account Number:</span>
+                                                        <span className="font-mono font-semibold text-gray-900 dark:text-white">{method.accountNumber}</span>
+                                                    </div>
                                                     {method.bankName && (
-                                                        <p>Bank: <span className="font-medium">{method.bankName}</span></p>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-600 dark:text-gray-400">Bank:</span>
+                                                            <span className="font-semibold text-gray-900 dark:text-white">{method.bankName}</span>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -252,16 +286,19 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                             </div>
 
                             {/* Right side - Complete Purchase */}
-                            <div className="w-full lg:w-1/3">
+                            <div>
                                 {selectedPackage ? (
-                                    <div className="sticky top-4 space-y-6 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                                        <div>
-                                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                                                Complete Your Purchase
-                                            </h2>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Amount to Send: <span className="font-semibold">₱{selectedPackage.price.toFixed(2)}</span>
-                                            </p>
+                                    <div className="sticky top-4 space-y-6 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800 shadow-lg">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
+                                                <ArrowRightIcon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Complete Your Purchase</h2>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Amount to Send: <span className="font-bold text-purple-600 dark:text-purple-400">₱{selectedPackage.price.toFixed(2)}</span>
+                                                </p>
+                                            </div>
                                         </div>
 
                                         <div className="space-y-2">
@@ -317,10 +354,19 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                                         <Button
                                             onClick={handleSubmit}
                                             disabled={!paymentMethod || !transactionId || !proofFile || isSubmitting}
-                                            className="w-full flex items-center justify-center gap-2"
+                                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                                         >
-                                            {isSubmitting ? 'Processing...' : 'Submit Payment'}
-                                            <ArrowRightIcon className="w-4 h-4" />
+                                            {isSubmitting ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                                    Processing...
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    Submit Payment
+                                                    <ArrowRightIcon className="w-4 h-4" />
+                                                </>
+                                            )}
                                         </Button>
                                     </div>
                                 ) : (
@@ -331,20 +377,26 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                             </div>
                         </div>
                     </div>
+                </div>
 
                     {/* Payment History Section */}
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div className="space-y-4">
-                            <div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Payment History
-                                </h2>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Your recent credit purchase transactions
-                                </p>
+                    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <div className="p-8 space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
+                                    <History className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                                        Payment History
+                                    </h2>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Your recent credit purchase transactions
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="rounded-md border">
+                            <div className="rounded-xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
@@ -485,6 +537,6 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                     </Dialog>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </CreditsLayout>
     );
 }
