@@ -5,6 +5,7 @@ import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import UpdateCurrencyForm from './Partials/UpdateCurrencyForm';
 import UpdateAddressesForm from './Partials/UpdateAddressesForm';
+import UpdateSubscriptionForm from './Partials/UpdateSubscriptionForm';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link as InertiaLink } from '@inertiajs/react';
 import { ArrowLeft, Link, Users, UserPlus, Settings, Shield, CreditCard, MapPin, Globe } from 'lucide-react';
@@ -13,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 import BottomNav from '@/Components/BottomNav';
 import { useState, useEffect } from 'react';
-import { CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
@@ -203,15 +204,7 @@ export default function Edit({
                                         <CreditCardIcon className="w-4 h-4" />
                                         Buy Credits
                                     </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
-                                        onClick={() => window.location.href = route('subscriptions.index')}
-                                    >
-                                        <SparklesIcon className="w-4 h-4" />
-                                        Subscriptions
-                                    </Button>
+
                                 </div>
                                 {/* Mobile Credits Button */}
                                 <Button
@@ -291,6 +284,9 @@ export default function Edit({
                                         <TabsTrigger value="account" className="flex items-center gap-2 whitespace-nowrap">
                                             <UserIcon className="w-4 h-4" />
                                             <span className="hidden sm:inline">Account</span>
+                                        </TabsTrigger>
+                                        <TabsTrigger value="subscriptions" className="flex items-center gap-2 whitespace-nowrap">
+                                            <span className="hidden sm:inline">Subscriptions</span>
                                         </TabsTrigger>
                                         <TabsTrigger value="security" className="flex items-center gap-2 whitespace-nowrap">
                                             <Shield className="w-4 h-4" />
@@ -675,6 +671,27 @@ export default function Edit({
                                         </Button>
                                     </div>
                                 )}
+                            </TabsContent>
+
+                            {/* Subscriptions Tab */}
+                            <TabsContent value="subscriptions" className="space-y-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            Subscription Management
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Manage your subscription plans and billing information.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <UpdateSubscriptionForm 
+                                            userIdentifier={auth.user.identifier}
+                                            className="w-full" 
+                                            hideHeader={true}
+                                        />
+                                    </CardContent>
+                                </Card>
                             </TabsContent>
 
                             {/* Security Tab */}

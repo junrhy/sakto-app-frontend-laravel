@@ -7,7 +7,7 @@ import MessageDialog from '@/Components/MessageDialog';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 import axios from 'axios';
@@ -206,15 +206,7 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                         <CreditCardIcon className="w-4 h-4" />
                                         Buy Credits
                                     </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-1.5 font-semibold border-0 [text-shadow:_0_1px_1px_rgba(0,0,0,0.2)]"
-                                        onClick={() => window.location.href = route('subscriptions.index')}
-                                    >
-                                        <SparklesIcon className="w-4 h-4" />
-                                        Subscriptions
-                                    </Button>
+
                                 </div>
                                 {/* Mobile Credits Button */}
                                 <Button

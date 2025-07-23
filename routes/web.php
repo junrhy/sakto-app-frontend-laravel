@@ -511,6 +511,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::post('/subscriptions/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscriptions.subscribe');
     Route::post('/subscriptions/cancel/{identifier}', [SubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
     Route::get('/subscriptions/{userIdentifier}/active', [SubscriptionController::class, 'getActiveSubscription'])->name('subscriptions.active');
+    Route::get('/subscriptions/history/{userIdentifier}', [SubscriptionController::class, 'getSubscriptionHistory'])->name('subscriptions.history');
     Route::get('/subscriptions/payment/success', [SubscriptionController::class, 'paymentSuccess'])->name('subscriptions.payment.success');
     Route::get('/subscriptions/payment/failure', [SubscriptionController::class, 'paymentFailure'])->name('subscriptions.payment.failure');
     Route::get('/subscriptions/payment/cancel', [SubscriptionController::class, 'paymentCancel'])->name('subscriptions.payment.cancel');

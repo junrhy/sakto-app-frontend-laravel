@@ -867,4 +867,19 @@ class SubscriptionController extends Controller
             'subscription' => $subscription,
         ]);
     }
+
+    /**
+     * Get user's subscription history.
+     */
+    public function getSubscriptionHistory($userIdentifier)
+    {
+        $history = UserSubscription::where('user_identifier', $userIdentifier)
+            ->with('plan')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'history' => $history,
+        ]);
+    }
 }
