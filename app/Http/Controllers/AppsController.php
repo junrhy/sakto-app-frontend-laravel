@@ -15,7 +15,7 @@ class AppsController extends Controller
         $project = Project::where('identifier', auth()->user()->project_identifier)->first();
 
         return Inertia::render('Apps', [
-            'apps' => config('apps')
+            'enabledModules' => $project ? $project->enabledModules : []
         ]);
     }
 
@@ -25,7 +25,7 @@ class AppsController extends Controller
         
         return response()->json([
             'apps' => config('apps'),
-            'modules' => $project ? $project->enabledModules : []
+            'enabledModules' => $project ? $project->enabledModules : []
         ]);
     }
 } 

@@ -35,6 +35,7 @@ interface Props extends PageProps {
         type: 'info' | 'success' | 'error';
         message: string;
     };
+    enabledModules?: string[];
     auth: {
         user: User & {
             identifier: string;
@@ -77,7 +78,7 @@ interface Props extends PageProps {
 }
 
 export default function Apps() {
-    const { flash, auth } = usePage<Props>().props;
+    const { flash, auth, enabledModules } = usePage<Props>().props;
     const { theme, setTheme } = useTheme();
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -91,11 +92,47 @@ export default function Apps() {
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
+    // Convert app title to module identifier format for matching
+    const appTitleToModuleId = (title: string) => {
+        const titleMappings: { [key: string]: string } = {
+            'Rental': 'rental-items',
+            'Real Estate': 'rental-properties',
+            'Clinic': 'clinical',
+            'F&B': 'fnb',
+            'Digital Products': 'products',
+            'Retail': 'retail',
+            'Lending': 'lending',
+            'Transportation': 'transportation',
+            'Warehousing': 'warehousing',
+            'Payroll': 'payroll',
+            'Travel': 'travel',
+            'SMS': 'sms',
+            'Email': 'email',
+            'Contacts': 'contacts',
+            'Genealogy': 'genealogy',
+            'Events': 'events',
+            'Challenges': 'challenges',
+            'Content Creator': 'content-creator',
+            'Pages': 'pages',
+            'Healthcare': 'healthcare',
+            'Mortuary': 'mortuary'
+        };
+        
+        if (titleMappings[title]) {
+            return titleMappings[title];
+        }
+        
+        // Fallback: convert title to kebab-case
+        return title.toLowerCase().replace(/\s+/g, '-');
+    };
+
     useEffect(() => {
         const fetchApps = async () => {
             try {
                 setIsLoadingApps(true);
                 const appData = await getApps();
+                console.log('Fetched apps:', appData);
+                console.log('Enabled modules from props:', enabledModules);
                 setApps(appData);
             } catch (error) {
                 console.error('Failed to fetch apps:', error);
@@ -208,22 +245,38 @@ export default function Apps() {
 
     // Filter apps based on search query, selected category, and enabled modules
     const filteredApps = useMemo(() => {
-        return apps.filter(app => {
+        const filtered = apps.filter(app => {
             const matchesSearch = app.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 app.description.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = !selectedCategory || app.categories.includes(selectedCategory);
-            const matchesEnabledModules = !auth.modules || auth.modules.includes(app.title.toLowerCase());
+            
+            // Check if app is enabled in project modules
+            const modules = enabledModules || [];
+            const moduleId = appTitleToModuleId(app.title);
+            const matchesEnabledModules = modules.includes(moduleId);
+            
+            // Debug logging for filtering
+            if (!matchesEnabledModules) {
+                console.log(`App "${app.title}" (module: ${moduleId}) not in enabled modules:`, modules);
+            }
+            
             return matchesSearch && matchesCategory && matchesEnabledModules;
         });
-    }, [searchQuery, selectedCategory, apps, auth.modules]);
+        
+        // Debug summary
+        console.log(`Filtered ${filtered.length} apps from ${apps.length} total apps. Enabled modules:`, enabledModules);
+        console.log('Shown apps:', filtered.map(app => app.title));
+        
+        return filtered;
+    }, [searchQuery, selectedCategory, apps, enabledModules, appTitleToModuleId]);
 
     // Group apps by their status (free, paid, coming soon)
     const groupedApps = useMemo(() => {
         const paidApps = filteredApps.filter(app => !app.comingSoon);
-        const comingSoonApps = filteredApps.filter(app => app.comingSoon && (!auth.modules || auth.modules.includes(app.title.toLowerCase())));
+        const comingSoonApps = filteredApps.filter(app => app.comingSoon);
         
         return { paidApps, comingSoonApps };
-    }, [filteredApps, auth.modules]);
+    }, [filteredApps]);
 
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
@@ -383,7 +436,10 @@ export default function Apps() {
                                         <div>
                                             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
                                                 <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Available</span>
-                                                Available Apps
+                                                Enabled Apps
+                                                <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium px-2 py-0.5 rounded-full">
+                                                    {groupedApps.paidApps.length}
+                                                </span>
                                             </h2>
                                             <div className="space-y-3">
                                                 {groupedApps.paidApps.map((app) => (
@@ -426,6 +482,9 @@ export default function Apps() {
                                             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
                                                 <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Coming Soon</span>
                                                 Coming Soon
+                                                <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium px-2 py-0.5 rounded-full">
+                                                    {groupedApps.comingSoonApps.length}
+                                                </span>
                                             </h2>
                                             <div className="space-y-3">
                                                 {groupedApps.comingSoonApps.map((app) => (

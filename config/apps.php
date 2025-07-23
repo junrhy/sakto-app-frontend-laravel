@@ -10,7 +10,9 @@ return [
         'categories' => ['Business', 'Sales', 'Inventory'],
         'comingSoon' => true,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-blue-100 dark:bg-blue-900/30',
+        'rating' => 4.5
     ],
     [
         'title' => 'F&B',
@@ -21,7 +23,9 @@ return [
         'categories' => ['Food', 'Business', 'Inventory'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-orange-100 dark:bg-orange-900/30',
+        'rating' => 4.8
     ],
     [
         'title' => 'Clinic',
@@ -32,7 +36,9 @@ return [
         'categories' => ['Medical', 'Healthcare', 'Appointments'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => []
+        'includedInPlans' => [],
+        'bgColor' => 'bg-red-100 dark:bg-red-900/30',
+        'rating' => 4.6
     ],
     [
         'title' => 'Lending',
@@ -43,7 +49,9 @@ return [
         'categories' => ['Finance', 'Business', 'Payments'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-green-100 dark:bg-green-900/30',
+        'rating' => 4.7
     ],
     [
         'title' => 'Rental',
@@ -54,7 +62,9 @@ return [
         'categories' => ['Business', 'Inventory', 'Bookings'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-purple-100 dark:bg-purple-900/30',
+        'rating' => 4.4
     ],
     [
         'title' => 'Real Estate',
@@ -65,7 +75,9 @@ return [
         'categories' => ['Real Estate', 'Business', 'Bookings'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => []
+        'includedInPlans' => [],
+        'bgColor' => 'bg-indigo-100 dark:bg-indigo-900/30',
+        'rating' => 4.3
     ],
     [
         'title' => 'Transportation',
@@ -76,7 +88,9 @@ return [
         'categories' => ['Transportation', 'Business', 'Logistics'],
         'comingSoon' => true,
         'pricingType' => 'subscription',
-        'includedInPlans' => []
+        'includedInPlans' => [],
+        'bgColor' => 'bg-yellow-100 dark:bg-yellow-900/30',
+        'rating' => 4.2
     ],
     [
         'title' => 'Warehousing',
@@ -87,7 +101,9 @@ return [
         'categories' => ['Logistics', 'Inventory', 'Business'],
         'comingSoon' => true,
         'pricingType' => 'subscription',
-        'includedInPlans' => []
+        'includedInPlans' => [],
+        'bgColor' => 'bg-gray-100 dark:bg-gray-900/30',
+        'rating' => 4.1
     ],
     [
         'title' => 'Payroll',
@@ -98,7 +114,9 @@ return [
         'categories' => ['HR', 'Finance', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-pink-100 dark:bg-pink-900/30',
+        'rating' => 4.6
     ],
     [
         'title' => 'Travel',
@@ -109,7 +127,9 @@ return [
         'categories' => ['Travel', 'Bookings', 'Business'],
         'comingSoon' => true,
         'pricingType' => 'subscription',
-        'includedInPlans' => []
+        'includedInPlans' => [],
+        'bgColor' => 'bg-cyan-100 dark:bg-cyan-900/30',
+        'rating' => 4.0
     ],
     [
         'title' => 'SMS',
@@ -120,7 +140,9 @@ return [
         'categories' => ['Communication', 'Marketing', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['pro-plan', 'annual-pro']
+        'includedInPlans' => ['pro-plan', 'annual-pro'],
+        'bgColor' => 'bg-emerald-100 dark:bg-emerald-900/30',
+        'rating' => 4.7
     ],
     [
         'title' => 'Email',
@@ -131,7 +153,9 @@ return [
         'categories' => ['Communication', 'Marketing', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['pro-plan', 'annual-pro']
+        'includedInPlans' => ['pro-plan', 'annual-pro'],
+        'bgColor' => 'bg-blue-100 dark:bg-blue-900/30',
+        'rating' => 4.5
     ],
     [
         'title' => 'Contacts',
@@ -142,7 +166,9 @@ return [
         'categories' => ['Business', 'Communication', 'CRM'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-teal-100 dark:bg-teal-900/30',
+        'rating' => 4.8
     ],
     [
         'title' => 'Genealogy',
@@ -153,7 +179,9 @@ return [
         'categories' => ['Family', 'Genealogy', 'Personal'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-amber-100 dark:bg-amber-900/30',
+        'rating' => 4.4
     ],
     [
         'title' => 'Events',
@@ -164,7 +192,9 @@ return [
         'categories' => ['Events', 'Community', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-violet-100 dark:bg-violet-900/30',
+        'rating' => 4.6
     ],
     [
         'title' => 'Challenges',
@@ -175,7 +205,9 @@ return [
         'categories' => ['Challenges', 'Community', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-rose-100 dark:bg-rose-900/30',
+        'rating' => 4.5
     ],
     [
         'title' => 'Content Creator',
@@ -186,10 +218,12 @@ return [
         'categories' => ['Content', 'Business', 'Marketing'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-sky-100 dark:bg-sky-900/30',
+        'rating' => 4.3
     ],
     [
-        'title' => 'Products',
+        'title' => 'Digital Products',
         'route' => '/dashboard?app=products',
         'visible' => true,
         'description' => 'Create and manage products.',
@@ -197,7 +231,9 @@ return [
         'categories' => ['Digital', 'Products', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-lime-100 dark:bg-lime-900/30',
+        'rating' => 4.4
     ],
     [
         'title' => 'Pages',
@@ -208,7 +244,9 @@ return [
         'categories' => ['Digital', 'Products', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-slate-100 dark:bg-slate-900/30',
+        'rating' => 4.2
     ],
     [
         'title' => 'Healthcare',
@@ -219,7 +257,9 @@ return [
         'categories' => ['Health', 'Insurance', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-red-100 dark:bg-red-900/30',
+        'rating' => 4.7
     ],
     [
         'title' => 'Mortuary',
@@ -230,6 +270,8 @@ return [
         'categories' => ['Mortuary', 'Funeral'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
-        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro']
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'annual-basic', 'annual-pro'],
+        'bgColor' => 'bg-gray-100 dark:bg-gray-900/30',
+        'rating' => 4.1
     ]
 ]; 

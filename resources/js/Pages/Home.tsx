@@ -307,7 +307,7 @@ export default function Home({ auth }: Props) {
                                         borderColor: theme === 'dark' ? 'rgba(148, 163, 184, 0.3)' : getBorderColor(app.bgColor)
                                     }}
                                 >
-                                    <div className={`text-4xl ${app.bgColor} dark:text-slate-300`}>
+                                    <div className={`text-4xl dark:text-slate-300`}>
                                         {app.icon}
                                     </div>
                                 </div>
