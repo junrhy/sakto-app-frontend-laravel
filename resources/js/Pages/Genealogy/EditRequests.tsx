@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/u
 import { format } from 'date-fns';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { FaSun, FaMoon } from 'react-icons/fa';
+import { useTheme } from '@/Components/ThemeProvider';
 
 interface EditRequest {
     id: number;
@@ -53,7 +54,10 @@ export default function EditRequests({ auth }: Props) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<EditRequest | null>(null);
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    
+    // Use global theme instead of local state
+    const { theme, setTheme } = useTheme();
+    const isDarkMode = theme === 'dark';
 
     useEffect(() => {
         fetchEditRequests();
@@ -96,13 +100,13 @@ export default function EditRequests({ auth }: Props) {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'pending':
-                return isDarkMode ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-100 text-yellow-800';
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
             case 'accepted':
-                return isDarkMode ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800';
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
             case 'rejected':
-                return isDarkMode ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800';
+                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             default:
-                return isDarkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800';
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
         }
     };
 
@@ -124,33 +128,32 @@ export default function EditRequests({ auth }: Props) {
         >
             <Head title="Edit Requests" />
 
-            <div className={`py-12 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+            <div className="py-12 bg-gray-100 dark:bg-gray-900">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
                     {error && (
-                        <div className={`mb-4 p-4 rounded-lg ${
-                            isDarkMode ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800'
-                        }`}>
+                        <div className="mb-4 p-4 rounded-lg bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                             {error}
                         </div>
                     )}
 
                     {editRequests.length === 0 ? (
-                        <div className={`text-center py-8 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <div className="text-center py-8 text-gray-600 dark:text-gray-300">
                             No pending edit requests
                         </div>
                     ) : (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {editRequests.map((request) => (
-                                <Card key={request.id} className={isDarkMode ? 'bg-gray-800 border-gray-700' : ''}>
+                                <Card key={request.id} className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                     <CardHeader>
-                                        <CardTitle className={isDarkMode ? 'text-white' : ''}>
+                                        <CardTitle className="text-gray-900 dark:text-white">
                                             Edit Request for {request.member.first_name} {request.member.last_name}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-center">
-                                                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                                <span className="text-gray-600 dark:text-gray-300">
                                                     Requested on {format(new Date(request.created_at), 'MMM d, yyyy')}
                                                 </span>
                                                 <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(request.status)}`}>
@@ -159,10 +162,10 @@ export default function EditRequests({ auth }: Props) {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <h3 className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                <h3 className="font-medium text-gray-700 dark:text-gray-300">
                                                     Current Information
                                                 </h3>
-                                                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">
                                                     <p>Birth Date: {format(new Date(request.member.birth_date), 'MMM d, yyyy')}</p>
                                                     {request.member.death_date && (
                                                         <p>Death Date: {format(new Date(request.member.death_date), 'MMM d, yyyy')}</p>
@@ -172,10 +175,10 @@ export default function EditRequests({ auth }: Props) {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <h3 className={`font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                <h3 className="font-medium text-gray-700 dark:text-gray-300">
                                                     Proposed Changes
                                                 </h3>
-                                                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                <div className="text-sm text-gray-600 dark:text-gray-400">
                                                     <p>Name: {request.first_name} {request.last_name}</p>
                                                     <p>Birth Date: {format(new Date(request.birth_date), 'MMM d, yyyy')}</p>
                                                     {request.death_date && (
@@ -189,13 +192,12 @@ export default function EditRequests({ auth }: Props) {
                                                 <Button
                                                     onClick={() => handleReject(request.id)}
                                                     variant="destructive"
-                                                    className={isDarkMode ? 'bg-red-600 hover:bg-red-700' : ''}
                                                 >
                                                     Reject
                                                 </Button>
                                                 <Button
                                                     onClick={() => handleAccept(request.id)}
-                                                    className={isDarkMode ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 hover:bg-green-700'}
+                                                    className="bg-green-600 hover:bg-green-700"
                                                 >
                                                     Accept
                                                 </Button>
@@ -210,7 +212,7 @@ export default function EditRequests({ auth }: Props) {
             </div>
 
             <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-                <DialogContent className={isDarkMode ? 'bg-gray-800 text-white' : ''}>
+                <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                     <DialogHeader>
                         <DialogTitle>Edit Request Details</DialogTitle>
                     </DialogHeader>

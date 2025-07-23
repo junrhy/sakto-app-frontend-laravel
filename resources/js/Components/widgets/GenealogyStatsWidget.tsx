@@ -3,12 +3,10 @@ import type { FamilyMember } from '@/types/genealogy';
 import axios from 'axios';
 
 interface GenealogyStatsWidgetProps {
-    isDarkMode?: boolean;
     className?: string;
 }
 
 export default function GenealogyStatsWidget({
-    isDarkMode = false,
     className = ''
 }: GenealogyStatsWidgetProps) {
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
@@ -111,52 +109,52 @@ export default function GenealogyStatsWidget({
         {
             label: 'Total Members',
             value: familyMembers.length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-gray-50',
-            textColor: isDarkMode ? 'text-gray-200' : 'text-gray-900'
+            bgColor: 'bg-gray-50 dark:bg-gray-700',
+            textColor: 'text-gray-900 dark:text-gray-200'
         },
         {
             label: 'Levels',
             value: getTreeLevels(),
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-gray-50',
-            textColor: isDarkMode ? 'text-gray-200' : 'text-gray-900'
+            bgColor: 'bg-gray-50 dark:bg-gray-700',
+            textColor: 'text-gray-900 dark:text-gray-200'
         },
         {
             label: 'Male Members',
             value: familyMembers.filter(member => member.gender === 'male').length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-blue-50',
-            textColor: isDarkMode ? 'text-blue-300' : 'text-blue-700'
+            bgColor: 'bg-blue-50 dark:bg-gray-700',
+            textColor: 'text-blue-700 dark:text-blue-300'
         },
         {
             label: 'Female Members',
             value: familyMembers.filter(member => member.gender === 'female').length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-pink-50',
-            textColor: isDarkMode ? 'text-pink-300' : 'text-pink-700'
+            bgColor: 'bg-pink-50 dark:bg-gray-700',
+            textColor: 'text-pink-700 dark:text-pink-300'
         },
         {
             label: 'Living Members',
             value: familyMembers.filter(member => !member.death_date).length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-emerald-50',
-            textColor: isDarkMode ? 'text-emerald-300' : 'text-emerald-700'
+            bgColor: 'bg-emerald-50 dark:bg-gray-700',
+            textColor: 'text-emerald-700 dark:text-emerald-300'
         },
         {
             label: 'Deceased Members',
             value: familyMembers.filter(member => !!member.death_date).length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-gray-50',
-            textColor: isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            bgColor: 'bg-gray-50 dark:bg-gray-700',
+            textColor: 'text-gray-700 dark:text-gray-300'
         },
         {
             label: 'No Photo',
             value: familyMembers.filter(member => !member.photo).length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-yellow-50',
-            textColor: isDarkMode ? 'text-yellow-300' : 'text-yellow-700'
+            bgColor: 'bg-yellow-50 dark:bg-gray-700',
+            textColor: 'text-yellow-700 dark:text-yellow-300'
         },
         {
             label: 'Under 18',
             value: familyMembers.filter(member => 
                 calculateAge(member.birth_date, member.death_date) < 18
             ).length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-purple-50',
-            textColor: isDarkMode ? 'text-purple-300' : 'text-purple-700'
+            bgColor: 'bg-purple-50 dark:bg-gray-700',
+            textColor: 'text-purple-700 dark:text-purple-300'
         },
         {
             label: 'Adults With Children',
@@ -164,8 +162,8 @@ export default function GenealogyStatsWidget({
                 calculateAge(member.birth_date, member.death_date) >= 18 &&
                 member.relationships.some(rel => rel.relationship_type === 'child' && rel.from_member_id === member.id)
             ).length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-indigo-50',
-            textColor: isDarkMode ? 'text-indigo-300' : 'text-indigo-700'
+            bgColor: 'bg-indigo-50 dark:bg-gray-700',
+            textColor: 'text-indigo-700 dark:text-indigo-300'
         },
         {
             label: 'Adults Without Children',
@@ -173,8 +171,8 @@ export default function GenealogyStatsWidget({
                 calculateAge(member.birth_date, member.death_date) >= 18 &&
                 !member.relationships.some(rel => rel.relationship_type === 'child' && rel.from_member_id === member.id)
             ).length,
-            bgColor: isDarkMode ? 'bg-gray-700' : 'bg-orange-50',
-            textColor: isDarkMode ? 'text-orange-300' : 'text-orange-700'
+            bgColor: 'bg-orange-50 dark:bg-gray-700',
+            textColor: 'text-orange-700 dark:text-orange-300'
         }
     ];
 
@@ -212,13 +210,13 @@ export default function GenealogyStatsWidget({
     };
 
     return (
-        <div className={`p-6 bg-white rounded-lg shadow-sm ${className}`}>
-            <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+        <div className={`p-6 rounded-lg shadow-sm bg-white dark:bg-gray-800 ${className}`}>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-200">
                 Family Statistics
             </h3>
             {isLoading ? (
                 <div className="flex items-center justify-center h-48">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
                 </div>
             ) : error ? (
                 <div className="text-center text-red-500 py-4">
@@ -228,7 +226,7 @@ export default function GenealogyStatsWidget({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {stats.map((stat, index) => (
                         <div key={index} className={`p-4 rounded-lg ${stat.bgColor}`}>
-                            <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                 {stat.label}
                             </div>
                             <div className={`text-2xl font-bold mt-1 ${stat.textColor}`}>
@@ -241,9 +239,7 @@ export default function GenealogyStatsWidget({
                                         const csv = generateCSV(filteredMembers);
                                         downloadCSV(csv, `${stat.label.toLowerCase().replace(/\s+/g, '_')}_members.csv`);
                                     }}
-                                    className={`mt-2 text-sm px-3 py-1 rounded-md 
-                                        ${isDarkMode ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' : 
-                                        'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'}`}
+                                    className="mt-2 text-sm px-3 py-1 rounded-md bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 dark:border-gray-500"
                                 >
                                     Download CSV
                                 </button>
