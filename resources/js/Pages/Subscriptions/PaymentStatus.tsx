@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SubscriptionLayout from '@/Layouts/SubscriptionLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
@@ -42,7 +42,7 @@ export default function PaymentStatus({ auth, status, message, subscription, pay
     };
 
     return (
-        <AuthenticatedLayout
+        <SubscriptionLayout
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Payment Status</h2>}
         >
             <Head title="Payment Status" />
@@ -156,6 +156,6 @@ export default function PaymentStatus({ auth, status, message, subscription, pay
                     </Card>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </SubscriptionLayout>
     );
 } 

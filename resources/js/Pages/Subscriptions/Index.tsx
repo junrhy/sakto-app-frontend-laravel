@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SubscriptionLayout from '@/Layouts/SubscriptionLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
@@ -361,38 +361,17 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     };
 
     return (
-        <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Subscription Plans</h2>}
+        <SubscriptionLayout
         >
             <Head title="Premium Plans Subscription" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                    {/* Active Subscription Banner */}
-                    {activeSubscription && (
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-800 dark:to-blue-900 text-white p-6 rounded-lg shadow-lg mb-6">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                <div>
-                                    <h3 className="text-xl font-bold mb-1">Active Subscription: {activeSubscription.plan.name}</h3>
-                                    <p className="text-blue-100">
-                                        Valid until {formatDate(activeSubscription.end_date)} • Unlimited access to all features
-                                    </p>
-                                </div>
-                                <Button 
-                                    variant="destructive" 
-                                    className="bg-white/10 hover:bg-white/20 text-white border-0"
-                                    onClick={() => openCancelDialog(activeSubscription.identifier)}
-                                >
-                                    Cancel Subscription
-                                </Button>
-                            </div>
-                        </div>
-                    )}
 
                     <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="plans">Premium Plans</TabsTrigger>
-                            <TabsTrigger value="history">Subscription History</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-700 p-1">
+                            <TabsTrigger value="plans" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100">Premium Plans</TabsTrigger>
+                            <TabsTrigger value="history" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100">Subscription History</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="plans" className="mt-6">
@@ -410,9 +389,9 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 }}
                                                 className="w-full"
                                             >
-                                                <TabsList className="grid w-full grid-cols-2">
-                                                    <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                                                    <TabsTrigger value="annually">Annually</TabsTrigger>
+                                                <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-700 p-1">
+                                                    <TabsTrigger value="monthly" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100">Monthly</TabsTrigger>
+                                                    <TabsTrigger value="annually" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100">Annually</TabsTrigger>
                                                 </TabsList>
                                             </Tabs>
                                         </div>
@@ -438,7 +417,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 }`}
                                             >
                                                 {activeSubscription?.plan.id === plan.id && (
-                                                    <div className="bg-green-500 text-white text-center py-1 text-sm font-medium">
+                                                    <div className="bg-green-500 dark:bg-emerald-600 text-white text-center py-1 text-sm font-medium">
                                                         Current Subscription
                                                     </div>
                                                 )}
@@ -448,7 +427,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     </div>
                                                 )}
                                                 {plan.badge_text && !plan.is_popular && activeSubscription?.plan.id !== plan.id && (
-                                                    <div className="bg-green-500 text-white text-center py-1 text-sm font-medium">
+                                                    <div className="bg-green-500 dark:bg-emerald-600 text-white text-center py-1 text-sm font-medium">
                                                         {plan.badge_text}
                                                     </div>
                                                 )}
@@ -470,12 +449,12 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             {billingPeriod === 'annually' ? 'Annual subscription' : `${Math.floor(plan.duration_in_days / 30)} month subscription`}
                                                             {billingPeriod === 'annually' && (
-                                                                <span className="ml-2 text-green-600 dark:text-green-400 font-medium">
+                                                                <span className="ml-2 text-green-600 dark:text-emerald-300 font-medium">
                                                                     Save up to 20%
                                                                 </span>
                                                             )}
                                                         </p>
-                                                        <p className="text-lg font-semibold mt-1 text-green-600 dark:text-green-400">
+                                                        <p className="text-lg font-semibold mt-1 text-green-600 dark:text-emerald-300">
                                                             {hasUnlimitedAccess(plan) ? 'Access to Premium apps' : 'Access to Free apps'}
                                                         </p>
                                                     </div>
@@ -483,8 +462,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     <div className="space-y-2">
                                                         {plan.features && plan.features.map((feature, index) => (
                                                             <div key={index} className="flex items-start">
-                                                                <CheckIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                                                                <span className="text-sm">{feature}</span>
+                                                                <CheckIcon className="h-5 w-5 text-green-500 dark:text-emerald-400 mr-2 flex-shrink-0 mt-0.5" />
+                                                                <span className="text-sm text-gray-700 dark:text-gray-200">{feature}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -518,8 +497,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                         <h3 className="text-lg font-semibold mb-4">Complete Your Subscription</h3>
                                         
                                         {highlightedApp && (
-                                            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                                                <p className="text-sm text-green-700 dark:text-green-300">
+                                            <div className="mb-6 p-4 bg-green-50 dark:bg-emerald-900/20 border border-green-200 dark:border-emerald-800 rounded-md">
+                                                <p className="text-sm text-green-700 dark:text-emerald-200">
                                                     <span className="font-medium">Great choice!</span> You're subscribing to the <span className="font-semibold">{selectedPlan.name}</span> plan 
                                                     {highlightedApp && <span> for <span className="font-semibold">{highlightedApp}</span> app</span>}.
                                                     {hasUnlimitedAccess(selectedPlan) 
@@ -552,7 +531,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-4">
                                                     <div>
-                                                        <h4 className="font-medium mb-2">Payment Information</h4>
+                                                        <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Payment Information</h4>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             After selecting your plan, you'll need to visit our office to complete the payment in cash.
                                                             Our staff will assist you with the payment process and activate your subscription.
@@ -568,11 +547,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         />
                                                         <Label 
                                                             htmlFor="auto-renew" 
-                                                            className={`cursor-pointer ${paymentMethod === 'cash' ? 'text-gray-400' : ''}`}
+                                                            className={`cursor-pointer ${paymentMethod === 'cash' ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}
                                                         >
                                                             Auto-renew subscription
                                                             {paymentMethod === 'cash' && (
-                                                                <span className="ml-1 text-xs text-gray-500">
+                                                                <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
                                                                     (Not available for cash payments)
                                                                 </span>
                                                             )}
@@ -595,50 +574,50 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 </div>
                                                 
                                                 <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                                                    <h4 className="font-medium mb-2">Order Summary</h4>
+                                                    <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Order Summary</h4>
                                                     <div className="space-y-2 text-sm">
                                                         <div className="flex justify-between">
-                                                            <span>Plan:</span>
-                                                            <span>{selectedPlan.name}</span>
+                                                            <span className="text-gray-600 dark:text-gray-300">Plan:</span>
+                                                            <span className="text-gray-900 dark:text-gray-100">{selectedPlan.name}</span>
                                                         </div>
                                                         <div className="flex justify-between">
-                                                            <span>Billing Period:</span>
-                                                            <span>{billingPeriod === 'annually' ? 'Annual' : `${Math.floor(selectedPlan.duration_in_days / 30)} months`}</span>
+                                                            <span className="text-gray-600 dark:text-gray-300">Billing Period:</span>
+                                                            <span className="text-gray-900 dark:text-gray-100">{billingPeriod === 'annually' ? 'Annual' : `${Math.floor(selectedPlan.duration_in_days / 30)} months`}</span>
                                                         </div>
                                                         <div className="flex justify-between">
-                                                            <span>Access:</span>
-                                                            <span>{hasUnlimitedAccess(selectedPlan) ? 'Unlimited' : 'Standard'}</span>
+                                                            <span className="text-gray-600 dark:text-gray-300">Access:</span>
+                                                            <span className="text-gray-900 dark:text-gray-100">{hasUnlimitedAccess(selectedPlan) ? 'Unlimited' : 'Standard'}</span>
                                                         </div>
                                                         <div className="flex justify-between font-semibold text-base pt-2 border-t dark:border-gray-700">
-                                                            <span>Total:</span>
-                                                            <span>₱{Number(selectedPlan.price).toFixed(2)}</span>
+                                                            <span className="text-gray-900 dark:text-gray-100">Total:</span>
+                                                            <span className="text-gray-900 dark:text-gray-100">₱{Number(selectedPlan.price).toFixed(2)}</span>
                                                         </div>
                                                         {paymentMethod === 'credits' && (
                                                             <>
                                                                 <div className="flex justify-between text-sm pt-2 border-t dark:border-gray-700">
-                                                                    <span>Credits to Deduct:</span>
+                                                                    <span className="text-gray-600 dark:text-gray-300">Credits to Deduct:</span>
                                                                     <span className="text-red-600 dark:text-red-400">{formatCredits(selectedPlan.price)} credits</span>
                                                                 </div>
                                                                 <div className="flex justify-between text-sm">
-                                                                    <span>Your Balance:</span>
-                                                                    <span className="text-green-600 dark:text-green-400">{formatCredits(credits)} credits</span>
+                                                                    <span className="text-gray-600 dark:text-gray-300">Your Balance:</span>
+                                                                    <span className="text-green-600 dark:text-emerald-300">{formatCredits(credits)} credits</span>
                                                                 </div>
                                                                 <div className="flex justify-between text-sm">
-                                                                    <span>Remaining Balance:</span>
+                                                                    <span className="text-gray-600 dark:text-gray-300">Remaining Balance:</span>
                                                                     <span className="text-blue-600 dark:text-blue-400">{formatCredits(credits - selectedPlan.price)} credits</span>
                                                                 </div>
                                                                 <div className="flex justify-between text-sm">
-                                                                    <span>Credits to Receive:</span>
-                                                                    <span className="text-green-600 dark:text-green-400">+{formatCredits(selectedPlan.credits_per_month || 0)} credits</span>
+                                                                    <span className="text-gray-600 dark:text-gray-300">Credits to Receive:</span>
+                                                                    <span className="text-green-600 dark:text-emerald-300">+{formatCredits(selectedPlan.credits_per_month || 0)} credits</span>
                                                                 </div>
                                                             </>
                                                         )}
                                                     </div>
                                                     
                                                     <div className="mt-4 pt-4 border-t dark:border-gray-700">
-                                                        <h4 className="font-medium mb-2">Payment Method</h4>
+                                                        <h4 className="font-medium mb-2 text-gray-900 dark:text-gray-100">Payment Method</h4>
                                                         <div className="space-y-3">
-                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-600">
                                                                 <input 
                                                                     type="radio" 
                                                                     name="payment_method" 
@@ -648,13 +627,13 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     className="h-4 w-4 text-green-600" 
                                                                 />
                                                                 <div>
-                                                                    <span className="block font-medium text-gray-900">Cash Payment</span>
-                                                                    <span className="block text-sm text-gray-500">Pay in cash at our office</span>
+                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">Cash Payment</span>
+                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">Pay in cash at our office</span>
                                                                 </div>
                                                             </label>
-                                                            <label className={`flex items-center space-x-3 p-3 border rounded-lg ${
+                                                            <label className={`flex items-center space-x-3 p-3 border rounded-lg dark:border-gray-600 ${
                                                                 credits >= (selectedPlan?.price || 0) 
-                                                                    ? 'cursor-pointer hover:bg-gray-100' 
+                                                                    ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700' 
                                                                     : 'cursor-not-allowed opacity-50'
                                                             }`}>
                                                                 <input 
@@ -671,15 +650,15 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     }`} 
                                                                 />
                                                                 <div>
-                                                                    <span className="block font-medium text-gray-900">Pay with Credits</span>
-                                                                    <span className="block text-sm text-gray-500">
+                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">Pay with Credits</span>
+                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">
                                                                         {credits >= (selectedPlan?.price || 0) 
                                                                             ? `Use your ${credits.toLocaleString()} available credits` 
                                                                             : `Insufficient credits. You have ${credits.toLocaleString()} credits but need ${selectedPlan?.price || 0} credits`}
                                                                     </span>
                                                                 </div>
                                                             </label>
-                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50">
+                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50 dark:border-gray-600">
                                                                 <input 
                                                                     type="radio" 
                                                                     name="payment_method" 
@@ -688,11 +667,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     className="h-4 w-4 text-gray-400" 
                                                                 />
                                                                 <div>
-                                                                    <span className="block font-medium text-gray-900">Credit/Debit Card via Maya</span>
-                                                                    <span className="block text-sm text-gray-500">Coming soon</span>
+                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">Credit/Debit Card via Maya</span>
+                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">Coming soon</span>
                                                                 </div>
                                                             </label>
-                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50">
+                                                            <label className="flex items-center space-x-3 p-3 border rounded-lg cursor-not-allowed opacity-50 dark:border-gray-600">
                                                                 <input 
                                                                     type="radio" 
                                                                     name="payment_method" 
@@ -701,8 +680,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     className="h-4 w-4 text-gray-400" 
                                                                 />
                                                                 <div>
-                                                                    <span className="block font-medium text-gray-900">Credit/Debit Card via Stripe</span>
-                                                                    <span className="block text-sm text-gray-500">Coming soon</span>
+                                                                    <span className="block font-medium text-gray-900 dark:text-gray-100">Credit/Debit Card via Stripe</span>
+                                                                    <span className="block text-sm text-gray-500 dark:text-gray-400">Coming soon</span>
                                                                 </div>
                                                             </label>
                                                         </div>
@@ -717,7 +696,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         <Button 
                                                             variant="outline" 
                                                             size="sm" 
-                                                            className="mt-2 text-red-600 border-red-300 hover:bg-red-50"
+                                                            className="mt-2 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                             onClick={handleSubmit}
                                                         >
                                                             Retry
@@ -740,26 +719,26 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
 
                         <TabsContent value="history" className="mt-6">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                                <h3 className="text-lg font-semibold mb-4">Subscription History</h3>
+                                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Subscription History</h3>
                                 
                                 {subscriptionHistory.length > 0 ? (
-                                    <Table>
+                                    <Table className="border border-gray-200 dark:border-gray-700">
                                         <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Plan</TableHead>
-                                                <TableHead>Start Date</TableHead>
-                                                <TableHead>End Date</TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead>Amount</TableHead>
-                                                <TableHead>Actions</TableHead>
+                                            <TableRow className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Plan</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Start Date</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">End Date</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Status</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Amount</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {subscriptionHistory.map((subscription) => (
-                                                <TableRow key={subscription.id}>
-                                                    <TableCell className="font-medium">{subscription.plan.name}</TableCell>
-                                                    <TableCell>{formatDate(subscription.start_date)}</TableCell>
-                                                    <TableCell>{formatDate(subscription.end_date)}</TableCell>
+                                                <TableRow key={subscription.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                    <TableCell className="font-medium text-gray-900 dark:text-gray-100">{subscription.plan.name}</TableCell>
+                                                    <TableCell className="text-gray-700 dark:text-gray-300">{formatDate(subscription.start_date)}</TableCell>
+                                                    <TableCell className="text-gray-700 dark:text-gray-300">{formatDate(subscription.end_date)}</TableCell>
                                                     <TableCell>
                                                         <Badge 
                                                             className={
@@ -777,7 +756,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell>₱{Number(subscription.amount_paid).toFixed(2)}</TableCell>
+                                                    <TableCell className="text-gray-700 dark:text-gray-300">₱{Number(subscription.amount_paid).toFixed(2)}</TableCell>
                                                     <TableCell>
                                                         {subscription.status === 'active' && (
                                                             <Button 
@@ -898,6 +877,6 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </AuthenticatedLayout>
+        </SubscriptionLayout>
     );
 } 
