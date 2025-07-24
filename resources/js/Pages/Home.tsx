@@ -281,6 +281,138 @@ export default function Home({ auth }: Props) {
                 </div>
 
                 <div className={`container mx-auto px-4 ${!isLoadingSubscription && !subscription ? 'pt-[220px]' : 'pt-[180px]'} landscape:pt-[140px] md:pt-[220px] overflow-y-auto mb-4`}>
+                    {/* Show subscription message when user has no subscription */}
+                    {!isLoadingSubscription && !subscription && (
+                        <div className="mb-8 text-center">
+                            <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 dark:from-blue-600 dark:via-purple-700 dark:to-indigo-800 rounded-2xl p-8 border-0 shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                                {/* Animated background elements */}
+                                <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                                    <div className="absolute top-4 left-4 w-20 h-20 bg-white rounded-full animate-pulse"></div>
+                                    <div className="absolute top-12 right-8 w-16 h-16 bg-white rounded-full animate-pulse delay-1000"></div>
+                                    <div className="absolute bottom-8 left-12 w-12 h-12 bg-white rounded-full animate-pulse delay-500"></div>
+                                    <div className="absolute bottom-4 right-4 w-24 h-24 bg-white rounded-full animate-pulse delay-1500"></div>
+                                </div>
+                                
+                                {/* Main content */}
+                                <div className="relative z-10">
+                                    <div className="flex justify-center mb-6">
+                                        <div className="relative">
+                                            <div className="text-6xl mb-2 animate-bounce">🚀</div>
+                                            <div className="absolute -top-2 -right-2 text-2xl animate-ping">✨</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-lg">
+                                        Unlock Premium Features
+                                    </h3>
+                                    
+                                    <p className="text-blue-100 mb-6 max-w-lg mx-auto text-lg leading-relaxed">
+                                        Get unlimited access to all apps, advanced features, and exclusive content. 
+                                        <span className="font-semibold text-white"> Start your journey today!</span>
+                                    </p>
+                                    
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+                                        <div className="flex items-center text-blue-100">
+                                            <span className="text-green-400 mr-2">✓</span>
+                                            <span>Unlimited Access</span>
+                                        </div>
+                                        <div className="flex items-center text-blue-100">
+                                            <span className="text-green-400 mr-2">✓</span>
+                                            <span>Premium Support</span>
+                                        </div>
+                                        <div className="flex items-center text-blue-100">
+                                            <span className="text-green-400 mr-2">✓</span>
+                                            <span>Advanced Features</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <Button 
+                                        onClick={() => window.location.href = route('subscriptions.index')}
+                                        className="bg-white text-blue-600 hover:bg-blue-50 font-bold px-8 py-3 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 text-lg"
+                                    >
+                                        🎯 Explore Plans Now
+                                    </Button>
+                                    
+                                    <p className="text-blue-200 text-sm mt-4 opacity-90">
+                                        Join thousands of satisfied users
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Credits purchase section - always show */}
+                    <div className="mb-8 text-center">
+                        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-green-700 dark:from-emerald-600 dark:via-teal-700 dark:to-green-800 rounded-2xl p-8 border-0 shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                            {/* Animated background elements */}
+                            <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                                <div className="absolute top-6 left-6 w-16 h-16 bg-white rounded-full animate-pulse delay-300"></div>
+                                <div className="absolute top-16 right-6 w-20 h-20 bg-white rounded-full animate-pulse delay-700"></div>
+                                <div className="absolute bottom-6 left-16 w-14 h-14 bg-white rounded-full animate-pulse delay-1000"></div>
+                                <div className="absolute bottom-8 right-8 w-18 h-18 bg-white rounded-full animate-pulse delay-500"></div>
+                            </div>
+                            
+                            {/* Main content */}
+                            <div className="relative z-10">
+                                <div className="flex justify-center mb-6">
+                                    <div className="relative">
+                                        <div className="text-6xl mb-2 animate-bounce">💰</div>
+                                        <div className="absolute -top-1 -right-1 text-xl animate-ping">💎</div>
+                                    </div>
+                                </div>
+                                
+                                <h3 className="text-2xl font-bold text-white mb-3 drop-shadow-lg">
+                                    Boost Your Credits
+                                </h3>
+                                
+                                <p className="text-emerald-100 mb-6 max-w-lg mx-auto text-lg leading-relaxed">
+                                    Need more credits to power your activities? 
+                                    <span className="font-semibold text-white"> Get the best value with our credit packages!</span>
+                                </p>
+                                
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+                                    <div className="flex items-center text-emerald-100">
+                                        <span className="text-yellow-400 mr-2">⚡</span>
+                                        <span>Instant Delivery</span>
+                                    </div>
+                                    <div className="flex items-center text-emerald-100">
+                                        <span className="text-yellow-400 mr-2">🎁</span>
+                                        <span>Bonus Credits</span>
+                                    </div>
+                                    <div className="flex items-center text-emerald-100">
+                                        <span className="text-yellow-400 mr-2">🔒</span>
+                                        <span>Secure Payment</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-6 border border-white/20">
+                                    <div className="flex items-center justify-center gap-4 text-white">
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold">{formatNumber(credits)}</div>
+                                            <div className="text-sm opacity-90">Current Credits</div>
+                                        </div>
+                                        <div className="text-3xl text-yellow-400">→</div>
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-yellow-400">+500</div>
+                                            <div className="text-sm opacity-90">Bonus Credits</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <Button 
+                                    onClick={() => window.location.href = route('credits.buy')}
+                                    className="bg-white text-emerald-600 hover:bg-emerald-50 font-bold px-8 py-3 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 text-lg"
+                                >
+                                    💳 Buy Credits Now
+                                </Button>
+                                
+                                <p className="text-emerald-200 text-sm mt-4 opacity-90">
+                                    Limited time bonus credits available
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                         {apps.filter(app => {
                             // Convert app title to match module name format (lowercase and hyphenated)
