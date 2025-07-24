@@ -46,10 +46,10 @@ class SubscriptionPlanSeeder extends Seeder
                 'project_id' => 5, // Enterprise project
             ],
             [
-                'name' => 'Pay as you go',
-                'slug' => 'pay-as-you-go',
+                'name' => 'Business Plan',
+                'slug' => 'business-plan',
                 'description' => 'For individuals and small businesses just getting started.',
-                'price' => 0.00,
+                'price' => 699.00,
                 'duration_in_days' => 0,
                 'unlimited_access' => false,
                 'features' => [
@@ -57,7 +57,7 @@ class SubscriptionPlanSeeder extends Seeder
                 ],
                 'is_popular' => false,
                 'is_active' => true,
-                'badge_text' => 'Pay as you go',
+                'badge_text' => 'Business',
                 'project_id' => 5, // Enterprise project
             ],
             [
