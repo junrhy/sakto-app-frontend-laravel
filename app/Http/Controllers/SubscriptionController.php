@@ -32,7 +32,8 @@ class SubscriptionController extends Controller
      */
     public function index()
     {
-        $clientIdentifier = auth()->user()->identifier;
+        $user = auth()->user();
+        $clientIdentifier = $user->identifier;
         
         // Get active subscription if exists
         $activeSubscription = UserSubscription::where('user_identifier', $clientIdentifier)
@@ -41,8 +42,13 @@ class SubscriptionController extends Controller
             ->with('plan')
             ->first();
         
-        // Get all active subscription plans
+        // Get active subscription plans filtered by user's project
         $plans = SubscriptionPlan::where('is_active', true)
+            ->where(function($query) use ($user) {
+                // Show plans that either belong to the user's project or have no project assigned (global plans)
+                $query->where('project_id', $user->project?->id)
+                      ->orWhereNull('project_id');
+            })
             ->orderBy('price')
             ->get();
         
@@ -98,6 +104,11 @@ class SubscriptionController extends Controller
         $user = auth()->user();
         $clientIdentifier = $user->identifier;
         $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
+        
+        // Validate that the user can subscribe to this plan
+        if ($plan->project_id && $plan->project_id !== $user->project?->id) {
+            return redirect()->back()->with('error', 'You can only subscribe to plans that belong to your project.');
+        }
         
         // Handle different payment methods
         switch ($validated['payment_method']) {

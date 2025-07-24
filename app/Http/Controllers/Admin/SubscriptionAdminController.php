@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -18,7 +19,8 @@ class SubscriptionAdminController extends Controller
      */
     public function index()
     {
-        $plans = SubscriptionPlan::orderBy('price')->get();
+        $plans = SubscriptionPlan::with('project')->orderBy('price')->get();
+        $projects = Project::orderBy('name')->get();
         $subscriptions = UserSubscription::with('plan')
             ->select('user_subscriptions.*')
             ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
@@ -28,6 +30,7 @@ class SubscriptionAdminController extends Controller
         
         return Inertia::render('Admin/Subscriptions/Index', [
             'plans' => $plans,
+            'projects' => $projects,
             'subscriptions' => $subscriptions,
         ]);
     }
@@ -47,6 +50,7 @@ class SubscriptionAdminController extends Controller
             'is_popular' => 'boolean',
             'is_active' => 'boolean',
             'badge_text' => 'nullable|string|max:255',
+            'project_id' => 'nullable|exists:projects,id',
         ]);
         
         // Generate slug from name
@@ -80,6 +84,7 @@ class SubscriptionAdminController extends Controller
             'is_popular' => 'boolean',
             'is_active' => 'boolean',
             'badge_text' => 'nullable|string|max:255',
+            'project_id' => 'nullable|exists:projects,id',
         ]);
         
         $plan->update($validated);

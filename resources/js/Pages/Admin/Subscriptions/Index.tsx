@@ -18,6 +18,7 @@ import { PageProps } from '@/types/index';
 interface Props {
   auth: PageProps['auth'];
   plans: SubscriptionPlan[];
+  projects: Project[];
   subscriptions: {
     data: (UserSubscription & { user_name?: string })[];
     links: any[];
@@ -34,7 +35,7 @@ interface Props {
   };
 }
 
-export default function Index({ auth, plans, subscriptions }: Props) {
+export default function Index({ auth, plans, projects, subscriptions }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -53,6 +54,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
     is_popular: false,
     is_active: true,
     badge_text: '',
+    project_id: '',
   });
 
   const editForm = useForm({
@@ -65,6 +67,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
     is_popular: false,
     is_active: true,
     badge_text: '',
+    project_id: '',
   });
 
   const deleteForm = useForm({});
@@ -89,6 +92,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
       is_popular: plan.is_popular || false,
       is_active: plan.is_active || true,
       badge_text: plan.badge_text || '',
+      project_id: plan.project_id?.toString() || '',
     });
     setFeatures(plan.features || []);
     setShowEditModal(true);
@@ -198,6 +202,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Project</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Credits</th>
@@ -218,6 +223,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                                 </span>
                               )}
                             </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 dark:text-gray-100">
+                            {plan.project ? plan.project.name : 'No Project'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -370,6 +380,24 @@ export default function Index({ auth, plans, subscriptions }: Props) {
             <InputError message={createForm.errors.description} className="mt-2" />
           </div>
           
+          <div className="mb-4">
+            <InputLabel htmlFor="project_id" value="Project (Optional)" className="text-gray-700 dark:text-gray-300" />
+            <select
+              id="project_id"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              value={createForm.data.project_id}
+              onChange={(e) => createForm.setData('project_id', e.target.value)}
+            >
+              <option value="">Select a project (optional)</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+            <InputError message={createForm.errors.project_id} className="mt-2" />
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <InputLabel htmlFor="price" value="Price (₱)" className="text-gray-700 dark:text-gray-300" />
@@ -515,6 +543,24 @@ export default function Index({ auth, plans, subscriptions }: Props) {
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => editForm.setData('description', e.target.value)}
             />
             <InputError message={editForm.errors.description} className="mt-2" />
+          </div>
+          
+          <div className="mb-4">
+            <InputLabel htmlFor="edit_project_id" value="Project (Optional)" className="text-gray-700 dark:text-gray-300" />
+            <select
+              id="edit_project_id"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              value={editForm.data.project_id}
+              onChange={(e) => editForm.setData('project_id', e.target.value)}
+            >
+              <option value="">Select a project (optional)</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+            <InputError message={editForm.errors.project_id} className="mt-2" />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

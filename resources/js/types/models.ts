@@ -10,6 +10,12 @@ export interface SubscriptionPlan {
   is_popular: boolean;
   is_active: boolean;
   badge_text?: string;
+  project_id?: number;
+  project?: {
+    id: number;
+    name: string;
+    identifier: string;
+  };
   created_at: string;
   updated_at: string;
 }

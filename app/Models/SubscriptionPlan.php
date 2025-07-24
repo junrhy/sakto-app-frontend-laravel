@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubscriptionPlan extends Model
 {
@@ -27,6 +28,7 @@ class SubscriptionPlan extends Model
         'is_popular',
         'is_active',
         'badge_text',
+        'project_id',
     ];
 
     /**
@@ -41,6 +43,14 @@ class SubscriptionPlan extends Model
         'is_popular' => 'boolean',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the project that owns the subscription plan.
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     /**
      * Get the subscriptions for the plan.
