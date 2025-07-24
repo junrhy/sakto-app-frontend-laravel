@@ -37,3 +37,25 @@ export function formatAmount(amount: string | number, currency: Currency): strin
         maximumFractionDigits: 2
     })}`;
 }
+
+/**
+ * Safely parse enabledModules to ensure it's always an array
+ * This handles cases where enabledModules might be a string (JSON) or already an array
+ */
+export function parseEnabledModules(enabledModules: any): string[] {
+  if (Array.isArray(enabledModules)) {
+    return enabledModules;
+  }
+  
+  if (typeof enabledModules === 'string') {
+    try {
+      const parsed = JSON.parse(enabledModules);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn('Failed to parse enabledModules as JSON:', error);
+      return [];
+    }
+  }
+  
+  return [];
+}

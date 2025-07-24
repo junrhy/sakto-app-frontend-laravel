@@ -26,17 +26,17 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-r from-gray-900 to-gray-800">
+        <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
             <Head title="Admin Login" />
             <Toaster richColors />
             
-            <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex justify-center mb-6">
                     <Link href="/">
                         <div className="flex items-center">
-                            <ApplicationLogo className="w-20 h-20 fill-current text-gray-800" />
-                            <span className="text-2xl font-black ml-2">
-                                Sakto <span className="text-blue-500">Admin</span>
+                            <ApplicationLogo className="w-20 h-20 fill-current text-gray-800 dark:text-gray-200" />
+                            <span className="text-2xl font-black ml-2 text-gray-900 dark:text-white">
+                                Sakto <span className="text-blue-600 dark:text-blue-400">Admin</span>
                             </span>
                         </div>
                     </Link>
@@ -75,7 +75,7 @@ export default function Login() {
                     <div className="flex items-center justify-end mt-4">
                         <Link
                             href={route('login')}
-                            className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
                         >
                             Back to regular login
                         </Link>

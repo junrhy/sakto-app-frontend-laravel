@@ -9,6 +9,7 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from '@/Components/ui/button';
 import { CreditCardIcon, SparklesIcon, AlertCircle } from 'lucide-react';
 import { PageProps, User, Project } from '@/types/index';
+import { parseEnabledModules } from '@/lib/utils';
 
 interface DashboardType {
     id: number;
@@ -131,11 +132,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     console.log(auth);
 
     // Parse enabled modules from project
-    const enabledModules = auth?.project?.enabledModules 
-        ? (Array.isArray(auth.project.enabledModules) 
-            ? auth.project.enabledModules 
-            : JSON.parse(auth.project.enabledModules))
-        : [];
+    const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
 
     useEffect(() => {
         const fetchCredits = async () => {

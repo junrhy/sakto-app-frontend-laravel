@@ -14,6 +14,14 @@ class ProjectController extends Controller
     {
         $projects = Project::withCount('users')->latest()->paginate(10);
         
+        // Ensure enabledModules is properly cast as array for each project
+        $projects->getCollection()->transform(function ($project) {
+            $project->enabledModules = is_array($project->enabledModules) 
+                ? $project->enabledModules 
+                : (is_string($project->enabledModules) ? json_decode($project->enabledModules, true) : []);
+            return $project;
+        });
+        
         return Inertia::render('Admin/Projects/Index', [
             'projects' => $projects
         ]);
@@ -47,12 +55,17 @@ class ProjectController extends Controller
         $project = Project::findOrFail($id);
         $modules = Module::select('id', 'name', 'identifier')->get();
         
+        // Ensure enabledModules is properly cast as array
+        $enabledModules = is_array($project->enabledModules) 
+            ? $project->enabledModules 
+            : (is_string($project->enabledModules) ? json_decode($project->enabledModules, true) : []);
+        
         return Inertia::render('Admin/Projects/Edit', [
             'project' => [
                 'id' => $project->id,
                 'name' => $project->name,
                 'identifier' => $project->identifier,
-                'enabledModules' => $project->enabledModules,
+                'enabledModules' => $enabledModules,
             ],
             'modules' => $modules
         ]);

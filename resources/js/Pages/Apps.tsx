@@ -15,6 +15,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { CreditCardIcon } from '@heroicons/react/24/outline';
 import { PageProps } from '@/types';
 import { User } from '@/types';
+import { parseEnabledModules } from '@/lib/utils';
 
 interface ExchangeRates {
     PHP?: number;
@@ -251,7 +252,7 @@ export default function Apps() {
             const matchesCategory = !selectedCategory || app.categories.includes(selectedCategory);
             
             // Check if app is enabled in project modules
-            const modules = enabledModules || [];
+            const modules = parseEnabledModules(enabledModules);
             const moduleId = appTitleToModuleId(app.title);
             const matchesEnabledModules = modules.includes(moduleId);
             

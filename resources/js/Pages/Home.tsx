@@ -9,6 +9,7 @@ import { getApps, type App } from '@/data/apps';
 import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
+import { parseEnabledModules } from '@/lib/utils';
 
 interface Props {
     auth: {
@@ -281,7 +282,8 @@ export default function Home({ auth }: Props) {
                             const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
                             
                             // Only show apps that are in enabledModules
-                            if (!auth.project.enabledModules.includes(normalizedAppTitle)) {
+                            const enabledModules = parseEnabledModules(auth.project.enabledModules);
+                            if (!enabledModules.includes(normalizedAppTitle)) {
                                 return false;
                             }
                             

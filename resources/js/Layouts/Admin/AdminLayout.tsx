@@ -28,7 +28,7 @@ export default function AdminLayout({
   const user = auth?.user || pageProps?.auth?.user;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <Head title={title} />
       <Toaster richColors />
 
@@ -41,7 +41,7 @@ export default function AdminLayout({
               <div className="flex items-center">
                 <ApplicationLogo className="block h-7 w-auto fill-current text-white" />
                 <span className="text-lg font-black ml-2 text-white">
-                  Sakto <span className="text-blue-500">Admin</span>
+                  Sakto <span className="text-blue-400">Admin</span>
                 </span>
               </div>
             </Link>
@@ -173,11 +173,11 @@ export default function AdminLayout({
       {/* Main Content */}
       <div className={`${isSidebarOpen ? 'ml-64' : 'ml-0'} transition-all duration-300 ease-in-out`}>
         {/* Top Bar */}
-        <div className="bg-white shadow-sm">
+        <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between h-16 px-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />

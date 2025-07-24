@@ -14,8 +14,16 @@ class AppsController extends Controller
         $appCurrency = json_decode(auth()->user()->app_currency);
         $project = Project::where('identifier', auth()->user()->project_identifier)->first();
 
+        // Ensure enabledModules is properly cast as array
+        $enabledModules = [];
+        if ($project) {
+            $enabledModules = is_array($project->enabledModules) 
+                ? $project->enabledModules 
+                : (is_string($project->enabledModules) ? json_decode($project->enabledModules, true) : []);
+        }
+
         return Inertia::render('Apps', [
-            'enabledModules' => $project ? $project->enabledModules : []
+            'enabledModules' => $enabledModules
         ]);
     }
 
@@ -23,9 +31,17 @@ class AppsController extends Controller
     {
         $project = Project::where('identifier', auth()->user()->project_identifier)->first();
         
+        // Ensure enabledModules is properly cast as array
+        $enabledModules = [];
+        if ($project) {
+            $enabledModules = is_array($project->enabledModules) 
+                ? $project->enabledModules 
+                : (is_string($project->enabledModules) ? json_decode($project->enabledModules, true) : []);
+        }
+        
         return response()->json([
             'apps' => config('apps'),
-            'enabledModules' => $project ? $project->enabledModules : []
+            'enabledModules' => $enabledModules
         ]);
     }
 } 

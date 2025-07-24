@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { Project } from '@/types/index.d';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { parseEnabledModules } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
@@ -117,14 +118,14 @@ export default function Index({ projects }: Props) {
                             <Tooltip>
                               <TooltipTrigger>
                                 <div className="text-sm text-gray-500">
-                                  {project.enabledModules.length} modules
+                                  {parseEnabledModules(project.enabledModules).length} modules
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <div className="max-w-xs">
                                   <p className="font-medium mb-1">Enabled Modules:</p>
                                   <ol className="list-decimal list-inside">
-                                    {project.enabledModules.map((module) => (
+                                    {parseEnabledModules(project.enabledModules).map((module) => (
                                       <li key={module} className="text-sm">
                                         {module}
                                       </li>

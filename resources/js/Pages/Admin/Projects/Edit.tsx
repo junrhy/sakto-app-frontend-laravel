@@ -3,6 +3,7 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Label } from '@/Components/ui/label';
+import { parseEnabledModules } from '@/lib/utils';
 
 interface Module {
   id: number;
@@ -26,7 +27,7 @@ export default function Edit({ project, modules }: Props) {
   const { data, setData, put, processing, errors } = useForm({
     name: project.name,
     identifier: project.identifier,
-    enabledModules: Array.isArray(project.enabledModules) ? project.enabledModules : [],
+    enabledModules: parseEnabledModules(project.enabledModules),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
