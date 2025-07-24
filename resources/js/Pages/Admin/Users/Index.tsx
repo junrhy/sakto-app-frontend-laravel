@@ -34,6 +34,8 @@ interface Props {
       referrer: string | null;
       theme: string | null;
       theme_color: string | null;
+      credits: number;
+      pending_credits: number;
     }>;
     links: any;
   };
@@ -211,6 +213,9 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">
                         Status
                       </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">
+                        Credits
+                      </th>
                       {showHiddenFields && (
                         <>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/6">
@@ -247,7 +252,7 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {users.data.length === 0 ? (
                       <tr>
-                        <td colSpan={showHiddenFields ? 10 : 8} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        <td colSpan={showHiddenFields ? 11 : 9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                           No users found
                         </td>
                       </tr>
@@ -273,6 +278,18 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                             }`}>
                               {user.is_admin ? 'Admin' : 'User'}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex flex-col">
+                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {user.credits.toLocaleString()}
+                              </div>
+                              {user.pending_credits > 0 && (
+                                <div className="text-xs text-orange-600 dark:text-orange-400">
+                                  +{user.pending_credits} pending
+                                </div>
+                              )}
+                            </div>
                           </td>
                           {showHiddenFields && (
                             <>

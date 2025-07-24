@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use App\Models\Project;
 
@@ -42,6 +43,34 @@ class UserAdminController extends Controller
         $users = $query->orderBy('created_at', 'desc')
                       ->paginate(10)
                       ->withQueryString();
+
+        // Fetch credit balances for each user
+        $apiUrl = config('api.url');
+        $apiToken = config('api.token');
+        
+        $users->getCollection()->transform(function ($user) use ($apiUrl, $apiToken) {
+            $credits = 0;
+            $pendingCredits = 0;
+            
+            try {
+                $response = \Illuminate\Support\Facades\Http::withToken($apiToken)
+                    ->get("{$apiUrl}/credits/{$user->identifier}/balance");
+                
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $credits = $data['available_credit'] ?? 0;
+                    $pendingCredits = $data['pending_credit'] ?? 0;
+                }
+            } catch (\Exception $e) {
+                // Log error but continue with default values
+                \Log::error("Failed to fetch credits for user {$user->identifier}: " . $e->getMessage());
+            }
+            
+            $user->credits = $credits;
+            $user->pending_credits = $pendingCredits;
+            
+            return $user;
+        });
 
         $projects = Project::select('id', 'name', 'identifier')->get();
         
