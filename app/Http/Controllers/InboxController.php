@@ -61,12 +61,13 @@ class InboxController extends Controller
 
             // Transform the API response to match the frontend Message interface
             $transformedMessages = [];
+
             if (!empty($messages)) {
                 $transformedMessages = array_map(function ($message) {
                     return [
                         'id' => $message['id'],
-                        'title' => $message['title'],
-                        'content' => $message['content'],
+                        'title' => $message['subject'],
+                        'content' => $message['message'],
                         'timestamp' => $message['created_at'],
                         'type' => $message['type'] ?? 'notification',
                         'isRead' => $message['is_read'] ?? false,
