@@ -66,25 +66,25 @@ export default function Index({ auth, settings }: SettingsPageProps) {
     <AdminLayout
       auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Application Settings"
-      header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Application Settings</h2>}
+      header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Application Settings</h2>}
     >
       <Head title="Application Settings" />
 
       <div className="py-12">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
           {/* Registration Settings */}
-          <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+          <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg border border-gray-200 dark:border-gray-700">
             <section className="max-w-xl">
               <header>
-                <h2 className="text-lg font-medium text-gray-900">User Registration</h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">User Registration</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Enable or disable user registration on the site.
                 </p>
               </header>
 
               <form onSubmit={submitRegistration} className="mt-6 space-y-6">
                 <div className="flex items-center">
-                  <InputLabel htmlFor="registration_enabled" value="Enable User Registration" className="mr-4" />
+                  <InputLabel htmlFor="registration_enabled" value="Enable User Registration" className="mr-4 text-gray-700 dark:text-gray-300" />
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -106,18 +106,18 @@ export default function Index({ auth, settings }: SettingsPageProps) {
           </div>
 
           {/* Maintenance Mode Settings */}
-          <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+          <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg border border-gray-200 dark:border-gray-700">
             <section className="max-w-xl">
               <header>
-                <h2 className="text-lg font-medium text-gray-900">Maintenance Mode</h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Maintenance Mode</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Enable or disable site-wide maintenance mode with a custom message.
                 </p>
               </header>
 
               <form onSubmit={submitMaintenance} className="mt-6 space-y-6">
                 <div className="flex items-center">
-                  <InputLabel htmlFor="maintenance_enabled" value="Enable Maintenance Mode" className="mr-4" />
+                  <InputLabel htmlFor="maintenance_enabled" value="Enable Maintenance Mode" className="mr-4 text-gray-700 dark:text-gray-300" />
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -132,13 +132,14 @@ export default function Index({ auth, settings }: SettingsPageProps) {
                 <InputError message={maintenanceForm.errors.enabled} className="mt-2" />
 
                 <div>
-                  <InputLabel htmlFor="maintenance_message" value="Maintenance Message" />
+                  <InputLabel htmlFor="maintenance_message" value="Maintenance Message" className="text-gray-700 dark:text-gray-300" />
                   <textarea
                     id="maintenance_message"
                     value={maintenanceForm.data.message}
                     onChange={(e) => maintenanceForm.setData('message', e.target.value)}
-                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                    className="mt-1 block w-full border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm dark:bg-gray-700 dark:text-gray-100"
                     rows={3}
+                    placeholder="Enter maintenance message..."
                   />
                   <InputError message={maintenanceForm.errors.message} className="mt-2" />
                 </div>
@@ -151,18 +152,18 @@ export default function Index({ auth, settings }: SettingsPageProps) {
           </div>
 
           {/* IP Restriction Settings */}
-          <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+          <div className="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg border border-gray-200 dark:border-gray-700">
             <section className="max-w-xl">
               <header>
-                <h2 className="text-lg font-medium text-gray-900">IP Restrictions</h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">IP Restrictions</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   Restrict admin access to specific IP addresses.
                 </p>
               </header>
 
               <form onSubmit={submitIpRestriction} className="mt-6 space-y-6">
                 <div className="flex items-center">
-                  <InputLabel htmlFor="ip_restriction_enabled" value="Enable IP Restrictions" className="mr-4" />
+                  <InputLabel htmlFor="ip_restriction_enabled" value="Enable IP Restrictions" className="mr-4 text-gray-700 dark:text-gray-300" />
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -177,16 +178,16 @@ export default function Index({ auth, settings }: SettingsPageProps) {
                 <InputError message={ipRestrictionForm.errors.enabled} className="mt-2" />
 
                 <div>
-                  <InputLabel htmlFor="allowed_ips" value="Allowed IP Addresses" />
+                  <InputLabel htmlFor="allowed_ips" value="Allowed IP Addresses" className="text-gray-700 dark:text-gray-300" />
                   <TextInput
                     id="allowed_ips"
                     type="text"
                     value={ipRestrictionForm.data.allowed_ips}
                     onChange={(e) => ipRestrictionForm.setData('allowed_ips', e.target.value)}
-                    className="mt-1 block w-full"
+                    className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                     placeholder="e.g. 192.168.1.1, 10.0.0.1"
                   />
-                  <p className="mt-1 text-sm text-gray-500">Enter comma-separated IP addresses</p>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Enter comma-separated IP addresses</p>
                   <InputError message={ipRestrictionForm.errors.allowed_ips} className="mt-2" />
                 </div>
 

@@ -64,13 +64,13 @@ export default function View({ auth, subscription }: Props) {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
       case 'expired':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
       default:
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
     }
   };
 
@@ -78,7 +78,7 @@ export default function View({ auth, subscription }: Props) {
     <AdminLayout
       auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Subscription Details"
-      header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription Details</h2>}
+      header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Subscription Details</h2>}
     >
       <Head title="Subscription Details" />
 
@@ -87,16 +87,16 @@ export default function View({ auth, subscription }: Props) {
           <div className="mb-6">
             <Link
               href={route('admin.subscriptions.index')}
-              className="text-indigo-600 hover:text-indigo-900"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
             >
               &larr; Back to Subscriptions
             </Link>
           </div>
 
-          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-            <div className="p-6 bg-white border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
+            <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900">Subscription Information</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Subscription Information</h3>
                 <div className="flex space-x-2">
                   {subscription.status === 'active' && (
                     <DangerButton onClick={() => setShowCancelModal(true)}>
@@ -117,7 +117,7 @@ export default function View({ auth, subscription }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Status</h4>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h4>
                     <div className="mt-1">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(subscription.status)}`}>
                         {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
@@ -126,62 +126,62 @@ export default function View({ auth, subscription }: Props) {
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">User</h4>
-                    <p className="mt-1 text-sm text-gray-900">{subscription.user_name || subscription.user_identifier}</p>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">User</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{subscription.user_name || subscription.user_identifier}</p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Subscription Plan</h4>
-                    <p className="mt-1 text-sm text-gray-900">{subscription.plan.name}</p>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Subscription Plan</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{subscription.plan.name}</p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Price</h4>
-                    <p className="mt-1 text-sm text-gray-900">₱ {subscription.amount_paid}</p>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Price</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">₱ {subscription.amount_paid?.toLocaleString()}</p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Credits Per Month</h4>
-                    <p className="mt-1 text-sm text-gray-900">{subscription.plan.credits_per_month}</p>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Credits Per Month</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{subscription.plan.credits_per_month}</p>
                   </div>
                 </div>
 
                 <div>
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Start Date</h4>
-                    <p className="mt-1 text-sm text-gray-900">{formatDate(subscription.start_date)}</p>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Start Date</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatDate(subscription.start_date)}</p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">End Date</h4>
-                    <p className="mt-1 text-sm text-gray-900">{formatDate(subscription.end_date)}</p>
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">End Date</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatDate(subscription.end_date)}</p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Last Credit Date</h4>
-                    <p className="mt-1 text-sm text-gray-900">
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Last Credit Date</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                       {subscription.last_credit_date ? formatDate(subscription.last_credit_date) : 'N/A'}
                     </p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Auto Renew</h4>
-                    <p className="mt-1 text-sm text-gray-900">
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Auto Renew</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                       {subscription.auto_renew ? 'Yes' : 'No'}
                     </p>
                   </div>
 
                   {subscription.cancelled_at && (
                     <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-500">Cancelled At</h4>
-                      <p className="mt-1 text-sm text-gray-900">{formatDate(subscription.cancelled_at)}</p>
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Cancelled At</h4>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatDate(subscription.cancelled_at)}</p>
                     </div>
                   )}
 
                   {subscription.cancellation_reason && (
                     <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-500">Cancellation Reason</h4>
-                      <p className="mt-1 text-sm text-gray-900">{subscription.cancellation_reason}</p>
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Cancellation Reason</h4>
+                      <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{subscription.cancellation_reason}</p>
                     </div>
                   )}
                 </div>
@@ -189,22 +189,22 @@ export default function View({ auth, subscription }: Props) {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div className="p-6 bg-white border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Payment Information</h3>
+          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">Payment Information</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Payment Method</h4>
-                    <p className="mt-1 text-sm text-gray-900">
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Method</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                       {subscription.payment_method || 'N/A'}
                     </p>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-500">Transaction ID</h4>
-                    <p className="mt-1 text-sm text-gray-900">
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Transaction ID</h4>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                       {subscription.payment_transaction_id || 'N/A'}
                     </p>
                   </div>
@@ -213,13 +213,13 @@ export default function View({ auth, subscription }: Props) {
                 <div>
                   {subscription.proof_of_payment && (
                     <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-500">Proof of Payment</h4>
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Proof of Payment</h4>
                       <div className="mt-1">
                         <a
                           href={subscription.proof_of_payment}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
                         >
                           View Proof of Payment
                         </a>
@@ -235,18 +235,18 @@ export default function View({ auth, subscription }: Props) {
 
       {/* Cancel Subscription Modal */}
       <Modal show={showCancelModal} onClose={() => setShowCancelModal(false)}>
-        <form onSubmit={handleCancelSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Cancel Subscription</h2>
+        <form onSubmit={handleCancelSubmit} className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Cancel Subscription</h2>
           
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             Are you sure you want to cancel this subscription? This action cannot be undone.
           </p>
           
           <div className="mb-4">
-            <InputLabel htmlFor="cancellation_reason" value="Cancellation Reason (Optional)" />
+            <InputLabel htmlFor="cancellation_reason" value="Cancellation Reason (Optional)" className="text-gray-700 dark:text-gray-300" />
             <TextArea
               id="cancellation_reason"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={cancelForm.data.cancellation_reason}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => cancelForm.setData('cancellation_reason', e.target.value)}
             />
@@ -266,15 +266,15 @@ export default function View({ auth, subscription }: Props) {
 
       {/* Add Credits Modal */}
       <Modal show={showAddCreditsModal} onClose={() => setShowAddCreditsModal(false)}>
-        <form onSubmit={handleAddCreditsSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Add Credits</h2>
+        <form onSubmit={handleAddCreditsSubmit} className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Add Credits</h2>
           
           <div className="mb-4">
-            <InputLabel htmlFor="amount" value="Amount" />
+            <InputLabel htmlFor="amount" value="Amount" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="amount"
               type="number"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={creditsForm.data.amount}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => creditsForm.setData('amount', e.target.value)}
               required
@@ -284,10 +284,10 @@ export default function View({ auth, subscription }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="note" value="Note (Optional)" />
+            <InputLabel htmlFor="note" value="Note (Optional)" className="text-gray-700 dark:text-gray-300" />
             <TextArea
               id="note"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={creditsForm.data.note}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => creditsForm.setData('note', e.target.value)}
               placeholder="Reason for adding credits"
@@ -308,18 +308,18 @@ export default function View({ auth, subscription }: Props) {
 
       {/* Mark as Paid Modal */}
       <Modal show={showMarkAsPaidModal} onClose={() => setShowMarkAsPaidModal(false)}>
-        <form onSubmit={handleMarkAsPaidSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Mark Payment as Paid</h2>
+        <form onSubmit={handleMarkAsPaidSubmit} className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Mark Payment as Paid</h2>
           
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             Are you sure you want to mark this cash payment as paid? This will activate the subscription.
           </p>
           
           <div className="mb-4">
-            <InputLabel htmlFor="note" value="Note (Optional)" />
+            <InputLabel htmlFor="note" value="Note (Optional)" className="text-gray-700 dark:text-gray-300" />
             <TextArea
               id="note"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={markAsPaidForm.data.note}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => markAsPaidForm.setData('note', e.target.value)}
               placeholder="Add any notes about the payment"

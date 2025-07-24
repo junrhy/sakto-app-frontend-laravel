@@ -174,17 +174,17 @@ export default function Index({ auth, plans, subscriptions }: Props) {
     <AdminLayout
       auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
       title="Subscription Management"
-      header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription Management</h2>}
+      header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Subscription Management</h2>}
     >
       <Head title="Subscription Management" />
 
       <div className="py-12">
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           {/* Subscription Plans Section */}
-          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-            <div className="p-6 bg-white border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
+            <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-gray-900">Subscription Plans</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Subscription Plans</h3>
                 <div className="flex space-x-2">
                   <PrimaryButton onClick={openCreateModal}>Add New Plan</PrimaryButton>
                   <SecondaryButton onClick={openRenewalModal}>
@@ -194,26 +194,26 @@ export default function Index({ auth, plans, subscriptions }: Props) {
               </div>
               
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Credits</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {plans.map((plan) => (
-                      <tr key={plan.id}>
+                      <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{plan.name}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{plan.name}</div>
                               {plan.badge_text && (
-                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                                   {plan.badge_text}
                                 </span>
                               )}
@@ -221,22 +221,24 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">₱ {plan.price}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">₱ {plan.price?.toLocaleString()}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.duration_in_days} days</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{plan.duration_in_days} days</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{plan.credits_per_month} credits/month</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{plan.credits_per_month} credits/month</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            plan.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            plan.is_active 
+                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                              : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                           }`}>
                             {plan.is_active ? 'Active' : 'Inactive'}
                           </span>
                           {plan.is_popular && (
-                            <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            <span className="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
                               Popular
                             </span>
                           )}
@@ -245,19 +247,22 @@ export default function Index({ auth, plans, subscriptions }: Props) {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => openEditModal(plan)}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => togglePlanStatus(plan)}
-                              className={`${plan.is_active ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'}`}
+                              className={`${plan.is_active 
+                                ? 'text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300' 
+                                : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
+                              } transition-colors`}
                             >
                               {plan.is_active ? 'Deactivate' : 'Activate'}
                             </button>
                             <button
                               onClick={() => openDeleteModal(plan)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
                             >
                               Delete
                             </button>
@@ -272,50 +277,52 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
 
           {/* User Subscriptions Section */}
-          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div className="p-6 bg-white border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">User Subscriptions</h3>
+          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">User Subscriptions</h3>
               
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Plan</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Date</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Date</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {subscriptions.data.map((subscription) => (
-                      <tr key={subscription.id}>
+                      <tr key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{subscription.user_name}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{subscription.user_name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{subscription.plan.name}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{subscription.plan.name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            subscription.status === 'active' ? 'bg-green-100 text-green-800' : 
-                            subscription.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
-                            'bg-gray-100 text-gray-800'
+                            subscription.status === 'active' 
+                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
+                            subscription.status === 'cancelled' 
+                              ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' : 
+                              'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                           }`}>
                             {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{new Date(subscription.start_date).toLocaleDateString()}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{new Date(subscription.start_date).toLocaleDateString()}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{new Date(subscription.end_date).toLocaleDateString()}</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{new Date(subscription.end_date).toLocaleDateString()}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <Link
                             href={route('admin.subscriptions.view', subscription.id)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
                           >
                             View Details
                           </Link>
@@ -336,15 +343,15 @@ export default function Index({ auth, plans, subscriptions }: Props) {
 
       {/* Create Plan Modal */}
       <Modal show={showCreateModal} onClose={() => setShowCreateModal(false)}>
-        <form onSubmit={handleCreateSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Create Subscription Plan</h2>
+        <form onSubmit={handleCreateSubmit} className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Create Subscription Plan</h2>
           
           <div className="mb-4">
-            <InputLabel htmlFor="name" value="Name" />
+            <InputLabel htmlFor="name" value="Name" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="name"
               type="text"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={createForm.data.name}
               onChange={(e) => createForm.setData('name', e.target.value)}
               required
@@ -353,10 +360,10 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="description" value="Description" />
+            <InputLabel htmlFor="description" value="Description" className="text-gray-700 dark:text-gray-300" />
             <TextArea
               id="description"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={createForm.data.description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => createForm.setData('description', e.target.value)}
             />
@@ -365,12 +372,12 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <InputLabel htmlFor="price" value="Price (₱)" />
+              <InputLabel htmlFor="price" value="Price (₱)" className="text-gray-700 dark:text-gray-300" />
               <TextInput
                 id="price"
                 type="number"
                 step="0.01"
-                className="mt-1 block w-full"
+                className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 value={createForm.data.price}
                 onChange={(e) => createForm.setData('price', e.target.value)}
                 required
@@ -379,11 +386,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
             </div>
             
             <div>
-              <InputLabel htmlFor="duration_in_days" value="Duration (days)" />
+              <InputLabel htmlFor="duration_in_days" value="Duration (days)" className="text-gray-700 dark:text-gray-300" />
               <TextInput
                 id="duration_in_days"
                 type="number"
-                className="mt-1 block w-full"
+                className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 value={createForm.data.duration_in_days}
                 onChange={(e) => createForm.setData('duration_in_days', e.target.value)}
                 required
@@ -393,11 +400,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="credits_per_month" value="Credits Per Month" />
+            <InputLabel htmlFor="credits_per_month" value="Credits Per Month" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="credits_per_month"
               type="number"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={createForm.data.credits_per_month}
               onChange={(e) => createForm.setData('credits_per_month', e.target.value)}
               required
@@ -406,12 +413,12 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="features" value="Features" />
+            <InputLabel htmlFor="features" value="Features" className="text-gray-700 dark:text-gray-300" />
             <div className="flex mt-1">
               <TextInput
                 id="feature_input"
                 type="text"
-                className="block w-full"
+                className="block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 value={featureInput}
                 onChange={(e) => setFeatureInput(e.target.value)}
                 placeholder="Add a feature"
@@ -425,11 +432,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
             <div className="mt-2">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center mt-2">
-                  <span className="text-sm text-gray-700">{feature}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
                   <button
                     type="button"
                     onClick={() => removeFeature(index)}
-                    className="ml-2 text-red-600 hover:text-red-900"
+                    className="ml-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
                   >
                     Remove
                   </button>
@@ -439,11 +446,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="badge_text" value="Badge Text (Optional)" />
+            <InputLabel htmlFor="badge_text" value="Badge Text (Optional)" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="badge_text"
               type="text"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={createForm.data.badge_text}
               onChange={(e) => createForm.setData('badge_text', e.target.value)}
             />
@@ -456,7 +463,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
               checked={createForm.data.is_popular}
               onChange={(e) => createForm.setData('is_popular', e.target.checked)}
             />
-            <InputLabel htmlFor="is_popular" value="Mark as Popular" className="ml-2" />
+            <InputLabel htmlFor="is_popular" value="Mark as Popular" className="ml-2 text-gray-700 dark:text-gray-300" />
             <InputError message={createForm.errors.is_popular} className="mt-2" />
           </div>
           
@@ -466,7 +473,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
               checked={createForm.data.is_active}
               onChange={(e) => createForm.setData('is_active', e.target.checked)}
             />
-            <InputLabel htmlFor="is_active" value="Active" className="ml-2" />
+            <InputLabel htmlFor="is_active" value="Active" className="ml-2 text-gray-700 dark:text-gray-300" />
             <InputError message={createForm.errors.is_active} className="mt-2" />
           </div>
           
@@ -483,15 +490,15 @@ export default function Index({ auth, plans, subscriptions }: Props) {
 
       {/* Edit Plan Modal */}
       <Modal show={showEditModal} onClose={() => setShowEditModal(false)}>
-        <form onSubmit={handleEditSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Edit Subscription Plan</h2>
+        <form onSubmit={handleEditSubmit} className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Edit Subscription Plan</h2>
           
           <div className="mb-4">
-            <InputLabel htmlFor="edit_name" value="Name" />
+            <InputLabel htmlFor="edit_name" value="Name" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="edit_name"
               type="text"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={editForm.data.name}
               onChange={(e) => editForm.setData('name', e.target.value)}
               required
@@ -500,10 +507,10 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="edit_description" value="Description" />
+            <InputLabel htmlFor="edit_description" value="Description" className="text-gray-700 dark:text-gray-300" />
             <TextArea
               id="edit_description"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={editForm.data.description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => editForm.setData('description', e.target.value)}
             />
@@ -512,12 +519,12 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <InputLabel htmlFor="edit_price" value="Price (₱)" />
+              <InputLabel htmlFor="edit_price" value="Price (₱)" className="text-gray-700 dark:text-gray-300" />
               <TextInput
                 id="edit_price"
                 type="number"
                 step="0.01"
-                className="mt-1 block w-full"
+                className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 value={editForm.data.price}
                 onChange={(e) => editForm.setData('price', e.target.value)}
                 required
@@ -526,11 +533,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
             </div>
             
             <div>
-              <InputLabel htmlFor="edit_duration_in_days" value="Duration (days)" />
+              <InputLabel htmlFor="edit_duration_in_days" value="Duration (days)" className="text-gray-700 dark:text-gray-300" />
               <TextInput
                 id="edit_duration_in_days"
                 type="number"
-                className="mt-1 block w-full"
+                className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 value={editForm.data.duration_in_days}
                 onChange={(e) => editForm.setData('duration_in_days', e.target.value)}
                 required
@@ -540,11 +547,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="edit_credits_per_month" value="Credits Per Month" />
+            <InputLabel htmlFor="edit_credits_per_month" value="Credits Per Month" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="edit_credits_per_month"
               type="number"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={editForm.data.credits_per_month}
               onChange={(e) => editForm.setData('credits_per_month', e.target.value)}
               required
@@ -553,12 +560,12 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="edit_features" value="Features" />
+            <InputLabel htmlFor="edit_features" value="Features" className="text-gray-700 dark:text-gray-300" />
             <div className="flex mt-1">
               <TextInput
                 id="edit_feature_input"
                 type="text"
-                className="block w-full"
+                className="block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 value={featureInput}
                 onChange={(e) => setFeatureInput(e.target.value)}
                 placeholder="Add a feature"
@@ -572,11 +579,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
             <div className="mt-2">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center mt-2">
-                  <span className="text-sm text-gray-700">{feature}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
                   <button
                     type="button"
                     onClick={() => removeFeature(index)}
-                    className="ml-2 text-red-600 hover:text-red-900"
+                    className="ml-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
                   >
                     Remove
                   </button>
@@ -586,11 +593,11 @@ export default function Index({ auth, plans, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
-            <InputLabel htmlFor="edit_badge_text" value="Badge Text (Optional)" />
+            <InputLabel htmlFor="edit_badge_text" value="Badge Text (Optional)" className="text-gray-700 dark:text-gray-300" />
             <TextInput
               id="edit_badge_text"
               type="text"
-              className="mt-1 block w-full"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               value={editForm.data.badge_text}
               onChange={(e) => editForm.setData('badge_text', e.target.value)}
             />
@@ -603,7 +610,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
               checked={editForm.data.is_popular}
               onChange={(e) => editForm.setData('is_popular', e.target.checked)}
             />
-            <InputLabel htmlFor="edit_is_popular" value="Mark as Popular" className="ml-2" />
+            <InputLabel htmlFor="edit_is_popular" value="Mark as Popular" className="ml-2 text-gray-700 dark:text-gray-300" />
             <InputError message={editForm.errors.is_popular} className="mt-2" />
           </div>
           
@@ -613,7 +620,7 @@ export default function Index({ auth, plans, subscriptions }: Props) {
               checked={editForm.data.is_active}
               onChange={(e) => editForm.setData('is_active', e.target.checked)}
             />
-            <InputLabel htmlFor="edit_is_active" value="Active" className="ml-2" />
+            <InputLabel htmlFor="edit_is_active" value="Active" className="ml-2 text-gray-700 dark:text-gray-300" />
             <InputError message={editForm.errors.is_active} className="mt-2" />
           </div>
           
@@ -630,17 +637,17 @@ export default function Index({ auth, plans, subscriptions }: Props) {
 
       {/* Delete Plan Modal */}
       <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-        <form onSubmit={handleDeleteSubmit} className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Delete Subscription Plan</h2>
+        <form onSubmit={handleDeleteSubmit} className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delete Subscription Plan</h2>
           
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             Are you sure you want to delete this subscription plan? This action cannot be undone.
           </p>
           
           {currentPlan && (
-            <div className="mb-4 p-4 bg-gray-50 rounded">
-              <p className="font-medium">{currentPlan.name}</p>
-              <p className="text-sm text-gray-600">₱ {currentPlan.price} - {currentPlan.duration_in_days} days</p>
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
+              <p className="font-medium text-gray-900 dark:text-gray-100">{currentPlan.name}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">₱ {currentPlan.price?.toLocaleString()} - {currentPlan.duration_in_days} days</p>
             </div>
           )}
           
@@ -657,20 +664,20 @@ export default function Index({ auth, plans, subscriptions }: Props) {
 
       {/* Renewal Command Modal */}
       <Modal show={showRenewalModal} onClose={() => setShowRenewalModal(false)}>
-        <div className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Run Subscription Renewal Command</h2>
+        <div className="p-6 bg-white dark:bg-gray-800">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Run Subscription Renewal Command</h2>
           
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             This will process the following tasks:
           </p>
           
-          <ul className="list-disc pl-5 mb-4 text-sm text-gray-600">
+          <ul className="list-disc pl-5 mb-4 text-sm text-gray-600 dark:text-gray-400">
             <li>Add monthly credits to active subscriptions</li>
             <li>Process auto-renewals for subscriptions ending soon</li>
             <li>Mark expired subscriptions</li>
           </ul>
           
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
             Are you sure you want to run this command now?
           </p>
           

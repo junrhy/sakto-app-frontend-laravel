@@ -123,12 +123,12 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="p-6 text-gray-900 dark:text-gray-100">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                <h3 className="text-lg font-medium mb-4 md:mb-0">User Management</h3>
+                <h3 className="text-lg font-medium mb-4 md:mb-0 text-gray-900 dark:text-gray-100">User Management</h3>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={toggleHiddenFields}
-                    className="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 dark:focus:bg-gray-600 active:bg-gray-900 dark:active:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
+                    className="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-500 focus:bg-gray-700 dark:focus:bg-gray-500 active:bg-gray-900 dark:active:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
                   >
                     {showHiddenFields ? 'Hide Fields' : 'Show Fields'}
                   </button>
@@ -145,11 +145,11 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
               <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6 border border-gray-200 dark:border-gray-600">
                 <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
-                    <InputLabel htmlFor="search" value="Search" />
+                    <InputLabel htmlFor="search" value="Search" className="text-gray-700 dark:text-gray-300" />
                     <TextInput
                       id="search"
                       type="text"
-                      className="mt-1 block w-full"
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400"
                       placeholder="Search by name or email"
                       value={searchForm.data.search}
                       onChange={(e) => searchForm.setData('search', e.target.value)}
@@ -157,10 +157,10 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                   </div>
                   
                   <div className="w-full md:w-48">
-                    <InputLabel htmlFor="admin_filter" value="Admin Status" />
+                    <InputLabel htmlFor="admin_filter" value="Admin Status" className="text-gray-700 dark:text-gray-300" />
                     <select
                       id="admin_filter"
-                      className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm"
                       value={searchForm.data.admin_filter}
                       onChange={(e) => searchForm.setData('admin_filter', e.target.value)}
                     >
@@ -171,10 +171,10 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                   </div>
 
                   <div className="w-full md:w-48">
-                    <InputLabel htmlFor="project_filter" value="Project" />
+                    <InputLabel htmlFor="project_filter" value="Project" className="text-gray-700 dark:text-gray-300" />
                     <select
                       id="project_filter"
-                      className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                      className="mt-1 block w-full border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm"
                       value={searchForm.data.project_filter}
                       onChange={(e) => searchForm.setData('project_filter', e.target.value)}
                     >
@@ -253,20 +253,24 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                       </tr>
                     ) : (
                       users.data.map((user) => (
-                        <tr key={user.id}>
+                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className="flex items-center">
-                              <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <div className="text-sm text-gray-900">{user.email}</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-100">{user.email}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <div className="text-sm text-gray-900">{user.project_identifier}</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-100">{user.project_identifier}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.is_admin ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.is_admin 
+                                ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' 
+                                : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                            }`}>
                               {user.is_admin ? 'Admin' : 'User'}
                             </span>
                           </td>
@@ -274,12 +278,12 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                             <>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 <div className="flex items-center gap-2">
-                                  <div className="text-sm text-gray-500">{user.identifier}</div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">{user.identifier}</div>
                                   <button
                                     onClick={() => {
                                       navigator.clipboard.writeText(user.identifier);
                                     }}
-                                    className="text-gray-400 hover:text-gray-500"
+                                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
                                     title="Copy identifier"
                                   >
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,13 +294,13 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 <div className="flex items-center gap-2">
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {user.email_verified_at ? formatDistance(new Date(user.email_verified_at), new Date(), { addSuffix: true }) : 'Not verified'}
                                   </div>
                                   {!user.email_verified_at && (
                                     <button
                                       onClick={() => router.get(route('admin.users.resend-verification', user.id))}
-                                      className="text-blue-600 hover:text-blue-900 text-sm"
+                                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 text-sm transition-colors duration-150"
                                       title="Resend verification email"
                                     >
                                       Resend
@@ -305,25 +309,29 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.google_id ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  user.google_id 
+                                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' 
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                                }`}>
                                   {user.google_id ? 'Yes' : 'No'}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <div className="text-sm text-gray-500">{user.contact_number || 'N/A'}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{user.contact_number || 'N/A'}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <div className="text-sm text-gray-500">{user.referrer || 'N/A'}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{user.referrer || 'N/A'}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                <div className="text-sm text-gray-500">{user.theme || 'Default'}</div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">{user.theme || 'Default'}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 <div className="flex items-center gap-2">
-                                  <div className="text-sm text-gray-500">{user.theme_color || 'Default'}</div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">{user.theme_color || 'Default'}</div>
                                   {user.theme_color && (
                                     <div 
-                                      className="w-4 h-4 rounded-full border border-gray-300" 
+                                      className="w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600" 
                                       style={{ backgroundColor: user.theme_color }}
                                     />
                                   )}
@@ -331,13 +339,13 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                               </td>
                             </>
                           )}
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {user.created_at ? formatDistance(new Date(user.created_at), new Date(), { addSuffix: true }) : 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <Menu as="div" className="relative inline-block text-left">
                               <div>
-                                <Menu.Button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <Menu.Button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-150">
                                   Actions
                                   <ChevronDownIcon className="w-5 h-5 ml-2 -mr-1" aria-hidden="true" />
                                 </Menu.Button>
@@ -351,17 +359,17 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                                 leaveFrom="transform opacity-100 scale-100"
                                 leaveTo="transform opacity-0 scale-95"
                               >
-                                <Menu.Items className="absolute right-0 z-10 w-56 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <Menu.Items className="absolute right-0 z-10 w-56 mt-2 origin-top-right bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700 focus:outline-none">
                                   <div className="py-1">
                                     <Menu.Item>
                                       {({ active }) => (
                                         <Link
                                           href={route('admin.users.edit', user.id)}
                                           className={`${
-                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                          } group flex items-center px-4 py-2 text-sm`}
+                                            active ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                                          } group flex items-center px-4 py-2 text-sm transition-colors duration-150`}
                                         >
-                                          <PencilIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                          <PencilIcon className="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                                           Edit
                                         </Link>
                                       )}
@@ -372,17 +380,17 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                                         <button
                                           onClick={() => router.get(route('admin.users.toggle-admin', user.id))}
                                           className={`${
-                                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                          } group flex items-center w-full px-4 py-2 text-sm`}
+                                            active ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                                          } group flex items-center w-full px-4 py-2 text-sm transition-colors duration-150`}
                                         >
                                           {user.is_admin ? (
                                             <>
-                                              <ShieldExclamationIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                              <ShieldExclamationIcon className="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                                               Remove Admin
                                             </>
                                           ) : (
                                             <>
-                                              <ShieldCheckIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                              <ShieldCheckIcon className="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                                               Make Admin
                                             </>
                                           )}
@@ -396,10 +404,10 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                                           <button
                                             onClick={() => router.get(route('admin.users.resend-verification', user.id))}
                                             className={`${
-                                              active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                            } group flex items-center w-full px-4 py-2 text-sm`}
+                                              active ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                                            } group flex items-center w-full px-4 py-2 text-sm transition-colors duration-150`}
                                           >
-                                            <EnvelopeIcon className="w-5 h-5 mr-3 text-gray-400" aria-hidden="true" />
+                                            <EnvelopeIcon className="w-5 h-5 mr-3 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                                             Resend Verification
                                           </button>
                                         )}
@@ -415,10 +423,10 @@ export default function Index({ auth, users, filters, projects }: Props & PagePr
                                             }
                                           }}
                                           className={`${
-                                            active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                          } group flex items-center w-full px-4 py-2 text-sm`}
+                                            active ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'text-red-600 dark:text-red-400'
+                                          } group flex items-center w-full px-4 py-2 text-sm transition-colors duration-150`}
                                         >
-                                          <TrashIcon className="w-5 h-5 mr-3 text-red-400" aria-hidden="true" />
+                                          <TrashIcon className="w-5 h-5 mr-3 text-red-400 dark:text-red-500" aria-hidden="true" />
                                           Delete
                                         </button>
                                       )}
