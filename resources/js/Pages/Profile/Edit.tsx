@@ -224,7 +224,7 @@ export default function Edit({
                                                 className="text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 transition-colors duration-200 flex items-center gap-2 px-3 py-2 h-auto font-normal border-0 no-underline hover:no-underline focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
                                             >
                                                 <UserIcon className="w-5 h-5" />
-                                                <span>{auth.selectedTeamMember?.full_name}</span>
+                                                <span>{auth.selectedTeamMember?.full_name || auth.user.name}</span>
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent 
