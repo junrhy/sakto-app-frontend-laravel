@@ -191,6 +191,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
     Route::get('/community', [CommunityController::class, 'index'])->name('community');
+
+    // About Us Route
+    Route::get('/community/about', [CommunityController::class, 'about'])->name('community.about');
+    
+    // Help Center Route
+    Route::get('/community/help', [CommunityController::class, 'help'])->name('community.help');
     
     // Redirect old ID-based URLs to slug-based URLs for SEO
     Route::get('/community/member/{id}', function ($id) {

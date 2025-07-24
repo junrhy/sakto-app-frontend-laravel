@@ -53,6 +53,16 @@ class CommunityController extends Controller
         ]);
     }
 
+    public function about()
+    {
+        return Inertia::render('Landing/Community/AboutUs');
+    }
+
+    public function help()
+    {
+        return Inertia::render('Landing/Community/HelpCenter');
+    }
+
     public function member($identifier)
     {
         // Check if identifier is numeric (ID) or string (slug)
