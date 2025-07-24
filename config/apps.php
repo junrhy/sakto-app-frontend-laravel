@@ -134,7 +134,7 @@ return [
     [
         'title' => 'SMS',
         'route' => '/dashboard?app=sms',
-        'visible' => true,
+        'visible' => false,
         'description' => 'Send SMS to your customers and clients. Supports Twilio and Semaphore. Easily integrate with your existing apps.',
         'price' => 149,
         'categories' => ['Communication', 'Marketing', 'Business'],

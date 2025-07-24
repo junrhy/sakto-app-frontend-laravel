@@ -238,9 +238,9 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                                         </div>
                                         <div className="flex items-center text-white">
                                             <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fillRule="evenodd" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                             </svg>
-                                            <span className="text-sm">Earn Rewards</span>
+                                            <span className="text-sm">Rewards</span>
                                         </div>
                                     </div>
                                 </div>
@@ -259,7 +259,7 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                                                 </div>
                                                 <div className="bg-white/20 rounded-lg p-4 text-center">
                                                     <div className="text-2xl font-bold text-white">★</div>
-                                                    <div className="text-xs text-blue-100">Rewards</div>
+                                                    <div className="text-xs text-blue-100">Earn Rewards</div>
                                                 </div>
                                             </div>
                                         </div>

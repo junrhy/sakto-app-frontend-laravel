@@ -163,7 +163,7 @@ export default function Edit({
             {/* Message for users without subscription */}
             {!isLoadingSubscription && !subscription && (
                 <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
-                    <span className="font-medium">Upgrade to a subscription plan for unlimited access to all features!</span>
+                    <span className="font-medium">Subscribe to a plan to continue using all features!</span>
                     <Button 
                         variant="link" 
                         size="sm" 

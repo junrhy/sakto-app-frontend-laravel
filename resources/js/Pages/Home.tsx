@@ -102,11 +102,16 @@ export default function Home({ auth }: Props) {
                         const data = await response.json();
                         if (data.active) {
                             setSubscription(data.subscription);
+                        } else {
+                            setSubscription(null);
                         }
+                    } else {
+                        setSubscription(null);
                     }
                 }
             } catch (error) {
                 console.error('Failed to fetch subscription:', error);
+                setSubscription(null);
             } finally {
                 setIsLoadingSubscription(false);
             }
@@ -151,7 +156,7 @@ export default function Home({ auth }: Props) {
                 {!isLoadingSubscription && !subscription && (
                     <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 z-20 py-1 text-center text-white text-sm">
                         <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
-                            <span className="font-medium">Upgrade to a subscription plan for premium access to all features!</span>
+                            <span className="font-medium">Subscribe to a plan to continue using all features!</span>
                             <Button 
                                 variant="link" 
                                 size="sm" 
