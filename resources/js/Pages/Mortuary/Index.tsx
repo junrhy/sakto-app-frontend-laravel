@@ -1,5 +1,5 @@
 import { User, Project } from '@/types/index';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -64,6 +64,16 @@ interface Props extends PageProps {
         user: User;
         project?: Project;
         modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     initialMembers: (Member & {
         contributions: (Omit<Contribution, 'created_at'> & { created_at?: string })[];
@@ -108,6 +118,20 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
         const params = new URLSearchParams(window.location.search);
         return params.get('tab') || 'members';
     });
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const handleTabChange = (value: string) => {
         if (value !== activeTab) {
@@ -310,6 +334,10 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                     <MembersList 
                                         members={members} 
                                         onMemberSelect={handleMemberSelect}
+                                        onMemberUpdate={handleMemberUpdate}
+                                        onAddMember={() => setIsAddMemberOpen(true)}
+                                        canEdit={canEdit}
+                                        canDelete={canDelete}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
@@ -317,6 +345,10 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                     <ContributionsList 
                                         contributions={contributions}
                                         members={members}
+                                        onContributionAdd={handleAddContribution}
+                                        onBulkContributionsAdded={handleBulkContributionsAdded}
+                                        canEdit={canEdit}
+                                        canDelete={canDelete}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>
@@ -324,6 +356,9 @@ export default function Mortuary({ auth, initialMembers, initialContributions, i
                                     <ClaimsList 
                                         claims={claims}
                                         members={members}
+                                        onClaimSubmit={handleSubmitClaim}
+                                        canEdit={canEdit}
+                                        canDelete={canDelete}
                                         appCurrency={appCurrency}
                                     />
                                 </TabsContent>

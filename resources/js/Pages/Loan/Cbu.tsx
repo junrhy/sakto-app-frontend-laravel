@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -104,6 +104,19 @@ interface CbuReport {
 }
 
 interface Props {
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     cbuFunds: CbuFund[];
     appCurrency: {
         symbol: string;
@@ -112,7 +125,20 @@ interface Props {
     };
 }
 
-export default function Cbu({ cbuFunds, appCurrency }: Props) {
+export default function Cbu({ auth, cbuFunds, appCurrency }: Props) {
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isContributionDialogOpen, setIsContributionDialogOpen] = useState(false);
     const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
@@ -723,10 +749,18 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                             handleWithdraw(fund);
                                                             break;
                                                         case 'edit':
-                                                            handleUpdateFund(fund);
+                                                            if (canEdit) {
+                                                                handleUpdateFund(fund);
+                                                            } else {
+                                                                toast.error('You do not have permission to edit funds.');
+                                                            }
                                                             break;
                                                         case 'delete':
-                                                            confirmDelete(fund);
+                                                            if (canDelete) {
+                                                                confirmDelete(fund);
+                                                            } else {
+                                                                toast.error('You do not have permission to delete funds.');
+                                                            }
                                                             break;
                                                         case 'history':
                                                             handleViewHistory(fund);
@@ -748,9 +782,12 @@ export default function Cbu({ cbuFunds, appCurrency }: Props) {
                                                         <SelectItem value="add_contribution">Add Contribution</SelectItem>
                                                         <SelectItem value="add_dividend">Add Dividend</SelectItem>
                                                         <SelectItem value="withdraw">Withdraw</SelectItem>
-                                                        <SelectItem value="edit">Edit Fund</SelectItem>
-                                                        <SelectItem value="send_report">Send Report</SelectItem>
-                                                        <SelectItem value="delete" className="text-red-600">Delete Fund</SelectItem>
+                                                        {canEdit && (
+                                                            <SelectItem value="edit">Edit Fund</SelectItem>
+                                                        )}
+                                                        {canDelete && (
+                                                            <SelectItem value="delete" className="text-red-600">Delete Fund</SelectItem>
+                                                        )}
                                                     </SelectContent>
                                                 </Select>
                                             </TableCell>

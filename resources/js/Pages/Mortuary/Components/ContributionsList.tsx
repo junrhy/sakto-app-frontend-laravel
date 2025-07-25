@@ -30,7 +30,7 @@ interface Member {
 interface Contribution {
     id: string;
     member_id: string;
-    amount: number | string;
+    amount: number;
     payment_date: string;
     payment_method: string;
     reference_number: string;
@@ -40,13 +40,17 @@ interface Contribution {
 interface Props {
     contributions: Contribution[];
     members: Member[];
+    onContributionAdd: (contribution: Omit<Contribution, 'created_at'>) => void;
+    onBulkContributionsAdded: (contributions: Omit<Contribution, 'created_at'>[]) => void;
+    canEdit: boolean;
+    canDelete: boolean;
     appCurrency: {
         code: string;
         symbol: string;
     };
 }
 
-export default function ContributionsList({ contributions, members, appCurrency }: Props) {
+export default function ContributionsList({ contributions, members, onContributionAdd, onBulkContributionsAdded, canEdit, canDelete, appCurrency }: Props) {
     const [sortField, setSortField] = useState<keyof Contribution>('created_at');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -900,22 +904,26 @@ export default function ContributionsList({ contributions, members, appCurrency 
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleEdit(contribution)}
-                                                            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
-                                                            onClick={() => handleDelete(contribution.member_id, contribution.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
+                                                        {canEdit && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleEdit(contribution)}
+                                                                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canDelete && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
+                                                                onClick={() => handleDelete(contribution.member_id, contribution.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

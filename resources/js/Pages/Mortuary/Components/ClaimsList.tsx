@@ -9,7 +9,7 @@ import {
 } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Trash2, Search, Calendar } from 'lucide-react';
+import { Trash2, Search, Calendar, Edit } from 'lucide-react';
 import { format, startOfYear, endOfYear, subYears } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -27,7 +27,7 @@ interface Claim {
     id: string;
     member_id: string;
     claim_type: string;
-    amount: number | string;
+    amount: number;
     date_of_death: string;
     deceased_name: string;
     relationship_to_member: string;
@@ -38,13 +38,16 @@ interface Claim {
 interface Props {
     claims: Claim[];
     members: Member[];
+    onClaimSubmit: (claim: Claim) => void;
+    canEdit: boolean;
+    canDelete: boolean;
     appCurrency: {
         code: string;
         symbol: string;
     };
 }
 
-export default function ClaimsList({ claims, members, appCurrency }: Props) {
+export default function ClaimsList({ claims, members, onClaimSubmit, canEdit, canDelete, appCurrency }: Props) {
     const [sortField, setSortField] = useState<keyof Claim>('date_of_death');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [searchQuery, setSearchQuery] = useState('');
@@ -336,14 +339,26 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
-                                                onClick={() => handleDelete(claim.member_id, claim.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            {canEdit && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:text-blue-200 dark:hover:bg-blue-900/20 transition-all duration-200"
+                                                    onClick={() => onClaimSubmit(claim)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {canDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
+                                                    onClick={() => handleDelete(claim.member_id, claim.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

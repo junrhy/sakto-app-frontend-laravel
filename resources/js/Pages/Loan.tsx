@@ -196,7 +196,39 @@ const calculateInstallmentAmount = (
     return totalAmount / numberOfInstallments;
 };
 
-export default function Loan({ initialLoans, initialPayments, initialBills, appCurrency }: { initialLoans: Loan[], initialPayments: Payment[], initialBills: Bill[], appCurrency: any }) {
+export default function Loan({ auth, initialLoans, initialPayments, initialBills, appCurrency }: { 
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+    initialLoans: Loan[], 
+    initialPayments: Payment[], 
+    initialBills: Bill[], 
+    appCurrency: any 
+}) {
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
     const [loans, setLoans] = useState<Loan[]>(initialLoans);
     const [payments, setPayments] = useState<Payment[]>(initialPayments);
     const [bills, setBills] = useState<Bill[]>(() => {
@@ -756,20 +788,24 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                     <CardContent>
                     <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
                         <div className="flex flex-col sm:flex-row gap-2">
-                            <Button 
-                                onClick={handleAddLoan}
-                                className="w-full sm:w-auto"
-                            >
-                                <Plus className="mr-2 h-4 w-4" /> Add Loan
-                            </Button>
-                            <Button 
-                                onClick={handleDeleteSelectedLoans} 
-                                variant="destructive" 
-                                disabled={selectedLoans.length === 0}
-                                className="w-full sm:w-auto"
-                            >
-                                <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                            </Button>
+                            {canEdit && (
+                                <Button 
+                                    onClick={handleAddLoan}
+                                    className="w-full sm:w-auto"
+                                >
+                                    <Plus className="mr-2 h-4 w-4" /> Add Loan
+                                </Button>
+                            )}
+                            {canDelete && (
+                                <Button 
+                                    onClick={handleDeleteSelectedLoans} 
+                                    variant="destructive" 
+                                    disabled={selectedLoans.length === 0}
+                                    className="w-full sm:w-auto"
+                                >
+                                    <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                                </Button>
+                            )}
                         </div>
                         <div className="relative w-full sm:w-64">
                             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -964,13 +1000,17 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex justify-end gap-2">
-                                                <Button variant="outline" size="sm" onClick={() => handleEditLoan(loan)}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="destructive" size="sm" onClick={() => handleDeleteLoan(loan.id)}>
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
-                                                {(parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)) > 0 && (
+                                                {canEdit && (
+                                                    <Button variant="outline" size="sm" onClick={() => handleEditLoan(loan)}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {canDelete && (
+                                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteLoan(loan.id)}>
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {(parseFloat(loan.total_balance) - parseFloat(loan.paid_amount)) > 0 && canEdit && (
                                                     <Button variant="default" size="sm" onClick={() => handlePayment(loan)}>
                                                         <span className="ml-1">Pay</span>
                                                     </Button>
@@ -979,14 +1019,16 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                     <History className="h-4 w-4" />
                                                     <span className="ml-1">Payment</span>
                                                 </Button>
-                                                <Button 
-                                                    variant="default" 
-                                                    size="sm" 
-                                                    className="bg-black hover:bg-gray-800" 
-                                                    onClick={() => handleCreateBill(loan)}
-                                                >
-                                                    <span className="ml-1">Bill</span>
-                                                </Button>
+                                                {canEdit && (
+                                                    <Button 
+                                                        variant="default" 
+                                                        size="sm" 
+                                                        className="bg-black hover:bg-gray-800" 
+                                                        onClick={() => handleCreateBill(loan)}
+                                                    >
+                                                        <span className="ml-1">Bill</span>
+                                                    </Button>
+                                                )}
                                                 <Button 
                                                     variant="outline" 
                                                     size="sm" 
@@ -1414,13 +1456,15 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                     {formatAmount(payment.amount, appCurrency)}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleDeletePayment(payment)}
-                                                    >
-                                                        <Trash className="h-4 w-4" />
-                                                    </Button>
+                                                    {canDelete && (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeletePayment(payment)}
+                                                        >
+                                                            <Trash className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -1557,24 +1601,30 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                                             <DropdownMenuItem onClick={() => handleShowBillDetails(bill)}>
                                                                 View Details
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem 
-                                                                onClick={() => handleBillStatusUpdate(bill.id, { status: 'paid' })}
-                                                                disabled={bill.status === 'paid'}
-                                                            >
-                                                                Mark as Paid
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem 
-                                                                onClick={() => handleBillStatusUpdate(bill.id, { status: 'overdue' })}
-                                                                disabled={bill.status === 'overdue'}
-                                                            >
-                                                                Mark as Overdue
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem 
-                                                                onClick={() => handleDeleteBill(bill.id)}
-                                                                className="text-red-600 dark:text-red-400"
-                                                            >
-                                                                Delete Bill
-                                                            </DropdownMenuItem>
+                                                            {canEdit && (
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => handleBillStatusUpdate(bill.id, { status: 'paid' })}
+                                                                    disabled={bill.status === 'paid'}
+                                                                >
+                                                                    Mark as Paid
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {canEdit && (
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => handleBillStatusUpdate(bill.id, { status: 'overdue' })}
+                                                                    disabled={bill.status === 'overdue'}
+                                                                >
+                                                                    Mark as Overdue
+                                                                </DropdownMenuItem>
+                                                            )}
+                                                            {canDelete && (
+                                                                <DropdownMenuItem 
+                                                                    onClick={() => handleDeleteBill(bill.id)}
+                                                                    className="text-red-600 dark:text-red-400"
+                                                                >
+                                                                    Delete Bill
+                                                                </DropdownMenuItem>
+                                                            )}
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
@@ -1672,14 +1722,16 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                                     <Button variant="outline" onClick={() => setIsBillDetailsDialogOpen(false)}>
                                         Close
                                     </Button>
-                                    <Button 
-                                        onClick={() => handleBillStatusUpdate(selectedBill.id, { 
-                                            status: (selectedBill.status || 'pending') === 'pending' ? 'paid' : 'pending',
-                                            note: billNote 
-                                        })}
-                                    >
-                                        Mark as {(selectedBill.status || 'pending') === 'pending' ? 'Paid' : 'Pending'}
-                                    </Button>
+                                    {canEdit && (
+                                        <Button 
+                                            onClick={() => handleBillStatusUpdate(selectedBill.id, { 
+                                                status: (selectedBill.status || 'pending') === 'pending' ? 'paid' : 'pending',
+                                                note: billNote 
+                                            })}
+                                        >
+                                            Mark as {(selectedBill.status || 'pending') === 'pending' ? 'Paid' : 'Pending'}
+                                        </Button>
+                                    )}
                                 </DialogFooter>
                             </div>
                         )}
@@ -1862,7 +1914,9 @@ export default function Loan({ initialLoans, initialPayments, initialBills, appC
                             }}>
                                 Cancel
                             </Button>
-                            <Button onClick={confirmCreateBill}>Create Bill</Button>
+                            {canEdit && (
+                                <Button onClick={confirmCreateBill}>Create Bill</Button>
+                            )}
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
