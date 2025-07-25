@@ -1,5 +1,5 @@
 import { User, Project } from '@/types/index';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -30,10 +30,35 @@ interface Event {
     image: string;
 }
 
-export default function Calendar({ auth }: PageProps) {
+interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+}
+
+export default function Calendar({ auth }: Props) {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return (auth.user as any).is_admin;
+    }, [auth.selectedTeamMember, auth.user]);
 
     useEffect(() => {
         fetchCalendarEvents();
@@ -105,14 +130,16 @@ export default function Calendar({ auth }: PageProps) {
                                         <ChevronRight className="w-4 h-4" />
                                     </Button>
                                 </div>
-                                <Button
-                                    className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                                    onClick={() => window.location.href = '/events/create'}
-                                >
-                                    <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    <Plus className="w-4 h-4 mr-2 relative z-10" />
-                                    <span className="relative z-10 font-semibold">New Event</span>
-                                </Button>
+                                {canEdit && (
+                                    <Button
+                                        className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                        onClick={() => window.location.href = '/events/create'}
+                                    >
+                                        <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <Plus className="w-4 h-4 mr-2 relative z-10" />
+                                        <span className="relative z-10 font-semibold">New Event</span>
+                                    </Button>
+                                )}
                             </div>
 
                             {loading ? (
@@ -149,7 +176,7 @@ export default function Calendar({ auth }: PageProps) {
                                                                     <TooltipTrigger asChild>
                                                                         <div
                                                                             className="text-xs p-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 rounded cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/30 truncate border border-blue-200 dark:border-blue-800"
-                                                                            onClick={() => window.location.href = `/events/${event.id}/edit`}
+                                                                            onClick={() => canEdit ? window.location.href = `/events/${event.id}/edit` : null}
                                                                         >
                                                                             {event.title}
                                                                         </div>

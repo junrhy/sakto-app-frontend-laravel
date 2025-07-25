@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps, User } from '@/types';
@@ -34,6 +34,21 @@ interface Event {
 
 interface Props extends PageProps {
     event?: Event;
+    auth: {
+        user: User;
+        project?: any;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
 }
 
 interface FormData {
@@ -101,15 +116,22 @@ export default function Form({ auth, event }: Props) {
         location: event?.location || '',
         max_participants: event?.max_participants || 0,
         registration_deadline: formatDateTimeForInput(event?.registration_deadline),
-        is_public: event?.is_public || false,
-        is_paid_event: event?.is_paid_event || false,
+        is_public: event?.is_public ?? true,
+        is_paid_event: event?.is_paid_event ?? false,
         event_price: event?.event_price || 0,
-        currency: event?.currency || '',
+        currency: event?.currency || 'USD',
         payment_instructions: event?.payment_instructions || '',
         category: event?.category || '',
         image: event?.image || '',
         status: event?.status || 'draft',
     });
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return (auth.user as any).is_admin;
+    }, [auth.selectedTeamMember, auth.user]);
 
     const [imagePreview, setImagePreview] = useState<string | null>(event?.image || null);
     
@@ -269,7 +291,8 @@ export default function Form({ auth, event }: Props) {
 
             <div className="py-12">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    {canEdit ? (
+                        <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Basic Information Section */}
                         <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
                             <CardHeader>
@@ -598,6 +621,19 @@ export default function Form({ auth, event }: Props) {
                             </Button>
                         </div>
                     </form>
+                    ) : (
+                        <div className="text-center py-12">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">You do not have permission to edit this event.</h3>
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                Only administrators, managers, and users with appropriate roles can modify event details.
+                            </p>
+                            <div className="mt-6">
+                                <Button onClick={() => window.location.href = '/events'} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
+                                    Back to Events
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

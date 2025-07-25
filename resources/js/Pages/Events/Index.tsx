@@ -1,5 +1,5 @@
 import { User, Project } from '@/types/index';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -34,6 +34,16 @@ interface Props extends PageProps {
         user: User;
         project?: Project;
         modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     events: {
         data: Event[];
@@ -43,6 +53,20 @@ interface Props extends PageProps {
 export default function Index({ auth, events }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedEvents, setSelectedEvents] = useState<number[]>([]);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const formatEventPrice = (price: number | string, currency: string) => {
         const numericPrice = typeof price === 'number' ? price : parseFloat(price) || 0;
@@ -122,7 +146,7 @@ export default function Index({ auth, events }: Props) {
                                             className="pl-10 w-80 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                                         />
                                     </div>
-                                    {selectedEvents.length > 0 && (
+                                    {selectedEvents.length > 0 && canDelete && (
                                         <Button
                                             variant="destructive"
                                             onClick={handleBulkDelete}
@@ -140,13 +164,15 @@ export default function Index({ auth, events }: Props) {
                                             <span>Calendar View</span>
                                         </Button>
                                     </Link>
-                                    <Link href="/events/create">
-                                        <Button className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                                            <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <Plus className="w-4 h-4 mr-2 relative z-10" />
-                                            <span className="relative z-10 font-semibold">New Event</span>
-                                        </Button>
-                                    </Link>
+                                    {canEdit && (
+                                        <Link href="/events/create">
+                                            <Button className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                                                <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                <Plus className="w-4 h-4 mr-2 relative z-10" />
+                                                <span className="relative z-10 font-semibold">New Event</span>
+                                            </Button>
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -267,19 +293,23 @@ export default function Index({ auth, events }: Props) {
                                                     </Link>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <Link href={`/events/${event.id}/edit`}>
-                                                        <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                                                            Edit
+                                                    {canEdit && (
+                                                        <Link href={`/events/${event.id}/edit`}>
+                                                            <Button variant="ghost" size="sm" className="text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                                Edit
+                                                            </Button>
+                                                        </Link>
+                                                    )}
+                                                    {canDelete && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleDelete(event.id)}
+                                                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
                                                         </Button>
-                                                    </Link>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleDelete(event.id)}
-                                                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -298,7 +328,7 @@ export default function Index({ auth, events }: Props) {
                                 <p className="text-gray-500 dark:text-gray-400 mb-6">
                                     {searchQuery ? 'Try adjusting your search terms.' : 'Get started by creating your first event.'}
                                 </p>
-                                {!searchQuery && (
+                                {!searchQuery && canEdit && (
                                     <Link href="/events/create">
                                         <Button className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                                             <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>

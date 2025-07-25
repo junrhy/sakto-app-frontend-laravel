@@ -1,5 +1,5 @@
 import { User, Project } from '@/types/index';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -48,6 +48,16 @@ interface Props extends PageProps {
         user: User;
         project?: Project;
         modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     event: Event;
     participants: Participant[];
@@ -77,6 +87,20 @@ export default function Participants({ auth, event, participants }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
     const [checkInFilter, setCheckInFilter] = useState('all');
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return (auth.user as any).is_admin;
+    }, [auth.selectedTeamMember, auth.user]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return (auth.user as any).is_admin;
+    }, [auth.selectedTeamMember, auth.user]);
 
     const formatAmount = (amount: number | string | null, currency: string) => {
         if (amount === null || amount === undefined) return '-';
@@ -433,14 +457,16 @@ export default function Participants({ auth, event, participants }: Props) {
                                                         >
                                                             <CreditCard className="w-4 h-4" />
                                                         </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => handleUnregister(participant.id)}
-                                                            className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
+                                                        {canDelete && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleUnregister(participant.id)}
+                                                                className="border-red-300 dark:border-red-600 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -469,60 +495,70 @@ export default function Participants({ auth, event, participants }: Props) {
                                     <CardTitle className="text-gray-900 dark:text-gray-100">Add Participant</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">Full Name</Label>
-                                            <Input
-                                                id="name"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                required
-                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                                                placeholder="Enter full name"
-                                            />
+                                    {canEdit ? (
+                                        <form onSubmit={handleSubmit} className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">Full Name</Label>
+                                                <Input
+                                                    id="name"
+                                                    value={formData.name}
+                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    required
+                                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                    placeholder="Enter full name"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email Address</Label>
+                                                <Input
+                                                    id="email"
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                    required
+                                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                    placeholder="Enter email address"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">Phone Number</Label>
+                                                <Input
+                                                    id="phone"
+                                                    value={formData.phone}
+                                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                    placeholder="Enter phone number"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300">Notes</Label>
+                                                <Textarea
+                                                    id="notes"
+                                                    value={formData.notes}
+                                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                                    className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                                                    placeholder="Any additional notes"
+                                                    rows={3}
+                                                />
+                                            </div>
+                                            <Button
+                                                type="submit"
+                                                className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                                            >
+                                                <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                <UserPlus className="w-4 h-4 mr-2 relative z-10" />
+                                                <span className="relative z-10 font-semibold">Add Participant</span>
+                                            </Button>
+                                        </form>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <XCircle className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">You do not have permission to add participants.</h3>
+                                            <p className="text-gray-500 dark:text-gray-400">
+                                                Please contact an administrator to register participants for this event.
+                                            </p>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">Email Address</Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                required
-                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                                                placeholder="Enter email address"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">Phone Number</Label>
-                                            <Input
-                                                id="phone"
-                                                value={formData.phone}
-                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                                                placeholder="Enter phone number"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="notes" className="text-gray-700 dark:text-gray-300">Notes</Label>
-                                            <Textarea
-                                                id="notes"
-                                                value={formData.notes}
-                                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                                className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-                                                placeholder="Any additional notes"
-                                                rows={3}
-                                            />
-                                        </div>
-                                        <Button
-                                            type="submit"
-                                            className="relative group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                                        >
-                                            <div className="absolute inset-0 bg-white/20 rounded-md blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <UserPlus className="w-4 h-4 mr-2 relative z-10" />
-                                            <span className="relative z-10 font-semibold">Add Participant</span>
-                                        </Button>
-                                    </form>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
