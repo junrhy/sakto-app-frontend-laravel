@@ -41,17 +41,17 @@ export function ContactsWidget() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 dark:border-blue-400"></div>
             </div>
         );
     }
 
     return (
-        <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 rounded-b-lg">
+        <div className="h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-b-lg">
             <ScrollArea className="h-[calc(100%-1rem)]">
                 <div className="p-3">
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-2 px-2 py-2 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 rounded-lg mb-2 shadow-sm">
+                    <div className="grid grid-cols-12 gap-2 px-2 py-2 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 rounded-lg mb-2 shadow-sm">
                         <div className="col-span-2">Contact</div>
                         <div className="col-span-3">Email</div>
                         <div className="col-span-3">Phone</div>
@@ -64,18 +64,17 @@ export function ContactsWidget() {
                         {contacts.map((contact, index) => (
                             <div 
                                 key={contact.id} 
-                                className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg hover:shadow-md transition-all duration-200 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/20 dark:border-gray-700/50"
-                                style={{
-                                    background: index % 2 === 0 
-                                        ? 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)'
-                                        : 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(241,245,249,0.95) 100%)'
-                                }}
+                                className={`grid grid-cols-12 gap-2 items-center p-2 rounded-lg hover:shadow-md transition-all duration-200 backdrop-blur-sm border ${
+                                    index % 2 === 0 
+                                        ? 'bg-white/90 dark:bg-gray-800/90 border-white/20 dark:border-gray-700/50' 
+                                        : 'bg-white/95 dark:bg-gray-700/95 border-white/20 dark:border-gray-600/50'
+                                }`}
                             >
                                 {/* Contact Info */}
                                 <div className="col-span-2 flex items-center space-x-2">
-                                    <Avatar className="h-6 w-6 flex-shrink-0 ring-2 ring-blue-200 dark:ring-blue-700">
+                                    <Avatar className="h-6 w-6 flex-shrink-0 ring-2 ring-blue-200 dark:ring-blue-600">
                                         <AvatarImage src={contact.id_picture} />
-                                        <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
+                                        <AvatarFallback className="text-xs font-medium bg-gradient-to-br from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 text-white">
                                             {contact.first_name[0]}
                                             {contact.last_name[0]}
                                         </AvatarFallback>
@@ -89,7 +88,7 @@ export function ContactsWidget() {
                                 
                                 {/* Email */}
                                 <div className="col-span-3 flex items-center">
-                                    <Mail className="h-3 w-3 mr-1 flex-shrink-0 text-blue-500" />
+                                    <Mail className="h-3 w-3 mr-1 flex-shrink-0 text-blue-500 dark:text-blue-400" />
                                     <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
                                         {contact.email}
                                     </span>
@@ -97,7 +96,7 @@ export function ContactsWidget() {
                                 
                                 {/* Phone */}
                                 <div className="col-span-3 flex items-center">
-                                    <Phone className="h-3 w-3 mr-1 flex-shrink-0 text-green-500" />
+                                    <Phone className="h-3 w-3 mr-1 flex-shrink-0 text-green-500 dark:text-green-400" />
                                     <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
                                         {contact.call_number || 'N/A'}
                                     </span>
@@ -105,7 +104,7 @@ export function ContactsWidget() {
                                 
                                 {/* Address */}
                                 <div className="col-span-3 flex items-center">
-                                    <MapPin className="h-3 w-3 mr-1 flex-shrink-0 text-orange-500" />
+                                    <MapPin className="h-3 w-3 mr-1 flex-shrink-0 text-orange-500 dark:text-orange-400" />
                                     <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
                                         {contact.address || 'N/A'}
                                     </span>
