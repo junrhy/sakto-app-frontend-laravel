@@ -648,6 +648,14 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::get('/{id}/download', [ProductController::class, 'download'])->name('products.download');
         Route::patch('/{id}/stock', [ProductController::class, 'updateStock'])->name('products.update-stock');
         Route::get('/categories', [ProductController::class, 'getCategories'])->name('products.categories');
+        
+        // Product Reviews
+        Route::get('/{productId}/reviews', [ProductController::class, 'getReviews'])->name('products.reviews');
+        Route::post('/{productId}/reviews', [ProductController::class, 'storeReview'])->name('products.reviews.store');
+        Route::post('/{productId}/reviews/{reviewId}/vote', [ProductController::class, 'voteReview'])->name('products.reviews.vote');
+        Route::delete('/{productId}/reviews/{reviewId}', [ProductController::class, 'deleteReview'])->name('products.reviews.destroy');
+        Route::post('/{productId}/reviews/{reviewId}/approve', [ProductController::class, 'approveReview'])->name('products.reviews.approve');
+        Route::post('/{productId}/reviews/{reviewId}/toggle-feature', [ProductController::class, 'toggleFeatureReview'])->name('products.reviews.toggle-feature');
     });
 
     // Product Variants (subscription required)

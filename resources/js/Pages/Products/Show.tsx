@@ -30,6 +30,9 @@ import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/Components/CartContext';
 import VariantSelector from '@/Components/VariantSelector';
 import { User, Project } from '@/types/index';
+import ReviewSummary from '@/Components/ReviewSummary';
+import ReviewList from '@/Components/ReviewList';
+import ReviewForm from '@/Components/ReviewForm';
 
 interface Variant {
     id: number;
@@ -66,6 +69,10 @@ interface Product {
         sort_order: number;
     }>;
     active_variants?: Variant[];
+    // Review-related fields
+    average_rating?: number;
+    reviews_count?: number;
+    rating_distribution?: { [key: number]: number };
     created_at: string;
     updated_at: string;
 }
@@ -168,6 +175,21 @@ export default function Show({ auth, product, currency }: Props) {
     const { state: cartState, addItem, updateQuantity, removeItem, getItemQuantity } = useCart();
     const [selectedImage, setSelectedImage] = useState(0);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    
+    // Review state
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviewStats, setReviewStats] = useState({
+        average_rating: product.average_rating || 0,
+        total_reviews: product.reviews_count || 0,
+        rating_distribution: product.rating_distribution || {},
+        verified_purchase_count: 0,
+        featured_reviews_count: 0,
+    });
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [reviewFilters, setReviewFilters] = useState({});
+    const [reviewSort, setReviewSort] = useState('recent');
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -260,6 +282,139 @@ export default function Show({ auth, product, currency }: Props) {
             // You could add a toast notification here
         }
     };
+
+    // Review API functions
+    const fetchReviews = async (page = 1, filters = {}, sort = 'recent') => {
+        setIsLoadingReviews(true);
+        try {
+            const params = new URLSearchParams({
+                page: page.toString(),
+                sort: sort,
+                ...filters
+            });
+            
+            const response = await fetch(`/products/${product.id}/reviews?${params}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                setReviews(data.reviews);
+                setReviewStats(data.summary);
+                setCurrentPage(page);
+            }
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setIsLoadingReviews(false);
+        }
+    };
+
+    const handleReviewSubmit = async (reviewData: any) => {
+        try {
+            const response = await fetch(`/products/${product.id}/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify(reviewData)
+            });
+            
+            if (response.ok) {
+                setShowReviewForm(false);
+                fetchReviews(1, reviewFilters, reviewSort);
+                alert('Review submitted successfully! It will be visible after approval.');
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Error submitting review');
+            }
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            alert('Error submitting review');
+        }
+    };
+
+    const handleReviewVote = async (reviewId: number, voteType: 'helpful' | 'unhelpful') => {
+        try {
+            const response = await fetch(`/products/${product.id}/reviews/${reviewId}/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({ vote_type: voteType })
+            });
+            
+            if (response.ok) {
+                // Refresh reviews to get updated vote counts
+                fetchReviews(currentPage, reviewFilters, reviewSort);
+            }
+        } catch (error) {
+            console.error('Error voting on review:', error);
+        }
+    };
+
+    const handleReviewDelete = async (reviewId: number) => {
+        if (!confirm('Are you sure you want to delete this review?')) return;
+        
+        try {
+            const response = await fetch(`/products/${product.id}/reviews/${reviewId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+            
+            if (response.ok) {
+                fetchReviews(currentPage, reviewFilters, reviewSort);
+            }
+        } catch (error) {
+            console.error('Error deleting review:', error);
+        }
+    };
+
+    const handleReviewApprove = async (reviewId: number) => {
+        try {
+            const response = await fetch(`/products/${product.id}/reviews/${reviewId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+            
+            if (response.ok) {
+                fetchReviews(currentPage, reviewFilters, reviewSort);
+            }
+        } catch (error) {
+            console.error('Error approving review:', error);
+        }
+    };
+
+    const handleReviewToggleFeature = async (reviewId: number) => {
+        try {
+            const response = await fetch(`/products/${product.id}/reviews/${reviewId}/toggle-feature`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                }
+            });
+            
+            if (response.ok) {
+                fetchReviews(currentPage, reviewFilters, reviewSort);
+            }
+        } catch (error) {
+            console.error('Error toggling review feature:', error);
+        }
+    };
+
+    // Load reviews on component mount
+    React.useEffect(() => {
+        fetchReviews(1, {}, 'recent');
+    }, [product.id]);
 
     return (
         <AuthenticatedLayout
@@ -505,6 +660,41 @@ export default function Show({ auth, product, currency }: Props) {
                                     )}
                                 </div>
 
+                                {/* Review Summary */}
+                                {(product.average_rating || product.reviews_count) && (
+                                    <div className="flex items-center space-x-3 pt-2">
+                                        <div className="flex items-center space-x-1">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <Star
+                                                    key={star}
+                                                    className={`w-4 h-4 ${
+                                                        star <= Math.round(product.average_rating || 0)
+                                                            ? 'text-yellow-400 fill-current'
+                                                            : 'text-gray-300 dark:text-gray-600'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                                            {product.average_rating?.toFixed(1) || '0.0'} ({product.reviews_count || 0} {product.reviews_count === 1 ? 'review' : 'reviews'})
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => {
+                                                // Scroll to reviews tab
+                                                const reviewsTab = document.querySelector('[data-value="reviews"]') as HTMLElement;
+                                                if (reviewsTab) {
+                                                    reviewsTab.click();
+                                                }
+                                            }}
+                                            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                        >
+                                            View all reviews
+                                        </Button>
+                                    </div>
+                                )}
+
                                 {/* Description */}
                                 <div className="prose prose-sm max-w-none dark:prose-invert">
                                     <p className="text-gray-600 dark:text-gray-200 leading-relaxed">{product.description}</p>
@@ -726,15 +916,58 @@ export default function Show({ auth, product, currency }: Props) {
                             </TabsContent>
                             
                             <TabsContent value="reviews" className="mt-6">
-                                <Card>
-                                    <CardContent className="p-6">
-                                        <div className="text-center py-12">
-                                            <Star className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Reviews Yet</h3>
-                                            <p className="text-gray-500 dark:text-gray-400">Be the first to review this product!</p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                <div className="space-y-6">
+                                    {/* Review Summary */}
+                                    <ReviewSummary
+                                        averageRating={reviewStats.average_rating}
+                                        totalReviews={reviewStats.total_reviews}
+                                        ratingDistribution={reviewStats.rating_distribution}
+                                        verifiedPurchaseCount={reviewStats.verified_purchase_count}
+                                        featuredReviewsCount={reviewStats.featured_reviews_count}
+                                    />
+                                    
+                                    {/* Review Form */}
+                                    {showReviewForm && (
+                                        <ReviewForm
+                                            productId={product.id}
+                                            productName={product.name}
+                                            onSubmit={handleReviewSubmit}
+                                            onCancel={() => setShowReviewForm(false)}
+                                        />
+                                    )}
+                                    
+                                    {/* Review List */}
+                                    <ReviewList
+                                        productId={product.id}
+                                        reviews={reviews}
+                                        currentUserId={auth.user.id}
+                                        isAdmin={auth.user.is_admin}
+                                        onVote={handleReviewVote}
+                                        onEdit={(review) => {
+                                            // Handle edit - could open edit form
+                                            console.log('Edit review:', review);
+                                        }}
+                                        onDelete={handleReviewDelete}
+                                        onApprove={handleReviewApprove}
+                                        onToggleFeature={handleReviewToggleFeature}
+                                        onWriteReview={() => setShowReviewForm(true)}
+                                        pagination={{
+                                            current_page: currentPage,
+                                            last_page: Math.ceil(reviewStats.total_reviews / 10),
+                                            per_page: 10,
+                                            total: reviewStats.total_reviews,
+                                        }}
+                                        onPageChange={(page) => fetchReviews(page, reviewFilters, reviewSort)}
+                                        onFilterChange={(filters) => {
+                                            setReviewFilters(filters);
+                                            fetchReviews(1, filters, reviewSort);
+                                        }}
+                                        onSortChange={(sort) => {
+                                            setReviewSort(sort);
+                                            fetchReviews(1, reviewFilters, sort);
+                                        }}
+                                    />
+                                </div>
                             </TabsContent>
                         </Tabs>
                     </div>

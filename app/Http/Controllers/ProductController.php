@@ -574,4 +574,213 @@ class ProductController extends Controller
             return response()->json(['error' => 'An error occurred while fetching categories'], 500);
         }
     }
+
+    // Review-related methods
+    public function getReviews($productId, Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $params = $request->all();
+            $params['client_identifier'] = $clientIdentifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products/{$productId}/reviews", $params);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to fetch reviews', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'product_id' => $productId
+                ]);
+                return response()->json(['error' => 'Failed to fetch reviews'], 500);
+            }
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in getReviews', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $productId
+            ]);
+            return response()->json(['error' => 'An error occurred while fetching reviews'], 500);
+        }
+    }
+
+    public function storeReview($productId, Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string|max:5000',
+                'rating' => 'required|integer|min:1|max:5',
+                'images' => 'nullable|array',
+                'images.*' => 'string', // Base64 encoded images
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/products/{$productId}/reviews", [
+                    'client_identifier' => $clientIdentifier,
+                    'user_id' => auth()->id(),
+                    ...$validated
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to store review', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'product_id' => $productId
+                ]);
+                return response()->json(['error' => 'Failed to store review'], 500);
+            }
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in storeReview', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $productId
+            ]);
+            return response()->json(['error' => 'An error occurred while storing review'], 500);
+        }
+    }
+
+    public function voteReview($productId, $reviewId, Request $request)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $validated = $request->validate([
+                'vote_type' => 'required|string|in:helpful,unhelpful',
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/vote", [
+                    'client_identifier' => $clientIdentifier,
+                    'user_id' => auth()->id(),
+                    ...$validated
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to vote on review', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'product_id' => $productId,
+                    'review_id' => $reviewId
+                ]);
+                return response()->json(['error' => 'Failed to vote on review'], 500);
+            }
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in voteReview', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $productId,
+                'review_id' => $reviewId
+            ]);
+            return response()->json(['error' => 'An error occurred while voting on review'], 500);
+        }
+    }
+
+    public function deleteReview($productId, $reviewId)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}", [
+                    'client_identifier' => $clientIdentifier,
+                    'user_id' => auth()->id(),
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to delete review', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'product_id' => $productId,
+                    'review_id' => $reviewId
+                ]);
+                return response()->json(['error' => 'Failed to delete review'], 500);
+            }
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in deleteReview', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $productId,
+                'review_id' => $reviewId
+            ]);
+            return response()->json(['error' => 'An error occurred while deleting review'], 500);
+        }
+    }
+
+    public function approveReview($productId, $reviewId)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/approve", [
+                    'client_identifier' => $clientIdentifier,
+                    'user_id' => auth()->id(),
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to approve review', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'product_id' => $productId,
+                    'review_id' => $reviewId
+                ]);
+                return response()->json(['error' => 'Failed to approve review'], 500);
+            }
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in approveReview', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $productId,
+                'review_id' => $reviewId
+            ]);
+            return response()->json(['error' => 'An error occurred while approving review'], 500);
+        }
+    }
+
+    public function toggleFeatureReview($productId, $reviewId)
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/toggle-feature", [
+                    'client_identifier' => $clientIdentifier,
+                    'user_id' => auth()->id(),
+                ]);
+            
+            if (!$response->successful()) {
+                Log::error('Failed to toggle review feature', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'product_id' => $productId,
+                    'review_id' => $reviewId
+                ]);
+                return response()->json(['error' => 'Failed to toggle review feature'], 500);
+            }
+            
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in toggleFeatureReview', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $productId,
+                'review_id' => $reviewId
+            ]);
+            return response()->json(['error' => 'An error occurred while toggling review feature'], 500);
+        }
+    }
 }

@@ -259,6 +259,10 @@ interface Product {
         attributes: Record<string, string>;
         is_active: boolean;
     }>;
+    // Review-related fields
+    average_rating?: number;
+    reviews_count?: number;
+    rating_distribution?: { [key: number]: number };
     created_at: string;
     updated_at: string;
 }
@@ -988,6 +992,27 @@ const getStockStatus = (quantity?: number, type?: string) => {
                                             </div>
 
                                             <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+                                                {/* Review Summary */}
+                                                {(product.average_rating || product.reviews_count) && (
+                                                    <div className="flex items-center space-x-2 mb-2">
+                                                        <div className="flex items-center space-x-1">
+                                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                                <Star
+                                                                    key={star}
+                                                                    className={`w-3 h-3 ${
+                                                                        star <= Math.round(product.average_rating || 0)
+                                                                            ? 'text-yellow-400 fill-current'
+                                                                            : 'text-gray-300 dark:text-gray-600'
+                                                                    }`}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {product.average_rating?.toFixed(1) || '0.0'} ({product.reviews_count || 0})
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                
                                                 <div className="flex items-center justify-between mb-3">
                                                     <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                                         {formatCurrency(product.price, currency.symbol)}
