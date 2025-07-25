@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
 import { Content } from '@/types/content';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -15,6 +15,21 @@ import { ArrowLeft, Save, Eye } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 
 interface Props extends PageProps {
+    auth: {
+        user: any & {
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     client_identifier: string;
 }
 
@@ -31,6 +46,15 @@ export default function Create({ auth, client_identifier }: Props) {
 
     // Track if a file is selected
     const [fileSelected, setFileSelected] = useState(false);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -132,7 +156,8 @@ export default function Create({ auth, client_identifier }: Props) {
 
             <div className="py-12">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    {canEdit ? (
+                        <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Main Content */}
                             <div className="lg:col-span-2 space-y-6">
@@ -272,6 +297,13 @@ export default function Create({ auth, client_identifier }: Props) {
                             </div>
                         </div>
                     </form>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500 dark:text-gray-400">
+                                You don't have permission to create posts.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

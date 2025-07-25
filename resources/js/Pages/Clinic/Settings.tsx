@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SettingsForm from '@/Components/Settings/SettingsForm';
@@ -75,11 +75,41 @@ interface Settings {
 interface Props {
     settings: Settings;
     auth: {
-        user: any;
+        user: any & {
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
 }
 
 export default function Settings({ settings, auth }: Props) {
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     const handleSubmit = async (data: Record<string, any>) => {
         await axios.post('/api/clinic/settings', data);
     };
@@ -106,7 +136,8 @@ export default function Settings({ settings, auth }: Props) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <SettingsForm settings={settings} onSubmit={handleSubmit}>
+                            {canEdit ? (
+                                <SettingsForm settings={settings} onSubmit={handleSubmit}>
                                 {({ data, setData }) => (
                                     <Tabs defaultValue="general" className="space-y-4">
                                         <TabsList>
@@ -459,6 +490,13 @@ export default function Settings({ settings, auth }: Props) {
                                     </Tabs>
                                 )}
                             </SettingsForm>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 dark:text-gray-400">
+                                        You don't have permission to edit clinic settings.
+                                    </p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

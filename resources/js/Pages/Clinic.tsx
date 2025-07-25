@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
@@ -110,12 +110,27 @@ const formatCurrency = (amount: number | string, symbol: string) => {
 
 // Add this near the top of the file, before the component definition
 interface ClinicProps {
+    auth: {
+        user: any & {
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     initialPatients: Patient[];
     appCurrency: AppCurrency | null;
     error: any;
 }
 
-export default function Clinic({ initialPatients = [] as Patient[], appCurrency = null, error = null }: ClinicProps) {
+export default function Clinic({ auth, initialPatients = [] as Patient[], appCurrency = null, error = null }: ClinicProps) {
     const currency = appCurrency ? appCurrency.symbol : '$';
 
     const [patients, setPatients] = useState<Patient[]>(
@@ -177,6 +192,24 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
     const [isCheckupDialogOpen, setIsCheckupDialogOpen] = useState(false);
 
     const [checkupDateTime, setCheckupDateTime] = useState<CheckupDate>({ date: undefined });
+
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const filteredPatients = patients.filter(patient =>
         patient.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -834,16 +867,20 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex justify-end gap-2">
-                                                    <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button 
-                                                        variant="destructive" 
-                                                        size="sm" 
-                                                        onClick={() => handleDeletePatient(patient)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                                            {canEdit && (
+                            <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        )}
+                                                                            {canDelete && (
+                            <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => handleDeletePatient(patient)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
                                                     <Button 
                                                         variant="outline" 
                                                         size="sm" 
@@ -991,13 +1028,15 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                         </TableCell>
                                                         <TableCell>{formatCurrency(parseFloat(bill.bill_amount), currency)}</TableCell>
                                                         <TableCell className="text-right">
-                                                            <Button
-                                                                variant="destructive"
-                                                                size="sm"
-                                                                onClick={() => handleDeleteBill(showingHistoryForPatient.id, bill.id)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
+                                                                                        {canDelete && (
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteBill(showingHistoryForPatient.id, bill.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))
@@ -1032,13 +1071,15 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                     <TableCell className="capitalize">{payment.payment_method}</TableCell>
                                                     <TableCell>{payment.payment_notes}</TableCell>
                                                     <TableCell className="text-right">
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => handleDeletePayment(showingHistoryForPatient.id, payment.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
+                                                                                    {canDelete && (
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeletePayment(showingHistoryForPatient.id, payment.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))
@@ -1065,13 +1106,15 @@ export default function Clinic({ initialPatients = [] as Patient[], appCurrency 
                                                 <TableCell>{checkup.treatment}</TableCell>
                                                 <TableCell>{checkup.notes}</TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteCheckup(showingHistoryForPatient.id, checkup.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                                                {canDelete && (
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleDeleteCheckup(showingHistoryForPatient.id, checkup.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

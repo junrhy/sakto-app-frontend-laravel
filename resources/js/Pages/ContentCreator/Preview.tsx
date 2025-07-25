@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Content } from '@/types/content';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -10,10 +10,34 @@ import { ArrowLeft, Edit, Calendar, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 
 interface Props extends PageProps {
+    auth: {
+        user: any & {
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     content: Content;
 }
 
 export default function Preview({ auth, content }: Props) {
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     const getStatusBadgeColor = (status: string) => {
         switch (status) {
             case 'published':
@@ -46,12 +70,14 @@ export default function Preview({ auth, content }: Props) {
                                 Back to Posts
                             </Button>
                         </Link>
-                        <Link href={route('content-creator.edit', content.id)}>
-                            <Button>
-                                <Edit className="w-4 h-4 mr-2" />
-                                Edit Post
-                            </Button>
-                        </Link>
+                        {canEdit && (
+                            <Link href={route('content-creator.edit', content.id)}>
+                                <Button>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit Post
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             }
