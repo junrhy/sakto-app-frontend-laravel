@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Page } from '@/types/pages';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -9,10 +9,32 @@ import { format } from 'date-fns';
 import { Edit, ArrowLeft } from 'lucide-react';
 
 interface Props {
+    auth: { 
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     page: Page;
 }
 
-export default function Show({ page }: Props) {
+export default function Show({ auth, page }: Props) {
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     return (
         <AuthenticatedLayout>
             <Head title={page.title} />
@@ -36,12 +58,14 @@ export default function Show({ page }: Props) {
                                     <Badge variant={page.is_published ? "default" : "secondary"}>
                                         {page.is_published ? 'Published' : 'Draft'}
                                     </Badge>
-                                    <Link href={route('pages.edit', page.id)}>
-                                        <Button>
-                                            <Edit className="w-4 h-4 mr-2" />
-                                            Edit Page
-                                        </Button>
-                                    </Link>
+                                    {canEdit && (
+                                        <Link href={route('pages.edit', page.id)}>
+                                            <Button>
+                                                <Edit className="w-4 h-4 mr-2" />
+                                                Edit Page
+                                            </Button>
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>

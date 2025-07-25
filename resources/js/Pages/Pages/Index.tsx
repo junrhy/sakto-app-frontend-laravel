@@ -54,6 +54,19 @@ interface PaginatedResponse {
 }
 
 interface Props {
+    auth: { 
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     pages: PaginatedResponse;
 }
 
@@ -65,7 +78,7 @@ interface FilterState {
     sortOrder: 'asc' | 'desc';
 }
 
-export default function Index({ pages }: Props) {
+export default function Index({ auth, pages }: Props) {
     const [search, setSearch] = useState('');
     const [selectedPages, setSelectedPages] = useState<number[]>([]);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -77,6 +90,24 @@ export default function Index({ pages }: Props) {
         sortBy: 'updated_at',
         sortOrder: 'desc'
     });
+
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const filteredAndSortedPages = useMemo(() => {
         let result = pages.data;
@@ -224,12 +255,14 @@ export default function Index({ pages }: Props) {
                                 Manage your website pages and content
                             </p>
                         </div>
-                        <Link href={route('pages.create')}>
-                            <Button size="lg" className="shadow-lg">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Create Page
-                            </Button>
-                        </Link>
+                        {canEdit && (
+                            <Link href={route('pages.create')}>
+                                <Button size="lg" className="shadow-lg">
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Create Page
+                                </Button>
+                            </Link>
+                        )}
                     </div>
 
                     {/* Stats Cards */}
@@ -481,7 +514,7 @@ export default function Index({ pages }: Props) {
                                             <p className="text-gray-600 dark:text-gray-400 mb-4">
                                                 {search || hasActiveFilters ? 'Try adjusting your search terms or filters' : 'Get started by creating your first page'}
                                             </p>
-                                            {!search && !hasActiveFilters && (
+                                            {!search && !hasActiveFilters && canEdit && (
                                                 <Link href={route('pages.create')}>
                                                     <Button>
                                                         <Plus className="w-4 h-4 mr-2" />
@@ -521,25 +554,31 @@ export default function Index({ pages }: Props) {
                                                                 View
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('pages.edit', page.id)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
-                                                                Edit
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('pages.duplicate', page.id)}>
-                                                                <Copy className="w-4 h-4 mr-2" />
-                                                                Duplicate
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className="text-red-600"
-                                                            onClick={() => handleDelete(page.id)}
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
+                                                        {canEdit && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('pages.edit', page.id)}>
+                                                                    <Edit className="w-4 h-4 mr-2" />
+                                                                    Edit
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {canEdit && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('pages.duplicate', page.id)}>
+                                                                    <Copy className="w-4 h-4 mr-2" />
+                                                                    Duplicate
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {canDelete && (
+                                                            <DropdownMenuItem
+                                                                className="text-red-600"
+                                                                onClick={() => handleDelete(page.id)}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -581,12 +620,14 @@ export default function Index({ pages }: Props) {
                                                             View
                                                         </Button>
                                                     </Link>
-                                                    <Link href={route('pages.edit', page.id)}>
-                                                        <Button variant="outline" size="sm" className="flex-1">
-                                                            <Edit className="w-4 h-4 mr-2" />
-                                                            Edit
-                                                        </Button>
-                                                    </Link>
+                                                    {canEdit && (
+                                                        <Link href={route('pages.edit', page.id)}>
+                                                            <Button variant="outline" size="sm" className="flex-1">
+                                                                <Edit className="w-4 h-4 mr-2" />
+                                                                Edit
+                                                            </Button>
+                                                        </Link>
+                                                    )}
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -677,25 +718,31 @@ export default function Index({ pages }: Props) {
                                                                         View
                                                                     </Link>
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={route('pages.edit', page.id)}>
-                                                                        <Edit className="w-4 h-4 mr-2" />
-                                                                        Edit
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={route('pages.duplicate', page.id)}>
-                                                                        <Copy className="w-4 h-4 mr-2" />
-                                                                        Duplicate
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="text-red-600"
-                                                                    onClick={() => handleDelete(page.id)}
-                                                                >
-                                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
+                                                                {canEdit && (
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('pages.edit', page.id)}>
+                                                                            <Edit className="w-4 h-4 mr-2" />
+                                                                            Edit
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {canEdit && (
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('pages.duplicate', page.id)}>
+                                                                            <Copy className="w-4 h-4 mr-2" />
+                                                                            Duplicate
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {canDelete && (
+                                                                    <DropdownMenuItem
+                                                                        className="text-red-600"
+                                                                        onClick={() => handleDelete(page.id)}
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </TableCell>

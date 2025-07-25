@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { Page, PageFormData } from '@/types/pages';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -13,6 +13,19 @@ import { toast } from 'sonner';
 import RichTextEditor from '@/Components/RichTextEditor';
 
 interface Props {
+    auth: { 
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     page: Page;
 }
 
@@ -20,9 +33,18 @@ interface ValidationErrors {
     [key: string]: string;
 }
 
-export default function Edit({ page }: Props) {
+export default function Edit({ auth, page }: Props) {
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
     const [localContent, setLocalContent] = useState(page.content);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const { data, setData, put, processing, errors } = useForm<PageFormData>({
         title: page.title,
@@ -156,12 +178,13 @@ export default function Edit({ page }: Props) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Edit Page</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                    {canEdit ? (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Edit Page</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
                                     <Label htmlFor="title">Title</Label>
                                     <Input
@@ -340,6 +363,15 @@ export default function Edit({ page }: Props) {
                             </form>
                         </CardContent>
                     </Card>
+                    ) : (
+                        <div className="text-center py-12">
+                            <h2 className="text-2xl font-bold mb-4">Permission Denied</h2>
+                            <p className="text-lg text-gray-700">You do not have permission to edit this page.</p>
+                            <Button className="mt-6" onClick={() => window.history.back()}>
+                                Go Back
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>
