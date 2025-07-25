@@ -82,7 +82,12 @@ export default function Welcome({
     return (
         <>
             <Head title="Your all-in-one solution" />
-            <div className="h-screen overflow-hidden">
+            <div className="h-screen overflow-hidden relative">
+                {/* Centralized Background */}
+                <div className="fixed inset-0 z-0 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-white to-transparent dark:from-gray-900 dark:to-gray-950"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-100/70 via-transparent to-transparent dark:from-indigo-900/10"></div>
+                </div>
                 {/* Navigation */}
                 <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl mx-auto bg-white/90 backdrop-blur-sm border border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 rounded-2xl shadow-lg shadow-gray-200/50 dark:shadow-gray-900/50 z-50">
                     <div className="px-4 sm:px-6 lg:px-8">
@@ -262,20 +267,12 @@ export default function Welcome({
                 {/* Horizontal Scroll Container */}
                 <div 
                     ref={containerRef}
-                    className="h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    className="h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] relative z-10"
                     style={{ scrollBehavior: 'smooth' }}
                 >
                     <div className="flex h-full">
                         {/* Hero Section */}
                         <section className="relative w-screen flex-shrink-0 h-full flex items-center justify-center overflow-hidden snap-start">
-                            <div 
-                                className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-white to-transparent dark:from-gray-900 dark:to-gray-950"
-                                style={{ transform: `translateX(${scrollX * 0.5}px)` }}
-                            ></div>
-                            <div 
-                                className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-100/70 via-transparent to-transparent dark:from-indigo-900/10"
-                                style={{ transform: `translateX(${scrollX * 0.3}px)` }}
-                            ></div>
                             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
                                 <div className="text-center">
                                     <h1 
@@ -295,14 +292,6 @@ export default function Welcome({
 
                         {/* How It Works Section */}
                         <section className="relative w-screen flex-shrink-0 h-full flex items-center justify-center overflow-hidden snap-start">
-                            <div 
-                                className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-white to-transparent dark:from-gray-900 dark:to-gray-950"
-                                style={{ transform: `translateX(${scrollX * 0.5}px)` }}
-                            ></div>
-                            <div 
-                                className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-100/70 via-transparent to-transparent dark:from-indigo-900/10"
-                                style={{ transform: `translateX(${scrollX * 0.3}px)` }}
-                            ></div>
                             <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
                                 <div className="text-center mb-12">
                                     <h2 className="text-3xl font-extrabold tracking-tight text-transparent bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text dark:text-gray-100 sm:text-4xl md:text-5xl mb-4">How It Works</h2>
@@ -310,7 +299,7 @@ export default function Welcome({
                                         Get started with our platform in just a few simple steps. Choose your solution and transform your business operations with ease.
                                     </p>
                                 </div>
-                                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-white/20 dark:bg-gray-800/80 dark:border-gray-700/20">
+                                <div className="rounded-2xl p-8 shadow-lg border border-white/20 dark:bg-gray-800/80 dark:border-gray-700/20">
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
                                         {/* Step 1 */}
@@ -395,14 +384,6 @@ export default function Welcome({
 
                         {/* CTA Section */}
                         <section className="relative w-screen flex-shrink-0 h-full flex items-center justify-center overflow-hidden snap-start">
-                            <div 
-                                className="absolute inset-0 bg-gradient-to-b from-indigo-50 via-white to-transparent dark:from-gray-900 dark:to-gray-950"
-                                style={{ transform: `translateX(${scrollX * 0.5}px)` }}
-                            ></div>
-                            <div 
-                                className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-100/70 via-transparent to-transparent dark:from-indigo-900/10"
-                                style={{ transform: `translateX(${scrollX * 0.3}px)` }}
-                            ></div>
                             <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
                                 <div className="text-center">
                                     <h2 className="text-3xl font-extrabold tracking-tight text-transparent bg-gradient-to-r from-gray-900 via-indigo-800 to-gray-900 bg-clip-text dark:text-gray-100 sm:text-4xl md:text-5xl">
