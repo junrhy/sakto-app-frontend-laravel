@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import type { FamilyMember, FamilyRelationship } from '@/types/genealogy';
 import { FaMoon, FaSun, FaMars, FaVenus, FaUserCircle, FaChevronLeft, FaEllipsisV, FaHeart, FaComment, FaShare, FaMapMarkerAlt, FaBirthdayCake, FaUserFriends, FaCamera, FaSearch } from 'react-icons/fa';
@@ -11,6 +11,19 @@ import { X } from "lucide-react";
 interface MemberProfileProps {
     member: FamilyMember;
     clientIdentifier: string;
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
 }
 
 interface OrganizationInfo {
@@ -45,7 +58,7 @@ interface EditFormData {
     photo: File | string | null;
 }
 
-export default function MemberProfile({ member, clientIdentifier }: MemberProfileProps) {
+export default function MemberProfile({ member, clientIdentifier, auth }: MemberProfileProps) {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [allMembers, setAllMembers] = useState<FamilyMember[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,6 +78,13 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [displayCount, setDisplayCount] = useState(15);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     useEffect(() => {
         const fetchAllMembers = async () => {
@@ -383,9 +403,11 @@ export default function MemberProfile({ member, clientIdentifier }: MemberProfil
                                                     alignOffset={0}
                                                     className="w-48"
                                                 >
-                                                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
-                                                        Request Profile Edit
-                                                    </DropdownMenuItem>
+                                                    {canEdit && (
+                                                        <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                                                            Request Profile Edit
+                                                        </DropdownMenuItem>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>

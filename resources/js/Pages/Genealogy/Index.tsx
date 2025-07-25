@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import type { FamilyMember, FamilyTreeProps, RelationshipType, FamilyRelationship } from '@/types/genealogy';
@@ -6,7 +6,23 @@ import { FaUserPlus, FaFileExport, FaFileImport, FaSearch, FaExpandAlt, FaCompre
 import FamilyTreeVisualization from '@/Components/FamilyTreeVisualization';
 import { useTheme } from '@/Components/ThemeProvider';
 
-export default function Index({ auth, familyMembers }: FamilyTreeProps) {
+interface Props extends FamilyTreeProps {
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+}
+
+export default function Index({ auth, familyMembers }: Props) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
@@ -55,6 +71,20 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
         relationship_type: '',
         to_member_id: '',
     });
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     // Use global theme instead of local state
     const { theme, setTheme } = useTheme();
@@ -443,13 +473,15 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                 }`}>
                     <div className="p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                            <button
-                                className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 justify-center shadow-md hover:shadow-lg transform hover:scale-105"
-                                onClick={() => setIsAddModalOpen(true)}
-                            >
-                                <FaUserPlus className="mr-2" />
-                                Add Member
-                            </button>
+                            {canEdit && (
+                                <button
+                                    className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 justify-center shadow-md hover:shadow-lg transform hover:scale-105"
+                                    onClick={() => setIsAddModalOpen(true)}
+                                >
+                                    <FaUserPlus className="mr-2" />
+                                    Add Member
+                                </button>
+                            )}
                             <div className="relative export-dropdown">
                                 <button
                                     className="flex-1 sm:flex-none inline-flex items-center px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 justify-center shadow-md hover:shadow-lg transform hover:scale-105"
@@ -896,39 +928,43 @@ export default function Index({ auth, familyMembers }: FamilyTreeProps) {
                                                 </div>
                                             )}
                                             <div className="flex flex-wrap gap-1">
-                                                <button
-                                                className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
-                                                    isDarkMode ? 'bg-red-700 hover:bg-red-600 text-gray-200 border border-red-600' : 'bg-red-100 hover:bg-red-200 text-red-700 border border-red-300'
-                                                    }`}
-                                                    onClick={async (e) => {
-                                                        e.stopPropagation();
-                                                        if (confirm(`Are you sure you want to delete ${member.first_name} ${member.last_name}? This action cannot be undone.`)) {
-                                                            try {
-                                                                await deleteMember(member.id);
-                                                                alert(`Member deleted successfully!`);
-                                                                refreshData();
-                                                            } catch (error) {
-                                                                console.error('Failed to delete member:', error);
-                                                                alert(`Failed to delete member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                                {canDelete && (
+                                                    <button
+                                                    className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                        isDarkMode ? 'bg-red-700 hover:bg-red-600 text-gray-200 border border-red-600' : 'bg-red-100 hover:bg-red-200 text-red-700 border border-red-300'
+                                                        }`}
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            if (confirm(`Are you sure you want to delete ${member.first_name} ${member.last_name}? This action cannot be undone.`)) {
+                                                                try {
+                                                                    await deleteMember(member.id);
+                                                                    alert(`Member deleted successfully!`);
+                                                                    refreshData();
+                                                                } catch (error) {
+                                                                    console.error('Failed to delete member:', error);
+                                                                    alert(`Failed to delete member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                                                }
                                                             }
-                                                        }
-                                                    }}
-                                                >
-                                                    Delete
-                                                </button>
-                                                <button
-                                                className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
-                                                    isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
-                                                    }`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                    setEditingMember(member);
-                                                    populateEditForm(member);
-                                                    setIsEditModalOpen(true);
-                                                    }}
-                                                >
-                                                    Edit
-                                                </button>
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                )}
+                                                {canEdit && (
+                                                    <button
+                                                    className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
+                                                        isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'
+                                                        }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                        setEditingMember(member);
+                                                        populateEditForm(member);
+                                                        setIsEditModalOpen(true);
+                                                        }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
                                                 <button
                                                 className={`inline-flex items-center px-2 py-1 rounded text-xs transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 ${
                                                     isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300'

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -52,6 +52,16 @@ interface Props {
     settings: Settings;
     auth: {
         user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
 }
 
@@ -73,6 +83,13 @@ export default function Settings({ settings, auth }: Props) {
         elected_officials: settings.elected_officials || []
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -247,17 +264,19 @@ export default function Settings({ settings, auth }: Props) {
                                                                 placeholder="Enter group name"
                                                             />
                                                         </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="destructive"
-                                                            className="ml-4"
-                                                            onClick={() => {
-                                                                const newGroups = formData.elected_officials.filter((_, index) => index !== groupIndex);
-                                                                updateFormData('elected_officials', newGroups);
-                                                            }}
-                                                        >
-                                                            Remove Group
-                                                        </Button>
+                                                        {canEdit && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="destructive"
+                                                                className="ml-4"
+                                                                onClick={() => {
+                                                                    const newGroups = formData.elected_officials.filter((_, index) => index !== groupIndex);
+                                                                    updateFormData('elected_officials', newGroups);
+                                                                }}
+                                                            >
+                                                                Remove Group
+                                                            </Button>
+                                                        )}
                                                     </div>
 
                                                     <div className="space-y-4">
@@ -300,17 +319,19 @@ export default function Settings({ settings, auth }: Props) {
                                                                         placeholder="Member's profile URL"
                                                                     />
                                                                 </div>
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="destructive"
-                                                                    onClick={() => {
-                                                                        const newGroups = [...formData.elected_officials];
-                                                                        newGroups[groupIndex].officials = group.officials.filter((_, index) => index !== officialIndex);
-                                                                        updateFormData('elected_officials', newGroups);
-                                                                    }}
-                                                                >
-                                                                    Remove
-                                                                </Button>
+                                                                {canEdit && (
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="destructive"
+                                                                        onClick={() => {
+                                                                            const newGroups = [...formData.elected_officials];
+                                                                            newGroups[groupIndex].officials = group.officials.filter((_, index) => index !== officialIndex);
+                                                                            updateFormData('elected_officials', newGroups);
+                                                                        }}
+                                                                    >
+                                                                        Remove
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         ))}
                                                         

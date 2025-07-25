@@ -1,50 +1,54 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
-import axios from 'axios';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import axios from 'axios';
 import { format } from 'date-fns';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { FaSun, FaMoon } from 'react-icons/fa';
 import { useTheme } from '@/Components/ThemeProvider';
 
-interface EditRequest {
+interface FamilyMember {
     id: number;
-    member_id: number;
     first_name: string;
     last_name: string;
     birth_date: string;
     death_date: string | null;
-    gender: string;
+    gender: 'male' | 'female' | 'other';
+    notes: string;
     photo: string | null;
-    notes: string | null;
-    client_identifier: string;
-    status: 'pending' | 'accepted' | 'rejected';
-    created_at: string;
-    updated_at: string;
-    member: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        birth_date: string;
-        death_date: string | null;
-        gender: string;
-        photo: string | null;
-        notes: string | null;
-        client_identifier: string;
-        created_at: string;
-        updated_at: string;
+}
+
+interface EditRequest {
+    id: number;
+    member: FamilyMember;
+    requested_by: string;
+    requested_at: string;
+    status: 'pending' | 'approved' | 'rejected';
+    changes: {
+        first_name?: string;
+        last_name?: string;
+        birth_date?: string;
+        death_date?: string;
+        gender?: string;
+        notes?: string;
     };
 }
 
 interface Props {
     auth: {
-        user: {
-            id: number;
-            name: string;
-            email: string;
+        user: any;
+        selectedTeamMember?: {
             identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
         };
     };
 }
@@ -54,6 +58,14 @@ export default function EditRequests({ auth }: Props) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<EditRequest | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
     
     // Use global theme instead of local state
     const { theme, setTheme } = useTheme();
@@ -101,7 +113,7 @@ export default function EditRequests({ auth }: Props) {
         switch (status) {
             case 'pending':
                 return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-            case 'accepted':
+            case 'approved':
                 return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
             case 'rejected':
                 return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
@@ -154,7 +166,7 @@ export default function EditRequests({ auth }: Props) {
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-center">
                                                 <span className="text-gray-600 dark:text-gray-300">
-                                                    Requested on {format(new Date(request.created_at), 'MMM d, yyyy')}
+                                                    Requested on {format(new Date(request.requested_at), 'MMM d, yyyy')}
                                                 </span>
                                                 <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(request.status)}`}>
                                                     {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
@@ -179,28 +191,32 @@ export default function EditRequests({ auth }: Props) {
                                                     Proposed Changes
                                                 </h3>
                                                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                    <p>Name: {request.first_name} {request.last_name}</p>
-                                                    <p>Birth Date: {format(new Date(request.birth_date), 'MMM d, yyyy')}</p>
-                                                    {request.death_date && (
-                                                        <p>Death Date: {format(new Date(request.death_date), 'MMM d, yyyy')}</p>
+                                                    <p>Name: {request.changes.first_name} {request.changes.last_name}</p>
+                                                    <p>Birth Date: {format(new Date(request.changes.birth_date || request.member.birth_date), 'MMM d, yyyy')}</p>
+                                                    {request.changes.death_date && (
+                                                        <p>Death Date: {format(new Date(request.changes.death_date), 'MMM d, yyyy')}</p>
                                                     )}
-                                                    <p>Gender: {request.gender}</p>
+                                                    <p>Gender: {request.changes.gender}</p>
                                                 </div>
                                             </div>
 
                                             <div className="flex justify-end space-x-2">
-                                                <Button
-                                                    onClick={() => handleReject(request.id)}
-                                                    variant="destructive"
-                                                >
-                                                    Reject
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleAccept(request.id)}
-                                                    className="bg-green-600 hover:bg-green-700"
-                                                >
-                                                    Accept
-                                                </Button>
+                                                {canEdit && (
+                                                    <>
+                                                        <Button
+                                                            onClick={() => handleReject(request.id)}
+                                                            variant="destructive"
+                                                        >
+                                                            Reject
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => handleAccept(request.id)}
+                                                            className="bg-green-600 hover:bg-green-700"
+                                                        >
+                                                            Accept
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </CardContent>
