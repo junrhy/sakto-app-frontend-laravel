@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import CreditsLayout from '@/Layouts/CreditsLayout';
 import { Button } from '@/Components/ui/button';
@@ -53,6 +53,17 @@ interface Props {
     auth: {
         user: {
             name: string;
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
         };
     };
     packages: Package[];
@@ -69,9 +80,18 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
     const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>(initialPaymentHistory);
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const recordsPerPage = 10;
 
-    // Calculate pagination values
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Pagination values
+    const recordsPerPage = 10;
     const totalPages = Math.ceil(paymentHistory.length / recordsPerPage);
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = startIndex + recordsPerPage;
@@ -187,9 +207,10 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
             <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
                     {/* Purchase Section */}
-                    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
-                        <div className="p-8">
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {canEdit ? (
+                        <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
+                            <div className="p-8">
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Left side - Packages */}
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3 mb-6">
@@ -378,6 +399,12 @@ export default function Buy({ auth, packages, paymentMethods, paymentHistory: in
                         </div>
                     </div>
                 </div>
+                ) : (
+                    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-8 text-center">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Access Denied</h2>
+                        <p className="text-gray-600 dark:text-gray-400 mt-2">You do not have permission to access this section.</p>
+                    </div>
+                )}
 
                     {/* Payment History Section */}
                     <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
