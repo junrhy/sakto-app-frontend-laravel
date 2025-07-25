@@ -52,7 +52,19 @@ interface Challenge {
 
 interface Props {
     auth: {
-        user: User;
+        user: User & {
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     challenges: Challenge[];
 }
@@ -66,6 +78,24 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
     const [visibilityFilter, setVisibilityFilter] = useState<string>('all');
     const [goalTypeFilter, setGoalTypeFilter] = useState<string>('all');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const filteredChallenges = useMemo(() => {
         let filtered = challenges;
@@ -436,17 +466,21 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                         )}
-                                                        <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
-                                                            <Edit className="w-4 h-4 mr-2" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            className="text-red-600"
-                                                            onClick={() => handleDelete(challenge.id)}
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
-                                                        </DropdownMenuItem>
+                                                        {canEdit && (
+                                                            <DropdownMenuItem onClick={() => setSelectedChallenge(challenge)}>
+                                                                <Edit className="w-4 h-4 mr-2" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {canDelete && (
+                                                            <DropdownMenuItem
+                                                                className="text-red-600"
+                                                                onClick={() => handleDelete(challenge.id)}
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>

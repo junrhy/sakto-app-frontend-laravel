@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -61,6 +61,21 @@ interface Participant {
 }
 
 interface Props extends PageProps {
+    auth: {
+        user: any & {
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     challenge: Challenge;
     participants: Participant[];
 }
@@ -79,6 +94,24 @@ export default function Participants({ auth, challenge, participants }: Props) {
         country: '',
         zip_code: '',
     });
+
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const filteredParticipants = participants.filter(participant => 
         (participant.first_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -304,14 +337,16 @@ export default function Participants({ auth, challenge, participants }: Props) {
                                                     </TableCell>
                                                     <TableCell>{format(new Date(participant.created_at), 'PPP')}</TableCell>
                                                     <TableCell>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleRemoveParticipant(participant.id)}
-                                                            className="text-red-500 hover:text-red-700"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
+                                                        {canDelete && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleRemoveParticipant(participant.id)}
+                                                                className="text-red-500 hover:text-red-700"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
