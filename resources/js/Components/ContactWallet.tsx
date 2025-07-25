@@ -28,6 +28,7 @@ import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { usePage } from '@inertiajs/react';
 
 interface WalletData {
     wallet: {
@@ -87,6 +88,10 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+
+    const pageProps = usePage<any>().props;
+    const selectedTeamMember = pageProps?.auth?.selectedTeamMember;
+    const canManageFunds = selectedTeamMember && Array.isArray(selectedTeamMember.roles) && (selectedTeamMember.roles.includes('admin') || selectedTeamMember.roles.includes('manager'));
 
     useEffect(() => {
         fetchWalletData();
@@ -398,183 +403,184 @@ export default function ContactWallet({ contactId, contactName, appCurrency }: C
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2">
-                <Dialog open={addFundsOpen} onOpenChange={setAddFundsOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="flex items-center gap-2">
-                            <Plus className="h-4 w-4" />
-                            Add Funds
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add Funds to Wallet</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="amount">Amount</Label>
-                                <Input
-                                    id="amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    placeholder="Enter amount"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Optional description"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="reference">Reference</Label>
-                                <Input
-                                    id="reference"
-                                    value={reference}
-                                    onChange={(e) => setReference(e.target.value)}
-                                    placeholder="Optional reference"
-                                />
-                            </div>
-                            <Button onClick={handleAddFunds} className="w-full">
+            {canManageFunds && (
+                <div className="flex flex-wrap gap-2">
+                    <Dialog open={addFundsOpen} onOpenChange={setAddFundsOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="flex items-center gap-2">
+                                <Plus className="h-4 w-4" />
                                 Add Funds
                             </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add Funds to Wallet</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="amount">Amount</Label>
+                                    <Input
+                                        id="amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        placeholder="Enter amount"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Optional description"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="reference">Reference</Label>
+                                    <Input
+                                        id="reference"
+                                        value={reference}
+                                        onChange={(e) => setReference(e.target.value)}
+                                        placeholder="Optional reference"
+                                    />
+                                </div>
+                                <Button onClick={handleAddFunds} className="w-full">
+                                    Add Funds
+                                </Button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
 
-                <Dialog open={deductFundsOpen} onOpenChange={setDeductFundsOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="flex items-center gap-2">
-                            <Minus className="h-4 w-4" />
-                            Deduct Funds
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Deduct Funds from Wallet</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="deduct-amount">Amount</Label>
-                                <Input
-                                    id="deduct-amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    max={walletData?.wallet.balance || 0}
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    placeholder="Enter amount"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="deduct-description">Description</Label>
-                                <Textarea
-                                    id="deduct-description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Optional description"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="deduct-reference">Reference</Label>
-                                <Input
-                                    id="deduct-reference"
-                                    value={reference}
-                                    onChange={(e) => setReference(e.target.value)}
-                                    placeholder="Optional reference"
-                                />
-                            </div>
-                            <Button onClick={handleDeductFunds} className="w-full">
+                    <Dialog open={deductFundsOpen} onOpenChange={setDeductFundsOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="flex items-center gap-2">
+                                <Minus className="h-4 w-4" />
                                 Deduct Funds
                             </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Deduct Funds from Wallet</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="deduct-amount">Amount</Label>
+                                    <Input
+                                        id="deduct-amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        max={walletData?.wallet.balance || 0}
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        placeholder="Enter amount"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="deduct-description">Description</Label>
+                                    <Textarea
+                                        id="deduct-description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Optional description"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="deduct-reference">Reference</Label>
+                                    <Input
+                                        id="deduct-reference"
+                                        value={reference}
+                                        onChange={(e) => setReference(e.target.value)}
+                                        placeholder="Optional reference"
+                                    />
+                                </div>
+                                <Button onClick={handleDeductFunds} className="w-full">
+                                    Deduct Funds
+                                </Button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
 
-                <Dialog open={transferFundsOpen} onOpenChange={setTransferFundsOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="flex items-center gap-2">
-                            <ArrowRightLeft className="h-4 w-4" />
-                            Transfer Funds
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Transfer Funds to Another Contact</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="transfer-amount">Amount</Label>
-                                <Input
-                                    id="transfer-amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    max={walletData?.wallet.balance || 0}
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    placeholder="Enter amount"
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="to-contact">Recipient Contact Number</Label>
-                                <Input
-                                    type="tel"
-                                    value={toContactNumber}
-                                    onChange={(e) => {
-                                        setToContactNumber(e.target.value);
-                                        if (e.target.value.length >= 10) {
-                                            searchContactByNumber(e.target.value);
-                                        } else {
-                                            setToContactId('');
-                                            setToContactName('');
-                                            setContactSearchError(''); // Clear error when input is empty
-                                        }
-                                    }}
-                                    placeholder="Enter contact number"
-                                />
-                                {contactSearchError && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        {contactSearchError}
-                                    </p>
-                                )}
-                                {toContactName && (
-                                    <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                                        <p className="text-green-600 text-sm">
-                                            {toContactName.split(' ').map(name => {
-                                                if (name.length === 2) return name[0] + '*';
-                                                if (name.length === 3) return name[0] + '**';
-                                                if (name.length > 3) return name[0] + '**' + name.slice(3);
-                                                return name;
-                                            }).join(' ')}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <Label htmlFor="transfer-description">Description</Label>
-                                <Textarea
-                                    id="transfer-description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Optional description"
-                                />
-                            </div>
-                            <Button onClick={handleTransferFunds} className="w-full">
+                    <Dialog open={transferFundsOpen} onOpenChange={setTransferFundsOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="flex items-center gap-2">
+                                <ArrowRightLeft className="h-4 w-4" />
                                 Transfer Funds
                             </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-
-            </div>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Transfer Funds to Another Contact</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="transfer-amount">Amount</Label>
+                                    <Input
+                                        id="transfer-amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        max={walletData?.wallet.balance || 0}
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        placeholder="Enter amount"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="to-contact">Recipient Contact Number</Label>
+                                    <Input
+                                        type="tel"
+                                        value={toContactNumber}
+                                        onChange={(e) => {
+                                            setToContactNumber(e.target.value);
+                                            if (e.target.value.length >= 10) {
+                                                searchContactByNumber(e.target.value);
+                                            } else {
+                                                setToContactId('');
+                                                setToContactName('');
+                                                setContactSearchError(''); // Clear error when input is empty
+                                            }
+                                        }}
+                                        placeholder="Enter contact number"
+                                    />
+                                    {contactSearchError && (
+                                        <p className="text-red-500 text-sm mt-1">
+                                            {contactSearchError}
+                                        </p>
+                                    )}
+                                    {toContactName && (
+                                        <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                            <p className="text-green-600 text-sm">
+                                                {toContactName.split(' ').map(name => {
+                                                    if (name.length === 2) return name[0] + '*';
+                                                    if (name.length === 3) return name[0] + '**';
+                                                    if (name.length > 3) return name[0] + '**' + name.slice(3);
+                                                    return name;
+                                                }).join(' ')}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <Label htmlFor="transfer-description">Description</Label>
+                                    <Textarea
+                                        id="transfer-description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Optional description"
+                                    />
+                                </div>
+                                <Button onClick={handleTransferFunds} className="w-full">
+                                    Transfer Funds
+                                </Button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            )}
 
             {/* Transaction History Section */}
             <Card>
