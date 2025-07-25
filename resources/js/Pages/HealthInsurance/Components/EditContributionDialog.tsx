@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface Contribution {
     id: string;
     member_id: string;
-    amount: number | string;
+    amount: number;
     payment_date: string;
     payment_method: string;
     reference_number: string;

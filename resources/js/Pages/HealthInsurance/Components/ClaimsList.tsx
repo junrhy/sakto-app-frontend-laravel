@@ -28,7 +28,7 @@ interface Claim {
     id: string;
     member_id: string;
     claim_type: string;
-    amount: number | string;
+    amount: number;
     date_of_service: string;
     hospital_name: string;
     diagnosis: string;
@@ -38,13 +38,16 @@ interface Claim {
 interface Props {
     claims: Claim[];
     members: Member[];
+    onClaimSubmit: (claim: Claim) => void;
+    canEdit: boolean;
+    canDelete: boolean;
     appCurrency: {
         code: string;
         symbol: string;
     };
 }
 
-export default function ClaimsList({ claims, members, appCurrency }: Props) {
+export default function ClaimsList({ claims, members, onClaimSubmit, canEdit, canDelete, appCurrency }: Props) {
     const [sortField, setSortField] = useState<keyof Claim>('date_of_service');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
@@ -316,22 +319,26 @@ export default function ClaimsList({ claims, members, appCurrency }: Props) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleEdit(claim.member_id, claim.id)}
-                                                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
-                                                onClick={() => handleDelete(claim.member_id, claim.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            {canEdit && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEdit(claim.member_id, claim.id)}
+                                                    className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {canDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-orange-300 dark:hover:text-orange-200 dark:hover:bg-orange-900/20 transition-all duration-200"
+                                                    onClick={() => handleDelete(claim.member_id, claim.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>
