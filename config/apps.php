@@ -223,12 +223,12 @@ return [
         'rating' => 4.3
     ],
     [
-        'title' => 'Digital Products',
+        'title' => 'Products',
         'route' => '/dashboard?app=products',
         'visible' => false,
         'description' => 'Create and manage products.',
         'price' => 149,
-        'categories' => ['Digital', 'Products', 'Business'],
+        'categories' => ['Products', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
@@ -241,7 +241,7 @@ return [
         'visible' => false,
         'description' => 'Create and manage pages, including articles, pages, and posts.',
         'price' => 149,
-        'categories' => ['Digital', 'Products', 'Business'],
+        'categories' => ['Pages', 'Business'],
         'comingSoon' => false,
         'pricingType' => 'subscription',
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
