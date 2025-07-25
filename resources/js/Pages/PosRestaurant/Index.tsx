@@ -146,6 +146,19 @@ interface PosRestaurantProps {
 
 // Rename the local interface to avoid conflict
 interface PosRestaurantPageData {
+    auth: { 
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     menuItems: MenuItem[];
     tables: Table[];
     tab?: string;
@@ -226,12 +239,31 @@ const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
 };
 
 export default function PosRestaurant({ 
+    auth, 
     menuItems: initialMenuItems, 
     tables: initialTables, 
     joinedTables: initialJoinedTables = [], 
     tab = 'pos',
     currency_symbol
 }: PosRestaurantPageData) {
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     // Enhanced error handling for initial values with proper type checking
     const safeInitialTables = Array.isArray(initialTables) 
         ? initialTables 
@@ -1696,15 +1728,17 @@ export default function PosRestaurant({
                                     <span className="hidden sm:inline">Split Bill</span>
                                     <span className="sm:hidden">Split</span>
                                 </Button>
-                                <Button 
-                                    onClick={handleCompleteSale} 
-                                    disabled={orderItems.length === 0 || !tableNumber} 
-                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
-                                >
-                                    <ShoppingCart className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">Complete Order</span>
-                                    <span className="sm:hidden">Complete</span>
-                                </Button>
+                                {canEdit && (
+                                    <Button 
+                                        onClick={handleCompleteSale} 
+                                        disabled={orderItems.length === 0 || !tableNumber} 
+                                        className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
+                                    >
+                                        <ShoppingCart className="mr-2 h-4 w-4" />
+                                        <span className="hidden sm:inline">Complete Order</span>
+                                        <span className="sm:hidden">Complete</span>
+                                    </Button>
+                                )}
                             </div>
                         </CardFooter>
                         </Card>
@@ -1715,9 +1749,11 @@ export default function PosRestaurant({
                         <CardHeader>
                             <div className="flex justify-between items-center">
                                 <CardTitle>Table Management</CardTitle>
-                                <Button onClick={() => setIsAddTableDialogOpen(true)} className="bg-gray-700 hover:bg-gray-600 text-white">
-                                    <Plus className="mr-2 h-4 w-4" /> Add Table
-                                </Button>
+                                {canEdit && (
+                                    <Button onClick={() => setIsAddTableDialogOpen(true)} className="bg-gray-700 hover:bg-gray-600 text-white">
+                                        <Plus className="mr-2 h-4 w-4" /> Add Table
+                                    </Button>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -1813,18 +1849,22 @@ export default function PosRestaurant({
                                                     >
                                                         <QrCode className="h-4 w-4" />
                                                     </Button>
-                                                    <Button 
-                                                        onClick={() => openEditTableDialog(table)} 
-                                                        className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button 
-                                                        onClick={() => handleRemoveTable(table.id)} 
-                                                        className="bg-red-500 hover:bg-red-600 text-white flex-1"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    {canEdit && (
+                                                        <Button 
+                                                            onClick={() => openEditTableDialog(table)} 
+                                                            className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    {canDelete && (
+                                                        <Button 
+                                                            onClick={() => handleRemoveTable(table.id)} 
+                                                            className="bg-red-500 hover:bg-red-600 text-white flex-1"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </>
                                             )}
                                             {(table.status === 'occupied' || table.status === 'reserved') && (
@@ -2010,22 +2050,26 @@ export default function PosRestaurant({
                         <CardContent>
                             <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
                                 <div className="flex flex-col sm:flex-row gap-2">
-                                    <Button 
-                                        onClick={handleAddMenuItem}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" /> Add Menu Item
-                                    </Button>
-                                    <Button 
-                                        onClick={handleDeleteSelectedMenuItems} 
-                                        variant="destructive" 
-                                        disabled={selectedMenuItems.length === 0}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        <Trash className="mr-2 h-4 w-4" /> 
-                                        <span className="hidden sm:inline">Delete Selected</span>
-                                        <span className="sm:hidden">Delete ({selectedMenuItems.length})</span>
-                                    </Button>
+                                    {canEdit && (
+                                        <Button 
+                                            onClick={handleAddMenuItem}
+                                            className="w-full sm:w-auto"
+                                        >
+                                            <Plus className="mr-2 h-4 w-4" /> Add Menu Item
+                                        </Button>
+                                    )}
+                                    {canDelete && (
+                                        <Button 
+                                            onClick={handleDeleteSelectedMenuItems} 
+                                            variant="destructive" 
+                                            disabled={selectedMenuItems.length === 0}
+                                            className="w-full sm:w-auto"
+                                        >
+                                            <Trash className="mr-2 h-4 w-4" /> 
+                                            <span className="hidden sm:inline">Delete Selected</span>
+                                            <span className="sm:hidden">Delete ({selectedMenuItems.length})</span>
+                                        </Button>
+                                    )}
                                 </div>
                                 <div className="relative w-full sm:w-64">
                                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -2093,12 +2137,16 @@ export default function PosRestaurant({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
+                                            {canEdit && (
+                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {canDelete && (
+                                                <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
