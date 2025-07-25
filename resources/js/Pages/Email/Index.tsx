@@ -1,4 +1,4 @@
-import React, { useState, ReactNode, useRef, useEffect } from 'react';
+import React, { useState, ReactNode, useRef, useEffect, useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
@@ -9,6 +9,7 @@ import { useTheme } from "@/Components/ThemeProvider";
 interface User {
     name: string;
     email: string;
+    is_admin?: boolean;
 }
 
 interface Contact {
@@ -31,6 +32,16 @@ interface EmailTemplate {
 interface Props {
     auth: {
         user: User;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
 }
 
@@ -61,6 +72,13 @@ export default function Index({ auth }: Props) {
     const [ccInput, setCcInput] = useState('');
     const [bccInput, setBccInput] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     useEffect(() => {
         // Fetch contacts and templates when the component mounts
@@ -290,31 +308,34 @@ export default function Index({ auth }: Props) {
                                 <h3 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Compose Email</h3>
                                 <p className="mt-2 text-gray-600 dark:text-gray-400">Send emails to your contacts with templates and attachments</p>
                             </div>
-                            <div className="flex gap-3">
-                                <Link
-                                    href={route('email.templates.create')}
-                                    className="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                                >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
-                                    Create Template
-                                </Link>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowTemplateSelector(true)}
-                                    className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                                >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Load Template
-                                </button>
-                            </div>
+                            {canEdit && (
+                                <div className="flex gap-3">
+                                    <Link
+                                        href={route('email.templates.create')}
+                                        className="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        Create Template
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowTemplateSelector(true)}
+                                        className="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-medium text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Load Template
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-8">
+                    {canEdit ? (
+                        <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Recipients Section */}
                         <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg sm:rounded-lg border border-gray-200 dark:border-gray-700">
                             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -586,6 +607,14 @@ export default function Index({ auth }: Props) {
                             </div>
                         </div>
                     </form>
+                    ) : (
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg sm:rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="p-6 text-center">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">You do not have permission to send emails.</h3>
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Please contact your administrator to request access.</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

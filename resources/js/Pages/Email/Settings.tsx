@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SettingsForm from '@/Components/Settings/SettingsForm';
@@ -43,11 +43,31 @@ const defaultSettings: Settings = {
 interface Props {
     settings?: Settings;
     auth: {
-        user: any;
+        user: {
+            name: string;
+            is_admin?: boolean;
+        };
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
 }
 
 export default function Settings({ settings = defaultSettings, auth }: Props) {
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     const handleSubmit = async (data: Record<string, any>) => {
         await axios.post('/api/email/settings', data);
     };
@@ -72,24 +92,32 @@ export default function Settings({ settings = defaultSettings, auth }: Props) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <SettingsForm settings={settings} onSubmit={handleSubmit}>
-                                {({ data, setData }) => (
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>Email Notifications</Label>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                    Receive notifications via email
+                            {canEdit ? (
+                                <SettingsForm settings={settings} onSubmit={handleSubmit}>
+                                    {({ data, setData }) => (
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-0.5">
+                                                    <Label>Email Notifications</Label>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                        Receive notifications via email
+                                                    </div>
                                                 </div>
+                                                <Switch
+                                                    checked={data.notifications.email_notifications}
+                                                    onCheckedChange={(checked) => setData('notifications.email_notifications', checked)}
+                                                />
                                             </div>
-                                            <Switch
-                                                checked={data.notifications.email_notifications}
-                                                onCheckedChange={(checked) => setData('notifications.email_notifications', checked)}
-                                            />
                                         </div>
-                                    </div>
-                                )}
-                            </SettingsForm>
+                                    )}
+                                </SettingsForm>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 dark:text-gray-400">
+                                        You don't have permission to edit notification settings.
+                                    </p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
