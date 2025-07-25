@@ -53,7 +53,7 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
     if (url.includes('credits')) {
         return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
     }
-    
+    console.log(projectIdentifier);
     // Then check project-based colors
     if (projectIdentifier) {
         switch (projectIdentifier.toLowerCase()) {
@@ -552,7 +552,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     />
                 )}
 
-                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project?.identifier)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
+                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
