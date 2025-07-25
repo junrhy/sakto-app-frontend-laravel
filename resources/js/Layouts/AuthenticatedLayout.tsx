@@ -133,13 +133,11 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const [credits, setCredits] = useState<number>(0);
 
     const { url } = usePage();
-    const pageProps = usePage<{ auth: { user: any; project: any; modules: string[] } }>().props;
+    const pageProps = usePage<{ auth: { user: any; project: any; modules: string[]; selectedTeamMember?: any } }>().props;
     // Merge prop auth with page auth, preferring prop auth if available
     const auth = propAuth || pageProps.auth;
     const authUser = user || auth.user;
     const appParam = new URLSearchParams(url.split('?')[1]).get('app');
-
-    console.log(auth);
 
     // Parse enabled modules from project
     const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
@@ -219,10 +217,32 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                 <div
                     className={
                         (showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full') +
-                        ' fixed inset-y-0 left-0 w-64 transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg z-[60] overflow-y-auto'
+                        ' fixed inset-y-0 left-0 w-full transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg z-[60] overflow-y-auto'
                     }
                 >
-                    <div className="space-y-1 pb-3 pt-2">
+                    {/* Close Button */}
+                    <div className="flex justify-end p-4">
+                        <button
+                            onClick={() => setShowingNavigationDropdown(false)}
+                            className="text-white/80 hover:text-white transition-colors duration-200 focus:outline-none"
+                        >
+                            <svg
+                                className="h-6 w-6"
+                                stroke="currentColor"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-1 pb-3 px-4">
                         <ResponsiveNavLink href={route('home')} active={route().current('home')} className="text-white/90 hover:text-white hover:bg-white/10">
                             Home
                         </ResponsiveNavLink>
@@ -490,6 +510,38 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 </div>
                             </div>
                         )}
+
+                        {/* Mobile User Section */}
+                        <div className="border-t border-white/10 mt-auto">
+                            <div className="px-4 py-3">
+                                <div className="flex items-center space-x-3 mb-3">
+                                    <div className="flex-1">
+                                        <div className="text-white/90 font-medium text-base">
+                                            {auth.selectedTeamMember?.full_name || authUser.name}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-1">
+                                    <ResponsiveNavLink href={route('profile.edit')} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Profile
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink href="/help" className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Help
+                                    </ResponsiveNavLink>
+                                    <div className="border-t border-white/20 pt-1">
+                                        <ResponsiveNavLink 
+                                            href={route('logout')} 
+                                            method="post" 
+                                            as="button"
+                                            className="w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                                        >
+                                            Logout
+                                        </ResponsiveNavLink>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1326,6 +1378,57 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                             </Dropdown>
                                         </div>
                                     )}
+                                </div>
+                            </div>
+
+                            {/* Right side dropdown with user menu and logout */}
+                            <div className="hidden sm:flex items-center space-x-4">
+                                {/* User dropdown */}
+                                <div className="relative">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors duration-200 focus:outline-none">
+                                                <div className="flex items-center space-x-2">
+                                                    <span className="hidden sm:block text-sm font-medium">
+                                                        {auth.selectedTeamMember?.full_name || authUser.name}
+                                                    </span>
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                        </Dropdown.Trigger>
+
+                                        <Dropdown.Content align="right" contentClasses="w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+                                            <Dropdown.Link href={route('profile.edit')} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                Profile
+                                            </Dropdown.Link>
+                                            
+                                            <Dropdown.Link href="/help" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                Help
+                                            </Dropdown.Link>
+                                            
+                                            <div className="border-t border-gray-200 dark:border-gray-700">
+                                                <Dropdown.Link 
+                                                    href={route('logout')} 
+                                                    method="post" 
+                                                    as="button"
+                                                    className="w-full text-left text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20"
+                                                >
+                                                    Logout
+                                                </Dropdown.Link>
+                                            </div>
+                                        </Dropdown.Content>
+                                    </Dropdown>
                                 </div>
                             </div>
                         </div>
