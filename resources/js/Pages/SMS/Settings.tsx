@@ -1,7 +1,9 @@
-import React from 'react';
+import { User, Project } from '@/types/index';
+import React, { useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import SettingsForm from '@/Components/Settings/SettingsForm';
+import { PageProps } from '@/types';
 import {
     Card,
     CardContent,
@@ -57,10 +59,22 @@ interface Settings {
     };
 }
 
-interface Props {
+interface Props extends PageProps {
     settings: Settings;
     auth: {
-        user: any;
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
 }
 
@@ -69,8 +83,16 @@ export default function Settings({ settings, auth }: Props) {
         await axios.post('/api/sms/settings', data);
     };
 
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={
                 <h2 className="font-semibold text-xl text-white leading-tight">
                     SMS Settings
@@ -89,8 +111,9 @@ export default function Settings({ settings, auth }: Props) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <SettingsForm settings={settings} onSubmit={handleSubmit}>
-                                {({ data, setData }) => (
+                                                        {canEdit ? (
+                                <SettingsForm settings={settings} onSubmit={handleSubmit}>
+                                    {({ data, setData }) => (
                                     <Tabs defaultValue="twilio" className="space-y-4">
                                         <TabsList>
                                             <TabsTrigger value="twilio">Twilio</TabsTrigger>
@@ -316,7 +339,12 @@ export default function Settings({ settings, auth }: Props) {
                                         </TabsContent>
                                     </Tabs>
                                 )}
-                            </SettingsForm>
+                                </SettingsForm>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <p className="text-gray-500">You don't have permission to edit SMS settings.</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

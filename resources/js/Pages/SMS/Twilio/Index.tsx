@@ -1,6 +1,8 @@
+import { User, Project } from '@/types/index';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { PageProps } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
@@ -25,12 +27,21 @@ interface Stats {
     failed: number;
 }
 
-interface Props {
+interface Props extends PageProps {
     auth: {
-        user: {
-            name: string;
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
             email: string;
-        }
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     messages: Message[];
     stats: Stats;
@@ -39,6 +50,13 @@ interface Props {
 export default function Index({ auth, messages, stats }: Props) {
     const [isLoadingBalance, setIsLoadingBalance] = useState(false);
     const [balance, setBalance] = useState<{ balance: string; currency: string } | null>(null);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         to: '',
@@ -107,6 +125,7 @@ export default function Index({ auth, messages, stats }: Props) {
 
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Twilio SMS</h2>}
         >
             <Head title="Twilio SMS" />
@@ -204,10 +223,12 @@ export default function Index({ auth, messages, stats }: Props) {
                                     )}
                                 </div>
 
-                                <Button type="submit" disabled={processing}>
-                                    {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Send Message
-                                </Button>
+                                {canEdit && (
+                                    <Button type="submit" disabled={processing}>
+                                        {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Send Message
+                                    </Button>
+                                )}
                                 <p className="text-sm text-gray-500 mt-4 text-center">
                                     Sending this SMS will cost 2 credits from your balance
                                 </p>

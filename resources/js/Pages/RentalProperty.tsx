@@ -1,6 +1,8 @@
+import { User, Project } from '@/types/index';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from "react";
+import { PageProps } from '@/types';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -54,9 +56,30 @@ interface PropertyAnalytics {
     averageRent: number;
 }
 
-export default function RentalProperty(props: { initialProperties: RentalProperty[], initialPayments: any[], appCurrency: any }) {
-    const [properties, setProperties] = useState<RentalProperty[]>(props.initialProperties || []);
-    const [payments, setPayments] = useState<any[]>(props.initialPayments || []);
+interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+    initialProperties: RentalProperty[];
+    initialPayments: any[];
+    appCurrency: any;
+}
+
+export default function RentalProperty({ auth, initialProperties, initialPayments, appCurrency }: Props) {
+    const [properties, setProperties] = useState<RentalProperty[]>(initialProperties || []);
+    const [payments, setPayments] = useState<any[]>(initialPayments || []);
     const [isPropertyDialogOpen, setIsPropertyDialogOpen] = useState(false);
     const [currentProperty, setCurrentProperty] = useState<RentalProperty | null>(null);
     const [selectedProperties, setSelectedProperties] = useState<number[]>([]);
@@ -80,6 +103,20 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
         propertiesInMaintenance: 0,
         averageRent: 0
     });
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     useEffect(() => {
         fetchProperties();
@@ -250,6 +287,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
 
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Rental Properties
@@ -290,7 +328,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-                                    <div className="h-4 w-4 text-muted-foreground">{props.appCurrency.symbol}</div>
+                                    <div className="h-4 w-4 text-muted-foreground">{appCurrency.symbol}</div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="text-2xl font-bold">
@@ -335,20 +373,24 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                         </div>
                         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
                             <div className="flex flex-wrap items-center gap-2">
-                                <Button 
-                                    onClick={handleAddProperty}
-                                    className="flex-1 sm:flex-none"
-                                >
-                                    <Plus className="mr-2 h-4 w-4" /> Add Property
-                                </Button>
-                                <Button 
-                                    onClick={handleDeleteSelectedProperties} 
-                                    variant="destructive" 
-                                    disabled={selectedProperties.length === 0}
-                                    className="flex-1 sm:flex-none"
-                                >
-                                    <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                                </Button>
+                                {canEdit && (
+                                    <Button 
+                                        onClick={handleAddProperty}
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" /> Add Property
+                                    </Button>
+                                )}
+                                {canDelete && (
+                                    <Button 
+                                        onClick={handleDeleteSelectedProperties} 
+                                        variant="destructive" 
+                                        disabled={selectedProperties.length === 0}
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                                    </Button>
+                                )}
                             </div>
                             <div className="relative flex-1 sm:max-w-xs">
                                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -412,7 +454,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                         <TableCell>{property.type}</TableCell>
                                         <TableCell>{property.bedrooms}</TableCell>
                                         <TableCell>{property.bathrooms}</TableCell>
-                                        <TableCell>{props.appCurrency.symbol}{property.rent}</TableCell>
+                                        <TableCell>{appCurrency.symbol}{property.rent}</TableCell>
                                         <TableCell>{property.status}</TableCell>
                                         <TableCell>
                                             {property.tenant_name ? (
@@ -431,7 +473,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                                         {payments[payments.length - 1].payment_date}
                                                     </span>
                                                     <span className="text-sm text-gray-600">
-                                                        {props.appCurrency.symbol}
+                                                        {appCurrency.symbol}
                                                         {payments[payments.length - 1].amount.toLocaleString()}
                                                     </span>
                                                 </div>
@@ -441,20 +483,24 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-2">
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    onClick={() => handleEditProperty(property)}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button 
-                                                    variant="destructive" 
-                                                    size="sm" 
-                                                    onClick={() => handleDeleteProperty(property.id)}
-                                                >
-                                                    <Trash className="h-4 w-4" />
-                                                </Button>
+                                                {canEdit && (
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        onClick={() => handleEditProperty(property)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {canDelete && (
+                                                    <Button 
+                                                        variant="destructive" 
+                                                        size="sm" 
+                                                        onClick={() => handleDeleteProperty(property.id)}
+                                                    >
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                                 {property.status === 'rented' && (
                                                     <>
                                                         <Button 
@@ -722,7 +768,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                         </div>
                                         <div>
                                             <Label>Monthly Rent</Label>
-                                            <p className="text-sm">{props.appCurrency.symbol}{selectedPropertyHistory?.rent}</p>
+                                            <p className="text-sm">{appCurrency.symbol}{selectedPropertyHistory?.rent}</p>
                                         </div>
                                     </div>
 
@@ -748,7 +794,7 @@ export default function RentalProperty(props: { initialProperties: RentalPropert
                                                     paymentHistory.map((payment) => (
                                                         <TableRow key={payment.id}>
                                                             <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
-                                                            <TableCell>{props.appCurrency.symbol}{Number(payment.amount).toLocaleString()}</TableCell>
+                                                            <TableCell>{appCurrency.symbol}{Number(payment.amount).toLocaleString()}</TableCell>
                                                             <TableCell>
                                                                 <span className="text-xs font-medium px-2.5 py-0.5 rounded bg-green-100 text-green-800">
                                                                     Paid

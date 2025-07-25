@@ -87,9 +87,22 @@ interface Props extends PageProps {
     errors?: {
         [key: string]: string;
     };
+    auth: PageProps['auth'] & {
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        } | null;
+    };
 }
 
 export default function Index({ auth, orders, currency, errors }: Props) {
+    console.log(auth);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
@@ -207,6 +220,24 @@ export default function Index({ auth, orders, currency, errors }: Props) {
         }
     };
 
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember && Array.isArray(auth.selectedTeamMember.roles)) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return !!auth.user && !!(auth.user as any).is_admin;
+    }, [auth.selectedTeamMember, auth.user]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember && Array.isArray(auth.selectedTeamMember.roles)) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return !!auth.user && !!(auth.user as any).is_admin;
+    }, [auth.selectedTeamMember, auth.user]);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -315,7 +346,7 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                         <CardHeader>
                             <div className="flex justify-between items-center">
                                 <CardTitle>Orders ({filteredOrders.length})</CardTitle>
-                                {selectedOrders.length > 0 && (
+                                {canDelete && selectedOrders.length > 0 && (
                                     <Button variant="destructive" onClick={handleBulkDelete}>
                                         Delete Selected ({selectedOrders.length})
                                     </Button>
@@ -428,19 +459,23 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                                                                 View Details
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem asChild>
-                                                            <Link href={route('product-orders.edit', order.id)}>
-                                                                <Edit className="w-4 h-4 mr-2" />
-                                                                Edit Order
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem 
-                                                            onClick={() => handleDelete(order.id)}
-                                                            className="text-red-600"
-                                                        >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete Order
-                                                        </DropdownMenuItem>
+                                                        {canEdit && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link href={route('product-orders.edit', order.id)}>
+                                                                    <Edit className="w-4 h-4 mr-2" />
+                                                                    Edit Order
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {canDelete && (
+                                                            <DropdownMenuItem 
+                                                                onClick={() => handleDelete(order.id)}
+                                                                className="text-red-600"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete Order
+                                                            </DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>

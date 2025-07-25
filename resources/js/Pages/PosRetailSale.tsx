@@ -1,10 +1,12 @@
+import { User, Project } from '@/types/index';
 import { Head } from '@inertiajs/react';
 import AuthenticatedLayout from '../Layouts/AuthenticatedLayout';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/Components/ui/table";
 import { Card } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { PageProps } from '@/types';
 import { Trash2, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/Components/ui/select";
@@ -41,7 +43,26 @@ interface Sale {
     payment_method: string;
 }
 
-export default function PosRetailSale({ sales }: { sales: Sale[] }) {
+interface Props extends PageProps {
+    sales: Sale[];
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+}
+
+export default function PosRetailSale({ sales, auth }: Props) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -55,6 +76,20 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
     });
 
     const [data, setData] = useState<Sale[]>(sales);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
     
     const uniquePaymentMethods = Array.from(
         new Set(data.map(sale => sale.payment_method))
@@ -201,6 +236,7 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
 
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Sales
@@ -317,15 +353,17 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                         </div>
                     </div>
                     <div className="lg:col-span-4 flex justify-end">
-                        <Button 
-                            variant="destructive" 
-                            onClick={handleMultipleDelete} 
-                            disabled={selectedIds.length === 0}
-                            className="h-10 w-full md:w-auto"
-                        >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete ({selectedIds.length})
-                        </Button>
+                        {canDelete && (
+                            <Button 
+                                variant="destructive" 
+                                onClick={handleMultipleDelete} 
+                                disabled={selectedIds.length === 0}
+                                className="h-10 w-full md:w-auto"
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete ({selectedIds.length})
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -398,13 +436,15 @@ export default function PosRetailSale({ sales }: { sales: Sale[] }) {
                                         <TableCell>{sale.change}</TableCell>
                                         <TableCell>{sale.payment_method}</TableCell>
                                         <TableCell>
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm"
-                                                onClick={() => handleDelete(sale.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            {canDelete && (
+                                                <Button 
+                                                    variant="destructive" 
+                                                    size="sm"
+                                                    onClick={() => handleDelete(sale.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

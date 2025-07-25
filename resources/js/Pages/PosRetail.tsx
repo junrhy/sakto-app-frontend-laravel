@@ -1,6 +1,8 @@
+import { User, Project } from '@/types/index';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { PageProps } from '@/types';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -30,8 +32,28 @@ interface OrderItem {
   
 const ITEMS_PER_PAGE = 5;
 
-export default function PosRetail(props: { products: Product[], appCurrency: any }) {
-    const [products, setProducts] = useState<Product[]>(props.products);
+interface Props extends PageProps {
+    products: Product[];
+    appCurrency: any;
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+}
+
+export default function PosRetail({ products: initialProducts, appCurrency, auth }: Props) {
+    const [products, setProducts] = useState<Product[]>(initialProducts);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
@@ -41,6 +63,20 @@ export default function PosRetail(props: { products: Product[], appCurrency: any
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
     
     const handleSearch = (term: string) => {
         setSearchTerm(term);
@@ -201,6 +237,7 @@ export default function PosRetail(props: { products: Product[], appCurrency: any
 
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Point of Sale
@@ -266,9 +303,11 @@ export default function PosRetail(props: { products: Product[], appCurrency: any
                                             <TableCell>{product.price_formatted}</TableCell>
                                             <TableCell>{product.quantity}</TableCell>
                                             <TableCell>
-                                                <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0} className="p-4">
-                                                    Add
-                                                </Button>
+                                                {canEdit && (
+                                                    <Button size="sm" onClick={() => addItemToOrder(product)} disabled={product.quantity === 0} className="p-4">
+                                                        Add
+                                                    </Button>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -325,18 +364,23 @@ export default function PosRetail(props: { products: Product[], appCurrency: any
                                     <TableRow key={item.id}>
                                         <TableCell>{item.name}</TableCell>
                                         <TableCell>
-                                            <div className="flex items-center space-x-2">
-                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)} className="p-4">-</Button>
-                                                <span>{item.quantity}</span>
-                                                <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)} className="p-4">+</Button>
-                                            </div>
+                                            {canEdit && (
+                                                <div className="flex items-center space-x-2">
+                                                    <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)} className="p-4">-</Button>
+                                                    <span>{item.quantity}</span>
+                                                    <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)} className="p-4">+</Button>
+                                                </div>
+                                            )}
+                                            {!canEdit && <span>{item.quantity}</span>}
                                         </TableCell>
                                         <TableCell>{item.price_formatted}</TableCell>
-                                        <TableCell>{props.appCurrency.symbol}{(item.price * item.quantity).toFixed(2)}</TableCell>
+                                        <TableCell>{appCurrency.symbol}{(item.price * item.quantity).toFixed(2)}</TableCell>
                                         <TableCell>
-                                            <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)} className="p-4">
-                                                Remove
-                                            </Button>
+                                            {canDelete && (
+                                                <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)} className="p-4">
+                                                    Remove
+                                                </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -344,8 +388,10 @@ export default function PosRetail(props: { products: Product[], appCurrency: any
                         </Table>
                     </CardContent>
                     <CardFooter className="flex justify-between">
-                        <div>Total: {props.appCurrency.symbol}{totalAmount.toFixed(2)}</div>
-                        <Button onClick={handleCompleteSale} disabled={orderItems.length === 0} className="p-4">Complete Sale</Button>
+                        <div>Total: {appCurrency.symbol}{totalAmount.toFixed(2)}</div>
+                        {canEdit && (
+                            <Button onClick={handleCompleteSale} disabled={orderItems.length === 0} className="p-4">Complete Sale</Button>
+                        )}
                     </CardFooter>
                 </Card>
             </div>

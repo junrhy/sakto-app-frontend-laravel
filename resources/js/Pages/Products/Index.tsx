@@ -1,3 +1,4 @@
+import { User, Project } from '@/types/index';
 import React, { useState, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -84,6 +85,21 @@ interface Product {
 }
 
 interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     products: Product[];
     currency: {
         symbol: string;
@@ -150,6 +166,20 @@ export default function Index({ auth, products, currency }: Props) {
     });
     const { addItem, getItemQuantity } = useCart();
     const { theme } = useTheme();
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const filteredProducts = useMemo(() => {
         let filtered = products;
@@ -394,12 +424,14 @@ export default function Index({ auth, products, currency }: Props) {
                                     View Orders
                                 </Button>
                             </Link>
-                            <Link href={route('products.create')}>
-                                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Create Product
-                                </Button>
-                            </Link>
+                            {canEdit && (
+                                <Link href={route('products.create')}>
+                                    <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Create Product
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -693,12 +725,14 @@ export default function Index({ auth, products, currency }: Props) {
                                                             View
                                                         </Link>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={route('products.edit', product.id)}>
-                                                            <Edit className="w-4 h-4 mr-2" />
-                                                            Edit
-                                                        </Link>
-                                                    </DropdownMenuItem>
+                                                    {canEdit && (
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('products.edit', product.id)}>
+                                                                <Edit className="w-4 h-4 mr-2" />
+                                                                Edit
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     {product.type === 'digital' && product.file_url && (
                                                         <DropdownMenuItem asChild>
                                                             <Link href={route('products.download', product.id)}>
@@ -707,13 +741,15 @@ export default function Index({ auth, products, currency }: Props) {
                                                             </Link>
                                                         </DropdownMenuItem>
                                                     )}
-                                                    <DropdownMenuItem 
-                                                        onClick={() => handleDelete(product.id)}
-                                                        className="text-red-600 dark:text-red-400"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                        Delete
-                                                    </DropdownMenuItem>
+                                                    {canDelete && (
+                                                        <DropdownMenuItem 
+                                                            onClick={() => handleDelete(product.id)}
+                                                            className="text-red-600 dark:text-red-400"
+                                                        >
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
@@ -895,12 +931,14 @@ export default function Index({ auth, products, currency }: Props) {
                                                                         View
                                                                     </Link>
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem asChild>
-                                                                    <Link href={route('products.edit', product.id)}>
-                                                                        <Edit className="w-4 h-4 mr-2" />
-                                                                        Edit
-                                                                    </Link>
-                                                                </DropdownMenuItem>
+                                                                {canEdit && (
+                                                                    <DropdownMenuItem asChild>
+                                                                        <Link href={route('products.edit', product.id)}>
+                                                                            <Edit className="w-4 h-4 mr-2" />
+                                                                            Edit
+                                                                        </Link>
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                                 {product.type === 'digital' && product.file_url && (
                                                                     <DropdownMenuItem asChild>
                                                                         <Link href={route('products.download', product.id)}>
@@ -909,13 +947,15 @@ export default function Index({ auth, products, currency }: Props) {
                                                                         </Link>
                                                                     </DropdownMenuItem>
                                                                 )}
-                                                                <DropdownMenuItem 
-                                                                    onClick={() => handleDelete(product.id)}
-                                                                    className="text-red-600 dark:text-red-400"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
+                                                                {canDelete && (
+                                                                    <DropdownMenuItem 
+                                                                        onClick={() => handleDelete(product.id)}
+                                                                        className="text-red-600 dark:text-red-400"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4 mr-2" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
@@ -936,7 +976,7 @@ export default function Index({ auth, products, currency }: Props) {
                                 <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                                     {search ? 'Try adjusting your search terms to find more products.' : 'Get started by creating your first product to build your catalog.'}
                                 </p>
-                                {!search && (
+                                {!search && canEdit && (
                                     <Link href={route('products.create')}>
                                         <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
                                             <Plus className="w-4 h-4 mr-2" />

@@ -41,6 +41,16 @@ interface Props extends PageProps {
         user: User;
         project?: Project;
         modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     product: Product;
     currency: {

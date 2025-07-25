@@ -1,14 +1,26 @@
+import { User, Project } from '@/types/index';
 import React, { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import SubscriptionLayout from '@/Layouts/SubscriptionLayout';
+import { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 
-interface Props {
+interface Props extends PageProps {
     auth: {
-        user: {
-            name: string;
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
         };
     };
     status: 'success' | 'failure' | 'cancelled' | 'pending';
@@ -43,6 +55,7 @@ export default function PaymentStatus({ auth, status, message, subscription, pay
 
     return (
         <SubscriptionLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Payment Status</h2>}
         >
             <Head title="Payment Status" />

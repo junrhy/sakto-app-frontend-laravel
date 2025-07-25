@@ -129,7 +129,6 @@ const requiresSubscription = (appParam: string | null, auth: any): boolean => {
 };
 
 export default function Authenticated({ children, header, user, auth: propAuth }: Props) {
-    console.log(propAuth);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [credits, setCredits] = useState<number>(0);
 

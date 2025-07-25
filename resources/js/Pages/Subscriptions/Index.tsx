@@ -1,6 +1,8 @@
+import { User, Project } from '@/types/index';
 import React, { useState, useMemo, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import SubscriptionLayout from '@/Layouts/SubscriptionLayout';
+import { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
@@ -42,12 +44,20 @@ interface UserSubscription {
     plan: SubscriptionPlan;
 }
 
-interface Props {
+interface Props extends PageProps {
     auth: {
-        user: {
-            name: string;
-            credits?: number;
-            identifier?: string;
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
         };
     };
     plans: SubscriptionPlan[];
@@ -72,6 +82,20 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
     const [networkError, setNetworkError] = useState(false);
     const [showPaymentSteps, setShowPaymentSteps] = useState(false);
     const [credits, setCredits] = useState<number>(auth.user.credits ?? 0);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     // Check URL parameters for plan to highlight and set billing period based on active subscription
     useEffect(() => {
@@ -362,6 +386,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
 
     return (
         <SubscriptionLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
         >
             <Head title="Premium Plans Subscription" />
 
@@ -703,13 +728,15 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         </Button>
                                                     </div>
                                                 )}
-                                                <Button 
-                                                    type="submit" 
-                                                    disabled={isSubmitting || !selectedPlan}
-                                                    className="min-w-[150px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 border-0"
-                                                >
-                                                    {isSubmitting ? 'Processing...' : 'Subscribe Now'}
-                                                </Button>
+                                                {canEdit && (
+                                                    <Button 
+                                                        type="submit" 
+                                                        disabled={isSubmitting || !selectedPlan}
+                                                        className="min-w-[150px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 border-0"
+                                                    >
+                                                        {isSubmitting ? 'Processing...' : 'Subscribe Now'}
+                                                    </Button>
+                                                )}
                                             </div>
                                         </form>
                                     </div>
@@ -758,7 +785,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     </TableCell>
                                                     <TableCell className="text-gray-700 dark:text-gray-300">₱{Number(subscription.amount_paid).toFixed(2)}</TableCell>
                                                     <TableCell>
-                                                        {subscription.status === 'active' && (
+                                                        {subscription.status === 'active' && canDelete && (
                                                             <Button 
                                                                 variant="destructive" 
                                                                 size="sm"
@@ -809,9 +836,11 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                         <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>
                             Keep Subscription
                         </Button>
-                        <Button variant="destructive" onClick={handleCancelSubscription}>
-                            Cancel Subscription
-                        </Button>
+                        {canDelete && (
+                            <Button variant="destructive" onClick={handleCancelSubscription}>
+                                Cancel Subscription
+                            </Button>
+                        )}
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

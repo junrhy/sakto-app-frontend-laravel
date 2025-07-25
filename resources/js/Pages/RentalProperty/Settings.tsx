@@ -1,6 +1,9 @@
+import { User, Project } from '@/types/index';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import SettingsForm from '@/Components/Settings/SettingsForm';
+import { PageProps } from '@/types';
+import React, { useMemo } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
@@ -15,10 +18,20 @@ interface Utilities {
     cable: boolean;
 }
 
-interface Props {
+interface Props extends PageProps {
     auth: {
-        user: {
-            name: string;
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
         };
     };
     settings: {
@@ -47,6 +60,13 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
         await axios.post('/api/rental-property/settings', data);
     };
 
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
     const periodUnits = [
         { value: 'days', label: 'Days' },
         { value: 'weeks', label: 'Weeks' },
@@ -67,6 +87,7 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
 
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Rental Property Settings</h2>}
         >
             <Head title="Rental Property Settings" />
@@ -79,8 +100,9 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                 <h3 className="text-lg font-medium">Configure your rental property settings, lease terms, and policies.</h3>
                             </div>
 
-                            <SettingsForm settings={settings} onSubmit={handleSubmit}>
-                                {({ data, setData }) => (
+                                                        {canEdit ? (
+                                <SettingsForm settings={settings} onSubmit={handleSubmit}>
+                                    {({ data, setData }) => (
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
@@ -317,7 +339,12 @@ export default function RentalPropertySettings({ auth, settings }: Props) {
                                         </div>
                                     </div>
                                 )}
-                            </SettingsForm>
+                                </SettingsForm>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <p className="text-gray-500">You don't have permission to edit rental property settings.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { User, Project } from '@/types/index';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -26,6 +26,16 @@ interface Props extends PageProps {
         user: User;
         project?: Project;
         modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     settings: Settings;
 }
@@ -40,6 +50,13 @@ export default function Settings({ auth, settings }: Props) {
         watermark_text: settings.watermark_text,
         watermark_position: settings.watermark_position,
     });
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -170,11 +187,13 @@ export default function Settings({ auth, settings }: Props) {
                                     )}
                                 </div>
 
-                                <div className="flex items-center justify-end mt-4">
-                                    <PrimaryButton disabled={processing}>
-                                        Save Settings
-                                    </PrimaryButton>
-                                </div>
+                                {canEdit && (
+                                    <div className="flex items-center justify-end mt-4">
+                                        <PrimaryButton disabled={processing}>
+                                            Save Settings
+                                        </PrimaryButton>
+                                    </div>
+                                )}
                             </form>
                         </CardContent>
                     </Card>

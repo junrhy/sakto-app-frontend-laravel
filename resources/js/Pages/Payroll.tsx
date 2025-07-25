@@ -1,6 +1,8 @@
+import { User, Project } from '@/types/index';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from "react";
+import { PageProps } from '@/types';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -22,11 +24,26 @@ interface Payroll {
     status: 'active' | 'inactive';
 }
 
-interface PageProps {
+interface Props extends PageProps {
     currency_symbol?: string;
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
 }
 
-export default function Payroll({ currency_symbol = '$' }: PageProps) {
+export default function Payroll({ currency_symbol = '$', auth }: Props) {
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPayrollDialogOpen, setIsPayrollDialogOpen] = useState(false);
@@ -35,6 +52,20 @@ export default function Payroll({ currency_symbol = '$' }: PageProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     useEffect(() => {
         loadPayrolls();
@@ -140,6 +171,7 @@ export default function Payroll({ currency_symbol = '$' }: PageProps) {
     
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Payroll
@@ -166,16 +198,20 @@ export default function Payroll({ currency_symbol = '$' }: PageProps) {
                     <CardContent>
                     <div className="flex justify-between mb-4">
                         <div className="flex items-center space-x-2">
-                        <Button onClick={handleAddPayroll}>
-                            <Plus className="mr-2 h-4 w-4" /> Add Payroll
-                        </Button>
-                        <Button 
-                            onClick={handleDeleteSelectedPayrolls} 
-                            variant="destructive" 
-                            disabled={selectedPayrolls.length === 0}
-                        >
-                            <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                        </Button>
+                        {canEdit && (
+                            <Button onClick={handleAddPayroll}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Payroll
+                            </Button>
+                        )}
+                        {canDelete && (
+                            <Button 
+                                onClick={handleDeleteSelectedPayrolls} 
+                                variant="destructive" 
+                                disabled={selectedPayrolls.length === 0}
+                            >
+                                <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                            </Button>
+                        )}
                         </div>
                         <div className="flex items-center space-x-2">
                         <Search className="h-4 w-4 text-gray-500" />
@@ -225,12 +261,16 @@ export default function Payroll({ currency_symbol = '$' }: PageProps) {
                             <TableCell>{payroll.startDate}</TableCell>
                             <TableCell>{payroll.status}</TableCell>
                             <TableCell>
-                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditPayroll(payroll)}>
-                                <Edit className="mr-2 h-4 w-4" /> Edit
-                                </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDeletePayroll(payroll.id)}>
-                                <Trash className="mr-2 h-4 w-4" /> Delete
-                                </Button>
+                                {canEdit && (
+                                    <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditPayroll(payroll)}>
+                                        <Edit className="mr-2 h-4 w-4" /> Edit
+                                    </Button>
+                                )}
+                                {canDelete && (
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeletePayroll(payroll.id)}>
+                                        <Trash className="mr-2 h-4 w-4" /> Delete
+                                    </Button>
+                                )}
                             </TableCell>
                             </TableRow>
                         ))}

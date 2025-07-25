@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
@@ -68,6 +68,16 @@ interface Props {
         user: User;
         project?: Project;
         modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
     };
     product: Product;
     currency: {
@@ -130,6 +140,20 @@ export default function Show({ auth, product, currency }: Props) {
     const { state: cartState, addItem, updateQuantity, removeItem, getItemQuantity } = useCart();
     const [selectedImage, setSelectedImage] = useState(0);
     const [isWishlisted, setIsWishlisted] = useState(false);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     // Debug logging
     console.log('Product Show Page Debug:', {
@@ -241,12 +265,14 @@ export default function Show({ auth, product, currency }: Props) {
                         >
                             <Share2 className="w-4 h-4" />
                         </Button>
-                        <Link href={route('products.edit', product.id)}>
-                            <Button variant="outline" size="sm">
-                                <Edit className="w-4 h-4 mr-2" />
-                                Edit
-                            </Button>
-                        </Link>
+                        {canEdit && (
+                            <Link href={route('products.edit', product.id)}>
+                                <Button variant="outline" size="sm">
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit
+                                </Button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             }

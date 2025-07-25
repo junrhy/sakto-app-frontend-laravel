@@ -1,6 +1,8 @@
+import { User, Project } from '@/types/index';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from "react";
+import { PageProps } from '@/types';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -32,7 +34,28 @@ interface Payment {
     payment_date: string;
 }
 
-export default function RentalItem(props: { initialItems: RentalItem[], initialPayments: any[], appCurrency: any }) {
+interface Props extends PageProps {
+    auth: {
+        user: User;
+        project?: Project;
+        modules?: string[];
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
+    initialItems: RentalItem[];
+    initialPayments: any[];
+    appCurrency: any;
+}
+
+export default function RentalItem({ auth, initialItems, initialPayments, appCurrency }: Props) {
     const [rentalItems, setRentalItems] = useState<RentalItem[]>([]);
     const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<RentalItem | null>(null);
@@ -48,6 +71,20 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
     const [paymentHistory, setPaymentHistory] = useState<Payment[]>([]);
     const [selectedItemHistory, setSelectedItemHistory] = useState<RentalItem | null>(null);
     const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const handleAddItem = () => {
         setCurrentItem(null);
@@ -172,6 +209,7 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
 
     return (
         <AuthenticatedLayout
+            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Rental Items
@@ -188,16 +226,20 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
                         <CardContent>
                         <div className="flex justify-between mb-4">
                             <div className="flex items-center space-x-2">
-                            <Button onClick={handleAddItem}>
-                                <Plus className="mr-2 h-4 w-4" /> Add Rental Item
-                            </Button>
-                            <Button 
-                                onClick={handleDeleteSelectedItems} 
-                                variant="destructive" 
-                                disabled={selectedItems.length === 0}
-                            >
-                                <Trash className="mr-2 h-4 w-4" /> Delete Selected
-                            </Button>
+                            {canEdit && (
+                                <Button onClick={handleAddItem}>
+                                    <Plus className="mr-2 h-4 w-4" /> Add Rental Item
+                                </Button>
+                            )}
+                            {canDelete && (
+                                <Button 
+                                    onClick={handleDeleteSelectedItems} 
+                                    variant="destructive" 
+                                    disabled={selectedItems.length === 0}
+                                >
+                                    <Trash className="mr-2 h-4 w-4" /> Delete Selected
+                                </Button>
+                            )}
                             </div>
                             <div className="flex items-center space-x-2">
                             <Search className="h-4 w-4 text-gray-500" />
@@ -244,7 +286,7 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
                                 </TableCell>
                                 <TableCell>{item.name}</TableCell>
                                 <TableCell>{item.category}</TableCell>
-                                <TableCell>{props.appCurrency.symbol}{item.daily_rate}</TableCell>
+                                <TableCell>{appCurrency.symbol}{item.daily_rate}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
                                 <TableCell>{item.status}</TableCell>
                                 <TableCell>
@@ -260,12 +302,16 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => handleEditItem(item)}>
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>
-                                            <Trash className="h-4 w-4" />
-                                        </Button>
+                                        {canEdit && (
+                                            <Button variant="outline" size="sm" onClick={() => handleEditItem(item)}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        {canDelete && (
+                                            <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>
+                                                <Trash className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                         {item.status === 'rented' && (
                                             <>
                                                 <Button variant="default" size="sm" onClick={() => handlePayment(item)}>
@@ -507,7 +553,7 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
                                     </div>
                                     <div>
                                         <Label>Daily Rate</Label>
-                                        <p className="text-sm">{props.appCurrency.symbol}{selectedItemHistory?.daily_rate}</p>
+                                        <p className="text-sm">{appCurrency.symbol}{selectedItemHistory?.daily_rate}</p>
                                     </div>
                                 </div>
 
@@ -532,7 +578,7 @@ export default function RentalItem(props: { initialItems: RentalItem[], initialP
                                                 paymentHistory.map((payment) => (
                                                     <TableRow key={payment.id}>
                                                         <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
-                                                        <TableCell>{props.appCurrency.symbol}{Number(payment.amount).toLocaleString()}</TableCell>
+                                                        <TableCell>{appCurrency.symbol}{Number(payment.amount).toLocaleString()}</TableCell>
                                                         <TableCell>
                                                             <span className="text-xs font-medium px-2.5 py-0.5 rounded bg-green-100 text-green-800">
                                                                 Paid
