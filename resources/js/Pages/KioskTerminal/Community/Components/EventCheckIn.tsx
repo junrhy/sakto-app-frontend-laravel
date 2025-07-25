@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import {
     Card,
@@ -45,10 +45,30 @@ interface Participant {
 }
 
 interface EventCheckInProps {
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     events: Event[];
 }
 
-export default function EventCheckIn({ events }: EventCheckInProps) {
+export default function EventCheckIn({ auth, events }: EventCheckInProps) {
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [eventSearchQuery, setEventSearchQuery] = useState('');
@@ -87,6 +107,11 @@ export default function EventCheckIn({ events }: EventCheckInProps) {
 
     // Check-in participant
     const checkInParticipant = async (eventId: string, participantId: string) => {
+        if (!canEdit) {
+            toast.error('You do not have permission to check in participants.');
+            return;
+        }
+
         try {
             const response = await fetch(route('kiosk.community.events.check-in', { eventId, participantId }), {
                 method: 'POST',
@@ -237,7 +262,7 @@ export default function EventCheckIn({ events }: EventCheckInProps) {
                                                         )}
                                                     </td>
                                                     <td className="px-3 lg:px-6 py-4">
-                                                        {!participant.checked_in && (
+                                                        {!participant.checked_in && canEdit && (
                                                             <Button
                                                                 size="lg"
                                                                 className="px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-lg"

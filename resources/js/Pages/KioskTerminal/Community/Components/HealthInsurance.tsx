@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     Card,
     CardContent,
@@ -57,6 +57,19 @@ const formatManilaTime = (dateString: string) => {
 };
 
 interface HealthInsuranceProps {
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     members: Member[];
     contributionData: any;
     setContributionData: (data: any) => void;
@@ -82,6 +95,7 @@ interface HealthInsuranceProps {
 }
 
 export default function HealthInsurance({
+    auth,
     members,
     contributionData,
     setContributionData,
@@ -103,6 +117,13 @@ export default function HealthInsurance({
     onMemberAmountChange,
     onRefreshData
 }: HealthInsuranceProps) {
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
     return (
         <>
             <style>{`
@@ -158,24 +179,26 @@ export default function HealthInsurance({
                                         Refresh
                                     </Button>
                                 )}
-                                <Button 
-                                    onClick={onSubmit} 
-                                    disabled={processing}
-                                    className="submit-button min-w-[200px] h-12 text-lg px-8 font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 !bg-gradient-to-r !from-indigo-600 !to-purple-600 hover:!from-indigo-700 hover:!to-purple-700 !text-white hover:!text-white disabled:!bg-gray-400 disabled:!text-gray-200 disabled:transform-none disabled:shadow-none rounded-xl border-0"
-                                    type="button"
-                                >
-                                    {processing ? (
-                                        <>
-                                            <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                                            Processing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CreditCard className="w-5 h-5 mr-2" />
-                                            Submit
-                                        </>
-                                    )}
-                                </Button>
+                                {canEdit && (
+                                    <Button 
+                                        onClick={onSubmit} 
+                                        disabled={processing}
+                                        className="submit-button min-w-[200px] h-12 text-lg px-8 font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 !bg-gradient-to-r !from-indigo-600 !to-purple-600 hover:!from-indigo-700 hover:!to-purple-700 !text-white hover:!text-white disabled:!bg-gray-400 disabled:!text-gray-200 disabled:transform-none disabled:shadow-none rounded-xl border-0"
+                                        type="button"
+                                    >
+                                        {processing ? (
+                                            <>
+                                                <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CreditCard className="w-5 h-5 mr-2" />
+                                                Submit
+                                            </>
+                                        )}
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </CardContent>
@@ -215,6 +238,7 @@ export default function HealthInsurance({
                             value={contributionData.bulk_amount}
                             onChange={(e) => onBulkAmountChange(e.target.value)}
                             className="h-12 text-lg px-4"
+                            disabled={!canEdit}
                         />
                     </div>
                 </div>
@@ -229,6 +253,7 @@ export default function HealthInsurance({
                                 onCheckedChange={onSelectAll}
                                 id="select-all"
                                 className="w-6 h-6"
+                                disabled={!canEdit}
                             />
                             <Label htmlFor="select-all" className="text-lg font-semibold">Select All</Label>
                         </div>
@@ -267,6 +292,7 @@ export default function HealthInsurance({
                                                         checked={contribution?.selected || false}
                                                         onCheckedChange={(checked) => onMemberSelection(member.id, checked as boolean)}
                                                         className="w-5 h-5 lg:w-6 lg:h-6"
+                                                        disabled={!canEdit}
                                                     />
                                                 </td>
                                                 <td className="px-3 lg:px-6 py-4 text-base lg:text-lg font-medium">{member.name}</td>
@@ -300,7 +326,7 @@ export default function HealthInsurance({
                                                                 ? 'border-red-500 focus:border-red-500' 
                                                                 : ''
                                                         }`}
-                                                        disabled={!contribution?.selected}
+                                                        disabled={!contribution?.selected || !canEdit}
                                                         min={member.contribution_amount}
                                                         placeholder={`Min: ${appCurrency.symbol}${member.contribution_amount}`}
                                                     />

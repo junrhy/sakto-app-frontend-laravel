@@ -83,6 +83,19 @@ interface Contribution {
 }
 
 interface KioskData {
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     events: Event[];
     healthInsuranceMembers: Member[];
     mortuaryMembers: Member[];
@@ -93,11 +106,26 @@ interface KioskData {
 }
 
 export default function KioskTerminal({ 
+    auth,
     events: initialEvents, 
     healthInsuranceMembers: initialHealthMembers, 
     mortuaryMembers: initialMortuaryMembers, 
     appCurrency 
 }: KioskData) {
+    const canEdit = React.useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
+    const canDelete = React.useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin || false;
+    }, [auth.selectedTeamMember, auth.user?.is_admin]);
+
     const [activeTab, setActiveTab] = useState('events');
     const [events, setEvents] = useState<Event[]>(initialEvents);
     const [healthInsuranceMembers, setHealthInsuranceMembers] = useState<Member[]>(initialHealthMembers);
@@ -244,18 +272,19 @@ export default function KioskTerminal({
 
     // Submit contributions
     const submitContributions = async () => {
-        const selectedContributions = memberContributions
-            .filter(member => member.selected && member.amount > 0)
-            .map(member => ({
-                member_id: String(member.member_id), // Convert to string
-                amount: member.amount,
-                payment_date: format(new Date(), 'yyyy-MM-dd'), // Always use today's date
-                payment_method: 'cash', // Always use cash
-                reference_number: '' // No reference number
-            }));
+        if (!canEdit) {
+            toast.error('You do not have permission to submit contributions.');
+            return;
+        }
 
+        if (memberContributions.length === 0) {
+            toast.error('Please select at least one member to submit contributions.');
+            return;
+        }
+
+        const selectedContributions = memberContributions.filter(contribution => contribution.selected);
         if (selectedContributions.length === 0) {
-            toast.error('Please select at least one member and enter an amount');
+            toast.error('Please select at least one member to submit contributions.');
             return;
         }
 
@@ -263,39 +292,67 @@ export default function KioskTerminal({
         setProcessingProgress({ current: 0, total: selectedContributions.length });
 
         try {
-            const routeName = activeTab === 'health_insurance' 
-                ? 'kiosk.community.health-insurance.contributions' 
-                : 'kiosk.community.mortuary.contributions';
+            const results = [];
+            let successCount = 0;
+            let errorCount = 0;
 
-            const response = await fetch(route(routeName), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify({ contributions: selectedContributions })
-            });
+            for (let i = 0; i < selectedContributions.length; i++) {
+                const contribution = selectedContributions[i];
+                setProcessingProgress({ current: i + 1, total: selectedContributions.length });
 
-            const result = await response.json();
+                try {
+                    const response = await fetch(route('kiosk.community.contributions.store'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        },
+                        body: JSON.stringify({
+                            member_id: contribution.member_id,
+                            amount: contribution.amount,
+                            type: activeTab === 'health_insurance' ? 'health_insurance' : 'mortuary',
+                            ...contributionData
+                        }),
+                    });
 
-            if (response.ok || response.status === 207) {
-                if (result.success) {
-                    // Show success page instead of toast
-                    setSuccessData(result.data);
-                    setShowSuccess(true);
-                } else {
-                    toast.warning(result.message);
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        successCount++;
+                        results.push({ success: true, member_id: contribution.member_id, data: result });
+                    } else {
+                        errorCount++;
+                        results.push({ success: false, member_id: contribution.member_id, error: result.message || 'Failed to submit contribution' });
+                    }
+                } catch (error) {
+                    errorCount++;
+                    results.push({ success: false, member_id: contribution.member_id, error: 'Network error' });
                 }
-            } else {
-                toast.error(result.message || 'Failed to submit contributions');
             }
-        } catch (error) {
-            console.error('Error submitting contributions:', error);
-            toast.error('Failed to submit contributions');
-        } finally {
+
             setProcessing(false);
             setProcessingProgress({ current: 0, total: 0 });
+
+            if (successCount > 0) {
+                toast.success(`Successfully submitted ${successCount} contribution(s)`);
+                if (errorCount > 0) {
+                    toast.error(`${errorCount} contribution(s) failed to submit`);
+                }
+                setShowSuccess(true);
+                setSuccessData({
+                    type: activeTab === 'health_insurance' ? 'Health Insurance' : 'Mortuary',
+                    totalAmount: selectedContributions.reduce((sum, c) => sum + c.amount, 0),
+                    memberCount: successCount,
+                    currency: appCurrency
+                });
+            } else {
+                toast.error('Failed to submit any contributions');
+            }
+        } catch (error) {
+            setProcessing(false);
+            setProcessingProgress({ current: 0, total: 0 });
+            console.error('Error submitting contributions:', error);
+            toast.error('Failed to submit contributions');
         }
     };
 
@@ -388,16 +445,70 @@ export default function KioskTerminal({
                     
                     {/* Main Content */}
                     <div className="flex-1 flex flex-col overflow-hidden">
+                        {/* Header with current team member info */}
+                        <div className="bg-white border-b border-gray-200 px-6 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-3">
+                                        {auth.selectedTeamMember?.profile_picture ? (
+                                            <img 
+                                                src={auth.selectedTeamMember.profile_picture} 
+                                                alt="Profile" 
+                                                className="w-10 h-10 rounded-full border-2 border-blue-500"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-blue-500">
+                                                <UserCheck className="h-5 w-5 text-white" />
+                                            </div>
+                                        )}
+                                        <div>
+                                            <h2 className="text-lg font-semibold text-gray-900">
+                                                {auth.selectedTeamMember ? auth.selectedTeamMember.full_name : auth.user.name}
+                                            </h2>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-sm text-gray-600">
+                                                    {auth.selectedTeamMember ? 'Team Member' : 'Main User'}
+                                                </span>
+                                                {auth.selectedTeamMember && (
+                                                    <>
+                                                        <span className="text-gray-400">•</span>
+                                                        <div className="flex space-x-1">
+                                                            {auth.selectedTeamMember.roles.map((role, index) => (
+                                                                <Badge 
+                                                                    key={index} 
+                                                                    variant="secondary" 
+                                                                    className="text-xs bg-blue-100 text-blue-800 border-blue-200"
+                                                                >
+                                                                    {role}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{format(new Date(), 'MMM dd, yyyy')}</span>
+                                    <span className="text-gray-400">•</span>
+                                    <span>{format(new Date(), 'HH:mm')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                          {/* Content Area */}
                         <div className="flex-1 overflow-auto p-6">
                             {/* Event Check-in Content */}
                             {activeTab === 'events' && (
-                                <EventCheckIn events={events} />
+                                <EventCheckIn auth={auth} events={events} />
                             )}
 
                             {/* Health Insurance Content */}
                             {activeTab === 'health_insurance' && (
                                 <HealthInsurance
+                                    auth={auth}
                                     members={healthInsuranceMembers}
                                     contributionData={contributionData}
                                     setContributionData={setContributionData}
@@ -425,6 +536,7 @@ export default function KioskTerminal({
                             {/* Mortuary Content */}
                             {activeTab === 'mortuary' && (
                                 <Mortuary
+                                    auth={auth}
                                     members={mortuaryMembers}
                                     contributionData={contributionData}
                                     setContributionData={setContributionData}
