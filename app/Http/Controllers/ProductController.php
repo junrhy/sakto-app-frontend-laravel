@@ -84,11 +84,32 @@ class ProductController extends Controller
             'weight' => 'nullable|numeric|min:0',
             'dimensions' => 'nullable|string|max:255',
             'file' => 'nullable|file|max:102400', // max 100MB for digital products
-            'thumbnail' => 'nullable|image|max:2048', // max 2MB
+            'images' => 'nullable|array',
+            'images.*.file' => 'nullable|image|max:2048', // max 2MB per image
+            'images.*.alt_text' => 'nullable|string|max:255',
+            'images.*.is_primary' => 'boolean',
+            'images.*.sort_order' => 'integer|min:0',
             'status' => 'required|string|in:draft,published,archived,inactive',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:255',
             'metadata' => 'nullable|array',
+            // Supplier related fields
+            'supplier_name' => 'nullable|string|max:255',
+            'supplier_email' => 'nullable|email|max:255',
+            'supplier_phone' => 'nullable|string|max:255',
+            'supplier_address' => 'nullable|string|max:500',
+            'supplier_website' => 'nullable|url|max:255',
+            'supplier_contact_person' => 'nullable|string|max:255',
+            // Purchase related fields
+            'purchase_price' => 'nullable|numeric|min:0',
+            'purchase_currency' => 'nullable|string|max:10',
+            'purchase_date' => 'nullable|date',
+            'purchase_order_number' => 'nullable|string|max:255',
+            'purchase_notes' => 'nullable|string|max:1000',
+            'reorder_point' => 'nullable|integer|min:0',
+            'reorder_quantity' => 'nullable|integer|min:0',
+            'lead_time_days' => 'nullable|integer|min:0',
+            'payment_terms' => 'nullable|string|max:255',
             'variants' => 'nullable|array',
             'variants.*.sku' => 'nullable|string|max:255',
             'variants.*.price' => 'nullable|numeric|min:0',
@@ -106,10 +127,9 @@ class ProductController extends Controller
             $validated['file_url'] = Storage::disk('public')->url($path);
         }
 
-        if ($request->hasFile('thumbnail')) {
-            $path = $request->file('thumbnail')->store('products/thumbnails', 'public');
-            $validated['thumbnail_url'] = Storage::disk('public')->url($path);
-        }
+        // Extract images data before sending to API
+        $images = $validated['images'] ?? null;
+        unset($validated['images']);
 
         $clientIdentifier = auth()->user()->identifier;
         $validated['client_identifier'] = $clientIdentifier;
@@ -126,6 +146,37 @@ class ProductController extends Controller
         }
 
         $product = $response->json();
+
+        // Upload images if provided
+        if ($images && is_array($images)) {
+            foreach ($images as $imageData) {
+                if (isset($imageData['file']) && $imageData['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    // Upload image to local storage
+                    $path = $imageData['file']->store('products/images', 'public');
+                    $imageUrl = Storage::disk('public')->url($path);
+
+                    // Prepare the image data for API
+                    $imagePayload = [
+                        'image_url' => $imageUrl,
+                        'alt_text' => $imageData['alt_text'] ?? null,
+                        'is_primary' => $imageData['is_primary'] ?? false,
+                        'sort_order' => $imageData['sort_order'] ?? 0,
+                    ];
+
+                    // Send image data to API
+                    $imageResponse = Http::withToken($this->apiToken)
+                        ->post("{$this->apiUrl}/products/{$product['id']}/images", $imagePayload);
+
+                    if (!$imageResponse->successful()) {
+                        Log::error('Failed to create image record', [
+                            'product_id' => $product['id'],
+                            'image_data' => $imageData,
+                            'response' => $imageResponse->json()
+                        ]);
+                    }
+                }
+            }
+        }
 
         // Create variants if provided
         if ($variants && $validated['type'] === 'physical') {
@@ -217,6 +268,23 @@ class ProductController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:255',
             'metadata' => 'nullable|array',
+            // Supplier related fields
+            'supplier_name' => 'nullable|string|max:255',
+            'supplier_email' => 'nullable|email|max:255',
+            'supplier_phone' => 'nullable|string|max:255',
+            'supplier_address' => 'nullable|string|max:500',
+            'supplier_website' => 'nullable|url|max:255',
+            'supplier_contact_person' => 'nullable|string|max:255',
+            // Purchase related fields
+            'purchase_price' => 'nullable|numeric|min:0',
+            'purchase_currency' => 'nullable|string|max:10',
+            'purchase_date' => 'nullable|date',
+            'purchase_order_number' => 'nullable|string|max:255',
+            'purchase_notes' => 'nullable|string|max:1000',
+            'reorder_point' => 'nullable|integer|min:0',
+            'reorder_quantity' => 'nullable|integer|min:0',
+            'lead_time_days' => 'nullable|integer|min:0',
+            'payment_terms' => 'nullable|string|max:255',
             'variants' => 'nullable|array',
             'variants.*.id' => 'nullable|integer|exists:product_variants,id',
             'variants.*.sku' => 'nullable|string|max:255',
@@ -228,14 +296,15 @@ class ProductController extends Controller
             'variants.*.attributes.*' => 'string|max:255',
             'variants.*.thumbnail' => 'nullable|image|max:2048',
             'variants.*.is_active' => 'boolean',
+            'images' => 'nullable|array',
+            'images.*.file' => 'nullable|image|max:2048', // max 2MB per image
+            'images.*.alt_text' => 'nullable|string|max:255',
+            'images.*.is_primary' => 'boolean',
+            'images.*.sort_order' => 'integer|min:0',
         ];
 
         if ($request->hasFile('file')) {
             $rules['file'] = 'required|file|max:102400'; // max 100MB
-        }
-
-        if ($request->hasFile('thumbnail')) {
-            $rules['thumbnail'] = 'required|image|max:2048'; // max 2MB
         }
 
         $validated = $request->validate($rules);
@@ -260,28 +329,11 @@ class ProductController extends Controller
             $validated['file_url'] = Storage::disk('public')->url($path);
         }
 
-        if ($request->hasFile('thumbnail')) {
-            // Get the old product data to delete previous thumbnail if it exists
-            $getResponse = Http::withToken($this->apiToken)
-                ->get("{$this->apiUrl}/products/{$id}");
-            
-            if ($getResponse->successful()) {
-                $product = $getResponse->json();
-                if (!empty($product['thumbnail_url'])) {
-                    $path = str_replace(Storage::disk('public')->url(''), '', $product['thumbnail_url']);
-                    if (Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
-                }
-            }
-
-            $path = $request->file('thumbnail')->store('products/thumbnails', 'public');
-            $validated['thumbnail_url'] = Storage::disk('public')->url($path);
-        }
-
-        // Extract variants data before sending to API
+        // Extract variants and images data before sending to API
         $variants = $validated['variants'] ?? null;
+        $images = $validated['images'] ?? null;
         unset($validated['variants']);
+        unset($validated['images']);
 
         $response = Http::withToken($this->apiToken)
             ->put("{$this->apiUrl}/products/{$id}", $validated);
@@ -324,6 +376,37 @@ class ProductController extends Controller
             }
         }
 
+        // Handle images if provided
+        if ($images && is_array($images)) {
+            foreach ($images as $imageData) {
+                if (isset($imageData['file']) && $imageData['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    // Upload image to local storage
+                    $path = $imageData['file']->store('products/images', 'public');
+                    $imageUrl = Storage::disk('public')->url($path);
+
+                    // Prepare the image data for API
+                    $imagePayload = [
+                        'image_url' => $imageUrl,
+                        'alt_text' => $imageData['alt_text'] ?? null,
+                        'is_primary' => $imageData['is_primary'] ?? false,
+                        'sort_order' => $imageData['sort_order'] ?? 0,
+                    ];
+
+                    // Send image data to API
+                    $imageResponse = Http::withToken($this->apiToken)
+                        ->post("{$this->apiUrl}/products/{$id}/images", $imagePayload);
+
+                    if (!$imageResponse->successful()) {
+                        Log::error('Failed to create image record', [
+                            'product_id' => $id,
+                            'image_data' => $imageData,
+                            'response' => $imageResponse->json()
+                        ]);
+                    }
+                }
+            }
+        }
+
         return redirect()->route('products.index')
             ->with('message', 'Product updated successfully');
     }
@@ -345,11 +428,15 @@ class ProductController extends Controller
                 }
             }
 
-            // Delete the thumbnail if it exists
-            if (!empty($product['thumbnail_url'])) {
-                $path = str_replace(Storage::disk('public')->url(''), '', $product['thumbnail_url']);
-                if (Storage::disk('public')->exists($path)) {
-                    Storage::disk('public')->delete($path);
+            // Delete all product images if they exist
+            if (!empty($product['images']) && is_array($product['images'])) {
+                foreach ($product['images'] as $image) {
+                    if (!empty($image['image_url'])) {
+                        $path = str_replace(Storage::disk('public')->url(''), '', $image['image_url']);
+                        if (Storage::disk('public')->exists($path)) {
+                            Storage::disk('public')->delete($path);
+                        }
+                    }
                 }
             }
         }

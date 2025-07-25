@@ -14,6 +14,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import VariantManager from '@/Components/VariantManager';
+import ImageUploader from '@/Components/ImageUploader';
 
 interface Product {
     id: number;
@@ -30,6 +31,30 @@ interface Product {
     thumbnail_url?: string;
     file_url?: string;
     tags: string[];
+    images?: Array<{
+        id?: number;
+        image_url: string;
+        alt_text?: string;
+        is_primary: boolean;
+        sort_order: number;
+    }>;
+    // Supplier related fields
+    supplier_name?: string;
+    supplier_email?: string;
+    supplier_phone?: string;
+    supplier_address?: string;
+    supplier_website?: string;
+    supplier_contact_person?: string;
+    // Purchase related fields
+    purchase_price?: number;
+    purchase_currency?: string;
+    purchase_date?: string;
+    purchase_order_number?: string;
+    purchase_notes?: string;
+    reorder_point?: number;
+    reorder_quantity?: number;
+    lead_time_days?: number;
+    payment_terms?: string;
     variants?: any[];
     active_variants?: any[];
     created_at: string;
@@ -60,7 +85,7 @@ interface Props extends PageProps {
 }
 
 export default function Edit({ auth, product, currency }: Props) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: product.name,
         description: product.description,
         price: product.price.toString(),
@@ -74,7 +99,37 @@ export default function Edit({ auth, product, currency }: Props) {
         tags: product.tags || [],
         variants: product.active_variants || [],
         file: null as File | null,
-        thumbnail: null as File | null,
+        images: product.images?.map(img => ({
+            id: img.id,
+            image_url: img.image_url,
+            alt_text: img.alt_text || '',
+            is_primary: img.is_primary,
+            sort_order: img.sort_order,
+        })) || [] as Array<{
+            id?: number;
+            image_url: string;
+            alt_text?: string;
+            is_primary: boolean;
+            sort_order: number;
+            file?: File;
+        }>,
+        // Supplier related fields
+        supplier_name: product.supplier_name || '',
+        supplier_email: product.supplier_email || '',
+        supplier_phone: product.supplier_phone || '',
+        supplier_address: product.supplier_address || '',
+        supplier_website: product.supplier_website || '',
+        supplier_contact_person: product.supplier_contact_person || '',
+        // Purchase related fields
+        purchase_price: product.purchase_price?.toString() || '',
+        purchase_currency: product.purchase_currency || currency.code,
+        purchase_date: product.purchase_date || '',
+        purchase_order_number: product.purchase_order_number || '',
+        purchase_notes: product.purchase_notes || '',
+        reorder_point: product.reorder_point?.toString() || '',
+        reorder_quantity: product.reorder_quantity?.toString() || '',
+        lead_time_days: product.lead_time_days?.toString() || '',
+        payment_terms: product.payment_terms || '',
         _method: 'PUT'
     });
 
@@ -89,9 +144,9 @@ export default function Edit({ auth, product, currency }: Props) {
         setData('variants', variants);
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'file' | 'thumbnail') => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setData(field, e.target.files[0]);
+            setData('file', e.target.files[0]);
         }
     };
 
@@ -288,7 +343,7 @@ export default function Edit({ auth, product, currency }: Props) {
                                             id="file"
                                             type="file"
                                             className="mt-1 block w-full"
-                                            onChange={(e) => handleFileChange(e, 'file')}
+                                            onChange={handleFileChange}
                                             accept=".pdf,.doc,.docx,.txt,.zip,.rar,.mp4,.mp3,.jpg,.jpeg,.png,.gif"
                                         />
                                         <p className="text-sm text-gray-500 mt-1">
@@ -317,29 +372,12 @@ export default function Edit({ auth, product, currency }: Props) {
                                     <InputError message={errors.status} className="mt-2" />
                                 </div>
 
-                                <div>
-                                    <Label htmlFor="thumbnail">Thumbnail Image</Label>
-                                    {product.thumbnail_url && (
-                                        <div className="mb-2">
-                                            <img 
-                                                src={product.thumbnail_url} 
-                                                alt="Current thumbnail" 
-                                                className="w-20 h-20 object-cover rounded border"
-                                            />
-                                        </div>
-                                    )}
-                                    <Input
-                                        id="thumbnail"
-                                        type="file"
-                                        className="mt-1 block w-full"
-                                        onChange={(e) => handleFileChange(e, 'thumbnail')}
-                                        accept="image/*"
-                                    />
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Max file size: 2MB. Supported formats: JPG, PNG, GIF
-                                    </p>
-                                    <InputError message={errors.thumbnail} className="mt-2" />
-                                </div>
+                                <ImageUploader
+                                    images={data.images}
+                                    onImagesChange={(images) => setData('images', images)}
+                                    maxImages={10}
+                                    maxFileSize={2}
+                                />
 
                                 <div>
                                     <Label htmlFor="tags">Tags</Label>
@@ -367,15 +405,227 @@ export default function Edit({ auth, product, currency }: Props) {
                                     <InputError message={errors.tags} className="mt-2" />
                                 </div>
 
-                                <div className="flex justify-end space-x-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => reset()}
-                                        disabled={processing}
-                                    >
-                                        Reset
-                                    </Button>
+                                {/* Supplier Information */}
+                                <div className="border-t pt-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Supplier Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <InputLabel htmlFor="supplier_name" value="Supplier Name" />
+                                            <Input
+                                                id="supplier_name"
+                                                type="text"
+                                                className="mt-1 block w-full"
+                                                value={data.supplier_name}
+                                                onChange={e => setData('supplier_name', e.target.value)}
+                                                placeholder="Enter supplier name"
+                                            />
+                                            <InputError message={errors.supplier_name} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="supplier_email" value="Supplier Email" />
+                                            <Input
+                                                id="supplier_email"
+                                                type="email"
+                                                className="mt-1 block w-full"
+                                                value={data.supplier_email}
+                                                onChange={e => setData('supplier_email', e.target.value)}
+                                                placeholder="supplier@example.com"
+                                            />
+                                            <InputError message={errors.supplier_email} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="supplier_phone" value="Supplier Phone" />
+                                            <Input
+                                                id="supplier_phone"
+                                                type="tel"
+                                                className="mt-1 block w-full"
+                                                value={data.supplier_phone}
+                                                onChange={e => setData('supplier_phone', e.target.value)}
+                                                placeholder="+1 (555) 123-4567"
+                                            />
+                                            <InputError message={errors.supplier_phone} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="supplier_website" value="Supplier Website" />
+                                            <Input
+                                                id="supplier_website"
+                                                type="url"
+                                                className="mt-1 block w-full"
+                                                value={data.supplier_website}
+                                                onChange={e => setData('supplier_website', e.target.value)}
+                                                placeholder="https://www.supplier.com"
+                                            />
+                                            <InputError message={errors.supplier_website} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="supplier_contact_person" value="Contact Person" />
+                                            <Input
+                                                id="supplier_contact_person"
+                                                type="text"
+                                                className="mt-1 block w-full"
+                                                value={data.supplier_contact_person}
+                                                onChange={e => setData('supplier_contact_person', e.target.value)}
+                                                placeholder="John Doe"
+                                            />
+                                            <InputError message={errors.supplier_contact_person} className="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6">
+                                        <InputLabel htmlFor="supplier_address" value="Supplier Address" />
+                                        <Textarea
+                                            id="supplier_address"
+                                            className="mt-1 block w-full"
+                                            value={data.supplier_address}
+                                            onChange={e => setData('supplier_address', e.target.value)}
+                                            placeholder="Enter complete supplier address"
+                                            rows={3}
+                                        />
+                                        <InputError message={errors.supplier_address} className="mt-2" />
+                                    </div>
+                                </div>
+
+                                {/* Purchase Information */}
+                                <div className="border-t pt-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Purchase Information</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <InputLabel htmlFor="purchase_price" value="Purchase Price" />
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                                    {currency.symbol}
+                                                </span>
+                                                <Input
+                                                    id="purchase_price"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    className="mt-1 block w-full pl-8"
+                                                    value={data.purchase_price}
+                                                    onChange={e => setData('purchase_price', e.target.value)}
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <InputError message={errors.purchase_price} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="purchase_currency" value="Purchase Currency" />
+                                            <Input
+                                                id="purchase_currency"
+                                                type="text"
+                                                className="mt-1 block w-full"
+                                                value={data.purchase_currency}
+                                                onChange={e => setData('purchase_currency', e.target.value)}
+                                                placeholder="USD"
+                                            />
+                                            <InputError message={errors.purchase_currency} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="purchase_date" value="Purchase Date" />
+                                            <Input
+                                                id="purchase_date"
+                                                type="date"
+                                                className="mt-1 block w-full"
+                                                value={data.purchase_date}
+                                                onChange={e => setData('purchase_date', e.target.value)}
+                                            />
+                                            <InputError message={errors.purchase_date} className="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                        <div>
+                                            <InputLabel htmlFor="purchase_order_number" value="Purchase Order Number" />
+                                            <Input
+                                                id="purchase_order_number"
+                                                type="text"
+                                                className="mt-1 block w-full"
+                                                value={data.purchase_order_number}
+                                                onChange={e => setData('purchase_order_number', e.target.value)}
+                                                placeholder="PO-2024-001"
+                                            />
+                                            <InputError message={errors.purchase_order_number} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="payment_terms" value="Payment Terms" />
+                                            <Input
+                                                id="payment_terms"
+                                                type="text"
+                                                className="mt-1 block w-full"
+                                                value={data.payment_terms}
+                                                onChange={e => setData('payment_terms', e.target.value)}
+                                                placeholder="Net 30"
+                                            />
+                                            <InputError message={errors.payment_terms} className="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                                        <div>
+                                            <InputLabel htmlFor="reorder_point" value="Reorder Point" />
+                                            <Input
+                                                id="reorder_point"
+                                                type="number"
+                                                min="0"
+                                                className="mt-1 block w-full"
+                                                value={data.reorder_point}
+                                                onChange={e => setData('reorder_point', e.target.value)}
+                                                placeholder="10"
+                                            />
+                                            <InputError message={errors.reorder_point} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="reorder_quantity" value="Reorder Quantity" />
+                                            <Input
+                                                id="reorder_quantity"
+                                                type="number"
+                                                min="0"
+                                                className="mt-1 block w-full"
+                                                value={data.reorder_quantity}
+                                                onChange={e => setData('reorder_quantity', e.target.value)}
+                                                placeholder="50"
+                                            />
+                                            <InputError message={errors.reorder_quantity} className="mt-2" />
+                                        </div>
+
+                                        <div>
+                                            <InputLabel htmlFor="lead_time_days" value="Lead Time (Days)" />
+                                            <Input
+                                                id="lead_time_days"
+                                                type="number"
+                                                min="0"
+                                                className="mt-1 block w-full"
+                                                value={data.lead_time_days}
+                                                onChange={e => setData('lead_time_days', e.target.value)}
+                                                placeholder="7"
+                                            />
+                                            <InputError message={errors.lead_time_days} className="mt-2" />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-6">
+                                        <InputLabel htmlFor="purchase_notes" value="Purchase Notes" />
+                                        <Textarea
+                                            id="purchase_notes"
+                                            className="mt-1 block w-full"
+                                            value={data.purchase_notes}
+                                            onChange={e => setData('purchase_notes', e.target.value)}
+                                            placeholder="Additional notes about the purchase..."
+                                            rows={3}
+                                        />
+                                        <InputError message={errors.purchase_notes} className="mt-2" />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end">
                                     <PrimaryButton disabled={processing}>
                                         Update Product
                                     </PrimaryButton>

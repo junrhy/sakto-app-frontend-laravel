@@ -78,7 +78,7 @@ export const ShoppingCartPanel: React.FC<ShoppingCartProps> = ({ currency }) => 
 
     return (
         <div className="fixed bottom-4 right-4 z-50">
-            <Card className="w-80 shadow-lg">
+            <Card className="w-80 shadow-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Shopping Cart</CardTitle>
@@ -89,7 +89,7 @@ export const ShoppingCartPanel: React.FC<ShoppingCartProps> = ({ currency }) => 
                     {/* Cart Items */}
                     <div className="max-h-64 overflow-y-auto space-y-3">
                         {state.items.map((item, index) => (
-                            <div key={index} className="flex items-start space-x-3 p-2 border rounded">
+                            <div key={index} className="flex items-start space-x-3 p-2 border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700/50">
                                 {item.thumbnail_url && (
                                     <img 
                                         src={item.thumbnail_url} 
@@ -100,10 +100,10 @@ export const ShoppingCartPanel: React.FC<ShoppingCartProps> = ({ currency }) => 
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
-                                            <h4 className="text-sm font-medium text-gray-900 truncate">
+                                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                                 {item.name}
                                             </h4>
-                                            <p className="text-sm font-medium text-gray-900">
+                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                 {formatCurrency(item.price, currency.symbol)}
                                             </p>
                                         </div>
@@ -128,7 +128,7 @@ export const ShoppingCartPanel: React.FC<ShoppingCartProps> = ({ currency }) => 
                                             >
                                                 <Minus className="w-3 h-3" />
                                             </Button>
-                                            <span className="text-sm font-medium w-6 text-center">
+                                            <span className="text-sm font-medium w-6 text-center text-gray-900 dark:text-gray-100">
                                                 {item.quantity}
                                             </span>
                                             <Button
@@ -140,7 +140,7 @@ export const ShoppingCartPanel: React.FC<ShoppingCartProps> = ({ currency }) => 
                                                 <Plus className="w-3 h-3" />
                                             </Button>
                                         </div>
-                                        <p className="text-sm font-medium">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {formatCurrency(item.price * item.quantity, currency.symbol)}
                                         </p>
                                     </div>
@@ -152,8 +152,8 @@ export const ShoppingCartPanel: React.FC<ShoppingCartProps> = ({ currency }) => 
                     {/* Summary */}
                     <div className="border-t pt-3 space-y-3">
                         <div className="flex justify-between items-center">
-                            <span className="font-medium">Total:</span>
-                            <span className="font-bold text-lg">
+                            <span className="font-medium text-gray-900 dark:text-gray-100">Total:</span>
+                            <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
                                 {formatCurrency(state.total, currency.symbol)}
                             </span>
                         </div>

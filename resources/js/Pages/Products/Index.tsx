@@ -49,6 +49,161 @@ import { CartButton } from '@/Components/CartButton';
 import { ShoppingCartPanel } from '@/Components/ShoppingCart';
 import { useTheme } from '@/Components/ThemeProvider';
 
+// Product Image Carousel Component for Grid View
+const ProductImageCarousel = ({ images, productName }: { images: string[], productName: string }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    if (images.length === 0) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+            </div>
+        );
+    }
+
+    if (images.length === 1) {
+        return (
+            <img
+                src={images[0]}
+                alt={productName}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+        );
+    }
+
+    return (
+        <div className="relative w-full h-full group">
+            {/* Main Image */}
+            <img
+                src={images[currentImageIndex]}
+                alt={`${productName} - Image ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            
+            {/* Image Counter */}
+            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                {currentImageIndex + 1} / {images.length}
+            </div>
+            
+            {/* Navigation Arrows */}
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+                }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+            >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            
+            <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+            >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            
+            {/* Image Dots */}
+            {images.length > 2 && (
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {images.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCurrentImageIndex(index);
+                            }}
+                            className={`w-2 h-2 rounded-full transition-colors ${
+                                index === currentImageIndex 
+                                    ? 'bg-white' 
+                                    : 'bg-white/50 hover:bg-white/75'
+                            }`}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Compact Product Image Component for Table View
+const CompactProductImage = ({ images, productName }: { images: string[], productName: string }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    if (images.length === 0) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                <Package className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+            </div>
+        );
+    }
+
+    if (images.length === 1) {
+        return (
+            <img
+                src={images[0]}
+                alt={productName}
+                className="w-full h-full object-cover"
+            />
+        );
+    }
+
+    return (
+        <div className="relative w-full h-full group">
+            {/* Main Image */}
+            <img
+                src={images[currentImageIndex]}
+                alt={`${productName} - Image ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover"
+            />
+            
+            {/* Image Counter Badge */}
+            <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {images.length}
+            </div>
+            
+            {/* Navigation on Hover */}
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between px-1">
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1);
+                    }}
+                    className="bg-black/50 text-white p-0.5 rounded-full hover:bg-black/70"
+                >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1);
+                    }}
+                    className="bg-black/50 text-white p-0.5 rounded-full hover:bg-black/70"
+                >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    );
+};
+
 interface Product {
     id: number;
     name: string;
@@ -64,6 +219,30 @@ interface Product {
     thumbnail_url?: string;
     file_url?: string;
     tags: string[];
+    images?: Array<{
+        id: number;
+        image_url: string;
+        alt_text?: string;
+        is_primary: boolean;
+        sort_order: number;
+    }>;
+    // Supplier related fields
+    supplier_name?: string;
+    supplier_email?: string;
+    supplier_phone?: string;
+    supplier_address?: string;
+    supplier_website?: string;
+    supplier_contact_person?: string;
+    // Purchase related fields
+    purchase_price?: number;
+    purchase_currency?: string;
+    purchase_date?: string;
+    purchase_order_number?: string;
+    purchase_notes?: string;
+    reorder_point?: number;
+    reorder_quantity?: number;
+    lead_time_days?: number;
+    payment_terms?: string;
     variants?: Array<{
         id: number;
         sku?: string;
@@ -140,15 +319,15 @@ const getTypeLabel = (type: string) => {
 const getStatusColor = (status: string) => {
     switch (status) {
         case 'published':
-            return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700';
+            return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50';
         case 'draft':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700';
+            return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50';
         case 'archived':
-            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-600/50';
         case 'inactive':
-            return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700';
+            return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/50';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+            return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-600/50';
     }
 };
 
@@ -309,25 +488,51 @@ export default function Index({ auth, products, currency }: Props) {
         }
     };
 
-    const getStockStatus = (quantity?: number, type?: string) => {
-        if (type === 'digital' || type === 'service' || type === 'subscription') {
-            return <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">Unlimited</Badge>;
-        }
-        
-        if (quantity === undefined || quantity === null) {
-            return <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">N/A</Badge>;
-        }
-        
-        if (quantity === 0) {
-            return <Badge variant="destructive" className="text-xs">Out of Stock</Badge>;
-        }
-        
-        if (quantity <= 10) {
-            return <Badge variant="secondary" className="text-xs bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700">Low Stock ({quantity})</Badge>;
-        }
-        
-        return <Badge variant="default" className="text-xs bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700">In Stock ({quantity})</Badge>;
-    };
+    const getProductImages = (product: Product) => {
+    const images: string[] = [];
+    
+    // Add images from the images array (sorted by sort_order)
+    if (product.images && product.images.length > 0) {
+        const sortedImages = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+        sortedImages.forEach(img => {
+            if (img.image_url) {
+                images.push(img.image_url);
+            }
+        });
+    }
+    
+    // Add thumbnail_url if no images array or as fallback
+    if (product.thumbnail_url && !images.includes(product.thumbnail_url)) {
+        images.push(product.thumbnail_url);
+    }
+    
+    return images;
+};
+
+const getProductImage = (product: Product) => {
+    const images = getProductImages(product);
+    return images.length > 0 ? images[0] : null;
+};
+
+const getStockStatus = (quantity?: number, type?: string) => {
+    if (type === 'digital' || type === 'service' || type === 'subscription') {
+        return <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600/50">Unlimited</Badge>;
+    }
+    
+    if (quantity === undefined || quantity === null) {
+        return <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600/50">N/A</Badge>;
+    }
+    
+    if (quantity === 0) {
+        return <Badge variant="destructive" className="text-xs">Out of Stock</Badge>;
+    }
+    
+    if (quantity <= 10) {
+        return <Badge variant="secondary" className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/50">Low Stock ({quantity})</Badge>;
+    }
+    
+    return <Badge variant="default" className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700/50">In Stock ({quantity})</Badge>;
+};
 
     const getVariantInfo = (product: Product) => {
         if (!product.active_variants || product.active_variants.length === 0) {
@@ -380,7 +585,7 @@ export default function Index({ auth, products, currency }: Props) {
             name: product.name,
             quantity: 1,
             price: product.price,
-            thumbnail_url: product.thumbnail_url
+            thumbnail_url: getProductImage(product) || product.thumbnail_url
         });
 
         alert('Product added to cart!');
@@ -426,7 +631,7 @@ export default function Index({ auth, products, currency }: Props) {
                             </Link>
                             {canEdit && (
                                 <Link href={route('products.create')}>
-                                    <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
+                                    <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg text-white">
                                         <Plus className="w-4 h-4 mr-2" />
                                         Create Product
                                     </Button>
@@ -437,7 +642,7 @@ export default function Index({ auth, products, currency }: Props) {
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700/50">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -448,7 +653,7 @@ export default function Index({ auth, products, currency }: Props) {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+                        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700/50">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -459,7 +664,7 @@ export default function Index({ auth, products, currency }: Props) {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700/50">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -470,7 +675,7 @@ export default function Index({ auth, products, currency }: Props) {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700/50">
                             <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -666,44 +871,14 @@ export default function Index({ auth, products, currency }: Props) {
                                 <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm overflow-hidden">
                                     {/* Product Image */}
                                     <div className="relative h-48 bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                                        {product.thumbnail_url ? (
-                                            <img
-                                                src={product.thumbnail_url}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
-                                                <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
-                                            </div>
-                                        )}
-                                        {/* Status Badge Overlay */}
-                                        <div className="absolute top-3 right-3">
-                                            <Badge className={`text-xs ${getStatusColor(product.status)}`}>
-                                                {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
-                                            </Badge>
-                                        </div>
-                                        {/* Type Badge Overlay */}
-                                        <div className="absolute top-3 left-3">
-                                            <div className="flex items-center space-x-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full px-2 py-1">
-                                                {getTypeIcon(product.type)}
-                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                                    {getTypeLabel(product.type)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        {/* Checkbox Overlay */}
-                                        <div className="absolute top-3 left-1/2 transform -translate-x-1/2">
-                                            <Checkbox
-                                                checked={selectedProducts.includes(product.id)}
-                                                onCheckedChange={() => toggleSelect(product.id)}
-                                                className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
-                                            />
-                                        </div>
+                                        <ProductImageCarousel 
+                                            images={getProductImages(product)} 
+                                            productName={product.name} 
+                                        />
                                     </div>
                                     
                                     <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between">
+                                        <div className="flex items-start justify-between mb-3">
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 text-sm">
                                                     {product.name}
@@ -753,6 +928,28 @@ export default function Index({ auth, products, currency }: Props) {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
+                                        
+                                        {/* Product Meta Information */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-2">
+                                                {/* Type Badge */}
+                                                <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-full px-2 py-1">
+                                                    {getTypeIcon(product.type)}
+                                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                        {getTypeLabel(product.type)}
+                                                    </span>
+                                                </div>
+                                                {/* Status Badge */}
+                                                <Badge className={`text-xs ${getStatusColor(product.status)}`}>
+                                                    {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
+                                                </Badge>
+                                            </div>
+                                            {/* Checkbox */}
+                                            <Checkbox
+                                                checked={selectedProducts.includes(product.id)}
+                                                onCheckedChange={() => toggleSelect(product.id)}
+                                            />
+                                        </div>
                                     </CardHeader>
                                     <CardContent className="pt-0">
                                         <div className="space-y-3">
@@ -763,7 +960,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">Category</span>
-                                                    <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                                                    <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600/50">
                                                         {product.category}
                                                     </Badge>
                                                 </div>
@@ -780,7 +977,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                         return (
                                                             <div className="flex items-center justify-between">
                                                                 <span className="text-xs text-gray-500 dark:text-gray-400">Variants</span>
-                                                                <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
+                                                                <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700/50">
                                                                     {variantInfo.count} {variantInfo.attributes.join(', ')}
                                                                 </Badge>
                                                             </div>
@@ -804,7 +1001,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                         product.stock_quantity !== undefined && 
                                                         product.stock_quantity <= 0
                                                     }
-                                                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                                                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
                                                     size="sm"
                                                 >
                                                     <ShoppingCart className="w-4 h-4 mr-2" />
@@ -849,16 +1046,25 @@ export default function Index({ auth, products, currency }: Props) {
                                                     />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                                        {product.thumbnail_url ? (
-                                                            <img
-                                                                src={product.thumbnail_url}
-                                                                alt={product.name}
-                                                                className="w-full h-full object-cover"
+                                                    <div className="relative">
+                                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                                                            <CompactProductImage 
+                                                                images={getProductImages(product)} 
+                                                                productName={product.name} 
                                                             />
-                                                        ) : (
-                                                            <Package className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-                                                        )}
+                                                        </div>
+                                                        {/* Image Count Tooltip */}
+                                                        {(() => {
+                                                            const imageCount = getProductImages(product).length;
+                                                            if (imageCount > 1) {
+                                                                return (
+                                                                    <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                                                                        {imageCount}
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })()}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -871,7 +1077,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                             if (variantInfo) {
                                                                 return (
                                                                     <div className="mt-1">
-                                                                        <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700">
+                                                                        <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700/50">
                                                                             {variantInfo.count} variants ({variantInfo.attributes.join(', ')})
                                                                         </Badge>
                                                                     </div>
@@ -883,7 +1089,7 @@ export default function Index({ auth, products, currency }: Props) {
                                                 </TableCell>
                                                 <TableCell className="font-mono text-sm text-gray-900 dark:text-gray-100">{product.sku || '-'}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline" className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                                                    <Badge variant="outline" className="bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600/50">
                                                         {product.category}
                                                     </Badge>
                                                 </TableCell>

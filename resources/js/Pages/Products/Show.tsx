@@ -58,6 +58,13 @@ interface Product {
     thumbnail_url?: string;
     file_url?: string;
     tags: string[];
+    images?: Array<{
+        id: number;
+        image_url: string;
+        alt_text?: string;
+        is_primary: boolean;
+        sort_order: number;
+    }>;
     active_variants?: Variant[];
     created_at: string;
     updated_at: string;
@@ -118,22 +125,43 @@ const getTypeLabel = (type: string) => {
 
 const getStockStatus = (quantity?: number, type?: string) => {
     if (type === 'digital' || type === 'service' || type === 'subscription') {
-        return <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">Unlimited</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700/50">Unlimited</Badge>;
     }
     
     if (quantity === undefined || quantity === null) {
-        return <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700">N/A</Badge>;
+        return <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700/50">N/A</Badge>;
     }
     
     if (quantity === 0) {
-        return <Badge variant="destructive" className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800">Out of Stock</Badge>;
+        return <Badge variant="destructive" className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700/50">Out of Stock</Badge>;
     }
     
     if (quantity <= 10) {
-        return <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800">Low Stock ({quantity})</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700/50">Low Stock ({quantity})</Badge>;
     }
     
-    return <Badge variant="default" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">In Stock ({quantity})</Badge>;
+    return <Badge variant="default" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700/50">In Stock ({quantity})</Badge>;
+};
+
+const getProductImages = (product: Product) => {
+    const images: string[] = [];
+    
+    // Add images from the images array (sorted by sort_order)
+    if (product.images && product.images.length > 0) {
+        const sortedImages = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+        sortedImages.forEach(img => {
+            if (img.image_url) {
+                images.push(img.image_url);
+            }
+        });
+    }
+    
+    // Add thumbnail_url if no images array or as fallback
+    if (product.thumbnail_url && !images.includes(product.thumbnail_url)) {
+        images.push(product.thumbnail_url);
+    }
+    
+    return images;
 };
 
 export default function Show({ auth, product, currency }: Props) {
@@ -182,7 +210,7 @@ export default function Show({ auth, product, currency }: Props) {
             price: effectivePrice,
             type: product.type,
             attributes: variant.attributes,
-            thumbnail_url: variant.thumbnail_url || product.thumbnail_url
+            thumbnail_url: variant.thumbnail_url || getProductImages(product)[0] || product.thumbnail_url
         });
     };
 
@@ -195,7 +223,7 @@ export default function Show({ auth, product, currency }: Props) {
             quantity: 1,
             price: product.price,
             type: product.type,
-            thumbnail_url: product.thumbnail_url
+            thumbnail_url: getProductImages(product)[0] || product.thumbnail_url
         });
     };
 
@@ -211,9 +239,12 @@ export default function Show({ auth, product, currency }: Props) {
         shouldShowSimpleAddToCart: !hasVariants && product.type === 'physical' && product.status === 'published'
     });
 
-    // Create image array (main image + variant images)
+    // Get all available images for the product
+    const productImages = getProductImages(product);
+    
+    // Create image array (product images + variant images)
     const images = [
-        product.thumbnail_url,
+        ...productImages,
         ...(activeVariants?.map(v => v.thumbnail_url).filter(Boolean) || [])
     ].filter(Boolean);
 
@@ -240,12 +271,12 @@ export default function Show({ auth, product, currency }: Props) {
                             variant="ghost"
                             size="sm"
                             onClick={() => router.visit(route('products.index'))}
-                            className="flex items-center space-x-2"
+                            className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             <span>Back to Products</span>
                         </Button>
-                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                        <div className="h-6 w-px bg-gray-300 dark:bg-gray-600/50" />
                         <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">Product Details</h2>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -253,7 +284,7 @@ export default function Show({ auth, product, currency }: Props) {
                             variant="ghost"
                             size="sm"
                             onClick={() => setIsWishlisted(!isWishlisted)}
-                            className={isWishlisted ? 'text-red-500' : 'text-gray-500'}
+                            className={isWishlisted ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}
                         >
                             <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                         </Button>
@@ -261,13 +292,13 @@ export default function Show({ auth, product, currency }: Props) {
                             variant="ghost"
                             size="sm"
                             onClick={handleShare}
-                            className="text-gray-500"
+                            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                         >
                             <Share2 className="w-4 h-4" />
                         </Button>
                         {canEdit && (
                             <Link href={route('products.edit', product.id)}>
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" className="border-gray-200 dark:border-gray-600/50 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <Edit className="w-4 h-4 mr-2" />
                                     Edit
                                 </Button>
@@ -294,42 +325,123 @@ export default function Show({ auth, product, currency }: Props) {
                         {/* Product Images */}
                         <div className="space-y-6">
                             {/* Main Image */}
-                            <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg">
+                            <div className="relative aspect-square bg-gray-100 dark:bg-gray-800/50 rounded-2xl overflow-hidden shadow-lg group border border-gray-200 dark:border-gray-700/50">
                                 {images.length > 0 ? (
-                                    <img
-                                        src={images[selectedImage]}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover"
-                                    />
+                                    <>
+                                        <img
+                                            src={images[selectedImage]}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        {/* Navigation Arrows */}
+                                        {images.length > 1 && (
+                                            <>
+                                                <button
+                                                    onClick={() => setSelectedImage(selectedImage === 0 ? images.length - 1 : selectedImage - 1)}
+                                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => setSelectedImage(selectedImage === images.length - 1 ? 0 : selectedImage + 1)}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </>
+                                        )}
+                                        {/* Image Counter */}
+                                        {images.length > 1 && (
+                                            <div className="absolute top-4 right-4 bg-black/50 text-white text-sm px-2 py-1 rounded-full">
+                                                {selectedImage + 1} / {images.length}
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700">
-                                        <Package className="w-24 h-24 text-gray-400 dark:text-gray-500" />
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/50 dark:to-gray-700/50">
+                                        <Package className="w-24 h-24 text-gray-400 dark:text-gray-400" />
                                     </div>
                                 )}
                             </div>
 
                             {/* Thumbnail Images */}
                             {images.length > 1 && (
-                                <div className="flex space-x-4">
-                                    {images.map((image, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setSelectedImage(index)}
-                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                                                selectedImage === index
-                                                    ? 'border-blue-500 dark:border-blue-400 shadow-md'
-                                                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                                            }`}
-                                        >
-                                            <img
-                                                src={image}
-                                                alt={`${product.name} ${index + 1}`}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </button>
-                                    ))}
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                            Product Images ({images.length})
+                                        </h3>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                            {selectedImage + 1} of {images.length}
+                                        </span>
+                                    </div>
+                                    <div className="flex space-x-3 overflow-x-auto pb-2">
+                                        {images.map((image, index) => {
+                                            // Check if this is a product image or variant image
+                                            const isProductImage = index < productImages.length;
+                                            const imageInfo = isProductImage && product.images 
+                                                ? product.images.find(img => img.image_url === image)
+                                                : null;
+                                            
+                                            return (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => setSelectedImage(index)}
+                                                    className={`flex-shrink-0 relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                                                        selectedImage === index
+                                                            ? 'border-blue-500 dark:border-blue-400 shadow-md'
+                                                            : 'border-gray-200 dark:border-gray-600/50 hover:border-gray-300 dark:hover:border-gray-500/70'
+                                                    }`}
+                                                >
+                                                    <img
+                                                        src={image}
+                                                        alt={imageInfo?.alt_text || `${product.name} ${index + 1}`}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    {/* Image type indicator */}
+                                                    {isProductImage && imageInfo?.is_primary && (
+                                                        <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
+                                                            Primary
+                                                        </div>
+                                                    )}
+                                                    {!isProductImage && (
+                                                        <div className="absolute top-1 left-1 bg-purple-500 text-white text-xs px-1 py-0.5 rounded">
+                                                            Variant
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
+
+                            {/* Image Information */}
+                            {(() => {
+                                const currentImageIndex = selectedImage;
+                                const isProductImage = currentImageIndex < productImages.length;
+                                const imageInfo = isProductImage && product.images 
+                                    ? product.images.find(img => img.image_url === images[currentImageIndex])
+                                    : null;
+                                
+                                if (imageInfo?.alt_text) {
+                                    return (
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700/50">
+                                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                                                Image Details
+                                            </h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                {imageInfo.alt_text}
+                                            </p>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })()}
 
                             {/* Status Badge */}
                             <div className="flex items-center justify-between">
@@ -348,7 +460,7 @@ export default function Show({ auth, product, currency }: Props) {
                                     >
                                         {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
                                     </Badge>
-                                    <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                                    <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-300">
                                         {getTypeIcon(product.type)}
                                         <span>{getTypeLabel(product.type)}</span>
                                     </div>
@@ -370,10 +482,10 @@ export default function Show({ auth, product, currency }: Props) {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{product.name}</h1>
-                                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-                                        <span>SKU: {product.sku || 'N/A'}</span>
-                                        <span>Category: {product.category}</span>
-                                    </div>
+                                                                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-300">
+                                    <span>SKU: {product.sku || 'N/A'}</span>
+                                    <span>Category: {product.category}</span>
+                                </div>
                                 </div>
 
                                 {/* Price */}
@@ -385,7 +497,7 @@ export default function Show({ auth, product, currency }: Props) {
                                         <div className="flex items-center space-x-2">
                                             {getStockStatus(product.stock_quantity, product.type)}
                                             {product.stock_quantity !== undefined && product.stock_quantity > 0 && (
-                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                <span className="text-sm text-gray-500 dark:text-gray-300">
                                                     • Free shipping on orders over {formatCurrency(50, currency.symbol)}
                                                 </span>
                                             )}
@@ -395,14 +507,14 @@ export default function Show({ auth, product, currency }: Props) {
 
                                 {/* Description */}
                                 <div className="prose prose-sm max-w-none dark:prose-invert">
-                                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{product.description}</p>
+                                    <p className="text-gray-600 dark:text-gray-200 leading-relaxed">{product.description}</p>
                                 </div>
 
                                 {/* Tags */}
                                 {product.tags && product.tags.length > 0 && (
                                     <div className="flex flex-wrap gap-2">
                                         {product.tags.map((tag) => (
-                                            <Badge key={tag} variant="outline" className="bg-gray-50 dark:bg-gray-800">
+                                            <Badge key={tag} variant="outline" className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700/50 text-gray-700 dark:text-gray-200">
                                                 {tag}
                                             </Badge>
                                         ))}
@@ -412,7 +524,7 @@ export default function Show({ auth, product, currency }: Props) {
 
                             {/* Variant Selection or Simple Add to Cart */}
                             {hasVariants && product.type === 'physical' && (
-                                <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-sm">
+                                <Card className="border-2 border-gray-100 dark:border-gray-700/50 shadow-sm bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-lg flex items-center space-x-2">
                                             <Package className="w-5 h-5" />
@@ -425,7 +537,7 @@ export default function Show({ auth, product, currency }: Props) {
                                                 id: product.id,
                                                 name: product.name,
                                                 price: product.price,
-                                                thumbnail_url: product.thumbnail_url
+                                                thumbnail_url: getProductImages(product)[0] || product.thumbnail_url
                                             }}
                                             variants={activeVariants}
                                             currency={currency}
@@ -436,7 +548,7 @@ export default function Show({ auth, product, currency }: Props) {
                             )}
 
                             {!hasVariants && product.type === 'physical' && product.status === 'published' && (
-                                <Card className="border-2 border-gray-100 dark:border-gray-700 shadow-sm">
+                                <Card className="border-2 border-gray-100 dark:border-gray-700/50 shadow-sm bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
                                     <CardHeader className="pb-4">
                                         <CardTitle className="text-lg flex items-center space-x-2">
                                             <ShoppingCart className="w-5 h-5" />
@@ -445,7 +557,7 @@ export default function Show({ auth, product, currency }: Props) {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</span>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Quantity</span>
                                             <div className="flex items-center space-x-2">
                                                 <Button
                                                     variant="outline"
@@ -459,7 +571,7 @@ export default function Show({ auth, product, currency }: Props) {
                                                 >
                                                     -
                                                 </Button>
-                                                <span className="w-12 text-center font-medium">
+                                                <span className="w-12 text-center font-medium text-gray-900 dark:text-gray-100">
                                                     {getItemQuantity(product.id, 0) || 1}
                                                 </span>
                                                 <Button
@@ -476,7 +588,7 @@ export default function Show({ auth, product, currency }: Props) {
                                         </div>
                                         
                                         <Button 
-                                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
+                                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg text-white"
                                             size="lg"
                                             disabled={product.stock_quantity === 0}
                                             onClick={handleAddSimpleProduct}
