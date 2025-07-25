@@ -81,7 +81,19 @@ interface Contact {
 }
 
 interface Props {
-    auth: { user: any };
+    auth: { 
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
     contacts: Contact[];
     appCurrency: {
         symbol: string;
@@ -108,6 +120,24 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [groupFilter, setGroupFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<string>('details');
+    
+    // Check if current team member has admin or manager role
+    const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    // Check if current team member has admin, manager, or user role
+    const canEdit = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
+        }
+        // If no team member is selected, check if the main user is admin
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
     // Parse id_numbers if it's a string
     const parseIdNumbers = (idNumbers: any) => {
         if (!idNumbers) return [];
@@ -338,15 +368,18 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <Button 
-                                        variant="destructive" 
-                                        size="sm" 
-                                        className="relative group"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-md blur opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                        <Trash2 className="h-4 w-4 mr-2 relative z-10" />
-                                        <span className="relative z-10">Delete ({selectedContacts.length})</span>
-                                    </Button>
+                                    {canDelete && (
+                                        <Button 
+                                            variant="destructive" 
+                                            size="sm" 
+                                            onClick={handleBulkDelete}
+                                            className="relative group"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-md blur opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                                            <Trash2 className="h-4 w-4 mr-2 relative z-10" />
+                                            <span className="relative z-10">Delete ({selectedContacts.length})</span>
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                             
@@ -439,9 +472,9 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                     {/* Main Table Card */}
                     <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl">
                         <CardHeader className="pb-4">
-                            <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                                Contact List
-                            </CardTitle>
+                                                    <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                            Contact List
+                        </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="overflow-x-auto">
@@ -553,24 +586,28 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                                             <Eye className="h-4 w-4 sm:mr-2 relative z-10" />
                                                             <span className="hidden sm:inline relative z-10">View</span>
                                                         </Button>
-                                                        <Button 
-                                                            variant="outline" 
-                                                            size="sm"
-                                                            onClick={(e) => handleEdit(contact.id, e)}
-                                                            className="relative group bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition-all duration-200"
-                                                        >
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                                                            <span className="relative z-10">Edit</span>
-                                                        </Button>
-                                                        <Button 
-                                                            variant="destructive" 
-                                                            size="sm"
-                                                            onClick={(e) => handleDelete(contact.id, e)}
-                                                            className="relative group"
-                                                        >
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-md blur opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                                            <span className="relative z-10">Delete</span>
-                                                        </Button>
+                                                        {canEdit && (
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm"
+                                                                onClick={(e) => handleEdit(contact.id, e)}
+                                                                className="relative group bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition-all duration-200"
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                                                <span className="relative z-10">Edit</span>
+                                                            </Button>
+                                                        )}
+                                                        {canDelete && (
+                                                            <Button 
+                                                                variant="destructive" 
+                                                                size="sm"
+                                                                onClick={(e) => handleDelete(contact.id, e)}
+                                                                className="relative group"
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-md blur opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                                                                <span className="relative z-10">Delete</span>
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -642,24 +679,28 @@ export default function Index({ auth, contacts, appCurrency }: Props) {
                                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
                                         <span className="relative z-10">Public Profile</span>
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={(e) => selectedContact && handleEdit(selectedContact.id, e)}
-                                        className="relative group bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition-all duration-200"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                                        <span className="relative z-10">Edit</span>
-                                    </Button>
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={(e) => selectedContact && handleDelete(selectedContact.id, e)}
-                                        className="relative group"
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-md blur opacity-0 group-hover:opacity-20 transition-opacity"></div>
-                                        <span className="relative z-10">Delete</span>
-                                    </Button>
+                                    {canEdit && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={(e) => selectedContact && handleEdit(selectedContact.id, e)}
+                                            className="relative group bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-300 dark:hover:border-green-600 transition-all duration-200"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-md blur opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                                            <span className="relative z-10">Edit</span>
+                                        </Button>
+                                    )}
+                                    {canDelete && (
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={(e) => selectedContact && handleDelete(selectedContact.id, e)}
+                                            className="relative group"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-600 rounded-md blur opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                                            <span className="relative z-10">Delete</span>
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 
