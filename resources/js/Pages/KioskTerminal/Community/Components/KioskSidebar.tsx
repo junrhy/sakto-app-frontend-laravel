@@ -1,10 +1,25 @@
 import React from 'react';
 import { Calendar, Users, DollarSign, UserCheck, FileText, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/Components/ui/badge';
+import { format } from 'date-fns';
 
 interface KioskSidebarProps {
     activeTab: string;
     onTabChange: (tab: string) => void;
+    auth: {
+        user: any;
+        selectedTeamMember?: {
+            identifier: string;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            email: string;
+            roles: string[];
+            allowed_apps: string[];
+            profile_picture?: string;
+        };
+    };
 }
 
 const menuItems = [
@@ -28,7 +43,7 @@ const menuItems = [
     }
 ];
 
-export default function KioskSidebar({ activeTab, onTabChange }: KioskSidebarProps) {
+export default function KioskSidebar({ activeTab, onTabChange, auth }: KioskSidebarProps) {
     return (
         <div className="w-80 bg-white border-r-2 border-gray-200 h-screen flex flex-col">
             {/* Navigation Menu */}
@@ -72,6 +87,44 @@ export default function KioskSidebar({ activeTab, onTabChange }: KioskSidebarPro
                     );
                 })}
             </nav>
+
+            {/* Footer with team member info */}
+            <div className="border-t border-gray-200 p-4 bg-gray-50">
+                <div className="space-y-3">
+                    {/* Team member info */}
+                    <div className="flex items-center space-x-2">
+                        {auth.selectedTeamMember?.profile_picture ? (
+                            <img 
+                                src={auth.selectedTeamMember.profile_picture} 
+                                alt="Profile" 
+                                className="w-6 h-6 rounded-full border border-gray-300"
+                            />
+                        ) : (
+                            <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
+                                <UserCheck className="h-3 w-3 text-white" />
+                            </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">
+                                {auth.selectedTeamMember ? auth.selectedTeamMember.full_name : auth.user.name}
+                            </div>
+                            {auth.selectedTeamMember && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {auth.selectedTeamMember.roles.map((role, index) => (
+                                        <Badge 
+                                            key={index} 
+                                            variant="secondary" 
+                                            className="text-xs px-1.5 py-0.5 bg-gray-200 text-gray-700 border-gray-300"
+                                        >
+                                            {role}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 } 

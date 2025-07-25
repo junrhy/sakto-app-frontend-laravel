@@ -441,63 +441,10 @@ export default function KioskTerminal({
             <div className="kiosk-light-mode light">
                 <div className="flex h-screen bg-gray-50">
                     {/* Sidebar */}
-                    <KioskSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+                    <KioskSidebar activeTab={activeTab} onTabChange={setActiveTab} auth={auth} />
                     
                     {/* Main Content */}
                     <div className="flex-1 flex flex-col overflow-hidden">
-                        {/* Header with current team member info */}
-                        <div className="bg-white border-b border-gray-200 px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex items-center space-x-3">
-                                        {auth.selectedTeamMember?.profile_picture ? (
-                                            <img 
-                                                src={auth.selectedTeamMember.profile_picture} 
-                                                alt="Profile" 
-                                                className="w-10 h-10 rounded-full border-2 border-blue-500"
-                                            />
-                                        ) : (
-                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-blue-500">
-                                                <UserCheck className="h-5 w-5 text-white" />
-                                            </div>
-                                        )}
-                                        <div>
-                                            <h2 className="text-lg font-semibold text-gray-900">
-                                                {auth.selectedTeamMember ? auth.selectedTeamMember.full_name : auth.user.name}
-                                            </h2>
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-sm text-gray-600">
-                                                    {auth.selectedTeamMember ? 'Team Member' : 'Main User'}
-                                                </span>
-                                                {auth.selectedTeamMember && (
-                                                    <>
-                                                        <span className="text-gray-400">•</span>
-                                                        <div className="flex space-x-1">
-                                                            {auth.selectedTeamMember.roles.map((role, index) => (
-                                                                <Badge 
-                                                                    key={index} 
-                                                                    variant="secondary" 
-                                                                    className="text-xs bg-blue-100 text-blue-800 border-blue-200"
-                                                                >
-                                                                    {role}
-                                                                </Badge>
-                                                            ))}
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                    <Calendar className="h-4 w-4" />
-                                    <span>{format(new Date(), 'MMM dd, yyyy')}</span>
-                                    <span className="text-gray-400">•</span>
-                                    <span>{format(new Date(), 'HH:mm')}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
                          {/* Content Area */}
                         <div className="flex-1 overflow-auto p-6">
                             {/* Event Check-in Content */}
