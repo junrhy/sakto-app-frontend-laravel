@@ -752,10 +752,25 @@ export default function Show({ auth, product, currency }: Props) {
                     {/* Product Details Tabs */}
                     <div className="mt-16">
                         <Tabs defaultValue="details" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                                <TabsTrigger value="details">Product Details</TabsTrigger>
-                                <TabsTrigger value="specifications">Specifications</TabsTrigger>
-                                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                            <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <TabsTrigger 
+                                    value="details"
+                                    className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm transition-all duration-200"
+                                >
+                                    Product Details
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="specifications"
+                                    className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm transition-all duration-200"
+                                >
+                                    Specifications
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="reviews"
+                                    className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm transition-all duration-200"
+                                >
+                                    Reviews
+                                </TabsTrigger>
                             </TabsList>
                             
                             <TabsContent value="details" className="mt-6">
