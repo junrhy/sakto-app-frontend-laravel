@@ -35,7 +35,8 @@ import {
     Star,
     TrendingUp,
     Users,
-    Calendar
+    Calendar,
+    Flag
 } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
@@ -631,6 +632,12 @@ const getStockStatus = (quantity?: number, type?: string) => {
                                 <Button variant="outline" className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600">
                                     <ListOrdered className="w-4 h-4 mr-2" />
                                     View Orders
+                                </Button>
+                            </Link>
+                            <Link href={route('products.reported-reviews')}>
+                                <Button variant="outline" className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600">
+                                    <Flag className="w-4 h-4 mr-2" />
+                                    Reported Reviews
                                 </Button>
                             </Link>
                             {canEdit && (

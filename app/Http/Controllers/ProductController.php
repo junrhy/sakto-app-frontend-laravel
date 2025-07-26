@@ -778,4 +778,97 @@ class ProductController extends Controller
             return response()->json(['error' => 'An error occurred while toggling review feature'], 500);
         }
     }
+
+    public function reportReview($productId, $reviewId, Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'reason' => 'required|string|max:255',
+                'comment' => 'nullable|string|max:2000',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/report", $validated);
+
+            if (!$response->successful()) {
+                return response()->json(['error' => 'Failed to report review'], 500);
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while reporting review'], 500);
+        }
+    }
+
+    public function reportedReviews()
+    {
+        Log::info('reportedReviews method called', [
+            'user_id' => auth()->id(),
+            'user_email' => auth()->user()->email ?? 'no email'
+        ]);
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/product-review-reports/reports");
+
+            Log::info('API response received', [
+                'status' => $response->status(),
+                'successful' => $response->successful()
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Failed to fetch reported reviews', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return back()->withErrors(['error' => 'Failed to fetch reported reviews']);
+            }
+
+            $reportedReviews = $response->json();
+
+            Log::info('Rendering ReportedReviews page', [
+                'reports_count' => count($reportedReviews)
+            ]);
+
+            return Inertia::render('Products/ReportedReviews', [
+                'reportedReviews' => $reportedReviews
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in reportedReviews', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'An error occurred while fetching reported reviews']);
+        }
+    }
+
+    public function updateReportStatus($reportId, Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|string|in:reviewed,dismissed',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->patch("{$this->apiUrl}/product-review-reports/reports/{$reportId}/status", $validated);
+
+            if (!$response->successful()) {
+                Log::error('Failed to update report status', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'report_id' => $reportId
+                ]);
+                return response()->json(['error' => 'Failed to update report status'], 500);
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Exception in updateReportStatus', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'report_id' => $reportId
+            ]);
+            return response()->json(['error' => 'An error occurred while updating report status'], 500);
+        }
+    }
 }

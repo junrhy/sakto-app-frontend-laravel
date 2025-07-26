@@ -238,248 +238,228 @@ export default function PublicCheckout({ currency, member, client_identifier }: 
         <>
             <Head title="Checkout" />
             
-            <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <div className="bg-white shadow-sm border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => window.history.back()}
-                                    className="flex items-center"
-                                >
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Back
-                                </Button>
+            {/* Empty Cart State */}
+            {cartItems.length === 0 && (
+                <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                    <div className="text-center">
+                        <ShoppingCart className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                        <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">Your cart is empty</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">Add some products to your cart before checking out.</p>
+                        <Button onClick={() => window.history.back()}>
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Go Back
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* Checkout Form */}
+            {cartItems.length > 0 && (
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {/* Header */}
+                        <div className="mb-8">
+                            <div className="flex items-center justify-between">
                                 <div>
-                                    <h1 className="text-xl font-semibold text-gray-900">Checkout</h1>
-                                    <p className="text-sm text-gray-500">Complete your purchase from {member.name}</p>
+                                    <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Checkout</h1>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Complete your purchase from {member.name}</p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Secure Checkout</span>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <CheckCircle className="w-5 h-5 text-green-500" />
-                                <span className="text-sm text-gray-600">Secure Checkout</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Order Summary */}
+                            <div className="lg:col-span-1">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center">
+                                            <Package className="w-4 h-4 mr-2" />
+                                            Order Summary
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            {cartItems.map((item) => (
+                                                <div key={`${item.id}-${item.variant?.id || 'default'}`} className="flex items-center space-x-3">
+                                                    <div className="flex-shrink-0 w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                                                        {item.thumbnail_url ? (
+                                                            <img
+                                                                src={item.thumbnail_url}
+                                                                alt={item.name}
+                                                                className="w-full h-full object-cover rounded-lg"
+                                                            />
+                                                        ) : (
+                                                            <Package className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                            {item.name}
+                                                        </h4>
+                                                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                                            <span>Qty: {item.quantity}</span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                                                                × {formatPrice(item.price)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {formatPrice(item.price * item.quantity)}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4 space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatPrice(getTotalPrice())}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">Tax:</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatPrice(0)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatPrice(0)}</span>
+                                            </div>
+                                            <div className="flex justify-between font-medium text-lg border-t border-gray-200 dark:border-gray-700 pt-2">
+                                                <span className="text-gray-900 dark:text-gray-100">Total:</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatPrice(getTotalPrice())}</span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {/* Checkout Form */}
+                            <div className="lg:col-span-2">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center">
+                                            <User className="w-4 h-4 mr-2" />
+                                            Customer Information
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form onSubmit={handleSubmit} className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <Label htmlFor="customer_name">Full Name *</Label>
+                                                    <Input
+                                                        id="customer_name"
+                                                        value={formData.customer_name}
+                                                        onChange={(e) => handleInputChange('customer_name', e.target.value)}
+                                                        required
+                                                        placeholder="Enter your full name"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Label htmlFor="customer_email">Email Address *</Label>
+                                                    <Input
+                                                        id="customer_email"
+                                                        type="email"
+                                                        value={formData.customer_email}
+                                                        onChange={(e) => handleInputChange('customer_email', e.target.value)}
+                                                        required
+                                                        placeholder="Enter your email address"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="customer_phone">Phone Number</Label>
+                                                <Input
+                                                    id="customer_phone"
+                                                    value={formData.customer_phone}
+                                                    onChange={(e) => handleInputChange('customer_phone', e.target.value)}
+                                                    placeholder="Enter your phone number"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="shipping_address">Shipping Address</Label>
+                                                <Textarea
+                                                    id="shipping_address"
+                                                    value={formData.shipping_address}
+                                                    onChange={(e) => handleInputChange('shipping_address', e.target.value)}
+                                                    placeholder="Enter shipping address"
+                                                    rows={3}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="billing_address">Billing Address</Label>
+                                                <Textarea
+                                                    id="billing_address"
+                                                    value={formData.billing_address}
+                                                    onChange={(e) => handleInputChange('billing_address', e.target.value)}
+                                                    placeholder="Enter billing address (if different from shipping)"
+                                                    rows={3}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="payment_method">Payment Method</Label>
+                                                <Select
+                                                    value={formData.payment_method}
+                                                    onValueChange={(value) => handleInputChange('payment_method', value)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select payment method" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="cod">Cash on Delivery</SelectItem>
+                                                        <SelectItem value="cash">Cash</SelectItem>
+                                                        <SelectItem value="card">Credit/Debit Card</SelectItem>
+                                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                                        <SelectItem value="digital_wallet">Digital Wallet</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="notes">Order Notes</Label>
+                                                <Textarea
+                                                    id="notes"
+                                                    value={formData.notes}
+                                                    onChange={(e) => handleInputChange('notes', e.target.value)}
+                                                    placeholder="Any special instructions or notes"
+                                                    rows={3}
+                                                />
+                                            </div>
+
+                                            <div className="flex space-x-4 pt-4">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => window.history.back()}
+                                                    className="flex-1"
+                                                >
+                                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                                    Back to Cart
+                                                </Button>
+                                                <Button
+                                                    type="submit"
+                                                    disabled={processing}
+                                                    className="flex-1"
+                                                >
+                                                    {processing ? 'Processing...' : 'Place Order'}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Order Summary */}
-                        <div className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center">
-                                        <ShoppingCart className="w-5 h-5 mr-2" />
-                                        Order Summary
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        {cartItems.map((item) => (
-                                            <div key={item.id} className="flex items-center space-x-3">
-                                                {item.thumbnail_url && (
-                                                    <img 
-                                                        src={item.thumbnail_url} 
-                                                        alt={item.name}
-                                                        className="w-12 h-12 object-cover rounded"
-                                                    />
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                                                        {item.name}
-                                                    </h4>
-                                                    {item.variant && (
-                                                        <div className="text-xs text-gray-600 mt-1">
-                                                            {Object.entries(item.variant.attributes)
-                                                                .map(([key, value]) => `${key}: ${value}`)
-                                                                .join(', ')}
-                                                        </div>
-                                                    )}
-                                                    <div className="flex items-center mt-1">
-                                                        {getProductTypeIcon(item.type)}
-                                                        <span className="text-xs text-gray-500 ml-1">
-                                                            {getProductTypeLabel(item.type)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <div className="flex items-center border rounded">
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant?.id)}
-                                                            className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                                                        >
-                                                            -
-                                                        </button>
-                                                        <span className="px-2 py-1 text-sm">{item.quantity}</span>
-                                                        <button
-                                                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant?.id)}
-                                                            className="px-2 py-1 text-gray-500 hover:text-gray-700"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-                                                    <div className="text-right min-w-0">
-                                                        <p className="text-sm font-medium">
-                                                            {formatPrice(item.price * item.quantity)}
-                                                        </p>
-                                                        <button
-                                                            onClick={() => removeItem(item.id, item.variant?.id)}
-                                                            className="text-xs text-red-500 hover:text-red-700"
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    
-                                    <div className="border-t mt-4 pt-4 space-y-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span>Subtotal:</span>
-                                            <span>{formatPrice(getTotalPrice())}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span>Tax:</span>
-                                            <span>{formatPrice(0)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span>Shipping:</span>
-                                            <span>{formatPrice(0)}</span>
-                                        </div>
-                                        <div className="flex justify-between font-medium text-lg border-t pt-2">
-                                            <span>Total:</span>
-                                            <span>{formatPrice(getTotalPrice())}</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Checkout Form */}
-                        <div className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center">
-                                        <User className="w-5 h-5 mr-2" />
-                                        Customer Information
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div>
-                                            <Label htmlFor="customer_name">Full Name *</Label>
-                                            <Input
-                                                id="customer_name"
-                                                value={formData.customer_name}
-                                                onChange={(e) => handleInputChange('customer_name', e.target.value)}
-                                                required
-                                                placeholder="Enter your full name"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="customer_email">Email Address *</Label>
-                                            <Input
-                                                id="customer_email"
-                                                type="email"
-                                                value={formData.customer_email}
-                                                onChange={(e) => handleInputChange('customer_email', e.target.value)}
-                                                required
-                                                placeholder="Enter your email address"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="customer_phone">Phone Number</Label>
-                                            <Input
-                                                id="customer_phone"
-                                                value={formData.customer_phone}
-                                                onChange={(e) => handleInputChange('customer_phone', e.target.value)}
-                                                placeholder="Enter your phone number"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="shipping_address">Shipping Address</Label>
-                                            <Textarea
-                                                id="shipping_address"
-                                                value={formData.shipping_address}
-                                                onChange={(e) => handleInputChange('shipping_address', e.target.value)}
-                                                placeholder="Enter shipping address"
-                                                rows={3}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="billing_address">Billing Address</Label>
-                                            <Textarea
-                                                id="billing_address"
-                                                value={formData.billing_address}
-                                                onChange={(e) => handleInputChange('billing_address', e.target.value)}
-                                                placeholder="Enter billing address (if different from shipping)"
-                                                rows={3}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="payment_method">Payment Method</Label>
-                                            <Select 
-                                                value={formData.payment_method} 
-                                                onValueChange={(value) => handleInputChange('payment_method', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select payment method" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="cod">Cash on Delivery</SelectItem>
-                                                    <SelectItem value="cash">Cash</SelectItem>
-                                                    <SelectItem value="card">Credit/Debit Card</SelectItem>
-                                                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                                    <SelectItem value="digital_wallet">Digital Wallet</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="notes">Order Notes</Label>
-                                            <Textarea
-                                                id="notes"
-                                                value={formData.notes}
-                                                onChange={(e) => handleInputChange('notes', e.target.value)}
-                                                placeholder="Any special instructions or notes"
-                                                rows={3}
-                                            />
-                                        </div>
-
-                                        <div className="flex space-x-4 pt-4">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() => window.history.back()}
-                                                className="flex-1"
-                                            >
-                                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                                Continue Shopping
-                                            </Button>
-                                            <Button
-                                                type="submit"
-                                                disabled={processing}
-                                                className="flex-1"
-                                            >
-                                                {processing ? 'Processing...' : 'Place Order'}
-                                            </Button>
-                                        </div>
-                                    </form>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            )}
         </>
     );
 } 

@@ -21,6 +21,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import Modal from './Modal';
 
 interface ProductReview {
     id: number;
@@ -69,6 +70,11 @@ const ProductReview: React.FC<ProductReviewProps> = ({
     userVotedUnhelpful = false,
 }) => {
     const [isVoting, setIsVoting] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportReason, setReportReason] = useState('Spam');
+    const [reportComment, setReportComment] = useState('');
+    const [isReporting, setIsReporting] = useState(false);
+    const [reportSuccess, setReportSuccess] = useState(false);
 
     const handleVote = async (voteType: 'helpful' | 'unhelpful') => {
         if (!currentUserEmail || isVoting) return;
@@ -84,6 +90,38 @@ const ProductReview: React.FC<ProductReviewProps> = ({
     const canEdit = currentUserEmail === review.reviewer_email;
     const canDelete = currentUserEmail === review.reviewer_email || isAdmin;
     const canModerate = isAdmin;
+
+    const handleReport = async () => {
+        setIsReporting(true);
+        try {
+            const response = await fetch(`/products/${review.product_id}/reviews/${review.id}/report`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    reason: reportReason,
+                    comment: reportComment,
+                })
+            });
+            if (response.ok) {
+                setReportSuccess(true);
+                setTimeout(() => {
+                    setShowReportModal(false);
+                    setReportSuccess(false);
+                    setReportReason('Spam');
+                    setReportComment('');
+                }, 1200);
+            } else {
+                alert('Failed to submit report.');
+            }
+        } catch (error) {
+            alert('An error occurred while submitting the report.');
+        } finally {
+            setIsReporting(false);
+        }
+    };
 
     return (
         <Card className={`border ${!review.is_approved ? 'border-orange-300 dark:border-orange-600 bg-orange-50/50 dark:bg-orange-900/20' : 'border-gray-200 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50'} backdrop-blur-sm`}>
@@ -279,11 +317,49 @@ const ProductReview: React.FC<ProductReviewProps> = ({
                     </div>
                     
                     {/* Report Button */}
-                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700" onClick={() => setShowReportModal(true)}>
                         <Flag className="w-4 h-4 mr-1" />
                         Report
                     </Button>
                 </div>
+                {/* Report Modal */}
+                <Modal show={showReportModal} onClose={() => setShowReportModal(false)} maxWidth="sm">
+                    <div className="p-6">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Report Review</h3>
+                        {reportSuccess ? (
+                            <div className="text-green-600 dark:text-green-400 font-medium py-4 text-center">Thank you for your report!</div>
+                        ) : (
+                            <form onSubmit={e => { e.preventDefault(); handleReport(); }}>
+                                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Reason</label>
+                                <select
+                                    className="w-full mb-4 p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    value={reportReason}
+                                    onChange={e => setReportReason(e.target.value)}
+                                    required
+                                >
+                                    <option value="Spam">Spam</option>
+                                    <option value="Inappropriate">Inappropriate</option>
+                                    <option value="Offensive">Offensive</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">Comment (optional)</label>
+                                <textarea
+                                    className="w-full mb-4 p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                    rows={3}
+                                    value={reportComment}
+                                    onChange={e => setReportComment(e.target.value)}
+                                    placeholder="Add more details (optional)"
+                                />
+                                <div className="flex justify-end space-x-2 mt-4">
+                                    <Button type="button" variant="outline" onClick={() => setShowReportModal(false)} disabled={isReporting}>Cancel</Button>
+                                    <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white" disabled={isReporting}>
+                                        {isReporting ? 'Reporting...' : 'Submit Report'}
+                                    </Button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </Modal>
             </CardContent>
         </Card>
     );

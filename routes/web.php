@@ -659,6 +659,13 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::delete('/{productId}/reviews/{reviewId}', [ProductController::class, 'deleteReview'])->name('products.reviews.destroy');
         Route::post('/{productId}/reviews/{reviewId}/approve', [ProductController::class, 'approveReview'])->name('products.reviews.approve');
         Route::post('/{productId}/reviews/{reviewId}/toggle-feature', [ProductController::class, 'toggleFeatureReview'])->name('products.reviews.toggle-feature');
+        Route::post('/{productId}/reviews/{reviewId}/report', [ProductController::class, 'reportReview'])->name('products.reviews.report');
+    });
+
+    // Product Review Reports (subscription required)
+    Route::prefix('product-review-reports')->group(function () {
+        Route::get('/reported-reviews', [ProductController::class, 'reportedReviews'])->name('products.reported-reviews');
+        Route::patch('/reports/{reportId}/status', [ProductController::class, 'updateReportStatus'])->name('products.reports.status');
     });
 
     // Product Variants (subscription required)

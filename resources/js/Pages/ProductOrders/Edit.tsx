@@ -124,13 +124,13 @@ export default function Edit({ auth, order, currency, errors }: Props) {
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-            confirmed: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-            processing: { color: 'bg-purple-100 text-purple-800', icon: Package },
-            shipped: { color: 'bg-indigo-100 text-indigo-800', icon: Truck },
-            delivered: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            cancelled: { color: 'bg-red-100 text-red-800', icon: XCircle },
-            refunded: { color: 'bg-gray-100 text-gray-800', icon: Archive },
+            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
+            confirmed: { color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300', icon: CheckCircle },
+            processing: { color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300', icon: Package },
+            shipped: { color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300', icon: Truck },
+            delivered: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
+            cancelled: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
+            refunded: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: Archive },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -146,11 +146,11 @@ export default function Edit({ auth, order, currency, errors }: Props) {
 
     const getPaymentStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-            paid: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            failed: { color: 'bg-red-100 text-red-800', icon: XCircle },
-            refunded: { color: 'bg-gray-100 text-gray-800', icon: Archive },
-            partially_refunded: { color: 'bg-orange-100 text-orange-800', icon: Archive },
+            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
+            paid: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
+            failed: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
+            refunded: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: Archive },
+            partially_refunded: { color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300', icon: Archive },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -167,7 +167,7 @@ export default function Edit({ auth, order, currency, errors }: Props) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit Order</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Edit Order</h2>}
         >
             <Head title={`Edit Order ${order.order_number}`} />
 
@@ -177,7 +177,7 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                     {errors && Object.keys(errors).length > 0 && (
                         <div className="mb-6">
                             {Object.entries(errors).map(([key, message]) => (
-                                <div key={key} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-2">
+                                <div key={key} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-2">
                                     {message}
                                 </div>
                             ))}
@@ -194,10 +194,10 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                     Edit Order {order.order_number}
                                 </h1>
-                                <p className="text-gray-600">
+                                <p className="text-gray-600 dark:text-gray-400">
                                     Created on {format(new Date(order.created_at), 'MMMM dd, yyyy \'at\' HH:mm')}
                                 </p>
                             </div>
@@ -357,17 +357,17 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div className="flex items-center text-sm">
-                                            <Mail className="w-4 h-4 mr-2 text-gray-500" />
-                                            <span>{order.customer_email}</span>
+                                            <Mail className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">{order.customer_email}</span>
                                         </div>
                                         <div className="flex items-center text-sm">
-                                            <User className="w-4 h-4 mr-2 text-gray-500" />
-                                            <span>{order.customer_name}</span>
+                                            <User className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">{order.customer_name}</span>
                                         </div>
                                         {order.customer_phone && (
                                             <div className="flex items-center text-sm">
-                                                <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                                                <span>{order.customer_phone}</span>
+                                                <Phone className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                                                <span className="text-gray-900 dark:text-gray-100">{order.customer_phone}</span>
                                             </div>
                                         )}
                                     </CardContent>
@@ -383,26 +383,26 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div className="flex justify-between text-sm">
-                                            <span>Subtotal:</span>
-                                            <span>{formatCurrency(order.subtotal, currency.symbol)}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">Subtotal:</span>
+                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.subtotal, currency.symbol)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span>Tax:</span>
-                                            <span>{formatCurrency(order.tax_amount, currency.symbol)}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">Tax:</span>
+                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.tax_amount, currency.symbol)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span>Shipping:</span>
-                                            <span>{formatCurrency(order.shipping_fee, currency.symbol)}</span>
+                                            <span className="text-gray-600 dark:text-gray-400">Shipping:</span>
+                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.shipping_fee, currency.symbol)}</span>
                                         </div>
                                         {order.discount_amount > 0 && (
-                                            <div className="flex justify-between text-sm text-green-600">
+                                            <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                                                 <span>Discount:</span>
                                                 <span>-{formatCurrency(order.discount_amount, currency.symbol)}</span>
                                             </div>
                                         )}
-                                        <div className="flex justify-between font-medium text-lg border-t pt-2">
-                                            <span>Total:</span>
-                                            <span>{formatCurrency(order.total_amount, currency.symbol)}</span>
+                                        <div className="flex justify-between font-medium text-lg border-t border-gray-200 dark:border-gray-700 pt-2">
+                                            <span className="text-gray-900 dark:text-gray-100">Total:</span>
+                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.total_amount, currency.symbol)}</span>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -417,16 +417,16 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                             {order.order_items.map((item, index) => (
                                                 <div key={index} className="flex justify-between text-sm">
                                                     <div className="truncate">
-                                                        <div>{item.name} (x{item.quantity})</div>
+                                                        <div className="text-gray-900 dark:text-gray-100">{item.name} (x{item.quantity})</div>
                                                         {item.variant_id && item.attributes && (
-                                                            <div className="text-xs text-gray-500 mt-1">
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                                 {Object.entries(item.attributes)
                                                                     .map(([key, value]) => `${key}: ${value}`)
                                                                     .join(', ')}
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <span>{formatCurrency(item.price * item.quantity, currency.symbol)}</span>
+                                                    <span className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.quantity, currency.symbol)}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -440,13 +440,13 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500">Order Status</label>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Order Status</label>
                                             <div className="mt-1">
                                                 {getStatusBadge(order.order_status)}
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500">Payment Status</label>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Status</label>
                                             <div className="mt-1">
                                                 {getPaymentStatusBadge(order.payment_status)}
                                             </div>

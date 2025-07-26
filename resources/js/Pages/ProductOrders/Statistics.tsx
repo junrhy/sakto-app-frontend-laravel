@@ -77,24 +77,24 @@ interface Props extends PageProps {
 export default function Statistics({ auth, statistics, currency, errors }: Props) {
     const getStatusColor = (status: string) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            confirmed: 'bg-blue-100 text-blue-800',
-            processing: 'bg-purple-100 text-purple-800',
-            shipped: 'bg-indigo-100 text-indigo-800',
-            delivered: 'bg-green-100 text-green-800',
-            cancelled: 'bg-red-100 text-red-800',
-            refunded: 'bg-gray-100 text-gray-800',
+            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
+            confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-700/50',
+            processing: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-700/50',
+            shipped: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700/50',
+            delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50',
+            cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50',
+            refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50',
         };
         return colors[status as keyof typeof colors] || colors.pending;
     };
 
     const getPaymentStatusColor = (status: string) => {
         const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            paid: 'bg-green-100 text-green-800',
-            failed: 'bg-red-100 text-red-800',
-            refunded: 'bg-gray-100 text-gray-800',
-            partially_refunded: 'bg-orange-100 text-orange-800',
+            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
+            paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50',
+            failed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50',
+            refunded: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50',
+            partially_refunded: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700/50',
         };
         return colors[status as keyof typeof colors] || colors.pending;
     };
@@ -102,7 +102,7 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Order Statistics</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Order Statistics</h2>}
         >
             <Head title="Order Statistics" />
 
@@ -112,7 +112,7 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                     {errors && Object.keys(errors).length > 0 && (
                         <div className="mb-6">
                             {Object.entries(errors).map(([key, message]) => (
-                                <div key={key} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-2">
+                                <div key={key} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-2">
                                     {message}
                                 </div>
                             ))}
@@ -122,8 +122,8 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Order Statistics</h1>
-                            <p className="text-gray-600">Comprehensive overview of your order performance</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Order Statistics</h1>
+                            <p className="text-gray-600 dark:text-gray-400">Comprehensive overview of your order performance</p>
                         </div>
                         <Link href={route('product-orders.index')}>
                             <Button variant="outline">
@@ -246,19 +246,19 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                         <CardContent>
                             <div className="space-y-4">
                                 {statistics.revenue_by_month.map((monthData, index) => (
-                                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                                         <div className="flex items-center space-x-4">
-                                            <Calendar className="h-5 w-5 text-gray-400" />
+                                            <Calendar className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                                             <div>
-                                                <div className="font-medium">{monthData.month}</div>
-                                                <div className="text-sm text-gray-500">{monthData.orders} orders</div>
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">{monthData.month}</div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">{monthData.orders} orders</div>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-medium">
+                                            <div className="font-medium text-gray-900 dark:text-gray-100">
                                                 {formatCurrency(monthData.revenue, currency.symbol)}
                                             </div>
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 {monthData.revenue > 0 ? 
                                                     formatCurrency(monthData.revenue / monthData.orders, currency.symbol) + ' avg' : 
                                                     'No orders'
@@ -279,21 +279,21 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                         <CardContent>
                             <div className="space-y-4">
                                 {statistics.top_products.map((product, index) => (
-                                    <div key={product.product_id} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div key={product.product_id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <span className="text-sm font-medium text-blue-600">#{index + 1}</span>
+                                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                                                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">#{index + 1}</span>
                                             </div>
                                             <div>
-                                                <div className="font-medium">{product.name}</div>
-                                                <div className="text-sm text-gray-500">{product.quantity_sold} units sold</div>
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">{product.name}</div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">{product.quantity_sold} units sold</div>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-medium">
+                                            <div className="font-medium text-gray-900 dark:text-gray-100">
                                                 {formatCurrency(product.revenue, currency.symbol)}
                                             </div>
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 {product.revenue > 0 && product.quantity_sold > 0 ? 
                                                     formatCurrency(product.revenue / product.quantity_sold, currency.symbol) + ' avg' : 
                                                     'N/A'
@@ -314,25 +314,25 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                         <CardContent>
                             <div className="space-y-4">
                                 {statistics.recent_orders.map((order) => (
-                                    <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div key={order.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                                <Package className="h-4 w-4 text-gray-600" />
+                                            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                                                <Package className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                                             </div>
                                             <div>
-                                                <div className="font-medium">{order.order_number}</div>
-                                                <div className="text-sm text-gray-500">{order.customer_name}</div>
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">{order.order_number}</div>
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer_name}</div>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-4">
-                                            <Badge className={getStatusColor(order.order_status)}>
+                                            <Badge className={`${getStatusColor(order.order_status)} border`}>
                                                 {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
                                             </Badge>
                                             <div className="text-right">
-                                                <div className="font-medium">
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">
                                                     {formatCurrency(order.total_amount, currency.symbol)}
                                                 </div>
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                                     {format(new Date(order.created_at), 'MMM dd, yyyy')}
                                                 </div>
                                             </div>

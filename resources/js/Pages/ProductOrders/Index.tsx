@@ -160,20 +160,20 @@ export default function Index({ auth, orders, currency, errors }: Props) {
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-            confirmed: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-            processing: { color: 'bg-purple-100 text-purple-800', icon: Package },
-            shipped: { color: 'bg-indigo-100 text-indigo-800', icon: Truck },
-            delivered: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            cancelled: { color: 'bg-red-100 text-red-800', icon: XCircle },
-            refunded: { color: 'bg-gray-100 text-gray-800', icon: Archive },
+            pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50', icon: Clock },
+            confirmed: { color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-700/50', icon: CheckCircle },
+            processing: { color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-700/50', icon: Package },
+            shipped: { color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700/50', icon: Truck },
+            delivered: { color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50', icon: CheckCircle },
+            cancelled: { color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50', icon: XCircle },
+            refunded: { color: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50', icon: Archive },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
         const Icon = config.icon;
 
         return (
-            <Badge className={config.color}>
+            <Badge className={`${config.color} border`}>
                 <Icon className="w-3 h-3 mr-1" />
                 {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
@@ -182,18 +182,18 @@ export default function Index({ auth, orders, currency, errors }: Props) {
 
     const getPaymentStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-            paid: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            failed: { color: 'bg-red-100 text-red-800', icon: XCircle },
-            refunded: { color: 'bg-gray-100 text-gray-800', icon: Archive },
-            partially_refunded: { color: 'bg-orange-100 text-orange-800', icon: Archive },
+            pending: { color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50', icon: Clock },
+            paid: { color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700/50', icon: CheckCircle },
+            failed: { color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-700/50', icon: XCircle },
+            refunded: { color: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300 border-gray-200 dark:border-gray-600/50', icon: Archive },
+            partially_refunded: { color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700/50', icon: Archive },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
         const Icon = config.icon;
 
         return (
-            <Badge className={config.color}>
+            <Badge className={`${config.color} border`}>
                 <Icon className="w-3 h-3 mr-1" />
                 {status.replace('_', ' ').charAt(0).toUpperCase() + status.replace('_', ' ').slice(1)}
             </Badge>
@@ -241,7 +241,7 @@ export default function Index({ auth, orders, currency, errors }: Props) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Product Orders</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Product Orders</h2>}
         >
             <Head title="Product Orders" />
 
@@ -251,7 +251,7 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                     {errors && Object.keys(errors).length > 0 && (
                         <div className="mb-6">
                             {Object.entries(errors).map(([key, message]) => (
-                                <div key={key} className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-2">
+                                <div key={key} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-2">
                                     {message}
                                 </div>
                             ))}
@@ -261,8 +261,8 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Product Orders</h1>
-                            <p className="text-gray-600">Manage your product orders and track their status</p>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Product Orders</h1>
+                            <p className="text-gray-600 dark:text-gray-400">Manage your product orders and track their status</p>
                         </div>
                         <div className="flex space-x-2">
                             <Link href={route('product-orders.statistics')}>
@@ -291,7 +291,7 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div className="relative">
-                                    <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                    <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                                     <Input
                                         placeholder="Search orders..."
                                         value={searchTerm}
@@ -389,25 +389,25 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                                             <TableCell className="font-medium">
                                                 <Link 
                                                     href={route('product-orders.show', order.id)}
-                                                    className="text-blue-600 hover:text-blue-800"
+                                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                                                 >
                                                     {order.order_number}
                                                 </Link>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium">{order.customer_name}</div>
-                                                    <div className="text-sm text-gray-500">{order.customer_email}</div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer_name}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer_email}</div>
                                                     {order.customer_phone && (
-                                                        <div className="text-sm text-gray-500">{order.customer_phone}</div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer_phone}</div>
                                                     )}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="text-sm">
+                                                <div className="text-sm text-gray-900 dark:text-gray-100">
                                                     {order.order_items.length} item{order.order_items.length !== 1 ? 's' : ''}
                                                 </div>
-                                                <div className="text-xs text-gray-500">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
                                                     {order.order_items.map(item => {
                                                         let displayName = item.name;
                                                         if (item.variant_id && item.attributes) {
@@ -421,11 +421,11 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="font-medium">
+                                                <div className="font-medium text-gray-900 dark:text-gray-100">
                                                     {formatCurrency(order.total_amount, currency.symbol)}
                                                 </div>
                                                 {order.discount_amount > 0 && (
-                                                    <div className="text-xs text-green-600">
+                                                    <div className="text-xs text-green-600 dark:text-green-400">
                                                         -{formatCurrency(order.discount_amount, currency.symbol)} discount
                                                     </div>
                                                 )}
@@ -437,10 +437,10 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                                                 {getPaymentStatusBadge(order.payment_status)}
                                             </TableCell>
                                             <TableCell>
-                                                <div className="text-sm">
+                                                <div className="text-sm text-gray-900 dark:text-gray-100">
                                                     {format(new Date(order.created_at), 'MMM dd, yyyy')}
                                                 </div>
-                                                <div className="text-xs text-gray-500">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
                                                     {format(new Date(order.created_at), 'HH:mm')}
                                                 </div>
                                             </TableCell>
@@ -470,7 +470,7 @@ export default function Index({ auth, orders, currency, errors }: Props) {
                                                         {canDelete && (
                                                             <DropdownMenuItem 
                                                                 onClick={() => handleDelete(order.id)}
-                                                                className="text-red-600"
+                                                                className="text-red-600 dark:text-red-400"
                                                             >
                                                                 <Trash2 className="w-4 h-4 mr-2" />
                                                                 Delete Order
@@ -486,9 +486,9 @@ export default function Index({ auth, orders, currency, errors }: Props) {
 
                             {filteredOrders.length === 0 && (
                                 <div className="text-center py-8">
-                                    <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                    <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-                                    <p className="text-gray-500">
+                                    <Package className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No orders found</h3>
+                                    <p className="text-gray-500 dark:text-gray-400">
                                         {searchTerm || statusFilter || paymentStatusFilter 
                                             ? 'Try adjusting your filters to see more results.'
                                             : 'Get started by creating your first product order.'

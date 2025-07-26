@@ -81,13 +81,13 @@ interface Props extends PageProps {
 export default function Show({ auth, order, currency }: Props) {
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-            confirmed: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-            processing: { color: 'bg-purple-100 text-purple-800', icon: Package },
-            shipped: { color: 'bg-indigo-100 text-indigo-800', icon: Truck },
-            delivered: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            cancelled: { color: 'bg-red-100 text-red-800', icon: XCircle },
-            refunded: { color: 'bg-gray-100 text-gray-800', icon: Archive },
+            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
+            confirmed: { color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300', icon: CheckCircle },
+            processing: { color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300', icon: Package },
+            shipped: { color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300', icon: Truck },
+            delivered: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
+            cancelled: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
+            refunded: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: Archive },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -103,11 +103,11 @@ export default function Show({ auth, order, currency }: Props) {
 
     const getPaymentStatusBadge = (status: string) => {
         const statusConfig = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-            paid: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-            failed: { color: 'bg-red-100 text-red-800', icon: XCircle },
-            refunded: { color: 'bg-gray-100 text-gray-800', icon: Archive },
-            partially_refunded: { color: 'bg-orange-100 text-orange-800', icon: Archive },
+            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
+            paid: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
+            failed: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
+            refunded: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: Archive },
+            partially_refunded: { color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300', icon: Archive },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -144,7 +144,7 @@ export default function Show({ auth, order, currency }: Props) {
     return (
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Order Details</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Order Details</h2>}
         >
             <Head title={`Order ${order.order_number}`} />
 
@@ -160,10 +160,10 @@ export default function Show({ auth, order, currency }: Props) {
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                     Order {order.order_number}
                                 </h1>
-                                <p className="text-gray-600">
+                                <p className="text-gray-600 dark:text-gray-400">
                                     Created on {format(new Date(order.created_at), 'MMMM dd, yyyy \'at\' HH:mm')}
                                 </p>
                             </div>
@@ -196,13 +196,13 @@ export default function Show({ auth, order, currency }: Props) {
                                 <CardContent>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500">Order Status</label>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Order Status</label>
                                             <div className="mt-1">
                                                 {getStatusBadge(order.order_status)}
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500">Payment Status</label>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Status</label>
                                             <div className="mt-1">
                                                 {getPaymentStatusBadge(order.payment_status)}
                                             </div>
@@ -213,24 +213,24 @@ export default function Show({ auth, order, currency }: Props) {
                                     <div className="mt-6 space-y-3">
                                         <div className="flex items-center text-sm">
                                             <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                                            <span>Order created on {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}</span>
+                                            <span className="text-gray-700 dark:text-gray-300">Order created on {format(new Date(order.created_at), 'MMM dd, yyyy HH:mm')}</span>
                                         </div>
                                         {order.paid_at && (
                                             <div className="flex items-center text-sm">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                                                <span>Payment received on {format(new Date(order.paid_at), 'MMM dd, yyyy HH:mm')}</span>
+                                                <span className="text-gray-700 dark:text-gray-300">Payment received on {format(new Date(order.paid_at), 'MMM dd, yyyy HH:mm')}</span>
                                             </div>
                                         )}
                                         {order.shipped_at && (
                                             <div className="flex items-center text-sm">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                                                <span>Order shipped on {format(new Date(order.shipped_at), 'MMM dd, yyyy HH:mm')}</span>
+                                                <span className="text-gray-700 dark:text-gray-300">Order shipped on {format(new Date(order.shipped_at), 'MMM dd, yyyy HH:mm')}</span>
                                             </div>
                                         )}
                                         {order.delivered_at && (
                                             <div className="flex items-center text-sm">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                                                <span>Order delivered on {format(new Date(order.delivered_at), 'MMM dd, yyyy HH:mm')}</span>
+                                                <span className="text-gray-700 dark:text-gray-300">Order delivered on {format(new Date(order.delivered_at), 'MMM dd, yyyy HH:mm')}</span>
                                             </div>
                                         )}
                                     </div>
@@ -256,9 +256,9 @@ export default function Show({ auth, order, currency }: Props) {
                                             {order.order_items.map((item, index) => (
                                                 <TableRow key={index}>
                                                     <TableCell>
-                                                        <div className="font-medium">{item.name}</div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
                                                         {item.variant_id && item.attributes && (
-                                                            <div className="text-sm text-gray-500 mt-1">
+                                                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                                 <div className="flex flex-wrap gap-1">
                                                                     {Object.entries(item.attributes).map(([key, value]) => (
                                                                         <Badge key={key} variant="secondary" className="text-xs">
@@ -269,9 +269,9 @@ export default function Show({ auth, order, currency }: Props) {
                                                             </div>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell>{item.quantity}</TableCell>
-                                                    <TableCell>{formatCurrency(item.price, currency.symbol)}</TableCell>
-                                                    <TableCell>{formatCurrency(item.price * item.quantity, currency.symbol)}</TableCell>
+                                                    <TableCell className="text-gray-900 dark:text-gray-100">{item.quantity}</TableCell>
+                                                    <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price, currency.symbol)}</TableCell>
+                                                    <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.quantity, currency.symbol)}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -287,30 +287,30 @@ export default function Show({ auth, order, currency }: Props) {
                                 <CardContent>
                                     <div className="space-y-3">
                                         <div className="flex justify-between">
-                                            <span>Subtotal:</span>
-                                            <span>{formatCurrency(order.subtotal, currency.symbol)}</span>
+                                            <span className="text-gray-700 dark:text-gray-300">Subtotal:</span>
+                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.subtotal, currency.symbol)}</span>
                                         </div>
                                         {order.tax_amount > 0 && (
                                             <div className="flex justify-between">
-                                                <span>Tax:</span>
-                                                <span>{formatCurrency(order.tax_amount, currency.symbol)}</span>
+                                                <span className="text-gray-700 dark:text-gray-300">Tax:</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.tax_amount, currency.symbol)}</span>
                                             </div>
                                         )}
                                         {order.shipping_fee > 0 && (
                                             <div className="flex justify-between">
-                                                <span>Shipping:</span>
-                                                <span>{formatCurrency(order.shipping_fee, currency.symbol)}</span>
+                                                <span className="text-gray-700 dark:text-gray-300">Shipping:</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.shipping_fee, currency.symbol)}</span>
                                             </div>
                                         )}
                                         {order.discount_amount > 0 && (
-                                            <div className="flex justify-between text-green-600">
+                                            <div className="flex justify-between text-green-600 dark:text-green-400">
                                                 <span>Discount:</span>
                                                 <span>-{formatCurrency(order.discount_amount, currency.symbol)}</span>
                                             </div>
                                         )}
-                                        <div className="flex justify-between font-bold text-lg border-t pt-3">
-                                            <span>Total:</span>
-                                            <span>{formatCurrency(order.total_amount, currency.symbol)}</span>
+                                        <div className="flex justify-between font-bold text-lg border-t border-gray-200 dark:border-gray-700 pt-3">
+                                            <span className="text-gray-900 dark:text-gray-100">Total:</span>
+                                            <span className="text-gray-900 dark:text-gray-100">{formatCurrency(order.total_amount, currency.symbol)}</span>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -329,20 +329,20 @@ export default function Show({ auth, order, currency }: Props) {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     <div>
-                                        <label className="text-sm font-medium text-gray-500">Name</label>
-                                        <p className="text-sm">{order.customer_name}</p>
+                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
+                                        <p className="text-sm text-gray-900 dark:text-gray-100">{order.customer_name}</p>
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-500">Email</label>
-                                        <p className="text-sm flex items-center">
+                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
+                                        <p className="text-sm flex items-center text-gray-900 dark:text-gray-100">
                                             <Mail className="w-3 h-3 mr-1" />
                                             {order.customer_email}
                                         </p>
                                     </div>
                                     {order.customer_phone && (
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500">Phone</label>
-                                            <p className="text-sm flex items-center">
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</label>
+                                            <p className="text-sm flex items-center text-gray-900 dark:text-gray-100">
                                                 <Phone className="w-3 h-3 mr-1" />
                                                 {order.customer_phone}
                                             </p>
@@ -361,7 +361,7 @@ export default function Show({ auth, order, currency }: Props) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-sm whitespace-pre-wrap">{order.shipping_address}</p>
+                                        <p className="text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">{order.shipping_address}</p>
                                     </CardContent>
                                 </Card>
                             )}
@@ -376,7 +376,7 @@ export default function Show({ auth, order, currency }: Props) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-sm whitespace-pre-wrap">{order.billing_address}</p>
+                                        <p className="text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">{order.billing_address}</p>
                                     </CardContent>
                                 </Card>
                             )}
@@ -391,13 +391,13 @@ export default function Show({ auth, order, currency }: Props) {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     <div>
-                                        <label className="text-sm font-medium text-gray-500">Payment Method</label>
-                                        <p className="text-sm">{getPaymentMethodLabel(order.payment_method)}</p>
+                                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Method</label>
+                                        <p className="text-sm text-gray-900 dark:text-gray-100">{getPaymentMethodLabel(order.payment_method)}</p>
                                     </div>
                                     {order.payment_reference && (
                                         <div>
-                                            <label className="text-sm font-medium text-gray-500">Payment Reference</label>
-                                            <p className="text-sm">{order.payment_reference}</p>
+                                            <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Reference</label>
+                                            <p className="text-sm text-gray-900 dark:text-gray-100">{order.payment_reference}</p>
                                         </div>
                                     )}
                                 </CardContent>
@@ -413,7 +413,7 @@ export default function Show({ auth, order, currency }: Props) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
+                                        <p className="text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">{order.notes}</p>
                                     </CardContent>
                                 </Card>
                             )}
