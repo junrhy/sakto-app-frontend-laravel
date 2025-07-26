@@ -117,19 +117,19 @@ export default function SearchMember({ auth, communityUsers, totalContacts }: Pa
                             {/* Desktop Navigation Menu */}
                             <div className="hidden lg:flex items-center space-x-8 ml-8">
                                 <Link
-                                    href={route('community.index')}
+                                    href={route('community')}
                                     className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
                                 >
                                     Home
                                 </Link>
                                 <Link
-                                    href={route('community.index') + '#features'}
+                                    href={route('community') + '#features'}
                                     className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
                                 >
                                     How it works
                                 </Link>
                                 <Link
-                                    href={route('community.index') + '#pricing'}
+                                    href={route('community') + '#pricing'}
                                     className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
                                 >
                                     Pricing
@@ -181,21 +181,21 @@ export default function SearchMember({ auth, communityUsers, totalContacts }: Pa
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-semibold text-blue-200 uppercase tracking-wider">Navigation</h3>
                                     <Link
-                                        href={route('community.index')}
+                                        href={route('community')}
                                         className="block px-3 py-3 rounded-lg text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
                                         Home
                                     </Link>
                                     <Link
-                                        href={route('community.index') + '#features'}
+                                        href={route('community') + '#features'}
                                         className="block px-3 py-3 rounded-lg text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
                                         How it works
                                     </Link>
                                     <Link
-                                        href={route('community.index') + '#pricing'}
+                                        href={route('community') + '#pricing'}
                                         className="block px-3 py-3 rounded-lg text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >

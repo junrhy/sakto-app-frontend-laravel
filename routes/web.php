@@ -190,7 +190,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/shop', [LandingController::class, 'shop'])->name('shop');
     Route::get('/delivery', [LandingController::class, 'delivery'])->name('delivery');
     Route::get('/jobs', [LandingController::class, 'jobs'])->name('jobs');
-    Route::get('/community', [CommunityController::class, 'index'])->name('community.index');
+    Route::get('/community', [CommunityController::class, 'index'])->name('community');
 
     // About Us Route
     Route::get('/community/about', [CommunityController::class, 'about'])->name('community.about');
@@ -233,7 +233,7 @@ Route::group(['middleware' => ['web']], function () {
         } elseif (stripos($host, 'jobs') !== false || stripos($path, 'jobs') !== false) {
             return redirect()->route('jobs');
         } elseif (stripos($host, 'community') !== false || stripos($path, 'community') !== false) {
-            return redirect()->route('community.index');
+            return redirect()->route('community');
         } elseif (stripos($host, 'logistics') !== false || stripos($path, 'logistics') !== false) {
             return redirect()->route('logistics');
         }
