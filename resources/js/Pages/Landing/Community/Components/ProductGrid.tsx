@@ -56,6 +56,8 @@ interface ProductGridProps {
   setVariantErrors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   hasActiveFilters: () => boolean;
   clearFilters: () => void;
+  getProductImage: (product: Product) => string | null;
+  openProductDetailModal: (product: Product) => void;
 }
 
 export default function ProductGrid({
@@ -75,7 +77,9 @@ export default function ProductGrid({
   formatPrice,
   setVariantErrors,
   hasActiveFilters,
-  clearFilters
+  clearFilters,
+  getProductImage,
+  openProductDetailModal
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
@@ -121,6 +125,8 @@ export default function ProductGrid({
           isVariantComplete={isVariantComplete}
           formatPrice={formatPrice}
           setVariantErrors={setVariantErrors}
+          getProductImage={getProductImage}
+          openProductDetailModal={openProductDetailModal}
         />
       ))}
     </div>

@@ -201,6 +201,8 @@ Route::group(['middleware' => ['web']], function () {
     // Search Members Route
     Route::get('/community/search', [CommunityController::class, 'search'])->name('community.search');
     
+
+    
     // Redirect old ID-based URLs to slug-based URLs for SEO
     Route::get('/community/member/{id}', function ($id) {
         $user = \App\Models\User::where('project_identifier', 'community')->where('id', $id)->first();

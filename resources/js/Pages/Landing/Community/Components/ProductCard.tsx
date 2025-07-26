@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import { router } from '@inertiajs/react';
+import { ShoppingCart } from 'lucide-react';
+
 interface Product {
   id: number;
   name: string;
@@ -17,6 +21,13 @@ interface Product {
   client_identifier: string;
   created_at: string;
   updated_at: string;
+  images?: Array<{
+    id: number;
+    image_url: string;
+    alt_text?: string;
+    is_primary: boolean;
+    sort_order: number;
+  }>;
   active_variants?: Array<{
     id: number;
     sku?: string;
@@ -52,6 +63,8 @@ interface ProductCardProps {
   isVariantComplete: (product: Product, selectedAttributes: Record<string, string>) => boolean;
   formatPrice: (price: number | string | null | undefined) => string;
   setVariantErrors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
+  getProductImage: (product: Product) => string | null;
+  openProductDetailModal: (product: Product) => void;
 }
 
 export default function ProductCard({
@@ -69,8 +82,11 @@ export default function ProductCard({
   findMatchingVariant,
   isVariantComplete,
   formatPrice,
-  setVariantErrors
+  setVariantErrors,
+  getProductImage,
+  openProductDetailModal
 }: ProductCardProps) {
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
   const selectedVariant = selectedVariants[product.id];
   const effectivePrice = getEffectivePrice(product, selectedVariant);
   const effectiveStock = getEffectiveStock(product, selectedVariant);
@@ -85,180 +101,164 @@ export default function ProductCard({
     (product.type !== 'physical' || 
      (selectedVariant ? effectiveStock > 0 : (product.stock_quantity || 0) > 0));
 
+  // Gallery logic
+  let images: { image_url: string; alt_text?: string }[] = [];
+  if (product.images && product.images.length > 0) {
+    images = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+  } else if (product.thumbnail_url) {
+    images = [{ image_url: product.thumbnail_url, alt_text: product.name }];
+  }
+  const currentImage = images[currentImageIdx] || images[0];
+  const canGoPrev = images.length > 1 && currentImageIdx > 0;
+  const canGoNext = images.length > 1 && currentImageIdx < images.length - 1;
+
+  const handleViewDetails = () => {
+    // Navigate to public product detail page
+    openProductDetailModal(product);
+  };
+
   return (
     <div className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg dark:hover:shadow-gray-900/50 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 break-inside-avoid mb-6">
-              {/* Product Image */}
-        <div className="relative h-48 bg-gradient-to-br from-gray-100 dark:from-gray-700 to-gray-200 dark:to-gray-600">
-          {product.thumbnail_url ? (
-            <img 
-              src={product.thumbnail_url} 
-              alt={product.name} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      {/* Product Image Gallery */}
+      <div className="relative h-48 bg-gradient-to-br from-gray-100 dark:from-gray-700 to-gray-200 dark:to-gray-600 flex items-center justify-center overflow-hidden">
+        {currentImage ? (
+          <>
+            <img
+              src={currentImage.image_url}
+              alt={currentImage.alt_text || product.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+              onClick={handleViewDetails}
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <svg className="w-16 h-16 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-          )}
-        
-        {/* Product Type Badge */}
-        <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-            product.type === 'digital' ? 'text-blue-700 bg-blue-100' :
-            product.type === 'service' ? 'text-purple-700 bg-purple-100' :
-            product.type === 'subscription' ? 'text-orange-700 bg-orange-100' :
-            'text-green-700 bg-green-100'
-          }`}>
-            {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
-          </span>
-        </div>
-
-        {/* Stock Status */}
-        {(product.stock_quantity !== null || (product.active_variants && product.active_variants.length > 0) || product.type !== 'physical') && (
-          <div className="absolute top-3 right-3">
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              product.type === 'digital' ? 'text-blue-700 bg-blue-100' :
-              product.type === 'service' ? 'text-purple-700 bg-purple-100' :
-              product.type === 'subscription' ? 'text-orange-700 bg-orange-100' :
-              getEffectiveStock(product, selectedVariant) > 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
-            }`}>
-              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                {product.type === 'digital' ? (
-                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                ) : product.type === 'service' ? (
-                  <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
-                ) : product.type === 'subscription' ? (
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                ) : getEffectiveStock(product, selectedVariant) > 0 ? (
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                ) : (
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            
+            {/* Navigation Arrows */}
+            {images.length > 1 && (
+              <>
+                {canGoPrev && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIdx(prev => prev - 1);
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
                 )}
-              </svg>
-              {product.type === 'digital' ? 'Instant Download' :
-               product.type === 'service' ? 'Available' :
-               product.type === 'subscription' ? 'Active' :
-               getEffectiveStock(product, selectedVariant) > 0 
-                  ? `${getEffectiveStock(product, selectedVariant)} in stock` 
-                  : 'Out of stock'
-              }
-            </span>
+                {canGoNext && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIdx(prev => prev + 1);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1 rounded-full transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
+              </>
+            )}
+            
+            {/* Thumbnail Dots */}
+            {images.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIdx(idx);
+                    }}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      idx === currentImageIdx
+                        ? 'bg-white'
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg className="w-16 h-16 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
           </div>
         )}
       </div>
 
-      {/* Product Content */}
+      {/* Product Info */}
       <div className="p-4">
         {/* Product Header */}
         <div className="mb-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {product.category}
-            </span>
-            {product.status !== 'published' && (
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                product.status === 'draft' ? 'text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/50' :
-                product.status === 'archived' ? 'text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700' :
-                'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/50'
-              }`}>
-                {product.status.charAt(0).toUpperCase() + product.status.slice(1)}
-              </span>
-            )}
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-2 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1 line-clamp-2">
             {product.name}
           </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+            {product.description}
+          </p>
         </div>
 
-        {/* Product Description */}
-        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4 line-clamp-2">
-          {product.description}
-        </p>
-
-        {/* Product Details */}
-        {product.type === 'physical' && (
-          <div className="space-y-2 mb-4">
-            {product.weight && (
-              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                </svg>
-                <span>{product.weight}g</span>
-              </div>
-            )}
-            {product.dimensions && (
-              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                </svg>
-                <span>{product.dimensions}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Product Type Specific Info */}
-        {product.type !== 'physical' && (
-          <div className="mb-4">
-            <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {product.type === 'digital' ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                ) : product.type === 'service' ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                )}
-              </svg>
-              <span>
-                {product.type === 'digital' ? 'Digital product - instant access' :
-                 product.type === 'service' ? 'Service - contact for scheduling' :
-                 'Subscription - recurring billing'}
+        {/* Status and Stock Info */}
+        <div className="mb-2">
+          <div className="flex items-center gap-2 mb-1">
+            {/* Status Badge */}
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              product.status === 'published' 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+            }`}>
+              {product.status === 'published' ? 'Available' : product.status}
+            </span>
+            {/* Stock Status */}
+            {product.type === 'physical' && (
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                effectiveStock > 0
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
+                  : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+              }`}>
+                {effectiveStock > 0 ? `${effectiveStock} in stock` : 'Out of stock'}
               </span>
-            </div>
+            )}
           </div>
-        )}
-
-        {/* Product Tags */}
-        {product.tags && product.tags.length > 0 && (
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-1">
-              {product.tags.slice(0, 3).map((tag, index) => (
-                <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                  #{tag}
-                </span>
-              ))}
-              {product.tags.length > 3 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                  +{product.tags.length - 3} more
-                </span>
-              )}
-            </div>
+          {/* Category Badge on its own row */}
+          <div>
+            <span className="inline-block text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+              {product.category}
+            </span>
           </div>
-        )}
+        </div>
 
         {/* Variant Selection */}
         {product.active_variants && product.active_variants.length > 0 && (
-          <div className="mb-4">
+          <div className="mb-3">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Select Options</h4>
             {Object.entries(getAvailableAttributes(product)).map(([attributeKey, options]) => {
-              const selectedAttributes = selectedVariants[product.id]?.attributes || {};
+              const selectedAttributes = selectedVariant?.attributes || {};
               const isSelected = (option: string) => selectedAttributes[attributeKey] === option;
               return (
                 <div key={attributeKey} className="mb-2">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 capitalize">{attributeKey}</label>
-                  <div className="flex flex-wrap gap-2">
-                    {options.map(option => (
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">
+                    {attributeKey}
+                  </label>
+                  <div className="flex flex-wrap gap-1">
+                    {options.map((option) => (
                       <button
                         key={option}
-                        type="button"
-                        className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${isSelected(option) ? 'bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500'}`}
                         onClick={() => {
                           const newAttributes = { ...selectedAttributes, [attributeKey]: option };
                           const matchingVariant = findMatchingVariant(product, newAttributes);
                           handleVariantSelection(product.id, matchingVariant);
                         }}
+                        className={`px-2 py-1 text-xs rounded border transition-colors ${
+                          isSelected(option)
+                            ? 'bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700'
+                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'
+                        }`}
                       >
                         {option}
                       </button>
@@ -267,17 +267,14 @@ export default function ProductCard({
                 </div>
               );
             })}
-            {/* Variant Error */}
             {variantErrors[product.id] && (
-              <div className="text-red-600 dark:text-red-400 text-xs mt-1">
-                {variantErrors[product.id]}
-              </div>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">{variantErrors[product.id]}</p>
             )}
           </div>
         )}
 
-        {/* Product Price and Action */}
-        <div className="flex items-center justify-between">
+        {/* Product Price */}
+        <div className="flex items-baseline justify-between mb-4">
           <div className="flex items-baseline">
             <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {formatPrice(effectivePrice)}
@@ -291,42 +288,79 @@ export default function ProductCard({
               </span>
             )}
           </div>
-          
-          {/* Cart Controls */}
-          {!isAvailable ? (
-            <button className="inline-flex items-center px-4 py-2 rounded-lg font-medium bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed">
-              {effectiveStock === 0 ? 'Out of Stock' : 'Not Available'}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          {/* Add to Cart Button */}
+          {isAvailable ? (
+            <button
+              onClick={() => {
+                if (product.active_variants && product.active_variants.length > 0) {
+                  if (!isVariantComplete(product, selectedVariant?.attributes || {})) {
+                    setVariantErrors(prev => ({ ...prev, [product.id]: 'Please select all options' }));
+                    return;
+                  }
+                }
+                addToCart(product, selectedVariant, 1);
+              }}
+              disabled={!isAvailable || (product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {}))}
+              className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-sm font-medium shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {quantity > 0 ? `In Cart (${quantity})` : 'Add to Cart'}
             </button>
-          ) : quantity > 0 ? (
+          ) : (
+            <button className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-400 dark:bg-gray-600 text-white rounded-lg cursor-not-allowed text-sm font-medium">
+              Out of Stock
+            </button>
+          )}
+
+          {/* View Details Button */}
+          <button
+            onClick={handleViewDetails}
+            className="inline-flex items-center justify-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium border border-gray-300 dark:border-gray-600"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            Details
+          </button>
+        </div>
+
+        {/* Quantity Controls (if item is in cart) */}
+        {quantity > 0 && (
+          <div className="mt-3 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => updateCartQuantity(product.id, quantity - 1, selectedVariant?.id)}
-                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center"
+                className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                -
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
               </button>
-              <span className="text-sm font-medium min-w-[2rem] text-center">
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100 min-w-[2rem] text-center">
                 {quantity}
               </span>
               <button
                 onClick={() => updateCartQuantity(product.id, quantity + 1, selectedVariant?.id)}
-                disabled={product.type === 'physical' && quantity >= effectiveStock}
-                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                +
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
               </button>
             </div>
-          ) : (
             <button
-              onClick={() => addToCart(product, selectedVariant, 1)}
-              className={`inline-flex items-center px-3 py-1.5 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors text-xs font-medium shadow-sm hover:shadow-md ${product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {}) ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {})}
-              title={product.active_variants && product.active_variants.length > 0 && !isVariantComplete(product, selectedVariant?.attributes || {}) ? 'Please select all variant options' : ''}
+              onClick={() => removeFromCart(product.id, selectedVariant?.id)}
+              className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
             >
-              Add to Cart
+              Remove
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

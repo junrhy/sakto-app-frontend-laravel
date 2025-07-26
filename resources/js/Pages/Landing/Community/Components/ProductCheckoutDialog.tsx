@@ -33,6 +33,13 @@ interface Product {
   client_identifier: string;
   created_at: string;
   updated_at: string;
+  images?: Array<{
+    id: number;
+    image_url: string;
+    alt_text?: string;
+    is_primary: boolean;
+    sort_order: number;
+  }>;
   active_variants?: Array<{
     id: number;
     sku?: string;
@@ -244,6 +251,22 @@ export default function ProductCheckoutDialog({
   };
 
   const getProductById = (id: number) => products.find(p => p.id === id);
+
+  // Helper function to get the primary or first image for a product
+  const getProductImage = (product: Product): string | null => {
+    if (product.images && product.images.length > 0) {
+      // Sort by sort_order and find primary image first
+      const sortedImages = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+      const primaryImage = sortedImages.find(img => img.is_primary);
+      if (primaryImage) {
+        return primaryImage.image_url;
+      }
+      // If no primary image, return the first one
+      return sortedImages[0].image_url;
+    }
+    // Fallback to thumbnail_url
+    return product.thumbnail_url;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -485,13 +508,16 @@ export default function ProductCheckoutDialog({
                       <div key={`${item.id}-${item.variant?.id || 'no-variant'}`} className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3">
-                            {product.thumbnail_url && (
-                              <img
-                                src={product.thumbnail_url}
-                                alt={product.name}
-                                className="w-12 h-12 object-cover rounded-md"
-                              />
-                            )}
+                            {(() => {
+                              const productImage = getProductImage(product);
+                              return productImage && (
+                                <img
+                                  src={productImage}
+                                  alt={product.name}
+                                  className="w-12 h-12 object-cover rounded-md"
+                                />
+                              );
+                            })()}
                             <div>
                               <h4 className="font-medium text-gray-900 dark:text-gray-100">{product.name}</h4>
                               {item.variant && (

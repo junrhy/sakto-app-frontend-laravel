@@ -95,6 +95,8 @@ class CommunityController extends Controller
         ]);
     }
 
+
+
     public function member($identifier)
     {
         // Check if identifier is numeric (ID) or string (slug)

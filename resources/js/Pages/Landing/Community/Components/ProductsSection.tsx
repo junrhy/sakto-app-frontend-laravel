@@ -4,6 +4,7 @@ import ProductCartSummary from './ProductCartSummary';
 import ProductGrid from './ProductGrid';
 import ProductCheckoutDialog from './ProductCheckoutDialog';
 import ProductOrderHistory from './ProductOrderHistory';
+import ProductDetail from './ProductDetail';
 
 // Define types for Product, Variant, etc. as needed
 
@@ -26,6 +27,13 @@ interface Product {
   client_identifier: string;
   created_at: string;
   updated_at: string;
+  images?: Array<{
+    id: number;
+    image_url: string;
+    alt_text?: string;
+    is_primary: boolean;
+    sort_order: number;
+  }>;
   active_variants?: Array<{
     id: number;
     sku?: string;
@@ -75,6 +83,10 @@ export default function ProductsSection({ products, appCurrency, member, contact
   const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
   const [variantErrors, setVariantErrors] = useState<Record<number, string>>({});
   const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+
+  // Product detail modal state
+  const [showProductDetailModal, setShowProductDetailModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Utility functions
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -206,6 +218,33 @@ export default function ProductsSection({ products, appCurrency, member, contact
 
   const handleCheckout = () => {
     setShowCheckoutDialog(true);
+  };
+
+  // Product detail modal functions
+  const openProductDetailModal = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductDetailModal(true);
+  };
+
+  const closeProductDetailModal = () => {
+    setShowProductDetailModal(false);
+    setSelectedProduct(null);
+  };
+
+  // Helper function to get the primary or first image for a product
+  const getProductImage = (product: Product): string | null => {
+    if (product.images && product.images.length > 0) {
+      // Sort by sort_order and find primary image first
+      const sortedImages = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+      const primaryImage = sortedImages.find(img => img.is_primary);
+      if (primaryImage) {
+        return primaryImage.image_url;
+      }
+      // If no primary image, return the first one
+      return sortedImages[0].image_url;
+    }
+    // Fallback to thumbnail_url
+    return product.thumbnail_url;
   };
 
   // Filter functions
@@ -381,6 +420,8 @@ export default function ProductsSection({ products, appCurrency, member, contact
         setVariantErrors={setVariantErrors}
         hasActiveFilters={hasActiveFilters}
         clearFilters={clearFilters}
+        getProductImage={getProductImage}
+        openProductDetailModal={openProductDetailModal}
               />
 
         {/* Checkout Dialog */}
@@ -398,6 +439,29 @@ export default function ProductsSection({ products, appCurrency, member, contact
           updateCartQuantity={updateCartQuantity}
           member={member}
         />
+
+        {/* Product Detail Modal */}
+        {selectedProduct && (
+          <ProductDetail
+            product={selectedProduct}
+            onClose={closeProductDetailModal}
+            appCurrency={appCurrency}
+            getEffectivePrice={getEffectivePrice}
+            getEffectiveStock={getEffectiveStock}
+            getAvailableAttributes={getAvailableAttributes}
+            findMatchingVariant={findMatchingVariant}
+            isVariantComplete={isVariantComplete}
+            formatPrice={formatPrice}
+            setVariantErrors={setVariantErrors}
+            addToCart={addToCart}
+            removeFromCart={removeFromCart}
+            updateCartQuantity={updateCartQuantity}
+            cartItems={cartItems}
+            selectedVariants={selectedVariants}
+            variantErrors={variantErrors}
+            handleVariantSelection={handleVariantSelection}
+          />
+        )}
         </>
       )}
 

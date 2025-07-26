@@ -17,6 +17,13 @@ interface Product {
   client_identifier: string;
   created_at: string;
   updated_at: string;
+  images?: Array<{
+    id: number;
+    image_url: string;
+    alt_text?: string;
+    is_primary: boolean;
+    sort_order: number;
+  }>;
   active_variants?: Array<{
     id: number;
     sku?: string;
