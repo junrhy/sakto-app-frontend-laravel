@@ -63,6 +63,38 @@ class CommunityController extends Controller
         return Inertia::render('Landing/Community/HelpCenter');
     }
 
+    public function search()
+    {
+        $communityUsers = User::where('project_identifier', 'community')
+            ->select('id', 'name', 'email', 'created_at', 'slug')
+            ->latest()
+            ->get();
+
+        // Fetch total contacts count from backend API
+        $totalContacts = 0;
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/contacts/total/count");
+            
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $totalContacts = $responseData['data']['total_contacts'] ?? 0;
+            }
+        } catch (\Exception $e) {
+            // Log error but continue with default value
+            \Log::error('Failed to fetch total contacts count: ' . $e->getMessage());
+        }
+
+        return Inertia::render('Landing/Community/SearchMember', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'communityUsers' => $communityUsers,
+            'totalContacts' => $totalContacts,
+        ]);
+    }
+
     public function member($identifier)
     {
         // Check if identifier is numeric (ID) or string (slug)

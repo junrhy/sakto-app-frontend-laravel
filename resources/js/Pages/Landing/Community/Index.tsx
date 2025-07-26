@@ -1,8 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import SearchBar from '@/Components/ui/SearchBar';
-import { useState, useMemo, useEffect } from 'react';
-import MemberCard from './Components/MemberCard';
+import { useState } from 'react';
 
 interface PageProps {
     auth: {
@@ -21,37 +19,11 @@ interface PageProps {
 }
 
 export default function Community({ auth, communityUsers, totalContacts }: PageProps) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const itemsPerPage = 8;
-
-    // Filter community users based on search query using useMemo for better performance
-    const filteredUsers = useMemo(() => {
-        if (!searchQuery.trim()) return communityUsers;
-        
-        const query = searchQuery.toLowerCase().trim();
-        return communityUsers.filter(user => 
-            user.name.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query)
-        );
-    }, [communityUsers, searchQuery]);
 
     // Use totalContacts from backend instead of calculating from communityUsers
     const totalMembers = totalContacts;
     const totalCommunities = communityUsers.length;
-    const filteredCount = filteredUsers.length;
-
-    // Pagination logic
-    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-
-    // Reset to first page when search query changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery]);
 
     return (
         <>
@@ -114,6 +86,12 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                             {/* Desktop Navigation Menu */}
                             <div className="hidden lg:flex items-center space-x-8 ml-8">
                                 <Link
+                                    href={route('community.search')}
+                                    className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
+                                >
+                                    Search
+                                </Link>
+                                <Link
                                     href="#features"
                                     className="text-white hover:text-blue-100 transition-colors duration-200 text-sm font-medium"
                                 >
@@ -171,6 +149,13 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                             <div className="p-6 space-y-6">
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-semibold text-blue-200 uppercase tracking-wider">Navigation</h3>
+                                    <Link
+                                        href={route('community.search')}
+                                        className="block px-3 py-3 rounded-lg text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Search
+                                    </Link>
                                     <Link
                                         href="#features"
                                         className="block px-3 py-3 rounded-lg text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200"
@@ -368,188 +353,7 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                     </div>
                     </div>
 
-                    {/* Page Header */}
-                    <div className="mb-8 text-center">
-                        <h2 className="text-3xl font-bold text-slate-900 mb-2">Community Directory</h2>
-                        <p className="text-slate-600">Discover and connect with amazing communities</p>
-                    </div>
 
-                    {/* Search Bar */}
-                    <div className="mb-8">
-                        <div className="max-w-2xl mx-auto">
-                            <SearchBar
-                                placeholder="Search communities by name..."
-                                value={searchQuery}
-                                onChange={setSearchQuery}
-                                size="lg"
-                                className="w-full"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Communities Grid Section */}
-                    <div className="space-y-6">
-                        {/* Section Header */}
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-xl font-semibold text-slate-900">
-                                    {searchQuery.trim() ? 'Search Results' : 'All Communities'}
-                                </h2>
-                                <p className="text-sm text-slate-600">
-                                    {searchQuery.trim() 
-                                        ? `Found ${filteredCount} community${filteredCount !== 1 ? 's' : ''} matching "${searchQuery}"`
-                                        : `Showing all ${totalCommunities.toLocaleString()} communities`
-                                    }
-                                </p>
-                            </div>
-                            {searchQuery.trim() && (
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                                >
-                                    Clear Search
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Communities Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {paginatedUsers.length > 0 ? (
-                                <>
-                                    {paginatedUsers.map((user) => (
-                                        <MemberCard key={user.id} user={user} />
-                                    ))}
-                                    
-                                    {/* Fill remaining grid spaces with engaging content */}
-                                    {filteredUsers.length < 8 && Array.from({ length: Math.max(0, 8 - filteredUsers.length) }).map((_, index) => {
-                                        const cardData = [
-                                            {
-                                                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233B82F6' stroke-width='2'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E",
-                                                title: "Connect & Grow",
-                                                description: "Join our network of professionals and expand your horizons",
-                                                gradient: "from-blue-500 to-blue-600"
-                                            },
-                                            {
-                                                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310B981' stroke-width='2'%3E%3Cpath d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E",
-                                                title: "Innovate Together",
-                                                description: "Share ideas and collaborate on groundbreaking projects",
-                                                gradient: "from-emerald-500 to-emerald-600"
-                                            },
-                                            {
-                                                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238B5CF6' stroke-width='2'%3E%3Cpath d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/%3E%3C/svg%3E",
-                                                title: "Premium Access",
-                                                description: "Get exclusive content and early access to new features",
-                                                gradient: "from-purple-500 to-purple-600"
-                                            },
-                                            {
-                                                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F59E0B' stroke-width='2'%3E%3Cpath d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E",
-                                                title: "Verified Member",
-                                                description: "Join as a founding member with special privileges",
-                                                gradient: "from-amber-500 to-amber-600"
-                                            },
-                                            {
-                                                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EF4444' stroke-width='2'%3E%3Cpath d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z'/%3E%3C/svg%3E",
-                                                title: "Limited Time",
-                                                description: "Only a few spots left - secure your place now",
-                                                gradient: "from-red-500 to-red-600"
-                                            },
-                                            {
-                                                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306B6D4' stroke-width='2'%3E%3Cpath d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3Cpath d='M9 17l3 3 3-3'/%3E%3Cpath d='M9 7l3-3 3 3'/%3E%3C/svg%3E",
-                                                title: "Rapid Growth",
-                                                description: "Be part of the fastest-growing community platform",
-                                                gradient: "from-cyan-500 to-cyan-600"
-                                            }
-                                        ];
-                                        
-                                        const card = cardData[index % cardData.length];
-                                        
-                                        return (
-                                            <div key={`placeholder-${index}`} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                                                <div className={`h-48 bg-gradient-to-r ${card.gradient} flex items-center justify-center`}>
-                                                    <img 
-                                                        src={card.image} 
-                                                        alt={card.title}
-                                                        className="h-16 w-16 text-white filter brightness-0 invert"
-                                                    />
-                                                </div>
-                                                <div className="p-6">
-                                                    <h3 className="text-lg font-semibold text-slate-900 mb-2">{card.title}</h3>
-                                                    <p className="text-sm text-slate-600">
-                                                        {card.description}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </>
-                            ) : (
-                                <div className="col-span-full">
-                                    <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-                                        <svg className="mx-auto h-12 w-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                        <h3 className="text-lg font-medium text-slate-900 mb-2">
-                                            {searchQuery.trim() ? 'No communities found' : 'No communities available'}
-                                        </h3>
-                                        <p className="text-slate-500 mb-4">
-                                            {searchQuery.trim() 
-                                                ? 'Try adjusting your search terms or browse all communities'
-                                                : 'Check back later for new communities'
-                                            }
-                                        </p>
-                                        {searchQuery.trim() && (
-                                            <button
-                                                onClick={() => setSearchQuery('')}
-                                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                                            >
-                                                Clear Search
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="mt-8 flex justify-center">
-                                <nav className="flex items-center space-x-2" aria-label="Pagination">
-                                    {/* Previous Button */}
-                                    <button
-                                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-3 py-2 text-sm font-medium text-slate-500 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        Previous
-                                    </button>
-
-                                    {/* Page Numbers */}
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                        <button
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                                                currentPage === page
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50'
-                                            }`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
-
-                                    {/* Next Button */}
-                                    <button
-                                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3 py-2 text-sm font-medium text-slate-500 bg-white border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        Next
-                                    </button>
-                                </nav>
-                            </div>
-                        )}
-                    </div>
 
                     {/* Pricing Section */}
                     <div id="pricing" className="mt-16 mb-16">
