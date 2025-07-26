@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Star, Upload, X, Plus } from 'lucide-react';
 
 interface ReviewFormData {
+    reviewer_name: string;
+    reviewer_email: string;
     title: string;
     content: string;
     rating: number;
@@ -14,6 +16,8 @@ interface ReviewFormData {
 }
 
 interface ReviewFormErrors {
+    reviewer_name?: string;
+    reviewer_email?: string;
     title?: string;
     content?: string;
     rating?: string;
@@ -26,6 +30,7 @@ interface ReviewFormProps {
     onSubmit: (data: ReviewFormData) => Promise<void>;
     onCancel?: () => void;
     isSubmitting?: boolean;
+    currentUserEmail?: string;
 }
 
 const ReviewForm: React.FC<ReviewFormProps> = ({
@@ -34,8 +39,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     onSubmit,
     onCancel,
     isSubmitting = false,
+    currentUserEmail,
 }) => {
     const [formData, setFormData] = useState<ReviewFormData>({
+        reviewer_name: '',
+        reviewer_email: currentUserEmail || '',
         title: '',
         content: '',
         rating: 0,
@@ -62,6 +70,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     const validateForm = (): boolean => {
         const newErrors: ReviewFormErrors = {};
 
+        if (!formData.reviewer_name.trim()) {
+            newErrors.reviewer_name = 'Your name is required';
+        }
+
+        if (!formData.reviewer_email.trim()) {
+            newErrors.reviewer_email = 'Your email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.reviewer_email)) {
+            newErrors.reviewer_email = 'Please enter a valid email address';
+        }
+
         if (!formData.content.trim()) {
             newErrors.content = 'Review content is required';
         } else if (formData.content.trim().length < 10) {
@@ -87,6 +105,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             await onSubmit(formData);
             // Reset form on success
             setFormData({
+                reviewer_name: '',
+                reviewer_email: currentUserEmail || '',
                 title: '',
                 content: '',
                 rating: 0,
@@ -135,6 +155,45 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Reviewer Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="reviewer_name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Your Name *
+                            </Label>
+                            <Input
+                                id="reviewer_name"
+                                type="text"
+                                value={formData.reviewer_name}
+                                onChange={(e) => handleInputChange('reviewer_name', e.target.value)}
+                                placeholder="Enter your name"
+                                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
+                                maxLength={255}
+                            />
+                            {errors.reviewer_name && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.reviewer_name}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reviewer_email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Your Email *
+                            </Label>
+                            <Input
+                                id="reviewer_email"
+                                type="email"
+                                value={formData.reviewer_email}
+                                onChange={(e) => handleInputChange('reviewer_email', e.target.value)}
+                                placeholder="Enter your email"
+                                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 dark:text-gray-100"
+                                maxLength={255}
+                            />
+                            {errors.reviewer_email && (
+                                <p className="text-sm text-red-600 dark:text-red-400">{errors.reviewer_email}</p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Rating Selection */}
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">

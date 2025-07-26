@@ -50,14 +50,14 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                 <div className="flex items-center space-x-4">
                     <div className="text-center">
                         <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                            {averageRating.toFixed(1)}
+                            {(Number(averageRating) || 0).toFixed(1)}
                         </div>
                         <div className="flex items-center justify-center space-x-1 mt-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                     key={star}
                                     className={`w-4 h-4 ${
-                                        star <= Math.round(averageRating)
+                                        star <= Math.round(Number(averageRating) || 0)
                                             ? 'text-yellow-400 fill-current'
                                             : 'text-gray-300 dark:text-gray-600'
                                     }`}
@@ -132,11 +132,11 @@ const ReviewSummary: React.FC<ReviewSummaryProps> = ({
                 </div>
 
                 {/* Rating Summary */}
-                {averageRating > 0 && (
+                {(Number(averageRating) || 0) > 0 && (
                     <div className="pt-4 border-t border-gray-100 dark:border-gray-700/50">
                         <div className="text-center">
                             <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                {getRatingLabel(Math.round(averageRating))}
+                                {getRatingLabel(Math.round(Number(averageRating) || 0))}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                 Based on {totalReviews} customer {totalReviews === 1 ? 'review' : 'reviews'}

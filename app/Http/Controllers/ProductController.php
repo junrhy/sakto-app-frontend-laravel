@@ -613,7 +613,9 @@ class ProductController extends Controller
             $clientIdentifier = auth()->user()->identifier;
             
             $validated = $request->validate([
-                'title' => 'required|string|max:255',
+                'reviewer_name' => 'required|string|max:255',
+                'reviewer_email' => 'required|email|max:255',
+                'title' => 'nullable|string|max:255',
                 'content' => 'required|string|max:5000',
                 'rating' => 'required|integer|min:1|max:5',
                 'images' => 'nullable|array',
@@ -623,7 +625,6 @@ class ProductController extends Controller
             $response = Http::withToken($this->apiToken)
                 ->post("{$this->apiUrl}/products/{$productId}/reviews", [
                     'client_identifier' => $clientIdentifier,
-                    'user_id' => auth()->id(),
                     ...$validated
                 ]);
             
@@ -650,7 +651,7 @@ class ProductController extends Controller
     public function voteReview($productId, $reviewId, Request $request)
     {
         try {
-            $clientIdentifier = auth()->user()->identifier;
+            $clientIdentifier = auth()->user()->identifier ?? 'default';
             
             $validated = $request->validate([
                 'vote_type' => 'required|string|in:helpful,unhelpful',
@@ -685,15 +686,19 @@ class ProductController extends Controller
         }
     }
 
-    public function deleteReview($productId, $reviewId)
+    public function deleteReview($productId, $reviewId, Request $request)
     {
         try {
-            $clientIdentifier = auth()->user()->identifier;
+            $clientIdentifier = auth()->user()->identifier ?? 'default';
+            
+            $validated = $request->validate([
+                'reviewer_email' => 'required|email|max:255',
+            ]);
             
             $response = Http::withToken($this->apiToken)
                 ->delete("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}", [
                     'client_identifier' => $clientIdentifier,
-                    'user_id' => auth()->id(),
+                    'reviewer_email' => $validated['reviewer_email'],
                 ]);
             
             if (!$response->successful()) {
@@ -721,13 +726,8 @@ class ProductController extends Controller
     public function approveReview($productId, $reviewId)
     {
         try {
-            $clientIdentifier = auth()->user()->identifier;
-            
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/approve", [
-                    'client_identifier' => $clientIdentifier,
-                    'user_id' => auth()->id(),
-                ]);
+                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/approve");
             
             if (!$response->successful()) {
                 Log::error('Failed to approve review', [
@@ -754,13 +754,8 @@ class ProductController extends Controller
     public function toggleFeatureReview($productId, $reviewId)
     {
         try {
-            $clientIdentifier = auth()->user()->identifier;
-            
             $response = Http::withToken($this->apiToken)
-                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/toggle-feature", [
-                    'client_identifier' => $clientIdentifier,
-                    'user_id' => auth()->id(),
-                ]);
+                ->post("{$this->apiUrl}/products/{$productId}/reviews/{$reviewId}/toggle-feature");
             
             if (!$response->successful()) {
                 Log::error('Failed to toggle review feature', [

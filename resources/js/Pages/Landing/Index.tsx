@@ -398,7 +398,7 @@ export default function Welcome({
                                              <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-6 sm:mb-8">
                                                 {[
                                                     { 
-                                                        name: 'Community', 
+                                                        name: 'Komunidad', 
                                                         color: 'from-pink-500 to-rose-500',
                                                         description: 'Create and manage thriving communities with member engagement tools, event organization, content sharing, and real-time communication features. Perfect for organizations, clubs, and online communities.',
                                                         icon: (
@@ -409,7 +409,7 @@ export default function Welcome({
                                                         link: route('community')
                                                     },
                                                     { 
-                                                        name: 'Logistics', 
+                                                        name: 'Logistika', 
                                                         color: 'from-cyan-500 to-blue-500',
                                                         description: 'Streamline your logistics operations with intelligent route optimization, real-time fleet tracking, delivery analytics, and comprehensive supply chain management tools. Ideal for delivery companies and transportation businesses.',
                                                         icon: (
@@ -420,7 +420,7 @@ export default function Welcome({
                                                         link: route('logistics')
                                                     },
                                                                                                             { 
-                                                            name: 'Medical', 
+                                                            name: 'Medikal', 
                                                             color: 'from-emerald-500 to-teal-500',
                                                             description: 'Transform healthcare delivery with comprehensive patient management, secure medical records, appointment scheduling, and health analytics. Designed for clinics, hospitals, and healthcare providers.',
                                                         icon: (
@@ -431,7 +431,7 @@ export default function Welcome({
                                                         link: route('medical')
                                                     },
                                                                                                             { 
-                                                            name: 'Travel', 
+                                                            name: 'Lakbay', 
                                                             color: 'from-blue-500 to-indigo-600',
                                                             description: 'Revolutionize travel planning with comprehensive flight booking, hotel reservations, travel packages, and insurance services. Complete solution for travel agencies and tour operators.',
                                                         icon: (
@@ -442,7 +442,7 @@ export default function Welcome({
                                                         link: route('travel.landing')
                                                     },
                                                                                                             { 
-                                                            name: 'Retail Delivery', 
+                                                            name: 'Hatid', 
                                                             color: 'from-purple-500 to-violet-500',
                                                             description: 'Optimize retail operations with advanced order management, inventory tracking, delivery scheduling, and customer analytics. Perfect for retail stores and e-commerce businesses.',
                                                         icon: (
@@ -453,7 +453,7 @@ export default function Welcome({
                                                         link: route('delivery')
                                                     },
                                                                                                             { 
-                                                            name: 'Human Resources', 
+                                                            name: 'Taohan', 
                                                             color: 'from-indigo-500 to-blue-600',
                                                             description: 'Streamline HR operations with comprehensive employee management, recruitment tools, performance tracking, and payroll integration. Essential for businesses of all sizes.',
                                                         icon: (
@@ -464,7 +464,7 @@ export default function Welcome({
                                                         link: route('jobs')
                                                     },
                                                                                                             { 
-                                                            name: 'E-Commerce', 
+                                                            name: 'Merkado', 
                                                             color: 'from-green-500 to-emerald-600',
                                                             description: 'Launch and scale your online business with powerful product management, order processing, payment integration, and customer support tools. Complete e-commerce solution.',
                                                         icon: (
@@ -473,17 +473,6 @@ export default function Welcome({
                                                             </svg>
                                                         ),
                                                         link: route('shop')
-                                                    },
-                                                                                                            { 
-                                                            name: 'Enterprise', 
-                                                            color: 'from-orange-500 to-amber-500',
-                                                            description: 'Unified platform combining all solutions with advanced analytics, custom integrations, and enterprise-grade security. Perfect for large organizations and growing businesses.',
-                                                        icon: (
-                                                            <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-                                                            </svg>
-                                                        ),
-                                                        link: route('register', { project: 'enterprise' })
                                                     },
                                                 ].map((project, index) => (
                                                     <button

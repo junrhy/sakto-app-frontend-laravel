@@ -32,7 +32,6 @@ import VariantSelector from '@/Components/VariantSelector';
 import { User, Project } from '@/types/index';
 import ReviewSummary from '@/Components/ReviewSummary';
 import ReviewList from '@/Components/ReviewList';
-import ReviewForm from '@/Components/ReviewForm';
 
 interface Variant {
     id: number;
@@ -185,8 +184,6 @@ export default function Show({ auth, product, currency }: Props) {
         verified_purchase_count: 0,
         featured_reviews_count: 0,
     });
-    const [showReviewForm, setShowReviewForm] = useState(false);
-    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [reviewFilters, setReviewFilters] = useState({});
     const [reviewSort, setReviewSort] = useState('recent');
@@ -199,6 +196,13 @@ export default function Show({ auth, product, currency }: Props) {
     }, [auth.selectedTeamMember, auth.user.is_admin]);
 
     const canDelete = useMemo(() => {
+        if (auth.selectedTeamMember) {
+            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
+        }
+        return auth.user.is_admin;
+    }, [auth.selectedTeamMember, auth.user.is_admin]);
+
+    const canModerate = useMemo(() => {
         if (auth.selectedTeamMember) {
             return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
         }
@@ -285,13 +289,17 @@ export default function Show({ auth, product, currency }: Props) {
 
     // Review API functions
     const fetchReviews = async (page = 1, filters = {}, sort = 'recent') => {
-        setIsLoadingReviews(true);
         try {
             const params = new URLSearchParams({
                 page: page.toString(),
                 sort: sort,
                 ...filters
             });
+            
+            // If user can moderate, include pending reviews (approved=false)
+            if (canModerate) {
+                params.append('approved', 'false');
+            }
             
             const response = await fetch(`/products/${product.id}/reviews?${params}`, {
                 headers: {
@@ -308,108 +316,10 @@ export default function Show({ auth, product, currency }: Props) {
             }
         } catch (error) {
             console.error('Error fetching reviews:', error);
-        } finally {
-            setIsLoadingReviews(false);
         }
     };
 
-    const handleReviewSubmit = async (reviewData: any) => {
-        try {
-            const response = await fetch(`/products/${product.id}/reviews`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify(reviewData)
-            });
-            
-            if (response.ok) {
-                setShowReviewForm(false);
-                fetchReviews(1, reviewFilters, reviewSort);
-                alert('Review submitted successfully! It will be visible after approval.');
-            } else {
-                const error = await response.json();
-                alert(error.message || 'Error submitting review');
-            }
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            alert('Error submitting review');
-        }
-    };
 
-    const handleReviewVote = async (reviewId: number, voteType: 'helpful' | 'unhelpful') => {
-        try {
-            const response = await fetch(`/products/${product.id}/reviews/${reviewId}/vote`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-                body: JSON.stringify({ vote_type: voteType })
-            });
-            
-            if (response.ok) {
-                // Refresh reviews to get updated vote counts
-                fetchReviews(currentPage, reviewFilters, reviewSort);
-            }
-        } catch (error) {
-            console.error('Error voting on review:', error);
-        }
-    };
-
-    const handleReviewDelete = async (reviewId: number) => {
-        if (!confirm('Are you sure you want to delete this review?')) return;
-        
-        try {
-            const response = await fetch(`/products/${product.id}/reviews/${reviewId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
-            
-            if (response.ok) {
-                fetchReviews(currentPage, reviewFilters, reviewSort);
-            }
-        } catch (error) {
-            console.error('Error deleting review:', error);
-        }
-    };
-
-    const handleReviewApprove = async (reviewId: number) => {
-        try {
-            const response = await fetch(`/products/${product.id}/reviews/${reviewId}/approve`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
-            
-            if (response.ok) {
-                fetchReviews(currentPage, reviewFilters, reviewSort);
-            }
-        } catch (error) {
-            console.error('Error approving review:', error);
-        }
-    };
-
-    const handleReviewToggleFeature = async (reviewId: number) => {
-        try {
-            const response = await fetch(`/products/${product.id}/reviews/${reviewId}/toggle-feature`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                }
-            });
-            
-            if (response.ok) {
-                fetchReviews(currentPage, reviewFilters, reviewSort);
-            }
-        } catch (error) {
-            console.error('Error toggling review feature:', error);
-        }
-    };
 
     // Load reviews on component mount
     React.useEffect(() => {
@@ -926,45 +836,32 @@ export default function Show({ auth, product, currency }: Props) {
                                         featuredReviewsCount={reviewStats.featured_reviews_count}
                                     />
                                     
-                                    {/* Review Form */}
-                                    {showReviewForm && (
-                                        <ReviewForm
-                                            productId={product.id}
-                                            productName={product.name}
-                                            onSubmit={handleReviewSubmit}
-                                            onCancel={() => setShowReviewForm(false)}
-                                        />
-                                    )}
+
                                     
                                     {/* Review List */}
                                     <ReviewList
                                         productId={product.id}
+                                        productName={product.name}
                                         reviews={reviews}
-                                        currentUserId={auth.user.id}
-                                        isAdmin={auth.user.is_admin}
-                                        onVote={handleReviewVote}
-                                        onEdit={(review) => {
-                                            // Handle edit - could open edit form
-                                            console.log('Edit review:', review);
-                                        }}
-                                        onDelete={handleReviewDelete}
-                                        onApprove={handleReviewApprove}
-                                        onToggleFeature={handleReviewToggleFeature}
-                                        onWriteReview={() => setShowReviewForm(true)}
                                         pagination={{
                                             current_page: currentPage,
                                             last_page: Math.ceil(reviewStats.total_reviews / 10),
                                             per_page: 10,
                                             total: reviewStats.total_reviews,
                                         }}
-                                        onPageChange={(page) => fetchReviews(page, reviewFilters, reviewSort)}
-                                        onFilterChange={(filters) => {
-                                            setReviewFilters(filters);
-                                            fetchReviews(1, filters, reviewSort);
+                                        summary={{
+                                            average_rating: reviewStats.average_rating,
+                                            total_reviews: reviewStats.total_reviews,
+                                            rating_distribution: reviewStats.rating_distribution,
                                         }}
-                                        onSortChange={(sort) => {
-                                            setReviewSort(sort);
-                                            fetchReviews(1, reviewFilters, sort);
+                                        currentUserEmail={auth.user.email}
+                                        currentUserId={auth.user.id}
+                                        isAdmin={canModerate}
+                                        filters={{
+                                            rating: (reviewFilters as any).rating,
+                                            verified_purchase: (reviewFilters as any).verified_purchase,
+                                            sort: reviewSort,
+                                            approved: canModerate ? false : undefined, // Show all reviews for moderators
                                         }}
                                     />
                                 </div>
@@ -1051,4 +948,4 @@ export default function Show({ auth, product, currency }: Props) {
             </div>
         </AuthenticatedLayout>
     );
-} 
+}

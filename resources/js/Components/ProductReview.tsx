@@ -22,16 +22,11 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 
-interface ReviewUser {
-    id: number;
-    name: string;
-    email: string;
-}
-
 interface ProductReview {
     id: number;
     product_id: number;
-    user_id: number;
+    reviewer_name: string;
+    reviewer_email: string;
     title?: string;
     content: string;
     rating: number;
@@ -46,12 +41,11 @@ interface ProductReview {
     total_votes_count: number;
     created_at: string;
     updated_at: string;
-    user: ReviewUser;
 }
 
 interface ProductReviewProps {
     review: ProductReview;
-    currentUserId?: number;
+    currentUserEmail?: string;
     isAdmin?: boolean;
     onVote: (reviewId: number, voteType: 'helpful' | 'unhelpful') => void;
     onEdit?: (review: ProductReview) => void;
@@ -62,32 +56,9 @@ interface ProductReviewProps {
     userVotedUnhelpful?: boolean;
 }
 
-const StarRating: React.FC<{ rating: number; size?: 'sm' | 'md' | 'lg' }> = ({ rating, size = 'md' }) => {
-    const sizeClasses = {
-        sm: 'w-3 h-3',
-        md: 'w-4 h-4',
-        lg: 'w-5 h-5'
-    };
-
-    return (
-        <div className="flex items-center space-x-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                    key={star}
-                    className={`${sizeClasses[size]} ${
-                        star <= rating 
-                            ? 'text-yellow-400 fill-current' 
-                            : 'text-gray-300 dark:text-gray-600'
-                    }`}
-                />
-            ))}
-        </div>
-    );
-};
-
 const ProductReview: React.FC<ProductReviewProps> = ({
     review,
-    currentUserId,
+    currentUserEmail,
     isAdmin = false,
     onVote,
     onEdit,
@@ -100,7 +71,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({
     const [isVoting, setIsVoting] = useState(false);
 
     const handleVote = async (voteType: 'helpful' | 'unhelpful') => {
-        if (!currentUserId || isVoting) return;
+        if (!currentUserEmail || isVoting) return;
         
         setIsVoting(true);
         try {
@@ -110,54 +81,84 @@ const ProductReview: React.FC<ProductReviewProps> = ({
         }
     };
 
-    const canEdit = currentUserId === review.user_id;
-    const canDelete = currentUserId === review.user_id || isAdmin;
+    const canEdit = currentUserEmail === review.reviewer_email;
+    const canDelete = currentUserEmail === review.reviewer_email || isAdmin;
     const canModerate = isAdmin;
 
     return (
-        <Card className="border border-gray-200 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <Card className={`border ${!review.is_approved ? 'border-orange-300 dark:border-orange-600 bg-orange-50/50 dark:bg-orange-900/20' : 'border-gray-200 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50'} backdrop-blur-sm`}>
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3">
+                        {/* Reviewer Avatar */}
                         <Avatar className="w-10 h-10">
-                            <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(review.user.name)}&background=random`} />
-                            <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                {review.user.name.charAt(0).toUpperCase()}
+                            <AvatarImage src="" alt={review.reviewer_name} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-medium">
+                                {review.reviewer_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                             </AvatarFallback>
                         </Avatar>
+                        
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
-                                <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                                    {review.user.name}
+                                <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                                    {review.reviewer_name}
                                 </h4>
+                                
+                                {/* Pending Approval Badge */}
+                                {!review.is_approved && (
+                                    <Badge variant="secondary" className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700/50">
+                                        <Flag className="w-3 h-3 mr-1" />
+                                        Pending Approval
+                                    </Badge>
+                                )}
+                                
+                                {/* Verified Purchase Badge */}
                                 {review.is_verified_purchase && (
-                                    <Badge variant="secondary" className="text-xs bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700/50">
+                                    <Badge variant="secondary" className="text-xs">
                                         <CheckCircle className="w-3 h-3 mr-1" />
                                         Verified Purchase
                                     </Badge>
                                 )}
+                                
+                                {/* Featured Badge */}
                                 {review.is_featured && (
-                                    <Badge variant="secondary" className="text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700/50">
+                                    <Badge variant="default" className="text-xs bg-gradient-to-r from-yellow-500 to-orange-500">
                                         <Award className="w-3 h-3 mr-1" />
                                         Featured
                                     </Badge>
                                 )}
                             </div>
-                            <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                                <StarRating rating={review.rating} size="sm" />
-                                <span>{review.rating}/5</span>
-                                <span>•</span>
-                                <span>{formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}</span>
+                            
+                            {/* Rating Stars */}
+                            <div className="flex items-center space-x-1 mb-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                        key={star}
+                                        className={`w-4 h-4 ${
+                                            star <= review.rating
+                                                ? 'text-yellow-400 fill-current'
+                                                : 'text-gray-300 dark:text-gray-600'
+                                        }`}
+                                    />
+                                ))}
+                                <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                                    {review.rating}/5
+                                </span>
                             </div>
+                            
+                            {/* Review Date */}
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
+                            </p>
                         </div>
                     </div>
                     
-                    {/* Actions Dropdown */}
+                    {/* Action Menu */}
                     {(canEdit || canDelete || canModerate) && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                    <MoreHorizontal className="w-4 h-4" />
+                                    <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -176,7 +177,7 @@ const ProductReview: React.FC<ProductReviewProps> = ({
                                         Delete Review
                                     </DropdownMenuItem>
                                 )}
-                                {canModerate && !review.is_approved && onApprove && (
+                                {canModerate && onApprove && !review.is_approved && (
                                     <DropdownMenuItem onClick={() => onApprove(review.id)}>
                                         <CheckCircle className="w-4 h-4 mr-2" />
                                         Approve Review
@@ -207,6 +208,28 @@ const ProductReview: React.FC<ProductReviewProps> = ({
                     {review.content}
                 </p>
                 
+                {/* Admin Approval Section */}
+                {canModerate && !review.is_approved && onApprove && (
+                    <div className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700/50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                <Flag className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                                <span className="text-sm font-medium text-orange-800 dark:text-orange-200">
+                                    This review is pending approval
+                                </span>
+                            </div>
+                            <Button
+                                onClick={() => onApprove(review.id)}
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Approve Review
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                
                 {/* Review Images */}
                 {review.images && review.images.length > 0 && (
                     <div className="flex space-x-2 mb-4 overflow-x-auto">
@@ -222,45 +245,44 @@ const ProductReview: React.FC<ProductReviewProps> = ({
                 )}
                 
                 {/* Voting Section */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center space-x-4">
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleVote('helpful')}
-                            disabled={isVoting || !currentUserId}
+                            disabled={isVoting}
                             className={`flex items-center space-x-1 ${
                                 userVotedHelpful 
                                     ? 'text-blue-600 dark:text-blue-400' 
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                    : 'text-gray-600 dark:text-gray-400'
                             }`}
                         >
                             <ThumbsUp className={`w-4 h-4 ${userVotedHelpful ? 'fill-current' : ''}`} />
-                            <span>{review.helpful_votes_count}</span>
+                            <span>Helpful ({review.helpful_votes_count || 0})</span>
                         </Button>
                         
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleVote('unhelpful')}
-                            disabled={isVoting || !currentUserId}
+                            disabled={isVoting}
                             className={`flex items-center space-x-1 ${
                                 userVotedUnhelpful 
                                     ? 'text-red-600 dark:text-red-400' 
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                    : 'text-gray-600 dark:text-gray-400'
                             }`}
                         >
                             <ThumbsDown className={`w-4 h-4 ${userVotedUnhelpful ? 'fill-current' : ''}`} />
-                            <span>{review.unhelpful_votes_count}</span>
+                            <span>Unhelpful ({review.unhelpful_votes_count || 0})</span>
                         </Button>
                     </div>
                     
-                    {/* Total Votes */}
-                    {review.total_votes_count > 0 && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {review.total_votes_count} people found this helpful
-                        </span>
-                    )}
+                    {/* Report Button */}
+                    <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+                        <Flag className="w-4 h-4 mr-1" />
+                        Report
+                    </Button>
                 </div>
             </CardContent>
         </Card>
