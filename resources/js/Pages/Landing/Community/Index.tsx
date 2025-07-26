@@ -107,18 +107,29 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                             
                             {/* Desktop Auth Buttons */}
                             <div className="hidden lg:flex items-center space-x-4 ml-auto">
-                                <Link
-                                    href={route('login', { project: 'community' })}
-                                    className="inline-flex items-center px-4 py-2 border border-white text-sm font-medium rounded-md text-white hover:bg-white hover:text-blue-600 transition-colors duration-200"
-                                >
-                                    Login
-                                </Link>
-                                <Link
-                                    href={route('register', { project: 'community' })}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200"
-                                >
-                                    Get Started
-                                </Link>
+                                {auth.user ? (
+                                    <Link
+                                        href={route('home')}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200"
+                                    >
+                                        Go to My Account
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link
+                                            href={route('login', { project: 'community' })}
+                                            className="inline-flex items-center px-4 py-2 border border-white text-sm font-medium rounded-md text-white hover:bg-white hover:text-blue-600 transition-colors duration-200"
+                                        >
+                                            Login
+                                        </Link>
+                                        <Link
+                                            href={route('register', { project: 'community' })}
+                                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200"
+                                        >
+                                            Get Started
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -174,20 +185,32 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                                 
                                 <div className="space-y-4 pt-6 border-t border-blue-700">
                                     <h3 className="text-sm font-semibold text-blue-200 uppercase tracking-wider">Account</h3>
-                                    <Link
-                                        href={route('login', { project: 'community' })}
-                                        className="block w-full px-4 py-3 rounded-lg text-center text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200 border border-white/20"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Login
-                                    </Link>
-                                    <Link
-                                        href={route('register', { project: 'community' })}
-                                        className="block w-full px-4 py-3 rounded-lg text-center text-base font-medium text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200"
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Get Started
-                                    </Link>
+                                    {auth.user ? (
+                                        <Link
+                                            href={route('home')}
+                                            className="block w-full px-4 py-3 rounded-lg text-center text-base font-medium text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Go to My Account
+                                        </Link>
+                                    ) : (
+                                        <>
+                                            <Link
+                                                href={route('login', { project: 'community' })}
+                                                className="block w-full px-4 py-3 rounded-lg text-center text-base font-medium text-white hover:text-blue-100 hover:bg-blue-700 transition-colors duration-200 border border-white/20"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Login
+                                            </Link>
+                                            <Link
+                                                href={route('register', { project: 'community' })}
+                                                className="block w-full px-4 py-3 rounded-lg text-center text-base font-medium text-blue-600 bg-white hover:bg-slate-50 transition-colors duration-200"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                Get Started
+                                            </Link>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -340,15 +363,27 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
 
                         {/* Call to Action */}
                         <div className="text-center mt-12">
-                            <Link
-                                href={route('register', { project: 'community' })}
-                                className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
-                            >
-                                Get Started Today
-                                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </Link>
+                            {auth.user ? (
+                                <Link
+                                    href={route('home')}
+                                    className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                                >
+                                    Go to My Account
+                                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </Link>
+                            ) : (
+                                <Link
+                                    href={route('register', { project: 'community' })}
+                                    className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                                >
+                                    Get Started Today
+                                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </Link>
+                            )}
                         </div>
                     </div>
                     </div>
@@ -376,12 +411,21 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                                             <span className="text-3xl font-extrabold text-slate-900">₱99</span>
                                             <span className="text-sm text-slate-600">/month</span>
                                         </p>
-                                        <Link
-                                            href={route('register', { project: 'community', plan: 'basic' })}
-                                            className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
-                                        >
-                                            Get Started
-                                        </Link>
+                                        {auth.user ? (
+                                            <Link
+                                                href={route('home')}
+                                                className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                                            >
+                                                Go to My Account
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href={route('register', { project: 'community', plan: 'basic' })}
+                                                className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                                            >
+                                                Get Started
+                                            </Link>
+                                        )}
                                     </div>
                                     <div className="flex-grow mt-6">
                                         <ul className="space-y-3">
@@ -424,12 +468,21 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                                             <span className="text-3xl font-extrabold text-slate-900">₱199</span>
                                             <span className="text-sm text-slate-600">/month</span>
                                         </p>
-                                        <Link
-                                            href={route('register', { project: 'community', plan: 'pro' })}
-                                            className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
-                                        >
-                                            Get Started
-                                        </Link>
+                                        {auth.user ? (
+                                            <Link
+                                                href={route('home')}
+                                                className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
+                                            >
+                                                Go to My Account
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href={route('register', { project: 'community', plan: 'pro' })}
+                                                className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
+                                            >
+                                                Get Started
+                                            </Link>
+                                        )}
                                     </div>
                                     <div className="flex-grow mt-6">
                                         <ul className="space-y-3">
@@ -474,12 +527,21 @@ export default function Community({ auth, communityUsers, totalContacts }: PageP
                                             <span className="text-3xl font-extrabold text-slate-900">₱299</span>
                                             <span className="text-sm text-slate-600">/month</span>
                                         </p>
-                                        <Link
-                                            href={route('register', { project: 'community', plan: 'business' })}
-                                            className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200"
-                                        >
-                                            Get Started
-                                        </Link>
+                                        {auth.user ? (
+                                            <Link
+                                                href={route('home')}
+                                                className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200"
+                                            >
+                                                Go to My Account
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href={route('register', { project: 'community', plan: 'business' })}
+                                                className="block w-full py-3 px-4 border border-transparent rounded-lg shadow text-center text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors duration-200"
+                                            >
+                                                Get Started
+                                            </Link>
+                                        )}
                                     </div>
                                     <div className="flex-grow mt-6">
                                         <ul className="space-y-3">
