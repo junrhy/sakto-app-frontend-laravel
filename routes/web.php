@@ -732,6 +732,14 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::patch('/{id}/participation', [ChallengeController::class, 'updateParticipationStatus'])->name('challenges.participation');
         Route::get('/{id}/leaderboard', [ChallengeController::class, 'getLeaderboard'])->name('challenges.leaderboard');
         Route::get('/{id}/statistics', [ChallengeController::class, 'getStatistics'])->name('challenges.statistics');
+        
+        // Timer routes
+        Route::post('/{id}/timer/start', [ChallengeController::class, 'startTimer'])->name('challenges.timer.start');
+        Route::post('/{id}/timer/stop', [ChallengeController::class, 'stopTimer'])->name('challenges.timer.stop');
+        Route::post('/{id}/timer/pause', [ChallengeController::class, 'pauseTimer'])->name('challenges.timer.pause');
+        Route::post('/{id}/timer/resume', [ChallengeController::class, 'resumeTimer'])->name('challenges.timer.resume');
+        Route::post('/{id}/timer/reset', [ChallengeController::class, 'resetTimer'])->name('challenges.timer.reset');
+        Route::get('/{id}/timer/{participantId}/status', [ChallengeController::class, 'getTimerStatus'])->name('challenges.timer.status');
     });
     
     // Clinic (subscription required)

@@ -6,7 +6,7 @@ import { Input } from '@/Components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { format } from 'date-fns';
-import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users, ExternalLink, Calendar, Target, Users2, Filter, MoreHorizontal } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, SearchIcon, FileDown, Users, ExternalLink, Calendar, Target, Users2, Filter, MoreHorizontal, Clock } from 'lucide-react';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     DropdownMenu,
@@ -452,6 +452,12 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem asChild>
+                                                            <Link href={route('challenges.participants', challenge.id)}>
+                                                                <Users className="w-4 h-4 mr-2" />
+                                                                Participants
+                                                            </Link>
+                                                        </DropdownMenuItem>
                                                         <DropdownMenuItem asChild>
                                                             <Link href={route('challenges.leaderboard', challenge.id)}>
                                                                 <Users className="w-4 h-4 mr-2" />

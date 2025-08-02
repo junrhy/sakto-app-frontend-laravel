@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/Components/ui/badge';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { UserPlus, Trash2 } from 'lucide-react';
+import { UserPlus, Trash2, Clock } from 'lucide-react';
+import ParticipantTimer from '@/Components/Challenges/ParticipantTimer';
 import {
     Dialog,
     DialogContent,
@@ -58,6 +59,11 @@ interface Participant {
     client_identifier: string;
     created_at: string;
     updated_at: string;
+    timer_started_at?: string | null;
+    timer_ended_at?: string | null;
+    timer_duration_seconds?: number | null;
+    timer_is_active?: boolean;
+    elapsed_time_seconds?: number;
 }
 
 interface Props extends PageProps {
@@ -83,6 +89,7 @@ interface Props extends PageProps {
 export default function Participants({ auth, challenge, participants }: Props) {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
+    const [selectedParticipantForTimer, setSelectedParticipantForTimer] = useState<Participant | null>(null);
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -317,6 +324,7 @@ export default function Participants({ auth, challenge, participants }: Props) {
                                                 <TableHead>Name</TableHead>
                                                 <TableHead>Email</TableHead>
                                                 <TableHead>Progress</TableHead>
+                                                <TableHead>Timer</TableHead>
                                                 <TableHead>Joined</TableHead>
                                                 <TableHead className="w-24">Actions</TableHead>
                                             </TableRow>
@@ -334,6 +342,31 @@ export default function Participants({ auth, challenge, participants }: Props) {
                                                             />
                                                         </div>
                                                         <span className="text-xs text-gray-500">{participant.progress}%</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => setSelectedParticipantForTimer(participant)}
+                                                                className="flex items-center gap-2"
+                                                            >
+                                                                <Clock className="w-4 h-4" />
+                                                                Timer
+                                                            </Button>
+                                                            {participant.timer_is_active && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                                    <span className="text-xs text-green-600 dark:text-green-400">Running</span>
+                                                                </div>
+                                                            )}
+                                                            {participant.timer_started_at && !participant.timer_is_active && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                                                    <span className="text-xs text-yellow-600 dark:text-yellow-400">Paused</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>{format(new Date(participant.created_at), 'PPP')}</TableCell>
                                                     <TableCell>
@@ -357,6 +390,34 @@ export default function Participants({ auth, challenge, participants }: Props) {
                         </div>
                     </div>
                 </div>
+
+                {/* Timer Dialog */}
+                <Dialog open={!!selectedParticipantForTimer} onOpenChange={() => setSelectedParticipantForTimer(null)}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Participant Timer</DialogTitle>
+                            <DialogDescription>
+                                Manage timer for {selectedParticipantForTimer?.first_name} {selectedParticipantForTimer?.last_name}
+                            </DialogDescription>
+                        </DialogHeader>
+                        {selectedParticipantForTimer && (
+                            <ParticipantTimer
+                                challengeId={challenge.id}
+                                participantId={selectedParticipantForTimer.id}
+                                participantName={`${selectedParticipantForTimer.first_name} ${selectedParticipantForTimer.last_name}`}
+                                onTimerUpdate={(status) => {
+                                    // Update the participant data with new timer status
+                                    const updatedParticipants = participants.map(p => 
+                                        p.id === selectedParticipantForTimer.id 
+                                            ? { ...p, ...status }
+                                            : p
+                                    );
+                                    // You might want to update the state here or refresh the data
+                                }}
+                            />
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         </AuthenticatedLayout>
     );

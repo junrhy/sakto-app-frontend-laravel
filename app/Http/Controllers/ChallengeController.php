@@ -395,6 +395,140 @@ class ChallengeController extends Controller
     }
 
     /**
+     * Start timer for a participant
+     */
+    public function startTimer(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'participant_id' => 'required|integer',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/challenges/{$id}/timer/start", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to start timer', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json(['error' => 'Failed to start timer'], 422);
+        }
+
+        return response()->json($response->json());
+    }
+
+    /**
+     * Stop timer for a participant
+     */
+    public function stopTimer(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'participant_id' => 'required|integer',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/challenges/{$id}/timer/stop", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to stop timer', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json(['error' => 'Failed to stop timer'], 422);
+        }
+
+        return response()->json($response->json());
+    }
+
+    /**
+     * Pause timer for a participant
+     */
+    public function pauseTimer(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'participant_id' => 'required|integer',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/challenges/{$id}/timer/pause", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to pause timer', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json(['error' => 'Failed to pause timer'], 422);
+        }
+
+        return response()->json($response->json());
+    }
+
+    /**
+     * Resume timer for a participant
+     */
+    public function resumeTimer(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'participant_id' => 'required|integer',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/challenges/{$id}/timer/resume", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to resume timer', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json(['error' => 'Failed to resume timer'], 422);
+        }
+
+        return response()->json($response->json());
+    }
+
+    /**
+     * Reset timer for a participant
+     */
+    public function resetTimer(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'participant_id' => 'required|integer',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->post("{$this->apiUrl}/challenges/{$id}/timer/reset", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to reset timer', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json(['error' => 'Failed to reset timer'], 422);
+        }
+
+        return response()->json($response->json());
+    }
+
+    /**
+     * Get timer status for a participant
+     */
+    public function getTimerStatus($id, $participantId)
+    {
+        $response = Http::withToken($this->apiToken)
+            ->get("{$this->apiUrl}/challenges/{$id}/timer/{$participantId}/status");
+
+        if (!$response->successful()) {
+            Log::error('Failed to get timer status', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return response()->json(['error' => 'Failed to get timer status'], 422);
+        }
+
+        return response()->json($response->json());
+    }
+
+    /**
      * Add a participant to a challenge
      */
     public function addParticipant(Request $request, $id)
