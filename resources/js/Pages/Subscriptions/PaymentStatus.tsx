@@ -90,7 +90,7 @@ export default function PaymentStatus({ auth, status, message, subscription, pay
                                 {message}
                             </p>
 
-                            {status === 'success' && subscription && (
+                            {status === 'success' && subscription && subscription.plan && (
                                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
                                     <h3 className="font-medium text-lg mb-2">Subscription Details</h3>
                                     <div className="space-y-2">

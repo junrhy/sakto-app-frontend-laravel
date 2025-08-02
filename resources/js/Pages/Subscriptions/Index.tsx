@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
+
 import { format } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/Components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
@@ -746,62 +746,155 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
 
                         <TabsContent value="history" className="mt-6">
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Subscription History</h3>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Subscription History</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            Track all your subscription activities and payment history
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="text-right">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Subscriptions</p>
+                                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{subscriptionHistory.length}</p>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 {subscriptionHistory.length > 0 ? (
-                                    <Table className="border border-gray-200 dark:border-gray-700">
-                                        <TableHeader>
-                                            <TableRow className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Plan</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Start Date</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">End Date</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Status</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Amount</TableHead>
-                                                <TableHead className="text-gray-900 dark:text-gray-100 font-semibold">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {subscriptionHistory.map((subscription) => (
-                                                <TableRow key={subscription.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                    <TableCell className="font-medium text-gray-900 dark:text-gray-100">{subscription.plan.name}</TableCell>
-                                                    <TableCell className="text-gray-700 dark:text-gray-300">{formatDate(subscription.start_date)}</TableCell>
-                                                    <TableCell className="text-gray-700 dark:text-gray-300">{formatDate(subscription.end_date)}</TableCell>
-                                                    <TableCell>
-                                                        <Badge 
-                                                            className={
-                                                                subscription.status === 'active' 
-                                                                    ? 'bg-green-500 hover:bg-green-600' 
-                                                                    : subscription.status === 'cancelled'
-                                                                    ? 'bg-orange-500 hover:bg-orange-600'
-                                                                    : subscription.status === 'pending'
-                                                                    ? 'bg-blue-500 hover:bg-blue-600'
-                                                                    : subscription.status === 'failed'
-                                                                    ? 'bg-red-500 hover:bg-red-600'
-                                                                    : 'bg-gray-500 hover:bg-gray-600'
-                                                            }
-                                                        >
-                                                            {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-gray-700 dark:text-gray-300">₱{Number(subscription.amount_paid).toFixed(2)}</TableCell>
-                                                    <TableCell>
-                                                        {subscription.status === 'active' && canDelete && (
-                                                            <Button 
-                                                                variant="destructive" 
-                                                                size="sm"
-                                                                onClick={() => openCancelDialog(subscription.identifier)}
+                                    <div className="space-y-4">
+                                        {subscriptionHistory.map((subscription) => (
+                                            <Card key={subscription.id} className="overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                                                <CardHeader className="pb-3">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center space-x-3 mb-2">
+                                                                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                                                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                    </svg>
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{subscription.plan.name}</h4>
+                                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Transaction ID: {subscription.payment_transaction_id}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <Badge 
+                                                                className={`px-3 py-1 text-xs font-medium ${
+                                                                    subscription.status === 'active' 
+                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 border-green-200 dark:border-green-800' 
+                                                                        : subscription.status === 'cancelled'
+                                                                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300 border-orange-200 dark:border-orange-800'
+                                                                        : subscription.status === 'pending'
+                                                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                                                                        : subscription.status === 'failed'
+                                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300 border-red-200 dark:border-red-800'
+                                                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300 border-gray-200 dark:border-gray-800'
+                                                                }`}
                                                             >
-                                                                Cancel
-                                                            </Button>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                                                {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                </CardHeader>
+                                                
+                                                <CardContent className="pt-0">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">Start Date</p>
+                                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatDate(subscription.start_date)}</p>
+                                                        </div>
+                                                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">End Date</p>
+                                                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatDate(subscription.end_date)}</p>
+                                                        </div>
+                                                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">Amount Paid</p>
+                                                            <p className="text-sm font-semibold text-green-600 dark:text-green-400">₱{Number(subscription.amount_paid).toLocaleString()}</p>
+                                                        </div>
+                                                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3">
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">Auto Renew</p>
+                                                            <div className="flex items-center space-x-2">
+                                                                {subscription.auto_renew ? (
+                                                                    <>
+                                                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                                        <span className="text-sm font-semibold text-green-600 dark:text-green-400">Enabled</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                                                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Disabled</span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                        <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                                                            <span className="flex items-center">
+                                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                                Created {formatDate(subscription.created_at)}
+                                                            </span>
+                                                            {subscription.cancelled_at && (
+                                                                <span className="flex items-center">
+                                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                    Cancelled {formatDate(subscription.cancelled_at)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        
+                                                        <div className="flex items-center space-x-2">
+                                                            {subscription.status === 'active' && canDelete && (
+                                                                <Button 
+                                                                    variant="outline" 
+                                                                    size="sm"
+                                                                    className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                    onClick={() => openCancelDialog(subscription.identifier)}
+                                                                >
+                                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                    Cancel Subscription
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {subscription.cancellation_reason && (
+                                                        <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                                                            <p className="text-xs text-amber-700 dark:text-amber-300">
+                                                                <span className="font-medium">Cancellation Reason:</span> {subscription.cancellation_reason}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
                                 ) : (
-                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                        <p>You don't have any subscription history yet.</p>
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                        <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Subscription History</h4>
+                                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                                            You haven't made any subscriptions yet. Start your journey by exploring our premium plans.
+                                        </p>
+                                        <Button 
+                                            className="mt-4"
+                                            onClick={() => setActiveTab('plans')}
+                                        >
+                                            Browse Plans
+                                        </Button>
                                     </div>
                                 )}
                             </div>

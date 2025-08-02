@@ -161,7 +161,7 @@ class SubscriptionController extends Controller
             return Inertia::render('Subscriptions/PaymentStatus', [
                 'status' => 'pending',
                 'message' => 'Your subscription request has been received. Please visit our office to complete the payment.',
-                'subscription' => $subscription,
+                'subscription' => $subscription->load('plan'),
                 'payment_instructions' => [
                     'amount' => $plan->price,
                     'reference_number' => $referenceNumber,
@@ -270,7 +270,7 @@ class SubscriptionController extends Controller
             return Inertia::render('Subscriptions/PaymentStatus', [
                 'status' => 'success',
                 'message' => 'Your subscription has been activated successfully using your credits.',
-                'subscription' => $subscription,
+                'subscription' => $subscription->load('plan'),
                 'payment_details' => [
                     'credits_deducted' => $plan->price,
                     'credits_added' => $plan->credits_per_month,
@@ -541,7 +541,7 @@ class SubscriptionController extends Controller
             return Inertia::render('Subscriptions/PaymentStatus', [
                 'status' => 'success',
                 'message' => 'Your payment was successful and your subscription is now active.',
-                'subscription' => $subscription,
+                'subscription' => $subscription->load('plan'),
             ]);
         } catch (\Exception $e) {
             Log::error('Stripe success handling failed: ' . $e->getMessage(), [
@@ -765,7 +765,7 @@ class SubscriptionController extends Controller
         return Inertia::render('Subscriptions/PaymentStatus', [
             'status' => 'success',
             'message' => 'Your payment was successful and your subscription is now active.',
-            'subscription' => $subscription,
+            'subscription' => $subscription->load('plan'),
         ]);
     }
     
