@@ -251,7 +251,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
           // Clear cart and redirect to success page
           clearCart();
           // Show success message
-          alert('Order placed successfully! You will receive a confirmation email shortly.');
+          alert('Order placed successfully!');
         },
         onError: (errors) => {
           console.error('Checkout error:', errors);

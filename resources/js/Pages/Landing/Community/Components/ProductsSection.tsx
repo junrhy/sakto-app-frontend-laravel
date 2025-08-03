@@ -4,7 +4,6 @@ import ProductCartSummary from './ProductCartSummary';
 import ProductGrid from './ProductGrid';
 
 import ProductOrderHistory from './ProductOrderHistory';
-import ProductDetail from './ProductDetail';
 
 // Define types for Product, Variant, etc. as needed
 
