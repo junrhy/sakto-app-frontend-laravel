@@ -226,7 +226,6 @@ export default function Edit({ auth, product, currency }: Props) {
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Edit Product</h2>}
         >
             <Head title="Edit Product" />

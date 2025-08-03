@@ -343,7 +343,6 @@ export default function Create({ auth, client_identifier, currency }: Props) {
 
     return (
         <AuthenticatedLayout
-            auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Create Product</h2>}
         >
             <Head title="Create Product" />

@@ -139,7 +139,22 @@ export default function ProductsSection({ products, appCurrency, member, contact
   const findMatchingVariant = (product: Product, selectedAttributes: Record<string, string>) => {
     if (!product.active_variants) return null;
     
+    // If no attributes are selected, return null
+    if (Object.keys(selectedAttributes).length === 0) {
+      return null;
+    }
+    
     return product.active_variants.find(variant => {
+      // Check that the variant has exactly the same attributes as selected
+      const variantAttributeKeys = Object.keys(variant.attributes);
+      const selectedAttributeKeys = Object.keys(selectedAttributes);
+      
+      // If the number of attributes doesn't match, it's not a complete variant match
+      if (variantAttributeKeys.length !== selectedAttributeKeys.length) {
+        return false;
+      }
+      
+      // Check that all selected attributes match the variant's attributes
       return Object.entries(selectedAttributes).every(([key, value]) => 
         variant.attributes[key] === value
       );
@@ -148,7 +163,34 @@ export default function ProductsSection({ products, appCurrency, member, contact
 
   const isVariantComplete = (product: Product, selectedAttributes: Record<string, string>) => {
     const availableAttributes = getAvailableAttributes(product);
-    return Object.keys(availableAttributes).every(key => selectedAttributes[key]);
+    
+    // Check if all available attributes have been selected
+    const allAttributesSelected = Object.keys(availableAttributes).every(key => selectedAttributes[key]);
+    
+    if (!allAttributesSelected) {
+      return false;
+    }
+    
+    // Check if the selected combination actually exists as a variant
+    const matchingVariant = findMatchingVariant(product, selectedAttributes);
+    return matchingVariant !== null && matchingVariant !== undefined;
+  };
+
+  const isValidAttributeCombination = (product: Product, selectedAttributes: Record<string, string>) => {
+    if (!product.active_variants) return false;
+    
+    // If no attributes are selected, it's valid (user can start selecting)
+    if (Object.keys(selectedAttributes).length === 0) {
+      return true;
+    }
+    
+    return product.active_variants.some(variant => {
+      // Check that all selected attributes match the variant's attributes
+      // This allows partial selection - we don't require all attributes to be selected
+      return Object.entries(selectedAttributes).every(([key, value]) => 
+        variant.attributes[key] === value
+      );
+    });
   };
 
   // Cart functions
@@ -416,13 +458,15 @@ export default function ProductsSection({ products, appCurrency, member, contact
         getAvailableAttributes={getAvailableAttributes}
         findMatchingVariant={findMatchingVariant}
         isVariantComplete={isVariantComplete}
+        isValidAttributeCombination={isValidAttributeCombination}
         formatPrice={formatPrice}
         setVariantErrors={setVariantErrors}
         hasActiveFilters={hasActiveFilters}
         clearFilters={clearFilters}
         getProductImage={getProductImage}
         openProductDetailModal={openProductDetailModal}
-              />
+        appCurrency={appCurrency}
+      />
 
         {/* Checkout Dialog */}
         <ProductCheckoutDialog
@@ -446,20 +490,8 @@ export default function ProductsSection({ products, appCurrency, member, contact
             product={selectedProduct}
             onClose={closeProductDetailModal}
             appCurrency={appCurrency}
-            getEffectivePrice={getEffectivePrice}
             getEffectiveStock={getEffectiveStock}
-            getAvailableAttributes={getAvailableAttributes}
-            findMatchingVariant={findMatchingVariant}
-            isVariantComplete={isVariantComplete}
-            formatPrice={formatPrice}
-            setVariantErrors={setVariantErrors}
             addToCart={addToCart}
-            removeFromCart={removeFromCart}
-            updateCartQuantity={updateCartQuantity}
-            cartItems={cartItems}
-            selectedVariants={selectedVariants}
-            variantErrors={variantErrors}
-            handleVariantSelection={handleVariantSelection}
           />
         )}
         </>

@@ -52,12 +52,14 @@ interface ProductGridProps {
   getAvailableAttributes: (product: Product) => Record<string, string[]>;
   findMatchingVariant: (product: Product, selectedAttributes: Record<string, string>) => any;
   isVariantComplete: (product: Product, selectedAttributes: Record<string, string>) => boolean;
+  isValidAttributeCombination: (product: Product, selectedAttributes: Record<string, string>) => boolean;
   formatPrice: (price: number | string | null | undefined) => string;
   setVariantErrors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   hasActiveFilters: () => boolean;
   clearFilters: () => void;
   getProductImage: (product: Product) => string | null;
   openProductDetailModal: (product: Product) => void;
+  appCurrency?: { code: string; symbol: string } | null;
 }
 
 export default function ProductGrid({
@@ -74,12 +76,14 @@ export default function ProductGrid({
   getAvailableAttributes,
   findMatchingVariant,
   isVariantComplete,
+  isValidAttributeCombination,
   formatPrice,
   setVariantErrors,
   hasActiveFilters,
   clearFilters,
   getProductImage,
-  openProductDetailModal
+  openProductDetailModal,
+  appCurrency
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
@@ -123,10 +127,12 @@ export default function ProductGrid({
           getAvailableAttributes={getAvailableAttributes}
           findMatchingVariant={findMatchingVariant}
           isVariantComplete={isVariantComplete}
+          isValidAttributeCombination={isValidAttributeCombination}
           formatPrice={formatPrice}
           setVariantErrors={setVariantErrors}
           getProductImage={getProductImage}
           openProductDetailModal={openProductDetailModal}
+          appCurrency={appCurrency}
         />
       ))}
     </div>
