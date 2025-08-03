@@ -40,6 +40,30 @@ interface Props extends PageProps {
     };
 }
 
+interface Supplier {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    website: string;
+    contact_person: string;
+    address: string;
+}
+
+interface PurchaseRecord {
+    id: string;
+    supplier_id: string;
+    price: string;
+    currency: string;
+    date: string;
+    order_number: string;
+    notes: string;
+    reorder_point: string;
+    reorder_quantity: string;
+    lead_time_days: string;
+    payment_terms: string;
+}
+
 export default function Create({ auth, client_identifier, currency }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -63,23 +87,9 @@ export default function Create({ auth, client_identifier, currency }: Props) {
             file?: File;
         }>,
         variants: [] as any[],
-        // Supplier related fields
-        supplier_name: '',
-        supplier_email: '',
-        supplier_phone: '',
-        supplier_address: '',
-        supplier_website: '',
-        supplier_contact_person: '',
-        // Purchase related fields
-        purchase_price: '',
-        purchase_currency: currency.code,
-        purchase_date: '',
-        purchase_order_number: '',
-        purchase_notes: '',
-        reorder_point: '',
-        reorder_quantity: '',
-        lead_time_days: '',
-        payment_terms: '',
+        // Multiple suppliers and purchase records
+        suppliers: [] as Supplier[],
+        purchase_records: [] as PurchaseRecord[],
     });
 
     const [newTag, setNewTag] = useState('');
@@ -95,11 +105,72 @@ export default function Create({ auth, client_identifier, currency }: Props) {
         type: 'Product type is required',
     };
 
+    // Generate unique ID
+    const generateId = () => Math.random().toString(36).substr(2, 9);
+
+    // Add new supplier
+    const addSupplier = () => {
+        const newSupplier: Supplier = {
+            id: generateId(),
+            name: '',
+            email: '',
+            phone: '',
+            website: '',
+            contact_person: '',
+            address: '',
+        };
+        setData('suppliers', [...data.suppliers, newSupplier]);
+    };
+
+    // Remove supplier
+    const removeSupplier = (supplierId: string) => {
+        setData('suppliers', data.suppliers.filter(s => s.id !== supplierId));
+        // Also remove associated purchase records
+        setData('purchase_records', data.purchase_records.filter(p => p.supplier_id !== supplierId));
+    };
+
+    // Update supplier
+    const updateSupplier = (supplierId: string, field: keyof Supplier, value: string) => {
+        setData('suppliers', data.suppliers.map(s => 
+            s.id === supplierId ? { ...s, [field]: value } : s
+        ));
+    };
+
+    // Add new purchase record
+    const addPurchaseRecord = () => {
+        const newPurchaseRecord: PurchaseRecord = {
+            id: generateId(),
+            supplier_id: data.suppliers.length > 0 ? data.suppliers[0].id : '',
+            price: '',
+            currency: currency.code,
+            date: '',
+            order_number: '',
+            notes: '',
+            reorder_point: '',
+            reorder_quantity: '',
+            lead_time_days: '',
+            payment_terms: '',
+        };
+        setData('purchase_records', [...data.purchase_records, newPurchaseRecord]);
+    };
+
+    // Remove purchase record
+    const removePurchaseRecord = (purchaseId: string) => {
+        setData('purchase_records', data.purchase_records.filter(p => p.id !== purchaseId));
+    };
+
+    // Update purchase record
+    const updatePurchaseRecord = (purchaseId: string, field: keyof PurchaseRecord, value: string) => {
+        setData('purchase_records', data.purchase_records.map(p => 
+            p.id === purchaseId ? { ...p, [field]: value } : p
+        ));
+    };
+
     // Validation functions
     const validateField = (fieldName: string, value: any): string => {
         // Required field validation
-        if (requiredFields[fieldName as keyof typeof requiredFields] && !value) {
-            return requiredFields[fieldName as keyof typeof requiredFields];
+        if (requiredFields[fieldName] && !value) {
+            return requiredFields[fieldName];
         }
 
         // Specific field validations
@@ -143,21 +214,6 @@ export default function Create({ auth, client_identifier, currency }: Props) {
             case 'weight':
                 if (value && (isNaN(parseFloat(value)) || parseFloat(value) < 0)) {
                     return 'Weight must be a valid positive number';
-                }
-                break;
-            case 'supplier_email':
-                if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return 'Please enter a valid email address';
-                }
-                break;
-            case 'supplier_website':
-                if (value && !/^https?:\/\/.+/.test(value)) {
-                    return 'Please enter a valid URL starting with http:// or https://';
-                }
-                break;
-            case 'purchase_price':
-                if (value && (isNaN(parseFloat(value)) || parseFloat(value) < 0)) {
-                    return 'Purchase price must be a valid positive number';
                 }
                 break;
         }
@@ -324,13 +380,13 @@ export default function Create({ auth, client_identifier, currency }: Props) {
                                             value="supplier"
                                             className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm transition-all duration-200"
                                         >
-                                            Supplier Info
+                                            Suppliers
                                         </TabsTrigger>
                                         <TabsTrigger 
                                             value="purchase"
                                             className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-sm transition-all duration-200"
                                         >
-                                            Purchase Info
+                                            Purchase Records
                                         </TabsTrigger>
                                     </TabsList>
 
@@ -633,231 +689,309 @@ export default function Create({ auth, client_identifier, currency }: Props) {
                                         </div>
                                     </TabsContent>
 
-                                    {/* Supplier Information Tab */}
+                                    {/* Suppliers Tab */}
                                     <TabsContent value="supplier" className="space-y-6 mt-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <InputLabel htmlFor="supplier_name" value="Supplier Name" />
-                                                <Input
-                                                    id="supplier_name"
-                                                    type="text"
-                                                    className="mt-1 block w-full"
-                                                    value={data.supplier_name}
-                                                    onChange={e => setData('supplier_name', e.target.value)}
-                                                    placeholder="Enter supplier name"
-                                                />
-                                                <InputError message={errors.supplier_name} className="mt-2" />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="supplier_email" value="Supplier Email" />
-                                                <Input
-                                                    id="supplier_email"
-                                                    type="email"
-                                                    className={`mt-1 block w-full ${shouldShowError('supplier_email') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-                                                    value={data.supplier_email}
-                                                    onChange={e => handleFieldChange('supplier_email', e.target.value)}
-                                                    onBlur={() => setTouchedFields(prev => ({ ...prev, supplier_email: true }))}
-                                                    placeholder="supplier@example.com"
-                                                />
-                                                {shouldShowError('supplier_email') && (
-                                                    <InputError message={getFieldError('supplier_email')} className="mt-2" />
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="supplier_phone" value="Supplier Phone" />
-                                                <Input
-                                                    id="supplier_phone"
-                                                    type="tel"
-                                                    className="mt-1 block w-full"
-                                                    value={data.supplier_phone}
-                                                    onChange={e => setData('supplier_phone', e.target.value)}
-                                                    placeholder="+1 (555) 123-4567"
-                                                />
-                                                <InputError message={errors.supplier_phone} className="mt-2" />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="supplier_website" value="Supplier Website" />
-                                                <Input
-                                                    id="supplier_website"
-                                                    type="url"
-                                                    className={`mt-1 block w-full ${shouldShowError('supplier_website') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-                                                    value={data.supplier_website}
-                                                    onChange={e => handleFieldChange('supplier_website', e.target.value)}
-                                                    onBlur={() => setTouchedFields(prev => ({ ...prev, supplier_website: true }))}
-                                                    placeholder="https://www.supplier.com"
-                                                />
-                                                {shouldShowError('supplier_website') && (
-                                                    <InputError message={getFieldError('supplier_website')} className="mt-2" />
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="supplier_contact_person" value="Contact Person" />
-                                                <Input
-                                                    id="supplier_contact_person"
-                                                    type="text"
-                                                    className="mt-1 block w-full"
-                                                    value={data.supplier_contact_person}
-                                                    onChange={e => setData('supplier_contact_person', e.target.value)}
-                                                    placeholder="John Doe"
-                                                />
-                                                <InputError message={errors.supplier_contact_person} className="mt-2" />
-                                            </div>
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Suppliers</h3>
+                                            <Button
+                                                type="button"
+                                                onClick={addSupplier}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                Add Supplier
+                                            </Button>
                                         </div>
 
-                                        <div>
-                                            <InputLabel htmlFor="supplier_address" value="Supplier Address" />
-                                            <Textarea
-                                                id="supplier_address"
-                                                className="mt-1 block w-full"
-                                                value={data.supplier_address}
-                                                onChange={e => setData('supplier_address', e.target.value)}
-                                                placeholder="Enter complete supplier address"
-                                                rows={3}
-                                            />
-                                            <InputError message={errors.supplier_address} className="mt-2" />
-                                        </div>
+                                        {data.suppliers.length === 0 ? (
+                                            <div className="text-center py-8">
+                                                <div className="text-gray-500 dark:text-gray-400 mb-4">
+                                                    <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-gray-600 dark:text-gray-300 mb-2">No suppliers added yet</p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    Add suppliers to track multiple sources for this product.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-6">
+                                                {data.suppliers.map((supplier, index) => (
+                                                    <Card key={supplier.id} className="border-2 border-gray-200 dark:border-gray-700">
+                                                        <CardHeader className="pb-3">
+                                                            <div className="flex justify-between items-center">
+                                                                <CardTitle className="text-base">Supplier {index + 1}</CardTitle>
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() => removeSupplier(supplier.id)}
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-4">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <InputLabel htmlFor={`supplier_name_${supplier.id}`} value="Supplier Name" />
+                                                                    <Input
+                                                                        id={`supplier_name_${supplier.id}`}
+                                                                        type="text"
+                                                                        value={supplier.name}
+                                                                        onChange={e => updateSupplier(supplier.id, 'name', e.target.value)}
+                                                                        placeholder="Enter supplier name"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`supplier_email_${supplier.id}`} value="Supplier Email" />
+                                                                    <Input
+                                                                        id={`supplier_email_${supplier.id}`}
+                                                                        type="email"
+                                                                        value={supplier.email}
+                                                                        onChange={e => updateSupplier(supplier.id, 'email', e.target.value)}
+                                                                        placeholder="supplier@example.com"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`supplier_phone_${supplier.id}`} value="Supplier Phone" />
+                                                                    <Input
+                                                                        id={`supplier_phone_${supplier.id}`}
+                                                                        type="tel"
+                                                                        value={supplier.phone}
+                                                                        onChange={e => updateSupplier(supplier.id, 'phone', e.target.value)}
+                                                                        placeholder="+1 (555) 123-4567"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`supplier_website_${supplier.id}`} value="Supplier Website" />
+                                                                    <Input
+                                                                        id={`supplier_website_${supplier.id}`}
+                                                                        type="url"
+                                                                        value={supplier.website}
+                                                                        onChange={e => updateSupplier(supplier.id, 'website', e.target.value)}
+                                                                        placeholder="https://www.supplier.com"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`supplier_contact_${supplier.id}`} value="Contact Person" />
+                                                                    <Input
+                                                                        id={`supplier_contact_${supplier.id}`}
+                                                                        type="text"
+                                                                        value={supplier.contact_person}
+                                                                        onChange={e => updateSupplier(supplier.id, 'contact_person', e.target.value)}
+                                                                        placeholder="John Doe"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <InputLabel htmlFor={`supplier_address_${supplier.id}`} value="Supplier Address" />
+                                                                <Textarea
+                                                                    id={`supplier_address_${supplier.id}`}
+                                                                    value={supplier.address}
+                                                                    onChange={e => updateSupplier(supplier.id, 'address', e.target.value)}
+                                                                    placeholder="Enter complete supplier address"
+                                                                    rows={3}
+                                                                />
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        )}
                                     </TabsContent>
 
-                                    {/* Purchase Information Tab */}
+                                    {/* Purchase Records Tab */}
                                     <TabsContent value="purchase" className="space-y-6 mt-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <div>
-                                                <InputLabel htmlFor="purchase_price" value="Purchase Price" />
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                                        {currency.symbol}
-                                                    </span>
-                                                    <Input
-                                                        id="purchase_price"
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0"
-                                                        className={`mt-1 block w-full pl-8 ${shouldShowError('purchase_price') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
-                                                        value={data.purchase_price}
-                                                        onChange={e => handleFieldChange('purchase_price', e.target.value)}
-                                                        onBlur={() => setTouchedFields(prev => ({ ...prev, purchase_price: true }))}
-                                                        placeholder="0.00"
-                                                    />
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Purchase Records</h3>
+                                            <Button
+                                                type="button"
+                                                onClick={addPurchaseRecord}
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={data.suppliers.length === 0}
+                                            >
+                                                Add Purchase Record
+                                            </Button>
+                                        </div>
+
+                                        {data.suppliers.length === 0 ? (
+                                            <div className="text-center py-8">
+                                                <div className="text-gray-500 dark:text-gray-400 mb-4">
+                                                    <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
                                                 </div>
-                                                {shouldShowError('purchase_price') && (
-                                                    <InputError message={getFieldError('purchase_price')} className="mt-2" />
-                                                )}
+                                                <p className="text-gray-600 dark:text-gray-300 mb-2">Add suppliers first</p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    You need to add suppliers before creating purchase records.
+                                                </p>
                                             </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="purchase_currency" value="Purchase Currency" />
-                                                <Input
-                                                    id="purchase_currency"
-                                                    type="text"
-                                                    className="mt-1 block w-full"
-                                                    value={data.purchase_currency}
-                                                    onChange={e => setData('purchase_currency', e.target.value)}
-                                                    placeholder="USD"
-                                                />
-                                                <InputError message={errors.purchase_currency} className="mt-2" />
+                                        ) : data.purchase_records.length === 0 ? (
+                                            <div className="text-center py-8">
+                                                <div className="text-gray-500 dark:text-gray-400 mb-4">
+                                                    <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-gray-600 dark:text-gray-300 mb-2">No purchase records yet</p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    Add purchase records to track buying history and costs.
+                                                </p>
                                             </div>
+                                        ) : (
+                                            <div className="space-y-6">
+                                                {data.purchase_records.map((purchase, index) => (
+                                                    <Card key={purchase.id} className="border-2 border-gray-200 dark:border-gray-700">
+                                                        <CardHeader className="pb-3">
+                                                            <div className="flex justify-between items-center">
+                                                                <CardTitle className="text-base">Purchase Record {index + 1}</CardTitle>
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() => removePurchaseRecord(purchase.id)}
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                >
+                                                                    Remove
+                                                                </Button>
+                                                            </div>
+                                                        </CardHeader>
+                                                        <CardContent className="space-y-4">
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                <div>
+                                                                    <InputLabel htmlFor={`purchase_supplier_${purchase.id}`} value="Supplier" />
+                                                                    <Select
+                                                                        value={purchase.supplier_id}
+                                                                        onValueChange={(value) => updatePurchaseRecord(purchase.id, 'supplier_id', value)}
+                                                                    >
+                                                                        <SelectTrigger>
+                                                                            <SelectValue placeholder="Select supplier" />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {data.suppliers.map(supplier => (
+                                                                                <SelectItem key={supplier.id} value={supplier.id}>
+                                                                                    {supplier.name || `Supplier ${supplier.id}`}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`purchase_price_${purchase.id}`} value="Purchase Price" />
+                                                                    <div className="relative">
+                                                                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                                                            {currency.symbol}
+                                                                        </span>
+                                                                        <Input
+                                                                            id={`purchase_price_${purchase.id}`}
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            min="0"
+                                                                            className="pl-8"
+                                                                            value={purchase.price}
+                                                                            onChange={e => updatePurchaseRecord(purchase.id, 'price', e.target.value)}
+                                                                            placeholder="0.00"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`purchase_currency_${purchase.id}`} value="Currency" />
+                                                                    <Input
+                                                                        id={`purchase_currency_${purchase.id}`}
+                                                                        type="text"
+                                                                        value={purchase.currency}
+                                                                        onChange={e => updatePurchaseRecord(purchase.id, 'currency', e.target.value)}
+                                                                        placeholder="USD"
+                                                                    />
+                                                                </div>
+                                                            </div>
 
-                                            <div>
-                                                <InputLabel htmlFor="purchase_date" value="Purchase Date" />
-                                                <Input
-                                                    id="purchase_date"
-                                                    type="date"
-                                                    className="mt-1 block w-full"
-                                                    value={data.purchase_date}
-                                                    onChange={e => setData('purchase_date', e.target.value)}
-                                                />
-                                                <InputError message={errors.purchase_date} className="mt-2" />
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <InputLabel htmlFor={`purchase_date_${purchase.id}`} value="Purchase Date" />
+                                                                    <Input
+                                                                        id={`purchase_date_${purchase.id}`}
+                                                                        type="date"
+                                                                        value={purchase.date}
+                                                                        onChange={e => updatePurchaseRecord(purchase.id, 'date', e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`purchase_order_${purchase.id}`} value="Order Number" />
+                                                                    <Input
+                                                                        id={`purchase_order_${purchase.id}`}
+                                                                        type="text"
+                                                                        value={purchase.order_number}
+                                                                        onChange={e => updatePurchaseRecord(purchase.id, 'order_number', e.target.value)}
+                                                                        placeholder="PO-2024-001"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                                <div>
+                                                                    <InputLabel htmlFor={`reorder_point_${purchase.id}`} value="Reorder Point" />
+                                                                    <Input
+                                                                        id={`reorder_point_${purchase.id}`}
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={purchase.reorder_point}
+                                                                        onChange={e => updatePurchaseRecord(purchase.id, 'reorder_point', e.target.value)}
+                                                                        placeholder="10"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`reorder_quantity_${purchase.id}`} value="Reorder Quantity" />
+                                                                    <Input
+                                                                        id={`reorder_quantity_${purchase.id}`}
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={purchase.reorder_quantity}
+                                                                        onChange={e => updatePurchaseRecord(purchase.id, 'reorder_quantity', e.target.value)}
+                                                                        placeholder="50"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <InputLabel htmlFor={`lead_time_${purchase.id}`} value="Lead Time (Days)" />
+                                                                    <Input
+                                                                        id={`lead_time_${purchase.id}`}
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={purchase.lead_time_days}
+                                                                        onChange={e => updatePurchaseRecord(purchase.id, 'lead_time_days', e.target.value)}
+                                                                        placeholder="7"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div>
+                                                                <InputLabel htmlFor={`payment_terms_${purchase.id}`} value="Payment Terms" />
+                                                                <Input
+                                                                    id={`payment_terms_${purchase.id}`}
+                                                                    type="text"
+                                                                    value={purchase.payment_terms}
+                                                                    onChange={e => updatePurchaseRecord(purchase.id, 'payment_terms', e.target.value)}
+                                                                    placeholder="Net 30"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <InputLabel htmlFor={`purchase_notes_${purchase.id}`} value="Notes" />
+                                                                <Textarea
+                                                                    id={`purchase_notes_${purchase.id}`}
+                                                                    value={purchase.notes}
+                                                                    onChange={e => updatePurchaseRecord(purchase.id, 'notes', e.target.value)}
+                                                                    placeholder="Additional notes about this purchase..."
+                                                                    rows={3}
+                                                                />
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
                                             </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <InputLabel htmlFor="purchase_order_number" value="Purchase Order Number" />
-                                                <Input
-                                                    id="purchase_order_number"
-                                                    type="text"
-                                                    className="mt-1 block w-full"
-                                                    value={data.purchase_order_number}
-                                                    onChange={e => setData('purchase_order_number', e.target.value)}
-                                                    placeholder="PO-2024-001"
-                                                />
-                                                <InputError message={errors.purchase_order_number} className="mt-2" />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="payment_terms" value="Payment Terms" />
-                                                <Input
-                                                    id="payment_terms"
-                                                    type="text"
-                                                    className="mt-1 block w-full"
-                                                    value={data.payment_terms}
-                                                    onChange={e => setData('payment_terms', e.target.value)}
-                                                    placeholder="Net 30"
-                                                />
-                                                <InputError message={errors.payment_terms} className="mt-2" />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <div>
-                                                <InputLabel htmlFor="reorder_point" value="Reorder Point" />
-                                                <Input
-                                                    id="reorder_point"
-                                                    type="number"
-                                                    min="0"
-                                                    className="mt-1 block w-full"
-                                                    value={data.reorder_point}
-                                                    onChange={e => setData('reorder_point', e.target.value)}
-                                                    placeholder="10"
-                                                />
-                                                <InputError message={errors.reorder_point} className="mt-2" />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="reorder_quantity" value="Reorder Quantity" />
-                                                <Input
-                                                    id="reorder_quantity"
-                                                    type="number"
-                                                    min="0"
-                                                    className="mt-1 block w-full"
-                                                    value={data.reorder_quantity}
-                                                    onChange={e => setData('reorder_quantity', e.target.value)}
-                                                    placeholder="50"
-                                                />
-                                                <InputError message={errors.reorder_quantity} className="mt-2" />
-                                            </div>
-
-                                            <div>
-                                                <InputLabel htmlFor="lead_time_days" value="Lead Time (Days)" />
-                                                <Input
-                                                    id="lead_time_days"
-                                                    type="number"
-                                                    min="0"
-                                                    className="mt-1 block w-full"
-                                                    value={data.lead_time_days}
-                                                    onChange={e => setData('lead_time_days', e.target.value)}
-                                                    placeholder="7"
-                                                />
-                                                <InputError message={errors.lead_time_days} className="mt-2" />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <InputLabel htmlFor="purchase_notes" value="Purchase Notes" />
-                                            <Textarea
-                                                id="purchase_notes"
-                                                className="mt-1 block w-full"
-                                                value={data.purchase_notes}
-                                                onChange={e => setData('purchase_notes', e.target.value)}
-                                                placeholder="Additional notes about the purchase..."
-                                                rows={3}
-                                            />
-                                            <InputError message={errors.purchase_notes} className="mt-2" />
-                                        </div>
+                                        )}
                                     </TabsContent>
                                 </Tabs>
 
