@@ -32,7 +32,7 @@ interface ChallengeFormData {
     goal_unit: string;
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
-    status: 'active' | 'completed' | 'archived';
+    status: 'active' | 'inactive' | 'completed';
 }
 
 interface Challenge {
@@ -46,7 +46,7 @@ interface Challenge {
     goal_unit: string;
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
-    status: 'active' | 'completed' | 'archived';
+    status: 'active' | 'inactive' | 'completed';
 }
 
 interface Props {
@@ -238,6 +238,20 @@ export default function ChallengeForm({ challenge, onSubmit, onClose }: Props) {
                             <option value="friends">Friends</option>
                             <option value="family">Family</option>
                             <option value="coworkers">Coworkers</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <select
+                            value={formData.status}
+                            onChange={(e) => setFormData({ ...formData, status: e.target.value as ChallengeFormData['status'] })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            required
+                        >
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                            <option value="inactive">Inactive</option>
                         </select>
                     </div>
 

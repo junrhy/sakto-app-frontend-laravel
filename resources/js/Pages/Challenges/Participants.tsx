@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/Componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { Badge } from '@/Components/ui/badge';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { UserPlus, Trash2, Clock } from 'lucide-react';
+import { format, differenceInSeconds, differenceInHours, differenceInMinutes } from 'date-fns';
+import { UserPlus, Trash2, Clock, MoreHorizontal } from 'lucide-react';
 import ParticipantTimer from '@/Components/Challenges/ParticipantTimer';
 import {
     Dialog,
@@ -21,6 +21,12 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/Components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
 
 interface Challenge {
     id: number;
@@ -34,7 +40,7 @@ interface Challenge {
     participants: number[];
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
-    status: 'active' | 'completed' | 'archived';
+    status: 'active' | 'inactive' | 'completed';
 }
 
 interface Reward {
@@ -86,10 +92,36 @@ interface Props extends PageProps {
     participants: Participant[];
 }
 
+// Helper function to format duration
+const formatDuration = (startedAt: string | null, endedAt: string | null): string => {
+    if (!startedAt) return 'Not started';
+    
+    const startDate = new Date(startedAt);
+    const endDate = endedAt ? new Date(endedAt) : new Date();
+    
+    const totalSeconds = differenceInSeconds(endDate, startDate);
+    
+    if (totalSeconds < 0) return 'Invalid time';
+    
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+    } else {
+        return `${seconds}s`;
+    }
+};
+
 export default function Participants({ auth, challenge, participants }: Props) {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
     const [selectedParticipantForTimer, setSelectedParticipantForTimer] = useState<Participant | null>(null);
+    const [selectedParticipantForRemoval, setSelectedParticipantForRemoval] = useState<Participant | null>(null);
+    const [removalReason, setRemovalReason] = useState<string>('');
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -164,12 +196,25 @@ export default function Participants({ auth, challenge, participants }: Props) {
         });
     };
 
-    const handleRemoveParticipant = (participantId: number) => {
-        if (!confirm('Are you sure you want to remove this participant?')) return;
+    const handleRemoveParticipant = (participant: Participant) => {
+        setSelectedParticipantForRemoval(participant);
+        setRemovalReason('');
+    };
 
-        router.delete(route('challenges.remove-participant', [challenge.id, participantId]), {
+    const confirmRemoveParticipant = () => {
+        if (!selectedParticipantForRemoval) return;
+        
+        if (!removalReason.trim()) {
+            toast.error('Please provide a reason for removal');
+            return;
+        }
+
+        router.delete(route('challenges.remove-participant', [challenge.id, selectedParticipantForRemoval.id]), {
+            data: { reason: removalReason },
             onSuccess: () => {
                 toast.success('Participant removed successfully');
+                setSelectedParticipantForRemoval(null);
+                setRemovalReason('');
             },
             onError: () => {
                 toast.error('Failed to remove participant');
@@ -318,73 +363,131 @@ export default function Participants({ auth, challenge, participants }: Props) {
                                         </div>
                                     </div>
 
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Name</TableHead>
-                                                <TableHead>Email</TableHead>
-                                                <TableHead>Progress</TableHead>
-                                                <TableHead>Timer</TableHead>
-                                                <TableHead>Joined</TableHead>
-                                                <TableHead className="w-24">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {filteredParticipants.map((participant) => (
-                                                <TableRow key={participant.id}>
-                                                    <TableCell className="font-medium">{participant.first_name} {participant.last_name}</TableCell>
-                                                    <TableCell>{participant.email}</TableCell>
-                                                    <TableCell>
-                                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                                            <div
-                                                                className="bg-blue-600 h-2.5 rounded-full"
-                                                                style={{ width: `${parseInt(participant.progress) || 0}%` }}
-                                                            />
+                                    <div className="grid gap-4">
+                                        {filteredParticipants.map((participant) => (
+                                            <div key={participant.id} className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:border-blue-200">
+                                                <div className="flex items-center justify-between">
+                                                    {/* Participant Info */}
+                                                    <div className="flex items-center space-x-4">
+                                                        <div className="flex-shrink-0">
+                                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                                                                {participant.first_name.charAt(0)}{participant.last_name.charAt(0)}
+                                                            </div>
                                                         </div>
-                                                        <span className="text-xs text-gray-500">{participant.progress}%</span>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-center gap-2">
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => setSelectedParticipantForTimer(participant)}
-                                                                className="flex items-center gap-2"
-                                                            >
-                                                                <Clock className="w-4 h-4" />
-                                                                Timer
-                                                            </Button>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="text-lg font-semibold text-gray-900 truncate">
+                                                                {participant.first_name} {participant.last_name}
+                                                            </h3>
+                                                            <p className="text-sm text-gray-500 truncate">{participant.email}</p>
+                                                            <div className="flex items-center mt-1 space-x-4 text-xs text-gray-400">
+                                                                <span>Joined {format(new Date(participant.created_at), 'MMM d, yyyy')}</span>
+                                                                <span>•</span>
+                                                                <span className="font-mono">
+                                                                    {formatDuration(participant.timer_started_at || null, participant.timer_ended_at || null)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Progress and Actions */}
+                                                    <div className="flex items-center space-x-6">
+                                                        {/* Progress */}
+                                                        <div className="text-center">
+                                                            <div className="text-2xl font-bold text-gray-900 mb-1">
+                                                                {participant.progress}%
+                                                            </div>
+                                                            <div className="w-24 bg-gray-200 rounded-full h-2">
+                                                                <div
+                                                                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                                                                    style={{ width: `${parseInt(participant.progress) || 0}%` }}
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs text-gray-500 mt-1">Progress</div>
+                                                        </div>
+
+                                                        {/* Timer Status */}
+                                                        <div className="flex items-center space-x-2">
                                                             {participant.timer_is_active && (
-                                                                <div className="flex items-center gap-1">
+                                                                <div className="flex items-center space-x-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                                                                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                                    <span className="text-xs text-green-600 dark:text-green-400">Running</span>
+                                                                    <span>Active</span>
                                                                 </div>
                                                             )}
                                                             {participant.timer_started_at && !participant.timer_is_active && (
-                                                                <div className="flex items-center gap-1">
+                                                                <div className="flex items-center space-x-2 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
                                                                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                                                    <span className="text-xs text-yellow-600 dark:text-yellow-400">Paused</span>
+                                                                    <span>Paused</span>
+                                                                </div>
+                                                            )}
+                                                            {!participant.timer_started_at && (
+                                                                <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                                                                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                                                    <span>Not Started</span>
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    </TableCell>
-                                                    <TableCell>{format(new Date(participant.created_at), 'PPP')}</TableCell>
-                                                    <TableCell>
-                                                        {canDelete && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => handleRemoveParticipant(participant.id)}
-                                                                className="text-red-500 hover:text-red-700"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+
+                                                        {/* Actions */}
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                                    <MoreHorizontal className="w-4 h-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onClick={() => setSelectedParticipantForTimer(participant)}>
+                                                                    <Clock className="w-4 h-4 mr-2" />
+                                                                    Timer
+                                                                    {participant.timer_is_active && (
+                                                                        <div className="ml-2 flex items-center gap-1">
+                                                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                                            <span className="text-xs text-green-600">Running</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {participant.timer_started_at && !participant.timer_is_active && (
+                                                                        <div className="ml-2 flex items-center gap-1">
+                                                                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                                                            <span className="text-xs text-yellow-600">Paused</span>
+                                                                        </div>
+                                                                    )}
+                                                                </DropdownMenuItem>
+                                                                {canDelete && (
+                                                                    <>
+                                                                        <div className="h-px bg-gray-200 my-1"></div>
+                                                                        <DropdownMenuItem 
+                                                                            onClick={() => handleRemoveParticipant(participant)}
+                                                                            className="text-red-600 focus:text-red-600"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                                            Remove
+                                                                        </DropdownMenuItem>
+                                                                    </>
+                                                                )}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        
+                                        {filteredParticipants.length === 0 && (
+                                            <div className="text-center py-12">
+                                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                    <UserPlus className="w-8 h-8 text-gray-400" />
+                                                </div>
+                                                <h3 className="text-lg font-medium text-gray-900 mb-2">No participants found</h3>
+                                                <p className="text-gray-500 mb-4">
+                                                    {searchTerm ? 'Try adjusting your search terms.' : 'Get started by adding your first participant.'}
+                                                </p>
+                                                {!searchTerm && (
+                                                    <Button onClick={() => setIsAddDialogOpen(true)}>
+                                                        <UserPlus className="w-4 h-4 mr-2" />
+                                                        Add First Participant
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
@@ -416,6 +519,40 @@ export default function Participants({ auth, challenge, participants }: Props) {
                                 }}
                             />
                         )}
+                    </DialogContent>
+                </Dialog>
+
+                {/* Remove Participant Dialog */}
+                <Dialog open={!!selectedParticipantForRemoval} onOpenChange={() => setSelectedParticipantForRemoval(null)}>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Remove Participant</DialogTitle>
+                            <DialogDescription>
+                                Are you sure you want to remove {selectedParticipantForRemoval?.first_name} {selectedParticipantForRemoval?.last_name} from this challenge?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                            <Label htmlFor="removal-reason">Reason for removal *</Label>
+                            <Input
+                                id="removal-reason"
+                                placeholder="Please provide a reason for removing this participant..."
+                                value={removalReason}
+                                onChange={(e) => setRemovalReason(e.target.value)}
+                                className="mt-2"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setSelectedParticipantForRemoval(null)}>
+                                Cancel
+                            </Button>
+                            <Button 
+                                variant="destructive" 
+                                onClick={confirmRemoveParticipant}
+                                disabled={!removalReason.trim()}
+                            >
+                                Remove Participant
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

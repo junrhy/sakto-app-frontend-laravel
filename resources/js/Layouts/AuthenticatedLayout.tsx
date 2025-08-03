@@ -53,7 +53,7 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
     if (url.includes('credits')) {
         return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
     }
-    console.log(projectIdentifier);
+
     // Then check project-based colors
     if (projectIdentifier) {
         switch (projectIdentifier.toLowerCase()) {

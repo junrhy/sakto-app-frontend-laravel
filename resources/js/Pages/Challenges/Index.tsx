@@ -45,9 +45,10 @@ interface Challenge {
     goal_value: number;
     goal_unit: string;
     participants: number[];
+    participants_count?: number;
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
-    status: 'active' | 'completed' | 'archived';
+    status: 'active' | 'inactive' | 'completed';
 }
 
 interface Props {
@@ -70,6 +71,7 @@ interface Props {
 }
 
 export default function Index({ auth, challenges: initialChallenges }: Props) {
+    console.log('Auth data:', auth);
     const [challenges, setChallenges] = useState<Challenge[]>(initialChallenges);
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
     const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
@@ -239,7 +241,7 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                 return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
             case 'completed':
                 return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-            case 'archived':
+            case 'inactive':
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
             default:
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
@@ -390,7 +392,7 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                     <div>
                                         <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Total Participants</p>
                                         <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                                            {challenges.reduce((sum, c) => sum + (c.participants?.length || 0), 0)}
+                                            {challenges.reduce((sum, c) => sum + (c.participants_count || c.participants?.length || 0), 0)}
                                         </p>
                                     </div>
                                     <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -518,7 +520,7 @@ export default function Index({ auth, challenges: initialChallenges }: Props) {
                                             </div>
                                             <div className="flex items-center space-x-1">
                                                 <Users2 className="h-4 w-4" />
-                                                <span>{challenge.participants?.length || 0}</span>
+                                                <span>{challenge.participants_count || challenge.participants?.length || 0}</span>
                                             </div>
                                         </div>
                                         

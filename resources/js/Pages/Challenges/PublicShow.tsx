@@ -33,7 +33,7 @@ interface Challenge {
     goal_unit: string;
     visibility: 'public' | 'private' | 'friends' | 'family' | 'coworkers';
     rewards: Reward[];
-    status: 'active' | 'completed' | 'archived';
+    status: 'active' | 'inactive' | 'completed';
     is_active?: boolean;
     is_upcoming?: boolean;
     is_ended?: boolean;

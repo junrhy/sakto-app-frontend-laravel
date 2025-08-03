@@ -49,9 +49,6 @@ class ChallengeController extends Controller
             $challenges = $response->json();
 
             return Inertia::render('Challenges/Index', [
-                'auth' => [
-                    'user' => Auth::user()
-                ],
                 'challenges' => $challenges
             ]);
         } catch (\Exception $e) {
@@ -120,8 +117,8 @@ class ChallengeController extends Controller
             'goal_unit' => 'required|string',
             'visibility' => 'required|in:public,private,friends,family,coworkers',
             'rewards' => 'nullable|array',
-            'rewards.*.type' => 'required|in:badge,points,achievement,cash,item,gift,certificate,trophy,medal',
-            'rewards.*.value' => 'required|string'
+            'rewards.*.type' => 'required_with:rewards|in:badge,points,achievement,cash,item,gift,certificate,trophy,medal',
+            'rewards.*.value' => 'required_with:rewards|string'
         ]);
 
         $clientIdentifier = auth()->user()->identifier;
@@ -157,8 +154,14 @@ class ChallengeController extends Controller
             'goal_unit' => 'sometimes|required|string',
             'visibility' => 'sometimes|required|in:public,private,friends,family,coworkers',
             'rewards' => 'nullable|array',
-            'rewards.*.type' => 'required|in:badge,points,achievement,cash,item,gift,certificate,trophy,medal',
-            'rewards.*.value' => 'required|string'
+            'rewards.*.type' => 'required_with:rewards|in:badge,points,achievement,cash,item,gift,certificate,trophy,medal',
+            'rewards.*.value' => 'required_with:rewards|string',
+            'status' => 'sometimes|required|in:active,inactive,completed'
+        ]);
+
+        Log::info('Updating challenge', [
+            'id' => $id,
+            'validated_data' => $validated
         ]);
 
         $response = Http::withToken($this->apiToken)
@@ -167,7 +170,8 @@ class ChallengeController extends Controller
         if (!$response->successful()) {
             Log::error('Failed to update challenge', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
+                'validated_data' => $validated
             ]);
             return back()->withErrors(['error' => 'Failed to update challenge']);
         }
