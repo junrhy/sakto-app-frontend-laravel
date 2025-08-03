@@ -729,93 +729,85 @@ class CommunityController extends Controller
             return response()->json(['error' => 'Member not found'], 404);
         }
 
-        // Check if request contains files (images)
-        if ($request->hasFile('images')) {
-            // Handle multipart form data with images
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'required|string',
-                'price' => 'required|numeric|min:0',
-                'category' => 'required|string|max:255',
-                'type' => 'required|string|in:physical,digital,service,subscription',
-                'sku' => 'nullable|string|max:255',
-                'stock_quantity' => 'nullable|integer|min:0',
-                'weight' => 'nullable|numeric|min:0',
-                'dimensions' => 'nullable|string|max:255',
-                'status' => 'required|string|in:draft,published,archived,inactive',
-                'tags' => 'nullable|string',
-                'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/products/{$productId}", $request->all());
 
-            // Handle tags if they come as JSON string
-            if (isset($validated['tags']) && is_string($validated['tags'])) {
-                $validated['tags'] = json_decode($validated['tags'], true) ?? [];
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json(['error' => 'Failed to update product'], $response->status());
             }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while updating the product'], 500);
+        }
+    }
 
-            // Extract images data before sending to API
-            $images = $request->file('images') ?? null;
-            unset($validated['images']);
+    public function uploadProductImages(Request $request, $identifier, $productId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if(preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
 
-            try {
-                // Update product data first
-                $response = Http::withToken($this->apiToken)
-                    ->put("{$this->apiUrl}/products/{$productId}", $validated);
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
 
-                if (!$response->successful()) {
-                    return response()->json(['error' => 'Failed to update product'], $response->status());
-                }
+        // Validate the request
+        $validated = $request->validate([
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
-                $product = $response->json();
+        try {
+            // Upload images if provided
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    if ($image instanceof \Illuminate\Http\UploadedFile) {
+                        // Upload image to local storage
+                        $path = $image->store('products/images', 'public');
+                        $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($path);
 
-                // Upload new images if provided
-                if ($images && is_array($images)) {
-                    foreach ($images as $image) {
-                        if ($image instanceof \Illuminate\Http\UploadedFile) {
-                            // Upload image to local storage
-                            $path = $image->store('products/images', 'public');
-                            $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+                        // Prepare the image data for API
+                        $imagePayload = [
+                            'image_url' => $imageUrl,
+                            'alt_text' => $image->getClientOriginalName(),
+                            'is_primary' => false,
+                            'sort_order' => 0,
+                        ];
 
-                            // Prepare the image data for API
-                            $imagePayload = [
-                                'image_url' => $imageUrl,
-                                'alt_text' => $image->getClientOriginalName(),
-                                'is_primary' => false,
-                                'sort_order' => 0,
-                            ];
+                        // Send image data to API
+                        $imageResponse = Http::withToken($this->apiToken)
+                            ->post("{$this->apiUrl}/products/{$productId}/images", $imagePayload);
 
-                            // Send image data to API
-                            $imageResponse = Http::withToken($this->apiToken)
-                                ->post("{$this->apiUrl}/products/{$productId}/images", $imagePayload);
-
-                            if (!$imageResponse->successful()) {
-                                \Illuminate\Support\Facades\Log::error('Failed to create image record', [
-                                    'product_id' => $productId,
-                                    'image_data' => $imagePayload,
-                                    'response' => $imageResponse->json()
-                                ]);
-                            }
+                        if (!$imageResponse->successful()) {
+                            \Illuminate\Support\Facades\Log::error('Failed to create image record', [
+                                'product_id' => $productId,
+                                'image_data' => $imagePayload,
+                                'response' => $imageResponse->json()
+                            ]);
                         }
                     }
                 }
-
-                return response()->json($product);
-            } catch (\Exception $e) {
-                return response()->json(['error' => 'An error occurred while updating the product'], 500);
             }
-        } else {
-            // Handle regular JSON data without images
-            try {
-                $response = Http::withToken($this->apiToken)
-                    ->put("{$this->apiUrl}/products/{$productId}", $request->all());
 
-                if ($response->successful()) {
-                    return response()->json($response->json());
-                } else {
-                    return response()->json(['error' => 'Failed to update product'], $response->status());
-                }
-            } catch (\Exception $e) {
-                return response()->json(['error' => 'An error occurred while updating the product'], 500);
-            }
+            return response()->json(['message' => 'Images uploaded successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while uploading images'], 500);
         }
     }
 

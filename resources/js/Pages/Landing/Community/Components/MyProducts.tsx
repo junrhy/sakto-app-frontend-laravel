@@ -263,6 +263,13 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
     ));
   };
 
+  // Helper function to convert blob URL to file
+  const blobUrlToFile = async (blobUrl: string, filename: string): Promise<File> => {
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  };
+
   // Handle edit product
   const handleEditProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,70 +282,61 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
     if (!product) return;
 
     try {
-      let response: Response;
-      
-      // Check if there are any new images to upload
-      const newImages = product.images?.filter(img => img.image_url.startsWith('blob:')) || [];
-      
-      if (newImages.length > 0) {
-        // Handle FormData with images
-        const formData = new FormData();
-        
-        // Add basic product data
-        formData.append('name', product.name);
-        formData.append('description', product.description);
-        formData.append('price', (typeof product.price === 'string' ? parseFloat(product.price) || 0 : product.price).toString());
-        formData.append('category', product.category);
-        formData.append('type', product.type);
-        formData.append('sku', product.sku || '');
-        formData.append('stock_quantity', product.stock_quantity ? product.stock_quantity.toString() : '');
-        formData.append('weight', product.weight ? product.weight.toString() : '');
-        formData.append('dimensions', product.dimensions || '');
-        formData.append('status', product.status);
-        
-        // Add tags as JSON string
-        if (product.tags && product.tags.length > 0) {
-          formData.append('tags', JSON.stringify(product.tags));
-        }
-        
-        // Add new images (convert blob URLs to files)
-        newImages.forEach((image, index) => {
-          // For now, we'll skip blob URLs as they need to be converted to files
-          // This is a limitation - in a real implementation, you'd need to convert blob URLs to files
-        });
-
-        response = await fetch(`/m/${member.identifier || member.id}/products/${editingProduct}`, {
-          method: 'POST', // Use POST for multipart data
-          headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-          },
-          body: formData,
-        });
-      } else {
-        // Handle regular JSON data without images
-        response = await fetch(`/m/${member.identifier || member.id}/products/${editingProduct}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-          },
-          body: JSON.stringify({
-            name: product.name,
-            description: product.description,
-            price: typeof product.price === 'string' ? parseFloat(product.price) || 0 : product.price,
-            category: product.category,
-            type: product.type,
-            sku: product.sku,
-            stock_quantity: product.stock_quantity,
-            weight: product.weight,
-            dimensions: product.dimensions,
-            status: product.status,
-            tags: product.tags || [],
-          }),
-        });
-      }
+      // First, update the product data using PUT
+      const response = await fetch(`/m/${member.identifier || member.id}/products/${editingProduct}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        body: JSON.stringify({
+          name: product.name,
+          description: product.description,
+          price: typeof product.price === 'string' ? parseFloat(product.price) || 0 : product.price,
+          category: product.category,
+          type: product.type,
+          sku: product.sku,
+          stock_quantity: product.stock_quantity,
+          weight: product.weight,
+          dimensions: product.dimensions,
+          status: product.status,
+          tags: product.tags || [],
+        }),
+      });
 
       if (response.ok) {
+        // Check if there are any new images to upload (blob URLs)
+        const newImages = product.images?.filter(img => img.image_url.startsWith('blob:')) || [];
+        
+        if (newImages.length > 0) {
+          // Convert blob URLs to files and upload them
+          const formData = new FormData();
+          
+          // Convert each blob URL to a file
+          for (let i = 0; i < newImages.length; i++) {
+            const image = newImages[i];
+            try {
+              const file = await blobUrlToFile(image.image_url, image.alt_text || `image-${i}.jpg`);
+              formData.append(`images[${i}]`, file);
+            } catch (err) {
+              console.error('Failed to convert blob URL to file:', err);
+            }
+          }
+
+          // Upload the images
+          const imageUploadResponse = await fetch(`/m/${member.identifier || member.id}/products/${editingProduct}/images`, {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: formData,
+          });
+
+          if (!imageUploadResponse.ok) {
+            console.warn('Failed to upload new images:', await imageUploadResponse.text());
+          }
+        }
+
         setEditingProduct(null);
         // Refresh the products list to get the updated data
         const refreshResponse = await fetch(`/m/${member.identifier || member.id}/products?contact_id=${contactId}`);
