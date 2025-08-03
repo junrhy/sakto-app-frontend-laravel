@@ -514,6 +514,65 @@ class CommunityController extends Controller
         }
     }
 
+    public function productDetail($identifier, $productId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        // Check if identifier is a UUID (36 characters with hyphens in specific positions)
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $identifier)) {
+            // Search by identifier (UUID)
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+        if (!$member) {
+            abort(404, 'Member not found');
+        }
+
+        // Fetch product details from backend API
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products/{$productId}", [
+                    'client_identifier' => $member->identifier
+                ]);
+
+            if ($response->successful()) {
+                $product = $response->json() ?? null;
+                
+                if (!$product) {
+                    abort(404, 'Product not found');
+                }
+
+                $appCurrency = json_decode($member->app_currency) ?? null;
+
+                return Inertia::render('Landing/Community/ProductDetail', [
+                    'product' => $product,
+                    'appCurrency' => $appCurrency,
+                    'member' => [
+                        'id' => $member->id,
+                        'identifier' => $member->slug ?? $member->id,
+                        'name' => $member->name,
+                    ],
+                ]);
+            } else {
+                abort(404, 'Product not found');
+            }
+        } catch (\Exception $e) {
+            abort(500, 'Failed to load product details');
+        }
+    }
+
     public function sendSignUpLink(Request $request)
     {
         $validator = Validator::make($request->all(), [

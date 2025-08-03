@@ -213,11 +213,12 @@ Route::group(['middleware' => ['web']], function () {
     })->where('id', '[0-9]+');
     
     Route::get('/community/member/{identifier}', [CommunityController::class, 'member'])->name('community.member');
-    Route::get('/m/{identifier}', [CommunityController::class, 'member'])->name('member.short');
+    Route::get('/m/{identifier}/product/{productId}', [CommunityController::class, 'productDetail'])->name('member.product.detail');
     Route::post('/m/{identifier}/cancel-order/{orderId}', [CommunityController::class, 'cancelOrder'])->name('member.cancel-order');
     Route::get('/m/{identifier}/search-lending', [CommunityController::class, 'searchLendingRecords'])->name('member.search-lending');
     Route::get('/m/{identifier}/search-healthcare', [CommunityController::class, 'searchHealthcareRecords'])->name('member.search-healthcare');
     Route::get('/m/{identifier}/search-mortuary', [CommunityController::class, 'searchMortuaryRecords'])->name('member.search-mortuary');
+    Route::get('/m/{identifier}', [CommunityController::class, 'member'])->name('member.short');
     Route::post('/community/send-signup-link', [CommunityController::class, 'sendSignUpLink'])->name('api.send-signup-link');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');

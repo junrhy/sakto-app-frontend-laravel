@@ -65,8 +65,8 @@ interface ProductCardProps {
   formatPrice: (price: number | string | null | undefined) => string;
   setVariantErrors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   getProductImage: (product: Product) => string | null;
-  openProductDetailModal: (product: Product) => void;
   appCurrency?: { code: string; symbol: string } | null;
+  memberIdentifier: string | number;
 }
 
 export default function ProductCard({
@@ -87,8 +87,8 @@ export default function ProductCard({
   formatPrice,
   setVariantErrors,
   getProductImage,
-  openProductDetailModal,
-  appCurrency
+  appCurrency,
+  memberIdentifier
 }: ProductCardProps) {
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
 
@@ -105,7 +105,7 @@ export default function ProductCard({
 
   const handleViewDetails = () => {
     // Navigate to public product detail page
-    openProductDetailModal(product);
+    window.location.href = `/m/${memberIdentifier}/product/${product.id}`;
   };
 
   return (

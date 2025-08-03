@@ -79,14 +79,16 @@ export default function ProductsSection({ products, appCurrency, member, contact
   });
 
   // Cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    // Initialize cart from localStorage
+    const savedCart = localStorage.getItem('community-cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
   const [variantErrors, setVariantErrors] = useState<Record<number, string>>({});
   const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
 
-  // Product detail modal state
-  const [showProductDetailModal, setShowProductDetailModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
 
   // Utility functions
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -201,23 +203,32 @@ export default function ProductsSection({ products, appCurrency, member, contact
         (!variant ? !item.variant : item.variant?.id === variant?.id)
       );
 
+      let updatedCart;
       if (existingItem) {
-        return prev.map(item => 
+        updatedCart = prev.map(item => 
           item.id === product.id && 
           (!variant ? !item.variant : item.variant?.id === variant?.id)
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
-        return [...prev, { id: product.id, quantity, variant }];
+        updatedCart = [...prev, { id: product.id, quantity, variant }];
       }
+
+      // Save to localStorage
+      localStorage.setItem('community-cart', JSON.stringify(updatedCart));
+      return updatedCart;
     });
   };
 
   const removeFromCart = (productId: number, variantId?: number) => {
-    setCartItems(prev => prev.filter(item => 
-      !(item.id === productId && (!variantId ? !item.variant : item.variant?.id === variantId))
-    ));
+    setCartItems(prev => {
+      const updatedCart = prev.filter(item => 
+        !(item.id === productId && (!variantId ? !item.variant : item.variant?.id === variantId))
+      );
+      localStorage.setItem('community-cart', JSON.stringify(updatedCart));
+      return updatedCart;
+    });
   };
 
   const updateCartQuantity = (productId: number, quantity: number, variantId?: number) => {
@@ -226,12 +237,16 @@ export default function ProductsSection({ products, appCurrency, member, contact
       return;
     }
 
-    setCartItems(prev => prev.map(item => 
-      item.id === productId && 
-      (!variantId ? !item.variant : item.variant?.id === variantId)
-        ? { ...item, quantity }
-        : item
-    ));
+    setCartItems(prev => {
+      const updatedCart = prev.map(item => 
+        item.id === productId && 
+        (!variantId ? !item.variant : item.variant?.id === variantId)
+          ? { ...item, quantity }
+          : item
+      );
+      localStorage.setItem('community-cart', JSON.stringify(updatedCart));
+      return updatedCart;
+    });
   };
 
   const getCartTotal = () => {
@@ -251,6 +266,7 @@ export default function ProductsSection({ products, appCurrency, member, contact
     setCartItems([]);
     setSelectedVariants({});
     setVariantErrors({});
+    localStorage.removeItem('community-cart');
   };
 
   const handleVariantSelection = (productId: number, variant: any) => {
@@ -262,16 +278,7 @@ export default function ProductsSection({ products, appCurrency, member, contact
     setShowCheckoutDialog(true);
   };
 
-  // Product detail modal functions
-  const openProductDetailModal = (product: Product) => {
-    setSelectedProduct(product);
-    setShowProductDetailModal(true);
-  };
 
-  const closeProductDetailModal = () => {
-    setShowProductDetailModal(false);
-    setSelectedProduct(null);
-  };
 
   // Helper function to get the primary or first image for a product
   const getProductImage = (product: Product): string | null => {
@@ -464,8 +471,8 @@ export default function ProductsSection({ products, appCurrency, member, contact
         hasActiveFilters={hasActiveFilters}
         clearFilters={clearFilters}
         getProductImage={getProductImage}
-        openProductDetailModal={openProductDetailModal}
         appCurrency={appCurrency}
+        memberIdentifier={member.identifier || member.id}
       />
 
         {/* Checkout Dialog */}
@@ -484,16 +491,7 @@ export default function ProductsSection({ products, appCurrency, member, contact
           member={member}
         />
 
-        {/* Product Detail Modal */}
-        {selectedProduct && (
-          <ProductDetail
-            product={selectedProduct}
-            onClose={closeProductDetailModal}
-            appCurrency={appCurrency}
-            getEffectiveStock={getEffectiveStock}
-            addToCart={addToCart}
-          />
-        )}
+
         </>
       )}
 

@@ -58,8 +58,8 @@ interface ProductGridProps {
   hasActiveFilters: () => boolean;
   clearFilters: () => void;
   getProductImage: (product: Product) => string | null;
-  openProductDetailModal: (product: Product) => void;
   appCurrency?: { code: string; symbol: string } | null;
+  memberIdentifier: string | number;
 }
 
 export default function ProductGrid({
@@ -82,8 +82,8 @@ export default function ProductGrid({
   hasActiveFilters,
   clearFilters,
   getProductImage,
-  openProductDetailModal,
-  appCurrency
+  appCurrency,
+  memberIdentifier
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
@@ -131,8 +131,8 @@ export default function ProductGrid({
           formatPrice={formatPrice}
           setVariantErrors={setVariantErrors}
           getProductImage={getProductImage}
-          openProductDetailModal={openProductDetailModal}
           appCurrency={appCurrency}
+          memberIdentifier={memberIdentifier}
         />
       ))}
     </div>
