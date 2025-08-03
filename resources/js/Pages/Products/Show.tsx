@@ -254,7 +254,7 @@ export default function Show({ auth, product, currency }: Props) {
     };
 
     const hasVariants = product.active_variants && product.active_variants.length > 0;
-    const activeVariants = product.active_variants?.filter(v => v.is_active) || [];
+    const activeVariants = product.active_variants || [];
 
     // Debug logging for variant logic
     console.log('Variant Logic Debug:', {

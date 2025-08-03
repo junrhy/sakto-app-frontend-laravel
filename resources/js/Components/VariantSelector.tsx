@@ -48,7 +48,7 @@ export default function VariantSelector({
         const attributes: Record<string, string[]> = {};
         
         variants.forEach(variant => {
-            if (variant.is_active && variant.stock_quantity > 0) {
+            if (variant.is_active) { // Remove stock_quantity > 0 check for attribute options
                 Object.entries(variant.attributes).forEach(([key, value]) => {
                     if (!attributes[key]) {
                         attributes[key] = [];
@@ -67,18 +67,71 @@ export default function VariantSelector({
 
     // Find matching variant based on selected attributes
     const findMatchingVariant = (attributes: Record<string, string>): Variant | null => {
+        // If no attributes are selected, return null
+        if (Object.keys(attributes).length === 0) {
+            return null;
+        }
+
+        // Find a variant that has EXACTLY the same attributes
+        // This ensures we only match variants that have the exact attribute combination
         return variants.find(variant => 
             variant.is_active && 
             variant.stock_quantity > 0 &&
+            // Check that the variant has exactly the same attributes as selected
+            Object.keys(variant.attributes).length === Object.keys(attributes).length &&
             Object.entries(attributes).every(([key, value]) => 
                 variant.attributes[key] === value
             )
         ) || null;
     };
 
+    // Check if an attribute combination is valid (has a corresponding variant)
+    const isValidAttributeCombination = (attributes: Record<string, string>): boolean => {
+        if (Object.keys(attributes).length === 0) {
+            return false;
+        }
+
+        return variants.some(variant => 
+            variant.is_active && 
+            variant.stock_quantity > 0 &&
+            // Check that the variant has exactly the same attributes as the combination
+            Object.keys(variant.attributes).length === Object.keys(attributes).length &&
+            Object.entries(attributes).every(([key, value]) => 
+                variant.attributes[key] === value
+            )
+        );
+    };
+
     // Handle attribute selection
     const handleAttributeChange = (attributeKey: string, value: string) => {
+        // If the same attribute value is already selected, unselect it
+        if (selectedAttributes[attributeKey] === value) {
+            const newAttributes = { ...selectedAttributes };
+            delete newAttributes[attributeKey];
+            setSelectedAttributes(newAttributes);
+            
+            // Find matching variant
+            const matchingVariant = findMatchingVariant(newAttributes);
+            setSelectedVariant(matchingVariant);
+            
+            // Reset quantity if variant changes
+            if (matchingVariant && matchingVariant.stock_quantity < quantity) {
+                setQuantity(1);
+            }
+            
+            setError('');
+            return;
+        }
+
+        // Check if adding this attribute would create a valid combination
         const newAttributes = { ...selectedAttributes, [attributeKey]: value };
+        
+        // If this combination is not valid, don't allow the selection
+        if (!isValidAttributeCombination(newAttributes)) {
+            setError('This combination is not available');
+            return;
+        }
+
         setSelectedAttributes(newAttributes);
         
         // Find matching variant
@@ -135,8 +188,15 @@ export default function VariantSelector({
 
     // Check if all required attributes are selected
     const isVariantComplete = () => {
-        return Object.keys(availableAttributes).length === 0 || 
-               Object.keys(availableAttributes).every(key => selectedAttributes[key]);
+        // If there are no available attributes, consider it complete
+        if (Object.keys(availableAttributes).length === 0) {
+            return true;
+        }
+        
+        // Check if we have a valid variant selected
+        const hasMatchingVariant = selectedVariant !== null;
+        
+        return hasMatchingVariant;
     };
 
     // Get stock status text
@@ -236,7 +296,6 @@ export default function VariantSelector({
                                     const isSelected = selectedAttributes[attributeKey] === option;
                                     const isAvailable = variants.some(v => 
                                         v.is_active && 
-                                        v.stock_quantity > 0 && 
                                         v.attributes[attributeKey] === option
                                     );
                                     
@@ -249,8 +308,9 @@ export default function VariantSelector({
                                                 relative p-3 rounded-lg border-2 transition-all duration-200 text-sm font-medium
                                                 ${getAttributeColorClass(attributeKey, isSelected)}
                                                 ${!isAvailable ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400' : 'cursor-pointer'}
-                                                ${isSelected ? 'shadow-md dark:shadow-gray-900/50' : 'hover:shadow-sm dark:hover:shadow-gray-900/30'}
+                                                ${isSelected ? 'shadow-md dark:shadow-gray-900/50 ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-gray-900' : 'hover:shadow-sm dark:hover:shadow-gray-900/30'}
                                             `}
+                                            title={isSelected ? 'Click to unselect' : 'Click to select'}
                                         >
                                             {/* Color swatch for color attributes */}
                                             {attributeKey.toLowerCase() === 'color' && (
@@ -372,7 +432,7 @@ export default function VariantSelector({
                 {!isVariantComplete() 
                     ? 'Select Options' 
                     : !selectedVariant 
-                    ? 'Select Variant' 
+                    ? 'Select Valid Combination' 
                     : selectedVariant.stock_quantity === 0 
                     ? 'Out of Stock' 
                     : `Add to Cart - ${formatCurrency(getEffectivePrice() * quantity, currency.symbol)}`
