@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Check, ShoppingBag, User, MapPin, Truck, CreditCard, FileText } from 'lucide-react';
+import { useToast } from '@/Components/ui/use-toast';
 import { 
   PHILIPPINE_SHIPPING_RATES, 
   INTERNATIONAL_SHIPPING_RATES, 
@@ -83,6 +84,8 @@ interface CheckoutForm {
 type CheckoutStep = 'order-summary' | 'customer-info' | 'shipping' | 'payment' | 'review';
 
 export default function Checkout({ products, member, appCurrency }: CheckoutProps) {
+  const { toast } = useToast();
+  
   // Load cart items from localStorage
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     const savedCart = localStorage.getItem('community-cart');
@@ -189,10 +192,66 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
 
   const handleInputChange = (field: keyof CheckoutForm, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Reset shipping method to standard when location changes
+    if (field === 'country' || field === 'state' || field === 'city') {
+      setFormData(prev => ({ ...prev, [field]: value, shippingMethod: 'standard' }));
+    }
+  };
+
+  // Validation function
+  const validateCurrentStep = (): boolean => {
+    switch (currentStep) {
+      case 'customer-info':
+        return !!(formData.firstName && formData.lastName && formData.email && formData.phone);
+      case 'shipping':
+        return !!(formData.address && formData.city && formData.zipCode && formData.phone);
+      case 'payment':
+        return !!formData.paymentMethod;
+      default:
+        return true;
+    }
+  };
+
+  // Get validation errors for current step
+  const getValidationErrors = (): string[] => {
+    const errors: string[] = [];
+    
+    switch (currentStep) {
+      case 'customer-info':
+        if (!formData.firstName) errors.push('First name is required');
+        if (!formData.lastName) errors.push('Last name is required');
+        if (!formData.email) errors.push('Email address is required');
+        if (!formData.phone) errors.push('Phone number is required');
+        break;
+      case 'shipping':
+        if (!formData.address) errors.push('Shipping address is required');
+        if (!formData.city) errors.push('City/Municipality is required');
+        if (!formData.zipCode) errors.push('ZIP code is required');
+        if (!formData.phone) errors.push('Phone number is required');
+        break;
+      case 'payment':
+        if (!formData.paymentMethod) errors.push('Please select a payment method');
+        break;
+    }
+    
+    return errors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Final validation before submission
+    if (!validateCurrentStep()) {
+      const errors = getValidationErrors();
+      toast({
+        variant: "destructive",
+        title: "Please complete all required fields before placing your order",
+        description: errors.join('\n'),
+      });
+      return;
+    }
+    
     setIsProcessing(true);
 
     try {
@@ -251,16 +310,27 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
           // Clear cart and redirect to success page
           clearCart();
           // Show success message
-          alert('Order placed successfully!');
+          toast({
+            title: "Order placed successfully!",
+            description: "Your order has been submitted and is being processed.",
+          });
         },
         onError: (errors) => {
           console.error('Checkout error:', errors);
-          alert('There was an error processing your order. Please try again.');
+          toast({
+            variant: "destructive",
+            title: "There was an error processing your order",
+            description: "Please try again or contact support if the problem persists.",
+          });
         }
       });
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('There was an error processing your order. Please try again.');
+      toast({
+        variant: "destructive",
+        title: "There was an error processing your order",
+        description: "Please try again or contact support if the problem persists.",
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -291,6 +361,11 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
     );
   }, [formData.country, formData.state, formData.city, formData.shippingMethod]);
 
+  // Get available shipping methods
+  const availableShippingMethods = useMemo(() => {
+    return getShippingMethods(formData.country, formData.state, formData.city);
+  }, [formData.country, formData.state, formData.city]);
+
   const subtotal = getCartTotal();
   const taxAmount = subtotal * 0.12;
   const total = subtotal + taxAmount + shippingFee;
@@ -298,8 +373,8 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
   // Checkout steps configuration
   const steps = [
     { id: 'order-summary', title: 'Order Summary', icon: ShoppingBag, completed: cartItems.length > 0 },
-    { id: 'customer-info', title: 'Customer Info', icon: User, completed: !!formData.firstName && !!formData.lastName && !!formData.email },
-    { id: 'shipping', title: 'Shipping', icon: MapPin, completed: !!formData.address && !!formData.city && !!formData.zipCode },
+    { id: 'customer-info', title: 'Customer Info', icon: User, completed: !!(formData.firstName && formData.lastName && formData.email && formData.phone) },
+    { id: 'shipping', title: 'Shipping', icon: MapPin, completed: !!(formData.address && formData.city && formData.zipCode && formData.phone) },
     { id: 'payment', title: 'Payment', icon: CreditCard, completed: !!formData.paymentMethod },
     { id: 'review', title: 'Review', icon: Check, completed: false }
   ];
@@ -311,6 +386,17 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
     if (e) {
       e.preventDefault();
       e.stopPropagation();
+    }
+    
+    // Validate current step before proceeding
+    if (!validateCurrentStep()) {
+      const errors = getValidationErrors();
+      toast({
+        variant: "destructive",
+        title: "Please complete all required fields",
+        description: errors.join('\n'),
+      });
+      return;
     }
     
     const nextIndex = currentStepIndex + 1;
@@ -443,6 +529,61 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   <span className="text-gray-600 dark:text-gray-400">Shipping</span>
                   <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
                 </div>
+                
+                {/* Shipping Cost Estimator */}
+                {formData.country === 'Philippines' && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mt-3">
+                    <div className="text-xs text-blue-800 dark:text-blue-200 font-medium mb-2">
+                      💡 Shipping Cost Guide (Philippines)
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      <div className={`text-center p-2 rounded transition-colors ${
+                        ['Cebu', 'Bohol', 'Negros Oriental', 'Siquijor'].includes(formData.state) 
+                          ? 'bg-green-100 dark:bg-green-800 border-2 border-green-300 dark:border-green-600' 
+                          : 'bg-white dark:bg-gray-700'
+                      }`}>
+                        <div className="font-medium text-green-600 dark:text-green-400">Central Visayas</div>
+                        <div className="text-gray-600 dark:text-gray-400">₱150 - ₱200</div>
+                        {['Cebu', 'Bohol', 'Negros Oriental', 'Siquijor'].includes(formData.state) && (
+                          <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">✓ Selected</div>
+                        )}
+                      </div>
+                      <div className={`text-center p-2 rounded transition-colors ${
+                        ['Metro Manila', 'Cavite', 'Laguna', 'Batangas', 'Bulacan', 'Pampanga', 'Nueva Ecija', 'Pangasinan'].includes(formData.state)
+                          ? 'bg-orange-100 dark:bg-orange-800 border-2 border-orange-300 dark:border-orange-600'
+                          : 'bg-white dark:bg-gray-700'
+                      }`}>
+                        <div className="font-medium text-orange-600 dark:text-orange-400">Luzon</div>
+                        <div className="text-gray-600 dark:text-gray-400">₱300 - ₱450</div>
+                        {['Metro Manila', 'Cavite', 'Laguna', 'Batangas', 'Bulacan', 'Pampanga', 'Nueva Ecija', 'Pangasinan'].includes(formData.state) && (
+                          <div className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">✓ Selected</div>
+                        )}
+                      </div>
+                      <div className={`text-center p-2 rounded transition-colors ${
+                        ['Davao del Sur', 'Davao del Norte', 'Davao Oriental', 'Davao de Oro', 'Davao Occidental', 'Misamis Oriental', 'Bukidnon', 'Lanao del Norte', 'Misamis Occidental', 'Camiguin', 'South Cotabato', 'Cotabato', 'Sultan Kudarat', 'Sarangani', 'Agusan del Norte', 'Agusan del Sur', 'Surigao del Norte', 'Surigao del Sur', 'Dinagat Islands', 'Zamboanga del Norte', 'Zamboanga del Sur', 'Zamboanga Sibugay', 'Maguindanao', 'Lanao del Sur', 'Basilan', 'Sulu', 'Tawi-Tawi'].includes(formData.state)
+                          ? 'bg-red-100 dark:bg-red-800 border-2 border-red-300 dark:border-red-600'
+                          : 'bg-white dark:bg-gray-700'
+                      }`}>
+                        <div className="font-medium text-red-600 dark:text-red-400">Mindanao</div>
+                        <div className="text-gray-600 dark:text-gray-400">₱400 - ₱560</div>
+                        {['Davao del Sur', 'Davao del Norte', 'Davao Oriental', 'Davao de Oro', 'Davao Occidental', 'Misamis Oriental', 'Bukidnon', 'Lanao del Norte', 'Misamis Occidental', 'Camiguin', 'South Cotabato', 'Cotabato', 'Sultan Kudarat', 'Sarangani', 'Agusan del Norte', 'Agusan del Sur', 'Surigao del Norte', 'Surigao del Sur', 'Dinagat Islands', 'Zamboanga del Norte', 'Zamboanga del Sur', 'Zamboanga Sibugay', 'Maguindanao', 'Lanao del Sur', 'Basilan', 'Sulu', 'Tawi-Tawi'].includes(formData.state) && (
+                          <div className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">✓ Selected</div>
+                        )}
+                      </div>
+                    </div>
+                    {formData.state && (
+                      <div className="mt-3 p-2 bg-white dark:bg-gray-700 rounded border border-blue-200 dark:border-blue-700">
+                        <div className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                          Selected Province: {formData.state}
+                        </div>
+                        <div className="text-xs text-blue-600 dark:text-blue-400">
+                          Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <div className="flex justify-between text-lg sm:text-xl font-bold border-t border-gray-200 dark:border-gray-700 pt-3">
                   <span className="text-gray-900 dark:text-gray-100">Total</span>
                   <span className="text-blue-600 dark:text-blue-400">{formatPrice(total)}</span>
@@ -474,6 +615,18 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Customer Information</h2>
               <p className="text-gray-600 dark:text-gray-400">Please provide your contact details</p>
             </div>
+
+            {/* Validation Summary */}
+            {currentStep === 'customer-info' && (
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 dark:text-blue-400 text-lg">ℹ️</div>
+                  <div className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Required Fields:</strong> All fields marked with * must be completed before proceeding.
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -524,10 +677,11 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone Number
+                Phone Number *
               </label>
               <input
                 type="tel"
+                required
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
@@ -546,9 +700,21 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
               <p className="text-gray-600 dark:text-gray-400">Where should we deliver your order?</p>
             </div>
 
+            {/* Validation Summary */}
+            {currentStep === 'shipping' && (
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 dark:text-blue-400 text-lg">ℹ️</div>
+                  <div className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Required Fields:</strong> All fields marked with * must be completed before proceeding.
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Address *
+                Shipping Address *
               </label>
               <input
                 type="text"
@@ -556,7 +722,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
-                placeholder="Enter your complete address"
+                placeholder="Enter your complete shipping address"
                 disabled={isProcessing}
               />
             </div>
@@ -564,7 +730,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  City *
+                  City/Municipality *
                 </label>
                 <input
                   type="text"
@@ -572,23 +738,85 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   value={formData.city}
                   onChange={(e) => handleInputChange('city', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
-                  placeholder="City"
+                  placeholder="Enter your city or municipality"
                   disabled={isProcessing}
                 />
               </div>
               
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  State/Province
+                  State/Province *
                 </label>
-                <input
-                  type="text"
-                  value={formData.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
-                  placeholder="State/Province"
-                  disabled={isProcessing}
-                />
+                {formData.country === 'Philippines' ? (
+                  <select
+                    required
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+                    disabled={isProcessing}
+                  >
+                    <option value="">Select Province</option>
+                    <optgroup label="Central Visayas (Business Location)">
+                      <option value="Cebu">Cebu</option>
+                      <option value="Bohol">Bohol</option>
+                      <option value="Negros Oriental">Negros Oriental</option>
+                      <option value="Siquijor">Siquijor</option>
+                    </optgroup>
+                    <optgroup label="Western Visayas">
+                      <option value="Negros Occidental">Negros Occidental</option>
+                      <option value="Iloilo">Iloilo</option>
+                    </optgroup>
+                    <optgroup label="Luzon">
+                      <option value="Metro Manila">Metro Manila</option>
+                      <option value="Cavite">Cavite</option>
+                      <option value="Laguna">Laguna</option>
+                      <option value="Batangas">Batangas</option>
+                      <option value="Bulacan">Bulacan</option>
+                      <option value="Pampanga">Pampanga</option>
+                      <option value="Nueva Ecija">Nueva Ecija</option>
+                      <option value="Pangasinan">Pangasinan</option>
+                    </optgroup>
+                    <optgroup label="Mindanao">
+                      <option value="Davao del Sur">Davao del Sur</option>
+                      <option value="Davao del Norte">Davao del Norte</option>
+                      <option value="Davao Oriental">Davao Oriental</option>
+                      <option value="Davao de Oro">Davao de Oro</option>
+                      <option value="Davao Occidental">Davao Occidental</option>
+                      <option value="Misamis Oriental">Misamis Oriental</option>
+                      <option value="Bukidnon">Bukidnon</option>
+                      <option value="Lanao del Norte">Lanao del Norte</option>
+                      <option value="Misamis Occidental">Misamis Occidental</option>
+                      <option value="Camiguin">Camiguin</option>
+                      <option value="South Cotabato">South Cotabato</option>
+                      <option value="Cotabato">Cotabato</option>
+                      <option value="Sultan Kudarat">Sultan Kudarat</option>
+                      <option value="Sarangani">Sarangani</option>
+                      <option value="Agusan del Norte">Agusan del Norte</option>
+                      <option value="Agusan del Sur">Agusan del Sur</option>
+                      <option value="Surigao del Norte">Surigao del Norte</option>
+                      <option value="Surigao del Sur">Surigao del Sur</option>
+                      <option value="Dinagat Islands">Dinagat Islands</option>
+                      <option value="Zamboanga del Norte">Zamboanga del Norte</option>
+                      <option value="Zamboanga del Sur">Zamboanga del Sur</option>
+                      <option value="Zamboanga Sibugay">Zamboanga Sibugay</option>
+                      <option value="Maguindanao">Maguindanao</option>
+                      <option value="Lanao del Sur">Lanao del Sur</option>
+                      <option value="Basilan">Basilan</option>
+                      <option value="Sulu">Sulu</option>
+                      <option value="Tawi-Tawi">Tawi-Tawi</option>
+                    </optgroup>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                    placeholder="State/Province"
+                    disabled={isProcessing}
+                  />
+                )}
               </div>
               
               <div className="space-y-2">
@@ -601,7 +829,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   value={formData.zipCode}
                   onChange={(e) => handleInputChange('zipCode', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
-                  placeholder="ZIP Code"
+                  placeholder="Enter your ZIP code"
                   disabled={isProcessing}
                 />
               </div>
@@ -618,16 +846,11 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
                 disabled={isProcessing}
               >
-                <option value="Philippines">Philippines</option>
-                <option value="United States">United States</option>
-                <option value="Canada">Canada</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-                <option value="Germany">Germany</option>
-                <option value="France">France</option>
-                <option value="Japan">Japan</option>
-                <option value="Singapore">Singapore</option>
-                <option value="Other">Other</option>
+                <option value="Philippines">🇵🇭 Philippines</option>
+                <option value="United States">🇺🇸 United States</option>
+                <option value="Canada">🇨🇦 Canada</option>
+                <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                <option value="Australia">🇦🇺 Australia</option>
               </select>
             </div>
 
@@ -636,9 +859,33 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 <Truck className="w-5 h-5 mr-2" />
                 Shipping Method
               </h3>
+              
+              {/* Shipping Info Banner */}
+              {formData.country === 'Philippines' && (
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <div className="text-green-600 dark:text-green-400 text-lg">📍</div>
+                    <div className="text-sm text-green-800 dark:text-green-200">
+                      <strong>Business Location:</strong> Central Visayas (Cebu)<br />
+                      <span className="text-xs">Rates are based on distance from our location</span>
+                      {formData.state && (
+                        <div className="mt-2 p-2 bg-white dark:bg-gray-700 rounded border border-green-200 dark:border-green-700">
+                          <div className="text-xs font-medium text-green-700 dark:text-green-300">
+                            Current Selection: {formData.state}
+                          </div>
+                          <div className="text-xs text-green-600 dark:text-green-400">
+                            Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="space-y-3">
-                {getShippingMethods(formData.country, formData.state, formData.city).map((method) => (
-                  <label key={method.id} className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                {availableShippingMethods.map((method) => (
+                  <label key={`${method.id}-${formData.state}-${formData.city}`} className="flex items-center space-x-3 cursor-pointer p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <input
                       type="radio"
                       name="shippingMethod"
@@ -649,18 +896,66 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                       disabled={isProcessing}
                     />
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {method.name}
+                      <div className="flex items-center space-x-2">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {method.name}
+                        </div>
+                        {method.id === 'overnight' && (
+                          <span className="px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-full">
+                            Fastest
+                          </span>
+                        )}
+                        {method.id === 'express' && (
+                          <span className="px-2 py-1 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full">
+                            Express
+                          </span>
+                        )}
+                        {method.id === 'standard' && (
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full">
+                            Standard
+                          </span>
+                        )}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         {method.description}
                       </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        📅 {method.estimated_days}
+                      </div>
+                      {formData.country === 'Philippines' && formData.state && (
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          📍 {formData.state} → Central Visayas
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      {formatPrice(method.price)}
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        {formatPrice(method.price)}
+                      </div>
+                      {method.id === 'standard' && method.price === 150 && (
+                        <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                          Local Rate
+                        </div>
+                      )}
+                      {method.id === 'standard' && method.price > 150 && formData.country === 'Philippines' && (
+                        <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                          Distance Rate
+                        </div>
+                      )}
                     </div>
                   </label>
                 ))}
+              </div>
+              
+              {/* Shipping Note */}
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-gray-500 dark:text-gray-400 text-sm">ℹ️</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    <strong>Note:</strong> Delivery times may vary during holidays and peak seasons. 
+                    {formData.country === 'Philippines' && ' Free shipping available for orders over ₱1,000 to Central Visayas.'}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -673,6 +968,18 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Payment Method</h2>
               <p className="text-gray-600 dark:text-gray-400">Choose how you'd like to pay</p>
             </div>
+
+            {/* Validation Summary */}
+            {currentStep === 'payment' && (
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <div className="text-blue-600 dark:text-blue-400 text-lg">ℹ️</div>
+                  <div className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Required:</strong> Please select a payment method before proceeding.
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <label className="flex items-center space-x-4 cursor-pointer p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -763,6 +1070,38 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   <div>{formData.city}, {formData.state} {formData.zipCode}</div>
                   <div>{formData.country}</div>
                 </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                <Truck className="w-5 h-5 mr-2" />
+                Shipping Details
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Method:</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-medium">
+                    {availableShippingMethods.find(m => m.id === formData.shippingMethod)?.name || 'Standard Shipping'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Delivery Time:</span>
+                  <span className="text-gray-900 dark:text-gray-100">
+                    {availableShippingMethods.find(m => m.id === formData.shippingMethod)?.estimated_days || '3-5 business days'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Shipping Cost:</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-medium">{formatPrice(shippingFee)}</span>
+                </div>
+                {formData.country === 'Philippines' && (
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="text-xs text-blue-800 dark:text-blue-200">
+                      📍 Shipping from Central Visayas (Cebu) to {formData.state}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
