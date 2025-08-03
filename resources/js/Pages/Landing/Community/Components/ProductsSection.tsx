@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ProductFilterPanel from './ProductFilterPanel';
 import ProductCartSummary from './ProductCartSummary';
 import ProductGrid from './ProductGrid';
-import ProductCheckoutDialog from './ProductCheckoutDialog';
+
 import ProductOrderHistory from './ProductOrderHistory';
 import ProductDetail from './ProductDetail';
 
@@ -86,7 +86,7 @@ export default function ProductsSection({ products, appCurrency, member, contact
   });
   const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
   const [variantErrors, setVariantErrors] = useState<Record<number, string>>({});
-  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+
 
 
 
@@ -275,7 +275,8 @@ export default function ProductsSection({ products, appCurrency, member, contact
   };
 
   const handleCheckout = () => {
-    setShowCheckoutDialog(true);
+    // Navigate to full checkout page
+    window.location.href = `/m/${member.identifier || member.id}/checkout`;
   };
 
 
@@ -475,21 +476,7 @@ export default function ProductsSection({ products, appCurrency, member, contact
         memberIdentifier={member.identifier || member.id}
       />
 
-        {/* Checkout Dialog */}
-        <ProductCheckoutDialog
-          isOpen={showCheckoutDialog}
-          onClose={() => setShowCheckoutDialog(false)}
-          cartItems={cartItems}
-          products={products}
-          getEffectivePrice={getEffectivePrice}
-          formatPrice={formatPrice}
-          getCartTotal={getCartTotal}
-          getCartItemCount={getCartItemCount}
-          clearCart={clearCart}
-          removeFromCart={removeFromCart}
-          updateCartQuantity={updateCartQuantity}
-          member={member}
-        />
+
 
 
         </>

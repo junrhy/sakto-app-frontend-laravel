@@ -573,6 +573,56 @@ class CommunityController extends Controller
         }
     }
 
+    public function checkout($identifier)
+    {
+        // Check if identifier is a UUID (36 characters with hyphens in specific positions)
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $identifier)) {
+            // Search by identifier (UUID)
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+        
+        if (!$member) {
+            abort(404, 'Member not found');
+        }
+
+        // Fetch products from backend API
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products", [
+                    'client_identifier' => $member->identifier
+                ]);
+            if ($response->successful()) {
+                $products = $response->json();
+            } else {
+                $products = [];
+            }
+        } catch (\Exception $e) {
+            $products = [];
+        }
+
+        return Inertia::render('Landing/Community/Checkout', [
+            'products' => $products,
+            'member' => [
+                'id' => $member->id,
+                'identifier' => $member->identifier, // Use the actual UUID identifier
+                'name' => $member->name,
+            ],
+            'appCurrency' => json_decode($member->app_currency) ?? null,
+        ]);
+    }
+
     public function sendSignUpLink(Request $request)
     {
         $validator = Validator::make($request->all(), [
