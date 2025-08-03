@@ -514,6 +514,192 @@ class CommunityController extends Controller
         }
     }
 
+    public function getUserProducts($identifier, Request $request)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if(preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        $contactId = $request->query('contact_id');
+        
+        if (!$contactId) {
+            return response()->json(['error' => 'Contact ID is required'], 400);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products", [
+                    'client_identifier' => $member->identifier,
+                    'contact_products' => true,
+                    'contact_id' => $contactId
+                ]);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json(['error' => 'Failed to fetch products'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while fetching products'], 500);
+        }
+    }
+
+    public function createUserProduct(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if(preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        // Validate the request
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'category' => 'required|string|max:255',
+            'type' => 'required|string|in:physical,digital,service,subscription',
+            'sku' => 'nullable|string|max:255',
+            'stock_quantity' => 'nullable|integer|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'dimensions' => 'nullable|string|max:255',
+            'status' => 'required|string|in:draft,published,archived,inactive',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
+            'contact_id' => 'nullable|integer',
+        ]);
+
+        // Add client identifier
+        $validated['client_identifier'] = $member->identifier;
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/products", $validated);
+
+            if ($response->successful()) {
+                return response()->json($response->json(), 201);
+            } else {
+                return response()->json(['error' => 'Failed to create product'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while creating the product'], 500);
+        }
+    }
+
+    public function deleteUserProduct($identifier, $productId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if(preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/products/{$productId}");
+
+            if ($response->successful()) {
+                return response()->json(['message' => 'Product deleted successfully']);
+            } else {
+                return response()->json(['error' => 'Failed to delete product'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while deleting the product'], 500);
+        }
+    }
+
+    public function updateUserProduct(Request $request, $identifier, $productId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if(preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/products/{$productId}", $request->all());
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json(['error' => 'Failed to update product'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while updating the product'], 500);
+        }
+    }
+
     public function productDetail($identifier, $productId)
     {
         // Check if identifier is numeric (ID) or string (slug)
@@ -675,4 +861,6 @@ class CommunityController extends Controller
             ], 500);
         }
     }
+
+
 } 

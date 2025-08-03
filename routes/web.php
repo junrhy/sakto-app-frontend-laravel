@@ -214,6 +214,10 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/community/member/{identifier}', [CommunityController::class, 'member'])->name('community.member');
     Route::get('/m/{identifier}/product/{productId}', [CommunityController::class, 'productDetail'])->name('member.product.detail');
+    Route::get('/m/{identifier}/products', [CommunityController::class, 'getUserProducts'])->name('member.products.list');
+    Route::post('/m/{identifier}/products', [CommunityController::class, 'createUserProduct'])->name('member.products.create');
+    Route::delete('/m/{identifier}/products/{productId}', [CommunityController::class, 'deleteUserProduct'])->name('member.products.delete');
+    Route::put('/m/{identifier}/products/{productId}', [CommunityController::class, 'updateUserProduct'])->name('member.products.update');
     Route::get('/m/{identifier}/checkout', [CommunityController::class, 'checkout'])->name('member.checkout');
     Route::post('/m/{identifier}/cancel-order/{orderId}', [CommunityController::class, 'cancelOrder'])->name('member.cancel-order');
     Route::get('/m/{identifier}/search-lending', [CommunityController::class, 'searchLendingRecords'])->name('member.search-lending');

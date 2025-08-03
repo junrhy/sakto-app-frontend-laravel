@@ -121,6 +121,7 @@ class ProductController extends Controller
             'variants.*.attributes' => 'required_with:variants|array|min:1',
             'variants.*.attributes.*' => 'string|max:255',
             'variants.*.thumbnail' => 'nullable|image|max:2048',
+            'contact_id' => 'nullable|integer',
         ]);
 
         // Handle file uploads for digital products
@@ -135,6 +136,11 @@ class ProductController extends Controller
 
         $clientIdentifier = auth()->user()->identifier;
         $validated['client_identifier'] = $clientIdentifier;
+        
+        // Add contact_id if provided
+        if (isset($validated['contact_id'])) {
+            $validated['contact_id'] = $validated['contact_id'];
+        }
         
         // Extract variants data before sending to API
         $variants = $validated['variants'] ?? null;
@@ -877,4 +883,8 @@ class ProductController extends Controller
             return response()->json(['error' => 'An error occurred while updating report status'], 500);
         }
     }
+
+
+
+
 }
