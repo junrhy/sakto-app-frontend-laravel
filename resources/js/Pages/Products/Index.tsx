@@ -469,7 +469,7 @@ export default function Index({ auth, products, currency }: Props) {
             product.sku || '',
             product.category,
             getTypeLabel(product.type),
-            `${currency.symbol}${product.price.toFixed(2)}`,
+            `${currency.symbol}${(Number(product.price) || 0).toFixed(2)}`,
             product.stock_quantity || 'N/A',
             product.status,
             format(new Date(product.updated_at), 'PPP')
