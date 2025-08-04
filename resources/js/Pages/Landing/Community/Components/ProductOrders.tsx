@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Input } from '@/Components/ui/input';
 import {
   Calendar,
   Package,
@@ -22,7 +23,8 @@ import {
   X,
   Filter,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Search
 } from 'lucide-react';
 
 interface OrderItem {
@@ -87,6 +89,9 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   // Filter states
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Expanded cards state
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
@@ -217,6 +222,24 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   // Get filtered orders for export
   const getFilteredOrdersForExport = () => {
     let filteredOrders = [...allOrders];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filteredOrders = filteredOrders.filter(order => {
+        return (
+          order.order_number.toLowerCase().includes(query) ||
+          order.customer_name.toLowerCase().includes(query) ||
+          order.customer_email.toLowerCase().includes(query) ||
+          (order.customer_phone && order.customer_phone.toLowerCase().includes(query)) ||
+          (order.shipping_address && order.shipping_address.toLowerCase().includes(query)) ||
+          (order.billing_address && order.billing_address.toLowerCase().includes(query)) ||
+          (order.payment_method && order.payment_method.toLowerCase().includes(query)) ||
+          (order.payment_reference && order.payment_reference.toLowerCase().includes(query)) ||
+          (order.notes && order.notes.toLowerCase().includes(query))
+        );
+      });
+    }
 
     // Apply order status filter
     if (orderStatusFilter !== 'all') {
@@ -357,7 +380,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
       link.click();
       document.body.removeChild(link);
       
-      const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') ? ' (filtered)' : '';
+      const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) ? ' (filtered)' : '';
       setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to CSV${filterText}`);
     } catch (err) {
       console.error('CSV Export Error:', err);
@@ -435,7 +458,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
          link.click();
          document.body.removeChild(link);
          
-         const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') ? ' (filtered)' : '';
+         const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) ? ' (filtered)' : '';
          setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to Excel${filterText}`);
        } catch (importError) {
          setError('Excel export requires the xlsx package. Please install it: npm install xlsx');
@@ -483,10 +506,11 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     setCurrentPage(1);
   }, [orderStatusFilter, paymentStatusFilter]);
 
-  // Clear all filters
+  // Clear all filters and search
   const clearFilters = () => {
     setOrderStatusFilter('all');
     setPaymentStatusFilter('all');
+    setSearchQuery('');
   };
 
   // Toggle card expansion
@@ -508,6 +532,24 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   // Filter and paginate orders on the frontend
   const getFilteredAndPaginatedOrders = () => {
     let filteredOrders = [...allOrders];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filteredOrders = filteredOrders.filter(order => {
+        return (
+          order.order_number.toLowerCase().includes(query) ||
+          order.customer_name.toLowerCase().includes(query) ||
+          order.customer_email.toLowerCase().includes(query) ||
+          (order.customer_phone && order.customer_phone.toLowerCase().includes(query)) ||
+          (order.shipping_address && order.shipping_address.toLowerCase().includes(query)) ||
+          (order.billing_address && order.billing_address.toLowerCase().includes(query)) ||
+          (order.payment_method && order.payment_method.toLowerCase().includes(query)) ||
+          (order.payment_reference && order.payment_reference.toLowerCase().includes(query)) ||
+          (order.notes && order.notes.toLowerCase().includes(query))
+        );
+      });
+    }
 
     // Apply order status filter
     if (orderStatusFilter !== 'all') {
@@ -548,13 +590,13 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     fetchOrders();
   }, [contactId, member.identifier, member.id, productId]);
 
-  // Update filtered orders when filters or page changes
+  // Update filtered orders when filters, search, or page changes
   useEffect(() => {
     if (allOrders.length > 0) {
       const filteredOrders = getFilteredAndPaginatedOrders();
       setOrders(filteredOrders);
     }
-  }, [allOrders, orderStatusFilter, paymentStatusFilter, currentPage]);
+  }, [allOrders, orderStatusFilter, paymentStatusFilter, searchQuery, currentPage]);
 
   // Auto-dismiss success message
   useEffect(() => {
@@ -631,7 +673,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
         <div className="flex items-center space-x-2">
           <ShoppingBag className="w-5 h-5 text-primary" />
           <span className="font-medium">Orders ({totalOrders})</span>
-          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') && (
+          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) && (
             <Badge variant="secondary" className="text-xs">
               Filtered
             </Badge>
@@ -687,9 +729,14 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             <Filter className="w-4 h-4 text-primary" />
             <span className="font-medium text-sm">Filters</span>
           </div>
-          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') && (
+          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) && (
             <div className="flex items-center space-x-2">
               <span className="text-xs text-muted-foreground">Active:</span>
+              {searchQuery.trim() && (
+                <Badge variant="outline" className="text-xs">
+                  Search: "{searchQuery}"
+                </Badge>
+              )}
               {orderStatusFilter !== 'all' && (
                 <Badge variant="outline" className="text-xs">
                   Order: {getStatusInfo(orderStatusFilter).label}
@@ -703,6 +750,21 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             </div>
           )}
         </div>
+        
+        {/* Search Input */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="Search orders by number, customer, email, phone, address, payment method, reference, or notes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">Order Status</label>
