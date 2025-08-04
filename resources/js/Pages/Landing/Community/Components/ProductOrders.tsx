@@ -15,7 +15,10 @@ import {
   ShoppingBag,
   AlertCircle,
   FileText,
-  CreditCard
+  CreditCard,
+  Download,
+  FileSpreadsheet,
+  X
 } from 'lucide-react';
 
 interface OrderItem {
@@ -70,9 +73,12 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   const [orders, setOrders] = useState<ProductOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const [allOrders, setAllOrders] = useState<ProductOrder[]>([]);
 
   // Format price with currency
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -197,6 +203,248 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     return order.order_items.filter(item => item.is_target_product);
   };
 
+  // Fetch all orders for export (without pagination)
+  const fetchAllOrders = async () => {
+    if (!contactId) return [];
+
+    try {
+      const params = new URLSearchParams({
+        client_identifier: member.identifier || member.id.toString(),
+        contact_id: contactId.toString(),
+        per_page: '1000' // Get all orders
+      });
+
+      console.log('Fetching all orders with params:', params.toString());
+      const response = await fetch(`/m/${member.identifier || member.id}/products/${productId}/orders?${params}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched orders data:', data);
+        return data.data || [];
+      } else {
+        console.error('Failed to fetch orders, status:', response.status);
+        return [];
+      }
+    } catch (err) {
+      console.error('Failed to fetch all orders for export:', err);
+      return [];
+    }
+  };
+
+  // Export to CSV
+  const exportToCSV = async () => {
+    setExporting(true);
+    try {
+      const allOrdersData = await fetchAllOrders();
+      console.log('Orders data for CSV export:', allOrdersData);
+      
+      if (allOrdersData.length === 0) {
+        setError('No orders to export');
+        return;
+      }
+
+      const currencySymbol = appCurrency?.symbol || '$';
+      
+      // CSV Headers
+      const headers = [
+        'Order Number',
+        'Order Date',
+        'Customer Name',
+        'Customer Email',
+        'Customer Phone',
+        'Shipping Address',
+        'Billing Address',
+        'Order Status',
+        'Payment Status',
+        'Payment Method',
+        'Payment Reference',
+        'Product Quantity',
+        'Product Price',
+        'Product Revenue',
+        'Order Subtotal',
+        'Tax Amount',
+        'Shipping Fee',
+        'Discount Amount',
+        'Order Total',
+        'Paid At',
+        'Shipped At',
+        'Delivered At',
+        'Notes'
+      ];
+
+      // Helper function to safely format numbers
+      const safeNumberFormat = (value: number | null | undefined): string => {
+        if (value === null || value === undefined || isNaN(value)) {
+          return `${currencySymbol}0.00`;
+        }
+        return `${currencySymbol}${Number(value).toFixed(2)}`;
+      };
+
+      // Helper function to escape CSV values
+      const escapeCSVValue = (value: any): string => {
+        if (value === null || value === undefined) {
+          return '';
+        }
+        const stringValue = String(value);
+        // Escape quotes and wrap in quotes if contains comma, quote, or newline
+        const escaped = stringValue.replace(/"/g, '""');
+        if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n') || escaped.includes('\r')) {
+          return `"${escaped}"`;
+        }
+        return escaped;
+      };
+
+      // CSV Data
+      const csvData = allOrdersData.map((order: ProductOrder) => {
+        try {
+          const targetItems = getTargetProductItems(order);
+          const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
+          const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+          const targetPrice = targetItems[0]?.price || 0;
+
+          const row = [
+            escapeCSVValue(order.order_number),
+            escapeCSVValue(formatDate(order.created_at)),
+            escapeCSVValue(order.customer_name),
+            escapeCSVValue(order.customer_email),
+            escapeCSVValue(order.customer_phone || ''),
+            escapeCSVValue(order.shipping_address || ''),
+            escapeCSVValue(order.billing_address || ''),
+            escapeCSVValue(getStatusInfo(order.order_status).label),
+            escapeCSVValue(getPaymentStatusInfo(order.payment_status).label),
+            escapeCSVValue(order.payment_method || ''),
+            escapeCSVValue(order.payment_reference || ''),
+            escapeCSVValue(targetQuantity),
+            escapeCSVValue(safeNumberFormat(targetPrice)),
+            escapeCSVValue(safeNumberFormat(targetRevenue)),
+            escapeCSVValue(safeNumberFormat(order.subtotal)),
+            escapeCSVValue(safeNumberFormat(order.tax_amount)),
+            escapeCSVValue(safeNumberFormat(order.shipping_fee)),
+            escapeCSVValue(safeNumberFormat(order.discount_amount)),
+            escapeCSVValue(safeNumberFormat(order.total_amount)),
+            escapeCSVValue(order.paid_at ? formatDate(order.paid_at) : ''),
+            escapeCSVValue(order.shipped_at ? formatDate(order.shipped_at) : ''),
+            escapeCSVValue(order.delivered_at ? formatDate(order.delivered_at) : ''),
+            escapeCSVValue(order.notes || '')
+          ];
+          
+          console.log('CSV row for order', order.order_number, ':', row);
+          return row;
+        } catch (rowError) {
+          console.error('Error processing order for CSV:', order.order_number, rowError);
+          throw rowError;
+        }
+      });
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map((row: any[]) => row.join(','))
+      ].join('\n');
+
+      // Add BOM for proper UTF-8 encoding in Excel
+      const BOM = '\uFEFF';
+      const csvWithBOM = BOM + csvContent;
+
+      // Download file
+      const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `product-orders-${productId}-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to CSV`);
+    } catch (err) {
+      console.error('CSV Export Error:', err);
+      setError(`Failed to export orders to CSV: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Export to Excel (XLSX)
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      const allOrdersData = await fetchAllOrders();
+      if (allOrdersData.length === 0) {
+        setError('No orders to export');
+        return;
+      }
+
+      // Check if xlsx library is available
+      try {
+        const XLSX = await import('xlsx');
+        const currencySymbol = appCurrency?.symbol || '$';
+        
+        // Prepare data for Excel
+        const excelData = allOrdersData.map((order: ProductOrder) => {
+          const targetItems = getTargetProductItems(order);
+          const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
+          const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+          const targetPrice = targetItems[0]?.price || 0;
+
+          return {
+            'Order Number': order.order_number,
+            'Order Date': formatDate(order.created_at),
+            'Customer Name': order.customer_name,
+            'Customer Email': order.customer_email,
+            'Customer Phone': order.customer_phone || '',
+            'Shipping Address': order.shipping_address || '',
+            'Billing Address': order.billing_address || '',
+            'Order Status': getStatusInfo(order.order_status).label,
+            'Payment Status': getPaymentStatusInfo(order.payment_status).label,
+            'Payment Method': order.payment_method || '',
+            'Payment Reference': order.payment_reference || '',
+            'Product Quantity': targetQuantity,
+            'Product Price': targetPrice,
+            'Product Revenue': targetRevenue,
+            'Order Subtotal': order.subtotal,
+            'Tax Amount': order.tax_amount,
+            'Shipping Fee': order.shipping_fee,
+            'Discount Amount': order.discount_amount,
+            'Order Total': order.total_amount,
+            'Paid At': order.paid_at ? formatDate(order.paid_at) : '',
+            'Shipped At': order.shipped_at ? formatDate(order.shipped_at) : '',
+            'Delivered At': order.delivered_at ? formatDate(order.delivered_at) : '',
+            'Notes': order.notes || ''
+          };
+        });
+
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+
+        // Generate and download file
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+                 link.setAttribute('download', `product-orders-${productId}-${new Date().toISOString().split('T')[0]}.xlsx`);
+         link.style.visibility = 'hidden';
+         document.body.appendChild(link);
+         link.click();
+         document.body.removeChild(link);
+         
+         setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to Excel`);
+       } catch (importError) {
+         setError('Excel export requires the xlsx package. Please install it: npm install xlsx');
+       }
+     } catch (err) {
+       setError('Failed to export orders to Excel');
+     } finally {
+       setExporting(false);
+     }
+  };
+
   // Fetch orders
   const fetchOrders = async () => {
     if (!contactId) {
@@ -234,6 +482,17 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     fetchOrders();
   }, [contactId, member.identifier, member.id, productId, currentPage]);
 
+  // Auto-dismiss success message
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000); // Auto-dismiss after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   if (!contactId) {
     return (
       <div className="text-center text-muted-foreground py-8">
@@ -267,19 +526,79 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
 
   return (
     <div className="space-y-4">
+      {/* Success Message */}
+      {successMessage && (
+        <div className="relative p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 rounded-lg">
+          <p className="text-sm pr-8">{successMessage}</p>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="absolute top-2 right-2 text-green-400 hover:text-green-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="relative p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg">
+          <p className="text-sm pr-8">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            className="absolute top-2 right-2 text-destructive hover:text-destructive/80"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Simple Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <ShoppingBag className="w-5 h-5 text-primary" />
           <span className="font-medium">Orders ({totalOrders})</span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchOrders}
-        >
-          <RefreshCw className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          {totalOrders > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToCSV}
+                disabled={exporting}
+                title="Export to CSV"
+              >
+                {exporting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                <span className="ml-2">CSV</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToExcel}
+                disabled={exporting}
+                title="Export to Excel"
+              >
+                {exporting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                ) : (
+                  <FileSpreadsheet className="w-4 h-4" />
+                )}
+                <span className="ml-2">Excel</span>
+              </Button>
+            </>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchOrders}
+          >
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Orders List */}
