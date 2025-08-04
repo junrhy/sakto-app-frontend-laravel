@@ -6,6 +6,7 @@ import {
   PHILIPPINE_SHIPPING_RATES, 
   INTERNATIONAL_SHIPPING_RATES, 
   getShippingMethods, 
+  getBaseShippingMethods,
   calculateShippingFee,
   type ShippingMethod 
 } from '@/config/shipping-rates';
@@ -141,6 +142,16 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
       if (!product) return total;
       const price = getEffectivePrice(product, item.variant);
       return total + (price * item.quantity);
+    }, 0);
+  };
+
+  // Helper function to get total weight of cart items
+  const getCartTotalWeight = () => {
+    return cartItems.reduce((total, item) => {
+      const product = products.find(p => p.id === item.id);
+      if (!product) return total;
+      const weight = item.variant?.weight || product.weight || 0;
+      return total + (weight * item.quantity);
     }, 0);
   };
 
@@ -351,25 +362,36 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
     return product.thumbnail_url;
   };
 
-  // Calculate shipping fee per item
-  const shippingFeePerItem = useMemo(() => {
+  // Calculate shipping fee for each item individually
+  const getItemShippingFee = (item: CartItem): number => {
+    const product = products.find(p => p.id === item.id);
+    if (!product) return 0;
+    
+    const itemWeight = (item.variant?.weight || product.weight || 0) * item.quantity;
     return calculateShippingFee(
       formData.country,
       formData.state,
       formData.city,
-      formData.shippingMethod
+      formData.shippingMethod,
+      itemWeight
     );
-  }, [formData.country, formData.state, formData.city, formData.shippingMethod]);
+  };
 
-  // Calculate total shipping fee based on number of items
+  // Calculate total shipping fee by summing individual item shipping fees
   const shippingFee = useMemo(() => {
-    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-    return shippingFeePerItem * totalItems;
-  }, [shippingFeePerItem, cartItems]);
+    return cartItems.reduce((total, item) => {
+      return total + getItemShippingFee(item);
+    }, 0);
+  }, [cartItems, formData.country, formData.state, formData.city, formData.shippingMethod]);
 
-  // Get available shipping methods
+  // Calculate total weight of cart
+  const cartTotalWeight = useMemo(() => {
+    return getCartTotalWeight();
+  }, [cartItems]);
+
+  // Get available shipping methods (base rates for display)
   const availableShippingMethods = useMemo(() => {
-    return getShippingMethods(formData.country, formData.state, formData.city);
+    return getBaseShippingMethods(formData.country, formData.state, formData.city);
   }, [formData.country, formData.state, formData.city]);
 
   const subtotal = getCartTotal();
@@ -533,14 +555,17 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 </div>
                 <div className="flex justify-between text-base sm:text-lg">
                   <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                  <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)} ({formatPrice(shippingFeePerItem)} per item)</span>
+                  <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                  <span>Total Weight: {cartTotalWeight.toFixed(2)} kg</span>
                 </div>
                 
                 {/* Shipping Cost Estimator */}
                 {formData.country === 'Philippines' && (
                   <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mt-3">
                     <div className="text-xs text-blue-800 dark:text-blue-200 font-medium mb-2">
-                      💡 Shipping Cost Guide (Philippines)
+                      💡 Shipping Cost Guide (Philippines) - Individual Item Weight Based
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div className={`text-center p-2 rounded transition-colors ${
@@ -583,7 +608,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                           Selected Province: {formData.state}
                         </div>
                         <div className="text-xs text-blue-600 dark:text-blue-400">
-                          Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)} per item
+                          Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)} per item (weight-based)
                         </div>
                       </div>
                     )}
@@ -872,18 +897,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   <div className="flex items-start space-x-2">
                     <div className="text-green-600 dark:text-green-400 text-lg">📍</div>
                     <div className="text-sm text-green-800 dark:text-green-200">
-                      <strong>Business Location:</strong> Central Visayas (Cebu)<br />
-                      <span className="text-xs">Rates are based on distance from our location</span>
-                      {formData.state && (
-                        <div className="mt-2 p-2 bg-white dark:bg-gray-700 rounded border border-green-200 dark:border-green-700">
-                          <div className="text-xs font-medium text-green-700 dark:text-green-300">
-                            Current Selection: {formData.state}
-                          </div>
-                          <div className="text-xs text-green-600 dark:text-green-400">
-                            Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)} per item
-                          </div>
-                        </div>
-                      )}
+                      <span className="text-xs">Base shipping rates shown. Final cost calculated per item based on weight and distance.</span>
                     </div>
                   </div>
                 </div>
@@ -936,10 +950,18 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {formatPrice(method.price)} per item
+                        {formatPrice(method.price)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Total: {formatPrice(method.price * getCartItemCount())}
+                        base rate
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Total: {formatPrice(cartItems.reduce((total, item) => {
+                          const product = products.find(p => p.id === item.id);
+                          if (!product) return total;
+                          const itemWeight = (item.variant?.weight || product.weight || 0) * item.quantity;
+                          return total + calculateShippingFee(formData.country, formData.state, formData.city, method.id, itemWeight);
+                        }, 0))}
                       </div>
                       {method.id === 'standard' && method.price === 150 && (
                         <div className="text-xs text-green-600 dark:text-green-400 font-medium">
@@ -962,7 +984,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   <div className="text-gray-500 dark:text-gray-400 text-sm">ℹ️</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
                     <strong>Note:</strong> Delivery times may vary during holidays and peak seasons. 
-                    {formData.country === 'Philippines' && ' Shipping is calculated per item. Free shipping available for orders over ₱1,000 to Central Visayas.'}
+                    {formData.country === 'Philippines' && ' Base shipping rates shown. Final shipping cost is calculated per item based on weight and distance, then summed for the total.'}
                   </div>
                 </div>
               </div>
@@ -1102,7 +1124,11 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Shipping Cost:</span>
-                  <span className="text-gray-900 dark:text-gray-100 font-medium">{formatPrice(shippingFee)} ({formatPrice(shippingFeePerItem)} per item × {getCartItemCount()} items)</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-medium">{formatPrice(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Total Weight:</span>
+                  <span className="text-gray-900 dark:text-gray-100">{cartTotalWeight.toFixed(2)} kg</span>
                 </div>
                 {formData.country === 'Philippines' && (
                   <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -1396,13 +1422,16 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                                   {Object.entries(item.variant.attributes).map(([key, value]) => `${key}: ${value}`).join(', ')}
                                 </div>
                               )}
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                Qty: {item.quantity}
-                              </div>
-                            </div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {formatPrice(totalPrice)}
-                            </div>
+                                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Qty: {item.quantity} • Weight: {((item.variant?.weight || getProductById(item.id)?.weight || 0) * item.quantity).toFixed(2)} kg
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Shipping: {formatPrice(getItemShippingFee(item))}
+                        </div>
+                      </div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {formatPrice(totalPrice)}
+                      </div>
                           </div>
                         );
                       })}
@@ -1420,7 +1449,10 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                        <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)} ({formatPrice(shippingFeePerItem)} per item)</span>
+                        <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <span>Weight: {cartTotalWeight.toFixed(2)} kg</span>
                       </div>
                       <div className="flex justify-between text-lg font-bold border-t border-gray-200 dark:border-gray-700 pt-3">
                         <span className="text-gray-900 dark:text-gray-100">Total</span>

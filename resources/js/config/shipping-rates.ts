@@ -5,6 +5,12 @@ export interface ShippingRate {
   standard_rate: number;
   express_rate: number;
   overnight_rate?: number;
+  weight_tiers?: {
+    max_weight: number; // in kg
+    standard_rate: number;
+    express_rate: number;
+    overnight_rate?: number;
+  }[];
   estimated_days: {
     standard: string;
     express: string;
@@ -18,7 +24,32 @@ export interface ShippingMethod {
   description: string;
   estimated_days: string;
   price: number;
+  weight_tiers?: {
+    max_weight: number;
+    price: number;
+  }[];
 }
+
+// Weight-based shipping tiers (in kg)
+export const WEIGHT_TIERS = [
+  { max_weight: 0.5, multiplier: 1.0, name: "Light (0-0.5kg)" },
+  { max_weight: 1.0, multiplier: 1.2, name: "Small (0.5-1kg)" },
+  { max_weight: 2.0, multiplier: 1.5, name: "Medium (1-2kg)" },
+  { max_weight: 5.0, multiplier: 2.0, name: "Large (2-5kg)" },
+  { max_weight: 10.0, multiplier: 2.5, name: "Heavy (5-10kg)" },
+  { max_weight: Infinity, multiplier: 3.0, name: "Oversized (10kg+)" }
+];
+
+// Helper function to get weight tier for a given weight
+export const getWeightTier = (weight: number): typeof WEIGHT_TIERS[0] => {
+  return WEIGHT_TIERS.find(tier => weight <= tier.max_weight) || WEIGHT_TIERS[WEIGHT_TIERS.length - 1];
+};
+
+// Helper function to calculate weight-adjusted shipping rate
+export const calculateWeightAdjustedRate = (baseRate: number, weight: number): number => {
+  const tier = getWeightTier(weight);
+  return Math.round(baseRate * tier.multiplier);
+};
 
 export const PHILIPPINE_SHIPPING_RATES: ShippingRate[] = [
   // Metro Manila (Far from Cebu)
@@ -643,25 +674,108 @@ export const findShippingRate = (country: string, province: string, city: string
   return rate || null;
 };
 
-export const getShippingMethods = (country: string, province: string, city: string): ShippingMethod[] => {
+export const getShippingMethods = (country: string, province: string, city: string, totalWeight: number = 0): ShippingMethod[] => {
   const rate = findShippingRate(country, province, city);
   
   if (!rate) {
     // Default rates for unknown locations
+    const baseStandardRate = 150;
+    const baseExpressRate = 250;
+    
     return [
       {
         id: 'standard',
         name: 'Standard Shipping',
         description: 'Regular ground shipping',
         estimated_days: '5-7 business days',
-        price: 150
+        price: calculateWeightAdjustedRate(baseStandardRate, totalWeight)
       },
       {
         id: 'express',
         name: 'Express Shipping',
         description: 'Faster delivery service',
         estimated_days: '2-3 business days',
-        price: 250
+        price: calculateWeightAdjustedRate(baseExpressRate, totalWeight)
+      }
+    ];
+  }
+
+  const methods: ShippingMethod[] = [
+    {
+      id: 'standard',
+      name: 'Standard Shipping',
+      description: 'Regular ground shipping',
+      estimated_days: rate.estimated_days.standard,
+      price: calculateWeightAdjustedRate(rate.standard_rate, totalWeight)
+    },
+    {
+      id: 'express',
+      name: 'Express Shipping',
+      description: 'Faster delivery service',
+      estimated_days: rate.estimated_days.express,
+      price: calculateWeightAdjustedRate(rate.express_rate, totalWeight)
+    }
+  ];
+
+  if (rate.overnight_rate) {
+    methods.push({
+      id: 'overnight',
+      name: 'Overnight Shipping',
+      description: 'Next business day delivery',
+      estimated_days: rate.estimated_days.overnight!,
+      price: calculateWeightAdjustedRate(rate.overnight_rate, totalWeight)
+    });
+  }
+
+  return methods;
+};
+
+export const calculateShippingFee = (country: string, province: string, city: string, method: string, totalWeight: number = 0): number => {
+  const rate = findShippingRate(country, province, city);
+  
+  if (!rate) {
+    // Default rates for unknown locations
+    const baseRate = method === 'express' ? 250 : 150;
+    return calculateWeightAdjustedRate(baseRate, totalWeight);
+  }
+
+  let baseRate: number;
+  switch (method) {
+    case 'express':
+      baseRate = rate.express_rate;
+      break;
+    case 'overnight':
+      baseRate = rate.overnight_rate || rate.express_rate;
+      break;
+    default:
+      baseRate = rate.standard_rate;
+  }
+
+  return calculateWeightAdjustedRate(baseRate, totalWeight);
+};
+
+export const getBaseShippingMethods = (country: string, province: string, city: string): ShippingMethod[] => {
+  const rate = findShippingRate(country, province, city);
+  
+  if (!rate) {
+    // Default rates for unknown locations
+    const baseStandardRate = 150;
+    const baseExpressRate = 250;
+    
+    return [
+      {
+        id: 'standard',
+        name: 'Standard Shipping',
+        description: 'Regular ground shipping',
+        estimated_days: '5-7 business days',
+        price: baseStandardRate
+      },
+      {
+        id: 'express',
+        name: 'Express Shipping',
+        description: 'Faster delivery service',
+        estimated_days: '2-3 business days',
+        price: baseExpressRate
       }
     ];
   }
@@ -694,22 +808,4 @@ export const getShippingMethods = (country: string, province: string, city: stri
   }
 
   return methods;
-};
-
-export const calculateShippingFee = (country: string, province: string, city: string, method: string): number => {
-  const rate = findShippingRate(country, province, city);
-  
-  if (!rate) {
-    // Default rates for unknown locations
-    return method === 'express' ? 250 : 150;
-  }
-
-  switch (method) {
-    case 'express':
-      return rate.express_rate;
-    case 'overnight':
-      return rate.overnight_rate || rate.express_rate;
-    default:
-      return rate.standard_rate;
-  }
 }; 
