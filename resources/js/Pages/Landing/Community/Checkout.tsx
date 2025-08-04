@@ -109,6 +109,27 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
     paymentMethod: 'cash_on_delivery'
   });
 
+  // Load visitor information from localStorage and prefill form
+  useEffect(() => {
+    const authData = localStorage.getItem(`visitor_auth_${member.id}`);
+    if (authData) {
+      try {
+        const { visitorInfo } = JSON.parse(authData);
+        if (visitorInfo) {
+          setFormData(prev => ({
+            ...prev,
+            firstName: visitorInfo.firstName || '',
+            lastName: visitorInfo.lastName || '',
+            email: visitorInfo.email || '',
+            phone: visitorInfo.phone || '',
+          }));
+        }
+      } catch (error) {
+        console.error('Error parsing visitor auth data:', error);
+      }
+    }
+  }, [member.id]);
+
   // Helper function to get effective stock
   const getEffectiveStock = (product: Product, variant?: any): number => {
     if (variant) {
@@ -649,11 +670,11 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
 
             {/* Validation Summary */}
             {currentStep === 'customer-info' && (
-              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div className="flex items-start space-x-2">
-                  <div className="text-blue-600 dark:text-blue-400 text-lg">ℹ️</div>
-                  <div className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Required Fields:</strong> All fields marked with * must be completed before proceeding.
+                  <div className="text-green-600 dark:text-green-400 text-lg">✅</div>
+                  <div className="text-sm text-green-800 dark:text-green-200">
+                    <strong>Information Pre-filled:</strong> Your customer information has been automatically filled from your account profile. These fields are locked to prevent accidental changes.
                   </div>
                 </div>
               </div>
@@ -669,9 +690,9 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   required
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors cursor-not-allowed"
                   placeholder="Enter your first name"
-                  disabled={isProcessing}
+                  disabled={true}
                 />
               </div>
               
@@ -684,9 +705,9 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   required
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors cursor-not-allowed"
                   placeholder="Enter your last name"
-                  disabled={isProcessing}
+                  disabled={true}
                 />
               </div>
             </div>
@@ -700,9 +721,9 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 required
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors cursor-not-allowed"
                 placeholder="Enter your email address"
-                disabled={isProcessing}
+                disabled={true}
               />
             </div>
 
@@ -715,9 +736,9 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 required
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors cursor-not-allowed"
                 placeholder="Enter your phone number"
-                disabled={isProcessing}
+                disabled={true}
               />
             </div>
           </div>
@@ -787,7 +808,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                     disabled={isProcessing}
                   >
                     <option value="">Select Province</option>
-                    <optgroup label="Central Visayas (Business Location)">
+                    <optgroup label="Central Visayas">
                       <option value="Cebu">Cebu</option>
                       <option value="Bohol">Bohol</option>
                       <option value="Negros Oriental">Negros Oriental</option>
@@ -878,10 +899,6 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 disabled={isProcessing}
               >
                 <option value="Philippines">🇵🇭 Philippines</option>
-                <option value="United States">🇺🇸 United States</option>
-                <option value="Canada">🇨🇦 Canada</option>
-                <option value="United Kingdom">🇬🇧 United Kingdom</option>
-                <option value="Australia">🇦🇺 Australia</option>
               </select>
             </div>
 
