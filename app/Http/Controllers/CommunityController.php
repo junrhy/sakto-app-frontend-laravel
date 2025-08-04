@@ -811,6 +811,64 @@ class CommunityController extends Controller
         }
     }
 
+    public function deleteProductImage($identifier, $productId, $imageId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        // Check if identifier is a UUID (36 characters with hyphens in specific positions)
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $identifier)) {
+            // Search by identifier (UUID)
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        } elseif (is_numeric($identifier)) {
+            // Search by ID
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            // Search by slug
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            // First, get the image details to delete the file from storage
+            $getResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/products/{$productId}/images/{$imageId}");
+
+            if ($getResponse->successful()) {
+                $image = $getResponse->json();
+                
+                // Delete the image file from storage if it exists
+                if (!empty($image['image_url'])) {
+                    $path = str_replace(\Illuminate\Support\Facades\Storage::disk('public')->url(''), '', $image['image_url']);
+                    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+
+            // Delete the image record from the backend API
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/products/{$productId}/images/{$imageId}");
+
+            if ($response->successful()) {
+                return response()->json(['message' => 'Image deleted successfully']);
+            } else {
+                return response()->json(['error' => 'Failed to delete image'], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while deleting the image'], 500);
+        }
+    }
+
     public function productDetail($identifier, $productId)
     {
         // Check if identifier is numeric (ID) or string (slug)

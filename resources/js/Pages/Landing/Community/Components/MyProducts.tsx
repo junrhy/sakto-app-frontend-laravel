@@ -82,11 +82,14 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   // Edit form state
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deletingImages, setDeletingImages] = useState<Set<number>>(new Set());
   
   // Image gallery state
   const [imageGalleries, setImageGalleries] = useState<Record<number, number>>({}); // productId -> currentImageIndex
@@ -256,10 +259,15 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
 
   // Handle product deletion
   const handleDelete = async (productId: number) => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const productName = product.name;
+    if (!confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
       return;
     }
 
+    setDeleting(true);
     try {
       const response = await fetch(`/m/${member.identifier || member.id}/products/${productId}`, {
         method: 'DELETE',
@@ -271,11 +279,19 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
 
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== productId));
+        // Close edit mode if the deleted product was being edited
+        if (editingProduct === productId) {
+          setEditingProduct(null);
+          clearEditNewImages();
+        }
+        setSuccessMessage(`Product "${productName}" deleted successfully.`);
       } else {
         setError('Failed to delete product');
       }
     } catch (err) {
       setError('An error occurred while deleting the product');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -503,13 +519,55 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   };
 
   // Handle image removal for edit form
-  const handleEditImageRemove = (imageId: number) => {
-    setProducts(prev => prev.map(p => 
-      p.id === editingProduct ? { 
-        ...p, 
-        images: p.images?.filter(img => img.id !== imageId) || []
-      } : p
-    ));
+  const handleEditImageRemove = async (imageId: number) => {
+    if (!editingProduct) return;
+
+    const product = products.find(p => p.id === editingProduct);
+    if (!product) return;
+
+    const image = product.images?.find(img => img.id === imageId);
+    if (!image) return;
+
+    const imageName = image.alt_text || `Image ${imageId}`;
+    if (!confirm(`Are you sure you want to delete "${imageName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    // Add image to deleting set
+    setDeletingImages(prev => new Set(prev).add(imageId));
+
+    try {
+      const response = await fetch(`/m/${member.identifier || member.id}/products/${editingProduct}/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+      });
+
+      if (response.ok) {
+        // Update local state to remove the image
+        setProducts(prev => prev.map(p => 
+          p.id === editingProduct ? { 
+            ...p, 
+            images: p.images?.filter(img => img.id !== imageId) || []
+          } : p
+        ));
+        setSuccessMessage(`Image "${imageName}" deleted successfully`);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to delete image');
+      }
+    } catch (err) {
+      setError('An error occurred while deleting the image');
+    } finally {
+      // Remove image from deleting set
+      setDeletingImages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(imageId);
+        return newSet;
+      });
+    }
   };
 
   // Handle removal of new images (not yet uploaded)
@@ -531,6 +589,17 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       } : p
     ));
   };
+
+  // Auto-dismiss success message
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000); // Auto-dismiss after 5 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   // Fetch user's products
   useEffect(() => {
@@ -614,6 +683,32 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
           {showCreateForm ? 'Cancel' : 'Add Product'}
         </Button>
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="relative p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 rounded-lg">
+          <p className="text-sm pr-8">{successMessage}</p>
+          <button
+            onClick={() => setSuccessMessage(null)}
+            className="absolute top-2 right-2 text-green-400 hover:text-green-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="relative p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg">
+          <p className="text-sm pr-8">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            className="absolute top-2 right-2 text-destructive hover:text-destructive/80"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Create Product Form */}
       {showCreateForm && (
@@ -1062,8 +1157,13 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                         size="sm"
                         onClick={() => handleDelete(product.id)}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 py-1 h-7"
+                        disabled={deleting}
                       >
-                        <Trash2 className="w-3 h-3" />
+                        {deleting ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -1213,9 +1313,14 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                                     <button
                                       type="button"
                                       onClick={() => handleEditImageRemove(image.id)}
-                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+                                      disabled={deletingImages.has(image.id)}
+                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90 disabled:opacity-100"
                                     >
-                                      <X className="w-3 h-3" />
+                                      {deletingImages.has(image.id) ? (
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
+                                      ) : (
+                                        <X className="w-3 h-3" />
+                                      )}
                                     </button>
                                   </div>
                                 ))}
@@ -1290,13 +1395,13 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                             setEditingProduct(null);
                             clearEditNewImages();
                           }}
-                          disabled={updating}
+                          disabled={updating || deleting}
                         >
                           Cancel
                         </Button>
                         <Button
                           type="submit"
-                          disabled={updating}
+                          disabled={updating || deleting}
                         >
                           {updating ? (
                             <>
