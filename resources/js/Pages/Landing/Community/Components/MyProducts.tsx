@@ -21,7 +21,9 @@ import {
   X,
   Save,
   Upload,
-  Image
+  Image,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface Product {
@@ -50,6 +52,7 @@ interface Product {
     is_primary: boolean;
     sort_order: number;
   }>;
+  newImages?: File[]; // For storing new images to be uploaded
   active_variants?: Array<{
     id: number;
     sku?: string;
@@ -84,6 +87,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   const [editingProduct, setEditingProduct] = useState<number | null>(null);
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  
+  // Image gallery state
+  const [imageGalleries, setImageGalleries] = useState<Record<number, number>>({}); // productId -> currentImageIndex
+  const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({}); // productId -> loading state
   
   // Form state for creating new product
   const [newProduct, setNewProduct] = useState({
@@ -155,6 +162,96 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       return sortedImages[0].image_url;
     }
     return product.thumbnail_url;
+  };
+
+  // Get current image for product gallery
+  const getCurrentProductImage = (product: Product): string | null => {
+    if (product.images && product.images.length > 0) {
+      const sortedImages = [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+      const currentIndex = imageGalleries[product.id] || 0;
+      return sortedImages[currentIndex]?.image_url || sortedImages[0]?.image_url;
+    }
+    return product.thumbnail_url;
+  };
+
+  // Get all images for product gallery
+  const getProductImages = (product: Product): Array<{id: number; image_url: string; alt_text?: string}> => {
+    if (product.images && product.images.length > 0) {
+      return [...product.images].sort((a, b) => a.sort_order - b.sort_order);
+    }
+    return [];
+  };
+
+  // Navigate to next image
+  const nextImage = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || product.images.length <= 1) return;
+    
+    const currentIndex = imageGalleries[productId] || 0;
+    const nextIndex = (currentIndex + 1) % product.images.length;
+    console.log(`Next image: Product ${productId}, Current: ${currentIndex}, Next: ${nextIndex}`);
+    setImageLoadingState(productId, true);
+    setImageGalleries(prev => ({ ...prev, [productId]: nextIndex }));
+  };
+
+  // Navigate to previous image
+  const prevImage = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || product.images.length <= 1) return;
+    
+    const currentIndex = imageGalleries[productId] || 0;
+    const prevIndex = currentIndex === 0 ? product.images.length - 1 : currentIndex - 1;
+    console.log(`Prev image: Product ${productId}, Current: ${currentIndex}, Prev: ${prevIndex}`);
+    setImageLoadingState(productId, true);
+    setImageGalleries(prev => ({ ...prev, [productId]: prevIndex }));
+  };
+
+  // Go to specific image
+  const goToImage = (productId: number, index: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || index < 0 || index >= product.images.length) return;
+    
+    console.log(`Go to image: Product ${productId}, Index: ${index}`);
+    setImageLoadingState(productId, true);
+    setImageGalleries(prev => ({ ...prev, [productId]: index }));
+  };
+
+  // Handle keyboard navigation for image galleries
+  const handleImageGalleryKeyDown = (e: React.KeyboardEvent, productId: number) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || product.images.length <= 1) return;
+
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        prevImage(productId);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        nextImage(productId);
+        break;
+      case 'Home':
+        e.preventDefault();
+        goToImage(productId, 0);
+        break;
+      case 'End':
+        e.preventDefault();
+        goToImage(productId, product.images.length - 1);
+        break;
+    }
+  };
+
+  // Handle image loading
+  const handleImageLoad = (productId: number) => {
+    setImageLoading(prev => ({ ...prev, [productId]: false }));
+  };
+
+  const handleImageError = (productId: number) => {
+    setImageLoading(prev => ({ ...prev, [productId]: false }));
+  };
+
+  const setImageLoadingState = (productId: number, loading: boolean) => {
+    setImageLoading(prev => ({ ...prev, [productId]: loading }));
   };
 
   // Handle product deletion
@@ -263,13 +360,6 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
     ));
   };
 
-  // Helper function to convert blob URL to file
-  const blobUrlToFile = async (blobUrl: string, filename: string): Promise<File> => {
-    const response = await fetch(blobUrl);
-    const blob = await response.blob();
-    return new File([blob], filename, { type: blob.type });
-  };
-
   // Handle edit product
   const handleEditProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,23 +395,17 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       });
 
       if (response.ok) {
-        // Check if there are any new images to upload (blob URLs)
-        const newImages = product.images?.filter(img => img.image_url.startsWith('blob:')) || [];
+        // Check if there are any new images to upload
+        const newImages = product.newImages || [];
         
         if (newImages.length > 0) {
-          // Convert blob URLs to files and upload them
+          // Upload the new images
           const formData = new FormData();
           
-          // Convert each blob URL to a file
-          for (let i = 0; i < newImages.length; i++) {
-            const image = newImages[i];
-            try {
-              const file = await blobUrlToFile(image.image_url, image.alt_text || `image-${i}.jpg`);
-              formData.append(`images[${i}]`, file);
-            } catch (err) {
-              console.error('Failed to convert blob URL to file:', err);
-            }
-          }
+          // Add each new image file to the form data
+          newImages.forEach((file, index) => {
+            formData.append(`images[${index}]`, file);
+          });
 
           // Upload the images
           const imageUploadResponse = await fetch(`/m/${member.identifier || member.id}/products/${editingProduct}/images`, {
@@ -338,6 +422,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
         }
 
         setEditingProduct(null);
+        // Clear newImages after successful update
+        setProducts(prev => prev.map(p => 
+          p.id === editingProduct ? { ...p, newImages: [] } : p
+        ));
         // Refresh the products list to get the updated data
         const refreshResponse = await fetch(`/m/${member.identifier || member.id}/products?contact_id=${contactId}`);
         if (refreshResponse.ok) {
@@ -404,18 +492,11 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      // For edit form, we'll need to handle this differently since we're updating existing products
-      // For now, we'll just add them to the product's images array
+      // Store the actual files for later upload
       setProducts(prev => prev.map(p => 
         p.id === editingProduct ? { 
           ...p, 
-          images: [...(p.images || []), ...files.map((file, index) => ({
-            id: Date.now() + index, // Temporary ID
-            image_url: URL.createObjectURL(file),
-            alt_text: file.name,
-            is_primary: false,
-            sort_order: (p.images?.length || 0) + index
-          }))]
+          newImages: [...(p.newImages || []), ...files]
         } : p
       ));
     }
@@ -427,6 +508,26 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       p.id === editingProduct ? { 
         ...p, 
         images: p.images?.filter(img => img.id !== imageId) || []
+      } : p
+    ));
+  };
+
+  // Handle removal of new images (not yet uploaded)
+  const handleEditNewImageRemove = (index: number) => {
+    setProducts(prev => prev.map(p => 
+      p.id === editingProduct ? { 
+        ...p, 
+        newImages: p.newImages?.filter((_, i) => i !== index) || []
+      } : p
+    ));
+  };
+
+  // Clear new images when editing is cancelled
+  const clearEditNewImages = () => {
+    setProducts(prev => prev.map(p => 
+      p.id === editingProduct ? { 
+        ...p, 
+        newImages: []
       } : p
     ));
   };
@@ -444,6 +545,14 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
         if (response.ok) {
           const data = await response.json();
           setProducts(data);
+          // Set initial loading state for all products with images
+          const initialLoadingState: Record<number, boolean> = {};
+          data.forEach((product: Product) => {
+            if (product.images && product.images.length > 0) {
+              initialLoadingState[product.id] = true;
+            }
+          });
+          setImageLoading(initialLoadingState);
         } else {
           setError('Failed to fetch products');
         }
@@ -748,24 +857,116 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
           {products.map((product) => (
             <div key={product.id}>
               <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                {/* Product Image */}
-                <div className="aspect-square bg-muted relative">
-                  {getProductImage(product) ? (
-                    <img
-                      src={getProductImage(product)!}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
+                {/* Product Image Gallery */}
+                <div 
+                  className={`aspect-square bg-muted relative group ${
+                    getProductImages(product).length > 1 ? 'cursor-pointer' : ''
+                  }`}
+                  tabIndex={getProductImages(product).length > 1 ? 0 : -1}
+                  onKeyDown={(e) => handleImageGalleryKeyDown(e, product.id)}
+                  onClick={() => {
+                    if (getProductImages(product).length > 1) {
+                      nextImage(product.id);
+                    }
+                  }}
+                  role={getProductImages(product).length > 1 ? "region" : undefined}
+                  aria-label={getProductImages(product).length > 1 ? `Product images for ${product.name}` : undefined}
+                >
+                  {getCurrentProductImage(product) ? (
+                    <>
+                      <img
+                        src={getCurrentProductImage(product)!}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onLoad={() => handleImageLoad(product.id)}
+                        onError={() => handleImageError(product.id)}
+                      />
+                      {imageLoading[product.id] && (
+                        <div className="absolute inset-0 bg-muted/50 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <Package className="w-8 h-8 text-muted-foreground" />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2">
+                  
+                  {/* Status Badge */}
+                  <div className="absolute top-2 right-2 z-10">
                     <Badge className={`${getStatusColor(product.status)} border`}>
                       {product.status}
                     </Badge>
                   </div>
+
+                  {/* Image Navigation Arrows */}
+                  {getProductImages(product).length > 1 && (
+                    <>
+                      {console.log(`Product ${product.id} has ${getProductImages(product).length} images`)}
+                      {/* Previous Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevImage(product.id);
+                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all duration-200 z-10 shadow-lg"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      
+                      {/* Next Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextImage(product.id);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all duration-200 z-10 shadow-lg"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Image Indicators */}
+                  {getProductImages(product).length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                      {getProductImages(product).map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            goToImage(product.id, index);
+                          }}
+                          className={`w-3 h-3 rounded-full transition-all duration-200 shadow-lg ${
+                            (imageGalleries[product.id] || 0) === index
+                              ? 'bg-white scale-110'
+                              : 'bg-white/60 hover:bg-white/80 hover:scale-110'
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                          aria-current={(imageGalleries[product.id] || 0) === index ? "true" : "false"}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Image Counter */}
+                  {getProductImages(product).length > 1 && (
+                    <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-md z-10 shadow-lg font-medium">
+                      {(imageGalleries[product.id] || 0) + 1} / {getProductImages(product).length}
+                    </div>
+                  )}
+
+                  {/* Multiple Images Indicator */}
+                  {getProductImages(product).length > 1 && (
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 pointer-events-none">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        Click to browse images
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <CardContent className="p-3">
@@ -829,7 +1030,18 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingProduct(editingProduct === product.id ? null : product.id)}
+                        onClick={() => {
+                          if (editingProduct === product.id) {
+                            setEditingProduct(null);
+                            clearEditNewImages();
+                          } else {
+                            setEditingProduct(product.id);
+                            // Clear any existing newImages when starting to edit
+                            setProducts(prev => prev.map(p => 
+                              p.id === product.id ? { ...p, newImages: [] } : p
+                            ));
+                          }
+                        }}
                         className="flex-1 text-xs px-2 py-1 h-7"
                       >
                         {editingProduct === product.id ? (
@@ -1010,6 +1222,31 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                               </div>
                             </div>
                           )}
+
+                          {/* New Images to be uploaded */}
+                          {product.newImages && product.newImages.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-medium text-foreground mb-2">New Images to Upload:</h4>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {product.newImages.map((file, index) => (
+                                  <div key={index} className="relative group">
+                                    <img
+                                      src={URL.createObjectURL(file)}
+                                      alt={file.name}
+                                      className="w-full h-20 object-cover rounded-lg border border-border"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleEditNewImageRemove(index)}
+                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           
                           {/* Upload New Images */}
                           <div className="flex items-center justify-center w-full">
@@ -1049,7 +1286,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => setEditingProduct(null)}
+                          onClick={() => {
+                            setEditingProduct(null);
+                            clearEditNewImages();
+                          }}
                           disabled={updating}
                         >
                           Cancel
