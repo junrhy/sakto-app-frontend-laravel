@@ -351,8 +351,8 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
     return product.thumbnail_url;
   };
 
-  // Calculate shipping fee
-  const shippingFee = useMemo(() => {
+  // Calculate shipping fee per item
+  const shippingFeePerItem = useMemo(() => {
     return calculateShippingFee(
       formData.country,
       formData.state,
@@ -360,6 +360,12 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
       formData.shippingMethod
     );
   }, [formData.country, formData.state, formData.city, formData.shippingMethod]);
+
+  // Calculate total shipping fee based on number of items
+  const shippingFee = useMemo(() => {
+    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+    return shippingFeePerItem * totalItems;
+  }, [shippingFeePerItem, cartItems]);
 
   // Get available shipping methods
   const availableShippingMethods = useMemo(() => {
@@ -527,7 +533,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 </div>
                 <div className="flex justify-between text-base sm:text-lg">
                   <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                  <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
+                  <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)} ({formatPrice(shippingFeePerItem)} per item)</span>
                 </div>
                 
                 {/* Shipping Cost Estimator */}
@@ -543,7 +549,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                           : 'bg-white dark:bg-gray-700'
                       }`}>
                         <div className="font-medium text-green-600 dark:text-green-400">Central Visayas</div>
-                        <div className="text-gray-600 dark:text-gray-400">₱150 - ₱200</div>
+                        <div className="text-gray-600 dark:text-gray-400">₱150 - ₱200 per item</div>
                         {['Cebu', 'Bohol', 'Negros Oriental', 'Siquijor'].includes(formData.state) && (
                           <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">✓ Selected</div>
                         )}
@@ -554,7 +560,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                           : 'bg-white dark:bg-gray-700'
                       }`}>
                         <div className="font-medium text-orange-600 dark:text-orange-400">Luzon</div>
-                        <div className="text-gray-600 dark:text-gray-400">₱300 - ₱450</div>
+                        <div className="text-gray-600 dark:text-gray-400">₱300 - ₱450 per item</div>
                         {['Metro Manila', 'Cavite', 'Laguna', 'Batangas', 'Bulacan', 'Pampanga', 'Nueva Ecija', 'Pangasinan'].includes(formData.state) && (
                           <div className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">✓ Selected</div>
                         )}
@@ -565,7 +571,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                           : 'bg-white dark:bg-gray-700'
                       }`}>
                         <div className="font-medium text-red-600 dark:text-red-400">Mindanao</div>
-                        <div className="text-gray-600 dark:text-gray-400">₱400 - ₱560</div>
+                        <div className="text-gray-600 dark:text-gray-400">₱400 - ₱560 per item</div>
                         {['Davao del Sur', 'Davao del Norte', 'Davao Oriental', 'Davao de Oro', 'Davao Occidental', 'Misamis Oriental', 'Bukidnon', 'Lanao del Norte', 'Misamis Occidental', 'Camiguin', 'South Cotabato', 'Cotabato', 'Sultan Kudarat', 'Sarangani', 'Agusan del Norte', 'Agusan del Sur', 'Surigao del Norte', 'Surigao del Sur', 'Dinagat Islands', 'Zamboanga del Norte', 'Zamboanga del Sur', 'Zamboanga Sibugay', 'Maguindanao', 'Lanao del Sur', 'Basilan', 'Sulu', 'Tawi-Tawi'].includes(formData.state) && (
                           <div className="text-xs text-red-600 dark:text-red-400 font-medium mt-1">✓ Selected</div>
                         )}
@@ -577,7 +583,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                           Selected Province: {formData.state}
                         </div>
                         <div className="text-xs text-blue-600 dark:text-blue-400">
-                          Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)}
+                          Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)} per item
                         </div>
                       </div>
                     )}
@@ -874,7 +880,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                             Current Selection: {formData.state}
                           </div>
                           <div className="text-xs text-green-600 dark:text-green-400">
-                            Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)}
+                            Standard Rate: {formatPrice(availableShippingMethods.find(m => m.id === 'standard')?.price || 0)} per item
                           </div>
                         </div>
                       )}
@@ -930,7 +936,10 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                        {formatPrice(method.price)}
+                        {formatPrice(method.price)} per item
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Total: {formatPrice(method.price * getCartItemCount())}
                       </div>
                       {method.id === 'standard' && method.price === 150 && (
                         <div className="text-xs text-green-600 dark:text-green-400 font-medium">
@@ -953,7 +962,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                   <div className="text-gray-500 dark:text-gray-400 text-sm">ℹ️</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
                     <strong>Note:</strong> Delivery times may vary during holidays and peak seasons. 
-                    {formData.country === 'Philippines' && ' Free shipping available for orders over ₱1,000 to Central Visayas.'}
+                    {formData.country === 'Philippines' && ' Shipping is calculated per item. Free shipping available for orders over ₱1,000 to Central Visayas.'}
                   </div>
                 </div>
               </div>
@@ -1093,7 +1102,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Shipping Cost:</span>
-                  <span className="text-gray-900 dark:text-gray-100 font-medium">{formatPrice(shippingFee)}</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-medium">{formatPrice(shippingFee)} ({formatPrice(shippingFeePerItem)} per item × {getCartItemCount()} items)</span>
                 </div>
                 {formData.country === 'Philippines' && (
                   <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -1411,7 +1420,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                        <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
+                        <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)} ({formatPrice(shippingFeePerItem)} per item)</span>
                       </div>
                       <div className="flex justify-between text-lg font-bold border-t border-gray-200 dark:border-gray-700 pt-3">
                         <span className="text-gray-900 dark:text-gray-100">Total</span>
