@@ -3,6 +3,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import {
   Calendar,
   Package,
@@ -18,7 +19,8 @@ import {
   CreditCard,
   Download,
   FileSpreadsheet,
-  X
+  X,
+  Filter
 } from 'lucide-react';
 
 interface OrderItem {
@@ -71,6 +73,7 @@ interface ProductOrdersProps {
 
 export default function ProductOrders({ member, appCurrency, contactId, productId }: ProductOrdersProps) {
   const [orders, setOrders] = useState<ProductOrder[]>([]);
+  const [allOrders, setAllOrders] = useState<ProductOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -78,7 +81,10 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [exporting, setExporting] = useState(false);
-  const [allOrders, setAllOrders] = useState<ProductOrder[]>([]);
+  
+  // Filter states
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
 
   // Format price with currency
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -203,39 +209,28 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     return order.order_items.filter(item => item.is_target_product);
   };
 
-  // Fetch all orders for export (without pagination)
-  const fetchAllOrders = async () => {
-    if (!contactId) return [];
+  // Get filtered orders for export
+  const getFilteredOrdersForExport = () => {
+    let filteredOrders = [...allOrders];
 
-    try {
-      const params = new URLSearchParams({
-        client_identifier: member.identifier || member.id.toString(),
-        contact_id: contactId.toString(),
-        per_page: '1000' // Get all orders
-      });
-
-      console.log('Fetching all orders with params:', params.toString());
-      const response = await fetch(`/m/${member.identifier || member.id}/products/${productId}/orders?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched orders data:', data);
-        return data.data || [];
-      } else {
-        console.error('Failed to fetch orders, status:', response.status);
-        return [];
-      }
-    } catch (err) {
-      console.error('Failed to fetch all orders for export:', err);
-      return [];
+    // Apply order status filter
+    if (orderStatusFilter !== 'all') {
+      filteredOrders = filteredOrders.filter(order => order.order_status === orderStatusFilter);
     }
+
+    // Apply payment status filter
+    if (paymentStatusFilter !== 'all') {
+      filteredOrders = filteredOrders.filter(order => order.payment_status === paymentStatusFilter);
+    }
+
+    return filteredOrders;
   };
 
   // Export to CSV
   const exportToCSV = async () => {
     setExporting(true);
     try {
-      const allOrdersData = await fetchAllOrders();
+      const allOrdersData = getFilteredOrdersForExport();
       console.log('Orders data for CSV export:', allOrdersData);
       
       if (allOrdersData.length === 0) {
@@ -357,7 +352,8 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
       link.click();
       document.body.removeChild(link);
       
-      setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to CSV`);
+      const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') ? ' (filtered)' : '';
+      setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to CSV${filterText}`);
     } catch (err) {
       console.error('CSV Export Error:', err);
       setError(`Failed to export orders to CSV: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -370,7 +366,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   const exportToExcel = async () => {
     setExporting(true);
     try {
-      const allOrdersData = await fetchAllOrders();
+      const allOrdersData = getFilteredOrdersForExport();
       if (allOrdersData.length === 0) {
         setError('No orders to export');
         return;
@@ -434,7 +430,8 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
          link.click();
          document.body.removeChild(link);
          
-         setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to Excel`);
+         const filterText = (orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') ? ' (filtered)' : '';
+         setSuccessMessage(`Successfully exported ${allOrdersData.length} orders to Excel${filterText}`);
        } catch (importError) {
          setError('Excel export requires the xlsx package. Please install it: npm install xlsx');
        }
@@ -445,7 +442,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
      }
   };
 
-  // Fetch orders
+  // Fetch all orders
   const fetchOrders = async () => {
     if (!contactId) {
       setLoading(false);
@@ -457,16 +454,15 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
       const params = new URLSearchParams({
         client_identifier: member.identifier || member.id.toString(),
         contact_id: contactId.toString(),
-        page: currentPage.toString(),
-        per_page: '15'
+        per_page: '1000' // Get all orders for client-side filtering
       });
 
       const response = await fetch(`/m/${member.identifier || member.id}/products/${productId}/orders?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setOrders(data.data || []);
-        setTotalPages(data.last_page || 1);
-        setTotalOrders(data.total || 0);
+        const fetchedOrders = data.data || [];
+        setAllOrders(fetchedOrders);
+        setTotalOrders(fetchedOrders.length);
       } else {
         setError('Failed to fetch orders');
       }
@@ -477,10 +473,67 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     }
   };
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orderStatusFilter, paymentStatusFilter]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setOrderStatusFilter('all');
+    setPaymentStatusFilter('all');
+  };
+
+  // Filter and paginate orders on the frontend
+  const getFilteredAndPaginatedOrders = () => {
+    let filteredOrders = [...allOrders];
+
+    // Apply order status filter
+    if (orderStatusFilter !== 'all') {
+      filteredOrders = filteredOrders.filter(order => order.order_status === orderStatusFilter);
+    }
+
+    // Apply payment status filter
+    if (paymentStatusFilter !== 'all') {
+      filteredOrders = filteredOrders.filter(order => order.payment_status === paymentStatusFilter);
+    }
+
+    // Update total count
+    setTotalOrders(filteredOrders.length);
+
+    // Calculate pagination
+    const itemsPerPage = 15;
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    setTotalPages(totalPages);
+
+    // Ensure current page is within bounds
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+
+    // Get paginated results
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredOrders.slice(startIndex, endIndex);
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orderStatusFilter, paymentStatusFilter]);
+
   // Fetch orders on component mount and when dependencies change
   useEffect(() => {
     fetchOrders();
-  }, [contactId, member.identifier, member.id, productId, currentPage]);
+  }, [contactId, member.identifier, member.id, productId]);
+
+  // Update filtered orders when filters or page changes
+  useEffect(() => {
+    if (allOrders.length > 0) {
+      const filteredOrders = getFilteredAndPaginatedOrders();
+      setOrders(filteredOrders);
+    }
+  }, [allOrders, orderStatusFilter, paymentStatusFilter, currentPage]);
 
   // Auto-dismiss success message
   useEffect(() => {
@@ -557,6 +610,11 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
         <div className="flex items-center space-x-2">
           <ShoppingBag className="w-5 h-5 text-primary" />
           <span className="font-medium">Orders ({totalOrders})</span>
+          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') && (
+            <Badge variant="secondary" className="text-xs">
+              Filtered
+            </Badge>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           {totalOrders > 0 && (
@@ -598,6 +656,77 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
           >
             <RefreshCw className="w-4 h-4" />
           </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-muted/30 rounded-lg p-4 border">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-primary" />
+            <span className="font-medium text-sm">Filters</span>
+          </div>
+          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all') && (
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-muted-foreground">Active:</span>
+              {orderStatusFilter !== 'all' && (
+                <Badge variant="outline" className="text-xs">
+                  Order: {getStatusInfo(orderStatusFilter).label}
+                </Badge>
+              )}
+              {paymentStatusFilter !== 'all' && (
+                <Badge variant="outline" className="text-xs">
+                  Payment: {getPaymentStatusInfo(paymentStatusFilter).label}
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">Order Status</label>
+            <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All order statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Order Statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="shipped">Shipped</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="refunded">Refunded</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">Payment Status</label>
+            <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All payment statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Payment Statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="refunded">Refunded</SelectItem>
+                <SelectItem value="partially_refunded">Partially Refunded</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="w-full"
+            >
+              Clear Filters
+            </Button>
+          </div>
         </div>
       </div>
 
