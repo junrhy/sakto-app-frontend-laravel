@@ -109,22 +109,22 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
     }
     const numericPrice = typeof price === 'string' ? parseFloat(price) || 0 : price;
     const symbol = appCurrency?.symbol || '$';
-    return `${symbol}${numericPrice.toFixed(2)}`;
+    return `${symbol}${numericPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'published':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800';
       case 'draft':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
       case 'archived':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
       case 'inactive':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -459,8 +459,8 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
 
   if (!contactId) {
     return (
-      <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-        <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="text-center text-muted-foreground py-12">
+        <svg className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
         <p className="text-lg font-medium">Authentication Required</p>
@@ -472,15 +472,15 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">Loading your products...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="text-muted-foreground mt-2">Loading your products...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500 dark:text-red-400 py-12">
+      <div className="text-center text-destructive py-12">
         <p className="text-lg font-medium">Error</p>
         <p className="text-sm">{error}</p>
       </div>
@@ -492,14 +492,14 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">My Products</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <h2 className="text-lg font-semibold text-foreground">My Products</h2>
+          <p className="text-sm text-muted-foreground">
             Manage your products and track their performance
           </p>
         </div>
         <Button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium"
+          className="inline-flex items-center px-4 py-2"
         >
           {showCreateForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
           {showCreateForm ? 'Cancel' : 'Add Product'}
@@ -515,8 +515,8 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
           <CardContent>
             <form onSubmit={handleCreateProduct} className="space-y-4">
               {createError && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <p className="text-red-600 dark:text-red-400 text-sm">{createError}</p>
+                <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg">
+                  <p className="text-sm">{createError}</p>
                 </div>
               )}
               
@@ -638,13 +638,13 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                 <Label htmlFor="images">Product Images</Label>
                 <div className="mt-2">
                   <div className="flex items-center justify-center w-full">
-                    <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
+                    <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                        <p className="mb-2 text-sm text-muted-foreground">
                           <span className="font-semibold">Click to upload</span> or drag and drop
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 10MB</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
                       </div>
                       <input
                         id="image-upload"
@@ -660,19 +660,19 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                   {/* Display uploaded images */}
                   {newProduct.images.length > 0 && (
                     <div className="mt-4">
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Uploaded Images:</h4>
+                      <h4 className="text-sm font-medium text-foreground mb-2">Uploaded Images:</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         {newProduct.images.map((image, index) => (
                           <div key={index} className="relative group">
                             <img
                               src={URL.createObjectURL(image)}
                               alt={`Preview ${index + 1}`}
-                              className="w-full h-20 object-cover rounded-lg"
+                              className="w-full h-20 object-cover rounded-lg border border-border"
                             />
                             <button
                               type="button"
                               onClick={() => handleImageRemove(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -708,11 +708,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                 <Button
                   type="submit"
                   disabled={creating}
-                  className="bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600"
                 >
                   {creating ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                       Creating...
                     </>
                   ) : (
@@ -730,15 +729,15 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
 
       {/* Products Grid */}
       {products.length === 0 ? (
-        <div className="text-center text-gray-500 dark:text-gray-400 py-12">
-          <svg className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center text-muted-foreground py-12">
+          <svg className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
           </svg>
           <p className="text-lg font-medium">No products yet</p>
           <p className="text-sm mb-4">Start by adding your first product to the marketplace</p>
           <Button
             onClick={() => setShowCreateForm(true)}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium"
+            className="inline-flex items-center"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Your First Product
@@ -748,9 +747,9 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map((product) => (
             <div key={product.id}>
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                 {/* Product Image */}
-                <div className="aspect-square bg-gray-100 dark:bg-gray-800 relative">
+                <div className="aspect-square bg-muted relative">
                   {getProductImage(product) ? (
                     <img
                       src={getProductImage(product)!}
@@ -759,11 +758,11 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <Package className="w-8 h-8 text-gray-400" />
+                      <Package className="w-8 h-8 text-muted-foreground" />
                     </div>
                   )}
                   <div className="absolute top-2 right-2">
-                    <Badge className={getStatusColor(product.status)}>
+                    <Badge className={`${getStatusColor(product.status)} border`}>
                       {product.status}
                     </Badge>
                   </div>
@@ -773,10 +772,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                   {/* Product Info */}
                   <div className="space-y-2">
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-1 text-sm">
+                      <h3 className="font-semibold text-foreground line-clamp-1 text-sm">
                         {product.name}
                       </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                         {product.description}
                       </p>
                     </div>
@@ -784,22 +783,22 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1">
                         {getTypeIcon(product.type)}
-                        <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                        <span className="text-xs text-muted-foreground capitalize">
                           {product.type}
                         </span>
                       </div>
-                      <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      <div className="text-sm font-semibold text-foreground">
                         {formatPrice(product.price)}
                       </div>
                     </div>
 
                     {/* Stock Info */}
                     {product.stock_quantity !== null && (
-                      <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                         <Package className="w-3 h-3" />
                         <span>
                           {product.stock_quantity > 0 
-                            ? `${product.stock_quantity} in stock`
+                            ? `${product.stock_quantity.toLocaleString()} in stock`
                             : 'Out of stock'
                           }
                         </span>
@@ -850,7 +849,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(product.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 px-2 py-1 h-7"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 py-1 h-7"
                       >
                         <Trash2 className="w-3 h-3" />
                       </Button>
@@ -868,7 +867,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                   <CardContent>
                     <form onSubmit={handleEditProduct} className="space-y-4">
                       {updateError && (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
+                        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
                           {updateError}
                         </div>
                       )}
@@ -990,19 +989,19 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                           {/* Current Images */}
                           {product.images && product.images.length > 0 && (
                             <div className="mb-4">
-                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Images:</h4>
+                              <h4 className="text-sm font-medium text-foreground mb-2">Current Images:</h4>
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 {product.images.map((image) => (
                                   <div key={image.id} className="relative group">
                                     <img
                                       src={image.image_url}
                                       alt={image.alt_text || 'Product image'}
-                                      className="w-full h-20 object-cover rounded-lg"
+                                      className="w-full h-20 object-cover rounded-lg border border-border"
                                     />
                                     <button
                                       type="button"
                                       onClick={() => handleEditImageRemove(image.id)}
-                                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
                                     >
                                       <X className="w-3 h-3" />
                                     </button>
@@ -1014,13 +1013,13 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                           
                           {/* Upload New Images */}
                           <div className="flex items-center justify-center w-full">
-                            <label htmlFor={`edit-image-upload-${product.id}`} className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
+                            <label htmlFor={`edit-image-upload-${product.id}`} className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
                               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                                <p className="mb-2 text-sm text-muted-foreground">
                                   <span className="font-semibold">Click to upload</span> or drag and drop
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 10MB</p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
                               </div>
                               <input
                                 id={`edit-image-upload-${product.id}`}
@@ -1058,11 +1057,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                         <Button
                           type="submit"
                           disabled={updating}
-                          className="bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600"
                         >
                           {updating ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
                               Updating...
                             </>
                           ) : (
