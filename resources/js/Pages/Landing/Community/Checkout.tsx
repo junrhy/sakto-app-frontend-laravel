@@ -326,8 +326,9 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
         subtotal: getCartTotal(),
         tax_amount: getCartTotal() * 0.12,
         shipping_fee: shippingFee,
+        service_fee: serviceFee,
         discount_amount: 0,
-        total_amount: getCartTotal() * 1.12 + shippingFee,
+        total_amount: getCartTotal() * 1.12 + shippingFee + serviceFee,
         payment_method: formData.paymentMethod === 'cash_on_delivery' ? 'cod' : formData.paymentMethod,
         notes: formData.notes,
         client_identifier: member?.identifier || member?.id?.toString() || '',
@@ -417,7 +418,8 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
 
   const subtotal = getCartTotal();
   const taxAmount = subtotal * 0.12;
-  const total = subtotal + taxAmount + shippingFee;
+  const serviceFee = subtotal * 0.10; // 10% of subtotal service fee
+  const total = subtotal + taxAmount + shippingFee + serviceFee;
 
   // Checkout steps configuration
   const steps = [
@@ -577,6 +579,10 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                 <div className="flex justify-between text-base sm:text-lg">
                   <span className="text-gray-600 dark:text-gray-400">Shipping</span>
                   <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between text-base sm:text-lg">
+                  <span className="text-gray-600 dark:text-gray-400">Service Fee</span>
+                  <span className="text-gray-900 dark:text-gray-100">{formatPrice(serviceFee)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                   <span>Total Weight: {cartTotalWeight.toFixed(2)} kg</span>
@@ -1467,6 +1473,10 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600 dark:text-gray-400">Shipping</span>
                         <span className="text-gray-900 dark:text-gray-100">{formatPrice(shippingFee)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Service Fee</span>
+                        <span className="text-gray-900 dark:text-gray-100">{formatPrice(serviceFee)}</span>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
                         <span>Weight: {cartTotalWeight.toFixed(2)} kg</span>
