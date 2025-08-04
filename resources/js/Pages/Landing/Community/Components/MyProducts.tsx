@@ -103,6 +103,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
   const [selectedProductForOrders, setSelectedProductForOrders] = useState<Product | null>(null);
   
+  // Product orders state
+  const [productOrdersCount, setProductOrdersCount] = useState<Record<number, number>>({});
+  const [loadingOrdersCount, setLoadingOrdersCount] = useState(false);
+  
   // Form state for creating new product
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -287,6 +291,12 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
 
       if (response.ok) {
         setProducts(prev => prev.filter(p => p.id !== productId));
+        // Remove from product orders count
+        setProductOrdersCount(prev => {
+          const newCounts = { ...prev };
+          delete newCounts[productId];
+          return newCounts;
+        });
         // Close edit mode if the deleted product was being edited
         if (editingProduct === productId) {
           setEditingProduct(null);
@@ -351,6 +361,8 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       if (response.ok) {
         const createdProduct = await response.json();
         setProducts(prev => [createdProduct, ...prev]);
+        // Initialize order count for new product
+        setProductOrdersCount(prev => ({ ...prev, [createdProduct.id]: 0 }));
         setShowCreateForm(false);
         setNewProduct({
           name: '',
@@ -609,6 +621,44 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
     }
   }, [successMessage]);
 
+  // Fetch order count for a product
+  const fetchProductOrderCount = async (productId: number) => {
+    if (!contactId) return;
+
+    try {
+      const params = new URLSearchParams({
+        client_identifier: member.identifier || member.id.toString(),
+        contact_id: contactId.toString(),
+        page: '1',
+        per_page: '1' // We only need to know if there are any orders
+      });
+
+      const response = await fetch(`/m/${member.identifier || member.id}/products/${productId}/orders?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        const totalOrders = data.total || 0;
+        setProductOrdersCount(prev => ({ ...prev, [productId]: totalOrders }));
+      }
+    } catch (err) {
+      console.error(`Failed to fetch order count for product ${productId}:`, err);
+    }
+  };
+
+  // Fetch order counts for all products
+  const fetchAllProductOrderCounts = async () => {
+    if (!contactId || products.length === 0) return;
+
+    setLoadingOrdersCount(true);
+    try {
+      const promises = products.map(product => fetchProductOrderCount(product.id));
+      await Promise.all(promises);
+    } catch (err) {
+      console.error('Failed to fetch product order counts:', err);
+    } finally {
+      setLoadingOrdersCount(false);
+    }
+  };
+
   // Fetch user's products
   useEffect(() => {
     const fetchProducts = async () => {
@@ -642,6 +692,13 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
 
     fetchProducts();
   }, [contactId, member.identifier, member.id]);
+
+  // Fetch order counts when products are loaded
+  useEffect(() => {
+    if (products.length > 0 && !loading) {
+      fetchAllProductOrderCounts();
+    }
+  }, [products, loading, contactId, member.identifier, member.id]);
 
 
 
@@ -1111,6 +1168,21 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                           </div>
                         )}
 
+                        {/* Orders Info */}
+                        {loadingOrdersCount ? (
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-muted-foreground"></div>
+                            <span>Loading orders...</span>
+                          </div>
+                        ) : productOrdersCount[product.id] > 0 ? (
+                          <div className="flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400">
+                            <ShoppingCart className="w-3 h-3" />
+                            <span>
+                              {productOrdersCount[product.id]} order{productOrdersCount[product.id] === 1 ? '' : 's'}
+                            </span>
+                          </div>
+                        ) : null}
+
                         {/* Actions */}
                         <div className="flex items-center space-x-1 pt-2">
                           <Button
@@ -1178,9 +1250,24 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(product.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 py-1 h-7"
-                            disabled={deleting}
+                            onClick={() => {
+                              if (productOrdersCount[product.id] > 0) {
+                                setError(`Cannot delete "${product.name}" because it has ${productOrdersCount[product.id]} order${productOrdersCount[product.id] === 1 ? '' : 's'}.`);
+                                return;
+                              }
+                              handleDelete(product.id);
+                            }}
+                            className={`px-2 py-1 h-7 ${
+                              productOrdersCount[product.id] > 0
+                                ? 'text-muted-foreground cursor-not-allowed opacity-50'
+                                : 'text-destructive hover:text-destructive hover:bg-destructive/10'
+                            }`}
+                            disabled={deleting || productOrdersCount[product.id] > 0}
+                            title={
+                              productOrdersCount[product.id] > 0
+                                ? `Cannot delete product with ${productOrdersCount[product.id]} order${productOrdersCount[product.id] === 1 ? '' : 's'}`
+                                : 'Delete product'
+                            }
                           >
                             {deleting ? (
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
@@ -1451,7 +1538,16 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
         )}
 
         {/* Orders Dialog */}
-        <Dialog open={ordersDialogOpen} onOpenChange={setOrdersDialogOpen}>
+        <Dialog 
+          open={ordersDialogOpen} 
+          onOpenChange={(open) => {
+            setOrdersDialogOpen(open);
+            // Refresh order count when dialog is closed
+            if (!open && selectedProductForOrders) {
+              fetchProductOrderCount(selectedProductForOrders.id);
+            }
+          }}
+        >
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center">
