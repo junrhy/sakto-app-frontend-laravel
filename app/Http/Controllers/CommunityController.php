@@ -869,6 +869,46 @@ class CommunityController extends Controller
         }
     }
 
+    public function getOrdersForProduct($identifier, $productId, Request $request)
+    {
+        try {
+            $params = $request->all();
+            $params['client_identifier'] = $identifier;
+            
+            \Log::info('Fetching orders for product from API', [
+                'identifier' => $identifier,
+                'product_id' => $productId,
+                'params' => $params
+            ]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/product-orders/product/{$productId}", $params);
+            
+            \Log::info('API response for product orders', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body_length' => strlen($response->body())
+            ]);
+            
+            if (!$response->successful()) {
+                \Log::error('Failed to fetch product orders', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                return response()->json(['error' => 'Failed to fetch orders for this product'], 500);
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            \Log::error('Exception in getOrdersForProduct', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['error' => 'An error occurred while fetching orders for this product'], 500);
+        }
+    }
+
     public function productDetail($identifier, $productId)
     {
         // Check if identifier is numeric (ID) or string (slug)

@@ -261,6 +261,8 @@ class ProductOrderController extends Controller
         }
     }
 
+
+
     public function checkout()
     {
         $jsonAppCurrency = json_decode(auth()->user()->app_currency);

@@ -220,6 +220,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::put('/m/{identifier}/products/{productId}', [CommunityController::class, 'updateUserProduct'])->name('member.products.update');
     Route::post('/m/{identifier}/products/{productId}/images', [CommunityController::class, 'uploadProductImages'])->name('member.products.images.upload');
     Route::delete('/m/{identifier}/products/{productId}/images/{imageId}', [CommunityController::class, 'deleteProductImage'])->name('member.products.images.delete');
+    Route::get('/m/{identifier}/products/{productId}/orders', [CommunityController::class, 'getOrdersForProduct'])->name('member.products.orders');
     Route::get('/m/{identifier}/checkout', [CommunityController::class, 'checkout'])->name('member.checkout');
     Route::post('/m/{identifier}/cancel-order/{orderId}', [CommunityController::class, 'cancelOrder'])->name('member.cancel-order');
     Route::get('/m/{identifier}/search-lending', [CommunityController::class, 'searchLendingRecords'])->name('member.search-lending');

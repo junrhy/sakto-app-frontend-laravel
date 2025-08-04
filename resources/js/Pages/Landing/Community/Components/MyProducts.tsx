@@ -7,6 +7,8 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { 
   Plus, 
   Edit, 
@@ -23,8 +25,10 @@ import {
   Upload,
   Image,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ShoppingCart
 } from 'lucide-react';
+import ProductOrders from './ProductOrders';
 
 interface Product {
   id: number;
@@ -94,6 +98,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
   // Image gallery state
   const [imageGalleries, setImageGalleries] = useState<Record<number, number>>({}); // productId -> currentImageIndex
   const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({}); // productId -> loading state
+  
+  // Orders dialog state
+  const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
+  const [selectedProductForOrders, setSelectedProductForOrders] = useState<Product | null>(null);
   
   // Form state for creating new product
   const [newProduct, setNewProduct] = useState({
@@ -635,6 +643,8 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
     fetchProducts();
   }, [contactId, member.identifier, member.id]);
 
+
+
   if (!contactId) {
     return (
       <div className="text-center text-muted-foreground py-12">
@@ -931,7 +941,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
         </Card>
       )}
 
-      {/* Products Grid */}
+      {/* Products Tabs */}
       {products.length === 0 ? (
         <div className="text-center text-muted-foreground py-12">
           <svg className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -948,482 +958,517 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <div key={product.id}>
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                {/* Product Image Gallery */}
-                <div 
-                  className={`aspect-square bg-muted relative group ${
-                    getProductImages(product).length > 1 ? 'cursor-pointer' : ''
-                  }`}
-                  tabIndex={getProductImages(product).length > 1 ? 0 : -1}
-                  onKeyDown={(e) => handleImageGalleryKeyDown(e, product.id)}
-                  onClick={() => {
-                    if (getProductImages(product).length > 1) {
-                      nextImage(product.id);
-                    }
-                  }}
-                  role={getProductImages(product).length > 1 ? "region" : undefined}
-                  aria-label={getProductImages(product).length > 1 ? `Product images for ${product.name}` : undefined}
-                >
-                  {getCurrentProductImage(product) ? (
-                    <>
-                      <img
-                        src={getCurrentProductImage(product)!}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onLoad={() => handleImageLoad(product.id)}
-                        onError={() => handleImageError(product.id)}
-                      />
-                      {imageLoading[product.id] && (
-                        <div className="absolute inset-0 bg-muted/50 flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Package className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                  )}
-                  
-                  {/* Status Badge */}
-                  <div className="absolute top-2 right-2 z-10">
-                    <Badge className={`${getStatusColor(product.status)} border`}>
-                      {product.status}
-                    </Badge>
-                  </div>
-
-                  {/* Image Navigation Arrows */}
-                  {getProductImages(product).length > 1 && (
-                    <>
-                      {console.log(`Product ${product.id} has ${getProductImages(product).length} images`)}
-                      {/* Previous Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          prevImage(product.id);
-                        }}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all duration-200 z-10 shadow-lg"
-                        aria-label="Previous image"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      
-                      {/* Next Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((product) => (
+                <div key={product.id} className="space-y-4">
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                    {/* Product Image Gallery */}
+                    <div 
+                      className={`aspect-square bg-muted relative group ${
+                        getProductImages(product).length > 1 ? 'cursor-pointer' : ''
+                      }`}
+                      tabIndex={getProductImages(product).length > 1 ? 0 : -1}
+                      onKeyDown={(e) => handleImageGalleryKeyDown(e, product.id)}
+                      onClick={() => {
+                        if (getProductImages(product).length > 1) {
                           nextImage(product.id);
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all duration-200 z-10 shadow-lg"
-                        aria-label="Next image"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* Image Indicators */}
-                  {getProductImages(product).length > 1 && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-                      {getProductImages(product).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            goToImage(product.id, index);
-                          }}
-                          className={`w-3 h-3 rounded-full transition-all duration-200 shadow-lg ${
-                            (imageGalleries[product.id] || 0) === index
-                              ? 'bg-white scale-110'
-                              : 'bg-white/60 hover:bg-white/80 hover:scale-110'
-                          }`}
-                          aria-label={`Go to image ${index + 1}`}
-                          aria-current={(imageGalleries[product.id] || 0) === index ? "true" : "false"}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Image Counter */}
-                  {getProductImages(product).length > 1 && (
-                    <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-md z-10 shadow-lg font-medium">
-                      {(imageGalleries[product.id] || 0) + 1} / {getProductImages(product).length}
-                    </div>
-                  )}
-
-                  {/* Multiple Images Indicator */}
-                  {getProductImages(product).length > 1 && (
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 pointer-events-none">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        Click to browse images
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <CardContent className="p-3">
-                  {/* Product Info */}
-                  <div className="space-y-2">
-                    <div>
-                      <h3 className="font-semibold text-foreground line-clamp-1 text-sm">
-                        {product.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                        {product.description}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        {getTypeIcon(product.type)}
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {product.type}
-                        </span>
-                      </div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {formatPrice(product.price)}
-                      </div>
-                    </div>
-
-                    {/* Stock Info */}
-                    {product.stock_quantity !== null && (
-                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                        <Package className="w-3 h-3" />
-                        <span>
-                          {product.stock_quantity > 0 
-                            ? `${product.stock_quantity.toLocaleString()} in stock`
-                            : 'Out of stock'
-                          }
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex items-center space-x-1 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleStatusToggle(product.id, product.status)}
-                        className="flex-1 text-xs px-2 py-1 h-7"
-                      >
-                        {product.status === 'published' ? (
-                          <>
-                            <EyeOff className="w-3 h-3 mr-1" />
-                            Hide
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="w-3 h-3 mr-1" />
-                            Publish
-                          </>
-                        )}
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (editingProduct === product.id) {
-                            setEditingProduct(null);
-                            clearEditNewImages();
-                          } else {
-                            setEditingProduct(product.id);
-                            // Clear any existing newImages when starting to edit
-                            setProducts(prev => prev.map(p => 
-                              p.id === product.id ? { ...p, newImages: [] } : p
-                            ));
-                          }
-                        }}
-                        className="flex-1 text-xs px-2 py-1 h-7"
-                      >
-                        {editingProduct === product.id ? (
-                          <>
-                            <X className="w-3 h-3 mr-1" />
-                            Cancel
-                          </>
-                        ) : (
-                          <>
-                            <Edit className="w-3 h-3 mr-1" />
-                            Edit
-                          </>
-                        )}
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(product.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 py-1 h-7"
-                        disabled={deleting}
-                      >
-                        {deleting ? (
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
-                        ) : (
-                          <Trash2 className="w-3 h-3" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Edit Form */}
-              {editingProduct === product.id && (
-                <Card className="mt-4">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Edit Product</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleEditProduct} className="space-y-4">
-                      {updateError && (
-                        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
-                          {updateError}
+                        }
+                      }}
+                      role={getProductImages(product).length > 1 ? "region" : undefined}
+                      aria-label={getProductImages(product).length > 1 ? `Product images for ${product.name}` : undefined}
+                    >
+                      {getCurrentProductImage(product) ? (
+                        <>
+                          <img
+                            src={getCurrentProductImage(product)!}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onLoad={() => handleImageLoad(product.id)}
+                            onError={() => handleImageError(product.id)}
+                          />
+                          {imageLoading[product.id] && (
+                            <div className="absolute inset-0 bg-muted/50 flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <Package className="w-8 h-8 text-muted-foreground" />
                         </div>
                       )}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor={`edit-name-${product.id}`}>Name *</Label>
-                          <Input
-                            id={`edit-name-${product.id}`}
-                            value={product.name}
-                            onChange={(e) => handleEditFormChange('name', e.target.value)}
-                            placeholder="Enter product name"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-category-${product.id}`}>Category *</Label>
-                          <Input
-                            id={`edit-category-${product.id}`}
-                            value={product.category}
-                            onChange={(e) => handleEditFormChange('category', e.target.value)}
-                            placeholder="Enter product category"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-price-${product.id}`}>Price *</Label>
-                          <Input
-                            id={`edit-price-${product.id}`}
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={product.price}
-                            onChange={(e) => handleEditFormChange('price', e.target.value)}
-                            placeholder="0.00"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-type-${product.id}`}>Type *</Label>
-                          <Select
-                            value={product.type}
-                            onValueChange={(value) => handleEditFormChange('type', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select product type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="physical">Physical</SelectItem>
-                              <SelectItem value="digital">Digital</SelectItem>
-                              <SelectItem value="service">Service</SelectItem>
-                              <SelectItem value="subscription">Subscription</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-sku-${product.id}`}>SKU</Label>
-                          <Input
-                            id={`edit-sku-${product.id}`}
-                            value={product.sku || ''}
-                            onChange={(e) => handleEditFormChange('sku', e.target.value)}
-                            placeholder="Enter SKU"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-stock-${product.id}`}>Stock Quantity</Label>
-                          <Input
-                            id={`edit-stock-${product.id}`}
-                            type="number"
-                            min="0"
-                            value={product.stock_quantity || ''}
-                            onChange={(e) => handleEditFormChange('stock_quantity', e.target.value ? parseInt(e.target.value) : null)}
-                            placeholder="Enter stock quantity"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-weight-${product.id}`}>Weight (kg)</Label>
-                          <Input
-                            id={`edit-weight-${product.id}`}
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={product.weight || ''}
-                            onChange={(e) => handleEditFormChange('weight', e.target.value ? parseFloat(e.target.value) : null)}
-                            placeholder="Enter weight"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-dimensions-${product.id}`}>Dimensions</Label>
-                          <Input
-                            id={`edit-dimensions-${product.id}`}
-                            value={product.dimensions || ''}
-                            onChange={(e) => handleEditFormChange('dimensions', e.target.value)}
-                            placeholder="e.g., 10x5x2 cm"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`edit-status-${product.id}`}>Status *</Label>
-                          <Select
-                            value={product.status}
-                            onValueChange={(value) => handleEditFormChange('status', value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="draft">Draft</SelectItem>
-                              <SelectItem value="published">Published</SelectItem>
-                              <SelectItem value="archived">Archived</SelectItem>
-                              <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
                       
-                      {/* Image Upload Section for Edit */}
-                      <div>
-                        <Label htmlFor={`edit-images-${product.id}`}>Product Images</Label>
-                        <div className="mt-2">
-                          {/* Current Images */}
-                          {product.images && product.images.length > 0 && (
-                            <div className="mb-4">
-                              <h4 className="text-sm font-medium text-foreground mb-2">Current Images:</h4>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {product.images.map((image) => (
-                                  <div key={image.id} className="relative group">
-                                    <img
-                                      src={image.image_url}
-                                      alt={image.alt_text || 'Product image'}
-                                      className="w-full h-20 object-cover rounded-lg border border-border"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => handleEditImageRemove(image.id)}
-                                      disabled={deletingImages.has(image.id)}
-                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90 disabled:opacity-100"
-                                    >
-                                      {deletingImages.has(image.id) ? (
-                                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
-                                      ) : (
-                                        <X className="w-3 h-3" />
-                                      )}
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                      {/* Status Badge */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <Badge className={`${getStatusColor(product.status)} border`}>
+                          {product.status}
+                        </Badge>
+                      </div>
 
-                          {/* New Images to be uploaded */}
-                          {product.newImages && product.newImages.length > 0 && (
-                            <div className="mb-4">
-                              <h4 className="text-sm font-medium text-foreground mb-2">New Images to Upload:</h4>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {product.newImages.map((file, index) => (
-                                  <div key={index} className="relative group">
-                                    <img
-                                      src={URL.createObjectURL(file)}
-                                      alt={file.name}
-                                      className="w-full h-20 object-cover rounded-lg border border-border"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => handleEditNewImageRemove(index)}
-                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                      {/* Image Navigation Arrows */}
+                      {getProductImages(product).length > 1 && (
+                        <>
+                          {/* Previous Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              prevImage(product.id);
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all duration-200 z-10 shadow-lg"
+                            aria-label="Previous image"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
                           
-                          {/* Upload New Images */}
-                          <div className="flex items-center justify-center w-full">
-                            <label htmlFor={`edit-image-upload-${product.id}`} className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
-                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-muted-foreground">
-                                  <span className="font-semibold">Click to upload</span> or drag and drop
-                                </p>
-                                <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
-                              </div>
-                              <input
-                                id={`edit-image-upload-${product.id}`}
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleEditImageUpload}
-                              />
-                            </label>
+                          {/* Next Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              nextImage(product.id);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all duration-200 z-10 shadow-lg"
+                            aria-label="Next image"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Image Indicators */}
+                      {getProductImages(product).length > 1 && (
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                          {getProductImages(product).map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                goToImage(product.id, index);
+                              }}
+                              className={`w-3 h-3 rounded-full transition-all duration-200 shadow-lg ${
+                                (imageGalleries[product.id] || 0) === index
+                                  ? 'bg-white scale-110'
+                                  : 'bg-white/60 hover:bg-white/80 hover:scale-110'
+                              }`}
+                              aria-label={`Go to image ${index + 1}`}
+                              aria-current={(imageGalleries[product.id] || 0) === index ? "true" : "false"}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Image Counter */}
+                      {getProductImages(product).length > 1 && (
+                        <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-md z-10 shadow-lg font-medium">
+                          {(imageGalleries[product.id] || 0) + 1} / {getProductImages(product).length}
+                        </div>
+                      )}
+
+                      {/* Multiple Images Indicator */}
+                      {getProductImages(product).length > 1 && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 pointer-events-none">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            Click to browse images
                           </div>
                         </div>
+                      )}
+                    </div>
+
+                    <CardContent className="p-3">
+                      {/* Product Info */}
+                      <div className="space-y-2">
+                        <div>
+                          <h3 className="font-semibold text-foreground line-clamp-1 text-sm">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                            {product.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-1">
+                            {getTypeIcon(product.type)}
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {product.type}
+                            </span>
+                          </div>
+                          <div className="text-sm font-semibold text-foreground">
+                            {formatPrice(product.price)}
+                          </div>
+                        </div>
+
+                        {/* Stock Info */}
+                        {product.stock_quantity !== null && (
+                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                            <Package className="w-3 h-3" />
+                            <span>
+                              {product.stock_quantity > 0 
+                                ? `${product.stock_quantity.toLocaleString()} in stock`
+                                : 'Out of stock'
+                              }
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex items-center space-x-1 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleStatusToggle(product.id, product.status)}
+                            className="flex-1 text-xs px-2 py-1 h-7"
+                          >
+                            {product.status === 'published' ? (
+                              <>
+                                <EyeOff className="w-3 h-3 mr-1" />
+                                Hide
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="w-3 h-3 mr-1" />
+                                Publish
+                              </>
+                            )}
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (editingProduct === product.id) {
+                                setEditingProduct(null);
+                                clearEditNewImages();
+                              } else {
+                                setEditingProduct(product.id);
+                                // Clear any existing newImages when starting to edit
+                                setProducts(prev => prev.map(p => 
+                                  p.id === product.id ? { ...p, newImages: [] } : p
+                                ));
+                              }
+                            }}
+                            className="flex-1 text-xs px-2 py-1 h-7"
+                          >
+                            {editingProduct === product.id ? (
+                              <>
+                                <X className="w-3 h-3 mr-1" />
+                                Cancel
+                              </>
+                            ) : (
+                              <>
+                                <Edit className="w-3 h-3 mr-1" />
+                                Edit
+                              </>
+                            )}
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedProductForOrders(product);
+                              setOrdersDialogOpen(true);
+                            }}
+                            className="flex-1 text-xs px-2 py-1 h-7"
+                          >
+                            <ShoppingCart className="w-3 h-3 mr-1" />
+                            Orders
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(product.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2 py-1 h-7"
+                            disabled={deleting}
+                          >
+                            {deleting ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                      
-                      <div>
-                        <Label htmlFor={`edit-description-${product.id}`}>Description *</Label>
-                        <Textarea
-                          id={`edit-description-${product.id}`}
-                          value={product.description}
-                          onChange={(e) => handleEditFormChange('description', e.target.value)}
-                          placeholder="Enter product description"
-                          rows={4}
-                          required
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingProduct(null);
-                            clearEditNewImages();
-                          }}
-                          disabled={updating || deleting}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={updating || deleting}
-                        >
-                          {updating ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                              Updating...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-4 h-4 mr-2" />
-                              Update Product
-                            </>
+                    </CardContent>
+                  </Card>
+
+                  {/* Edit Form */}
+                  {editingProduct === product.id && (
+                    <Card className="mt-4">
+                      <CardHeader>
+                        <CardTitle className="text-lg">Edit Product</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <form onSubmit={handleEditProduct} className="space-y-4">
+                          {updateError && (
+                            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
+                              {updateError}
+                            </div>
                           )}
-                        </Button>
-                      </div>
-                    </form>
-                  </CardContent>
-                </Card>
-              )}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor={`edit-name-${product.id}`}>Name *</Label>
+                              <Input
+                                id={`edit-name-${product.id}`}
+                                value={product.name}
+                                onChange={(e) => handleEditFormChange('name', e.target.value)}
+                                placeholder="Enter product name"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-category-${product.id}`}>Category *</Label>
+                              <Input
+                                id={`edit-category-${product.id}`}
+                                value={product.category}
+                                onChange={(e) => handleEditFormChange('category', e.target.value)}
+                                placeholder="Enter product category"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-price-${product.id}`}>Price *</Label>
+                              <Input
+                                id={`edit-price-${product.id}`}
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={product.price}
+                                onChange={(e) => handleEditFormChange('price', e.target.value)}
+                                placeholder="0.00"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-type-${product.id}`}>Type *</Label>
+                              <Select
+                                value={product.type}
+                                onValueChange={(value) => handleEditFormChange('type', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select product type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="physical">Physical</SelectItem>
+                                  <SelectItem value="digital">Digital</SelectItem>
+                                  <SelectItem value="service">Service</SelectItem>
+                                  <SelectItem value="subscription">Subscription</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-sku-${product.id}`}>SKU</Label>
+                              <Input
+                                id={`edit-sku-${product.id}`}
+                                value={product.sku || ''}
+                                onChange={(e) => handleEditFormChange('sku', e.target.value)}
+                                placeholder="Enter SKU"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-stock-${product.id}`}>Stock Quantity</Label>
+                              <Input
+                                id={`edit-stock-${product.id}`}
+                                type="number"
+                                min="0"
+                                value={product.stock_quantity || ''}
+                                onChange={(e) => handleEditFormChange('stock_quantity', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="Enter stock quantity"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-weight-${product.id}`}>Weight (kg)</Label>
+                              <Input
+                                id={`edit-weight-${product.id}`}
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={product.weight || ''}
+                                onChange={(e) => handleEditFormChange('weight', e.target.value ? parseFloat(e.target.value) : null)}
+                                placeholder="Enter weight"
+                          />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-dimensions-${product.id}`}>Dimensions</Label>
+                              <Input
+                                id={`edit-dimensions-${product.id}`}
+                                value={product.dimensions || ''}
+                                onChange={(e) => handleEditFormChange('dimensions', e.target.value)}
+                                placeholder="e.g., 10x5x2 cm"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`edit-status-${product.id}`}>Status *</Label>
+                              <Select
+                                value={product.status}
+                                onValueChange={(value) => handleEditFormChange('status', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="draft">Draft</SelectItem>
+                                  <SelectItem value="published">Published</SelectItem>
+                                  <SelectItem value="archived">Archived</SelectItem>
+                                  <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          
+                          {/* Image Upload Section for Edit */}
+                          <div>
+                            <Label htmlFor={`edit-images-${product.id}`}>Product Images</Label>
+                            <div className="mt-2">
+                              {/* Current Images */}
+                              {product.images && product.images.length > 0 && (
+                                <div className="mb-4">
+                                  <h4 className="text-sm font-medium text-foreground mb-2">Current Images:</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    {product.images.map((image) => (
+                                      <div key={image.id} className="relative group">
+                                        <img
+                                          src={image.image_url}
+                                          alt={image.alt_text || 'Product image'}
+                                          className="w-full h-20 object-cover rounded-lg border border-border"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleEditImageRemove(image.id)}
+                                          disabled={deletingImages.has(image.id)}
+                                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90 disabled:opacity-100"
+                                        >
+                                          {deletingImages.has(image.id) ? (
+                                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-destructive-foreground"></div>
+                                          ) : (
+                                            <X className="w-3 h-3" />
+                                          )}
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* New Images to be uploaded */}
+                              {product.newImages && product.newImages.length > 0 && (
+                                <div className="mb-4">
+                                  <h4 className="text-sm font-medium text-foreground mb-2">New Images to Upload:</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    {product.newImages.map((file, index) => (
+                                      <div key={index} className="relative group">
+                                        <img
+                                          src={URL.createObjectURL(file)}
+                                          alt={file.name}
+                                          className="w-full h-20 object-cover rounded-lg border border-border"
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => handleEditNewImageRemove(index)}
+                                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Upload New Images */}
+                              <div className="flex items-center justify-center w-full">
+                                <label htmlFor={`edit-image-upload-${product.id}`} className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
+                                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                                    <p className="mb-2 text-sm text-muted-foreground">
+                                      <span className="font-semibold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                                  </div>
+                                  <input
+                                    id={`edit-image-upload-${product.id}`}
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleEditImageUpload}
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`edit-description-${product.id}`}>Description *</Label>
+                            <Textarea
+                              id={`edit-description-${product.id}`}
+                              value={product.description}
+                              onChange={(e) => handleEditFormChange('description', e.target.value)}
+                              placeholder="Enter product description"
+                              rows={4}
+                              required
+                            />
+                          </div>
+                          <div className="flex justify-end space-x-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingProduct(null);
+                                clearEditNewImages();
+                              }}
+                              disabled={updating || deleting}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="submit"
+                              disabled={updating || deleting}
+                            >
+                              {updating ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                                  Updating...
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-4 h-4 mr-2" />
+                                  Update Product
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </form>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-} 
+          </div>
+        )}
+
+        {/* Orders Dialog */}
+        <Dialog open={ordersDialogOpen} onOpenChange={setOrdersDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Orders for {selectedProductForOrders?.name}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedProductForOrders && (
+              <ProductOrders 
+                member={member}
+                appCurrency={appCurrency}
+                contactId={contactId}
+                productId={selectedProductForOrders.id}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  } 
