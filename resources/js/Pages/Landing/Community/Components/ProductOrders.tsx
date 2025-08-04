@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Calendar,
   Package,
-  DollarSign,
+  Receipt,
   User,
   Mail,
   Phone,
@@ -20,7 +20,9 @@ import {
   Download,
   FileSpreadsheet,
   X,
-  Filter
+  Filter,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface OrderItem {
@@ -85,6 +87,9 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   // Filter states
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  
+  // Expanded cards state
+  const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
 
   // Format price with currency
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -484,6 +489,22 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     setPaymentStatusFilter('all');
   };
 
+  // Toggle card expansion
+  const toggleCardExpansion = (orderId: number) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
+    });
+  };
+
+  // Check if card is expanded
+  const isCardExpanded = (orderId: number) => expandedCards.has(orderId);
+
   // Filter and paginate orders on the frontend
   const getFilteredAndPaginatedOrders = () => {
     let filteredOrders = [...allOrders];
@@ -742,6 +763,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             const targetItems = getTargetProductItems(order);
             const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
             const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const isExpanded = isCardExpanded(order.id);
 
             return (
               <Card key={order.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
@@ -762,164 +784,224 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                         </Badge>
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground flex items-center">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {formatDate(order.created_at)}
+                    <div className="flex items-center space-x-2">
+                      <div className="text-sm text-muted-foreground flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {formatDate(order.created_at)}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleCardExpansion(order.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </div>
 
                 <CardContent className="p-0">
-                  {/* Customer Information */}
-                  <div className="p-4 bg-muted/20">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <User className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-sm">Customer Information</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Condensed View (Always Visible) */}
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Customer Info */}
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium">{order.customer_name}</span>
+                          <User className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">{order.customer_name}</span>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                           <Mail className="w-4 h-4" />
-                          <span>{order.customer_email}</span>
+                          <span className="truncate">{order.customer_email}</span>
                         </div>
-                        {order.customer_phone && (
-                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                            <Phone className="w-4 h-4" />
-                            <span>{order.customer_phone}</span>
-                          </div>
-                        )}
                       </div>
+                      
+                      {/* Product Summary */}
                       <div className="space-y-2">
-                        {order.shipping_address && (
-                          <div className="flex items-start space-x-2 text-sm">
-                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                            <div>
-                              <span className="font-medium">Shipping:</span>
-                              <p className="text-muted-foreground">{order.shipping_address}</p>
-                            </div>
-                          </div>
-                        )}
-                        {order.billing_address && (
-                          <div className="flex items-start space-x-2 text-sm">
-                            <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                            <div>
-                              <span className="font-medium">Billing:</span>
-                              <p className="text-muted-foreground">{order.billing_address}</p>
-                            </div>
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-2">
+                          <Package className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">Product: {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)}</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Revenue: <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Order Total */}
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Receipt className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">Total: {formatPrice(order.total_amount)}</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Items: {order.order_items.length}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <Separator />
-
-                  {/* Product Details */}
-                  <div className="p-4">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <Package className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-sm">This Product in Order</span>
-                    </div>
-                    <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <Package className="w-5 h-5 text-primary" />
+                  {/* Expanded View (Conditional) */}
+                  {isExpanded && (
+                    <>
+                      <Separator />
+                      
+                      {/* Detailed Customer Information */}
+                      <div className="p-4 bg-muted/20">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <User className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">Customer Information</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-medium">{order.customer_name}</span>
+                            </div>
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                              <Mail className="w-4 h-4" />
+                              <span>{order.customer_email}</span>
+                            </div>
+                            {order.customer_phone && (
+                              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                <Phone className="w-4 h-4" />
+                                <span>{order.customer_phone}</span>
+                              </div>
+                            )}
                           </div>
-                          <div>
-                            <p className="font-medium">Product Details</p>
-                            <p className="text-sm text-muted-foreground">
-                              Quantity: {targetQuantity} | Price: {formatPrice(targetItems[0]?.price || 0)}
+                          <div className="space-y-2">
+                            {order.shipping_address && (
+                              <div className="flex items-start space-x-2 text-sm">
+                                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                  <span className="font-medium">Shipping:</span>
+                                  <p className="text-muted-foreground">{order.shipping_address}</p>
+                                </div>
+                              </div>
+                            )}
+                            {order.billing_address && (
+                              <div className="flex items-start space-x-2 text-sm">
+                                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                                <div>
+                                  <span className="font-medium">Billing:</span>
+                                  <p className="text-muted-foreground">{order.billing_address}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Detailed Product Information */}
+                      <div className="p-4">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <Package className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">This Product in Order</span>
+                        </div>
+                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <Package className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium">Product Details</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Quantity: {targetQuantity} | Price: {formatPrice(targetItems[0]?.price || 0)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-muted-foreground">Revenue</p>
+                              <p className="font-semibold text-lg text-primary">{formatPrice(targetRevenue)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Detailed Order Summary */}
+                      <div className="p-4 bg-muted/10">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <Receipt className="w-4 h-4 text-primary" />
+                          <span className="font-medium text-sm">Order Summary</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">This product items:</span>
+                              <span className="font-medium">{targetQuantity}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Total order items:</span>
+                              <span className="font-medium">{order.order_items.length}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Product revenue:</span>
+                              <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Order total:</span>
+                              <span className="font-semibold">{formatPrice(order.total_amount)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Information */}
+                      {order.payment_method && (
+                        <>
+                          <Separator />
+                          <div className="p-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <CreditCard className="w-4 h-4 text-primary" />
+                              <span className="font-medium text-sm">Payment Information</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Method:</span>
+                                <span className="font-medium">{order.payment_method}</span>
+                              </div>
+                              {order.payment_reference && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Reference:</span>
+                                  <span className="font-medium">{order.payment_reference}</span>
+                                </div>
+                              )}
+                              {order.paid_at && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Paid:</span>
+                                  <span className="font-medium">{formatDate(order.paid_at)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Notes */}
+                      {order.notes && (
+                        <>
+                          <Separator />
+                          <div className="p-4">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <FileText className="w-4 h-4 text-primary" />
+                              <span className="font-medium text-sm">Notes</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                              {order.notes}
                             </p>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Revenue</p>
-                          <p className="font-semibold text-lg text-primary">{formatPrice(targetRevenue)}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Order Summary */}
-                  <div className="p-4 bg-muted/10">
-                    <div className="flex items-center space-x-2 mb-3">
-                      <DollarSign className="w-4 h-4 text-primary" />
-                      <span className="font-medium text-sm">Order Summary</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">This product items:</span>
-                          <span className="font-medium">{targetQuantity}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Total order items:</span>
-                          <span className="font-medium">{order.order_items.length}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Product revenue:</span>
-                          <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Order total:</span>
-                          <span className="font-semibold">{formatPrice(order.total_amount)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Payment Information */}
-                  {order.payment_method && (
-                    <>
-                      <Separator />
-                      <div className="p-4">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <CreditCard className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">Payment Information</span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Method:</span>
-                            <span className="font-medium">{order.payment_method}</span>
-                          </div>
-                          {order.payment_reference && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Reference:</span>
-                              <span className="font-medium">{order.payment_reference}</span>
-                            </div>
-                          )}
-                          {order.paid_at && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Paid:</span>
-                              <span className="font-medium">{formatDate(order.paid_at)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Notes */}
-                  {order.notes && (
-                    <>
-                      <Separator />
-                      <div className="p-4">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <FileText className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">Notes</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                          {order.notes}
-                        </p>
-                      </div>
+                        </>
+                      )}
                     </>
                   )}
                 </CardContent>
