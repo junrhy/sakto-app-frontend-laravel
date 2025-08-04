@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent } from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import {
   Calendar,
   Package,
@@ -24,7 +25,17 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  Search
+  Search,
+  TrendingUp,
+  DollarSign,
+  BarChart3,
+  Eye,
+  EyeOff,
+  Grid3X3,
+  List,
+  SortAsc,
+  SortDesc,
+  Clock
 } from 'lucide-react';
 
 interface OrderItem {
@@ -95,6 +106,12 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   
   // Expanded cards state
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Format price with currency
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -252,6 +269,55 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     }
 
     return filteredOrders;
+  };
+
+  // Calculate summary statistics
+  const getSummaryStats = () => {
+    const filteredOrders = getFilteredOrdersForExport();
+    const totalRevenue = filteredOrders.reduce((sum, order) => {
+      const targetItems = getTargetProductItems(order);
+      const targetRevenue = targetItems.reduce((itemSum, item) => itemSum + (item.quantity * item.price), 0);
+      return sum + targetRevenue;
+    }, 0);
+    
+    const totalQuantity = filteredOrders.reduce((sum, order) => {
+      const targetItems = getTargetProductItems(order);
+      return sum + targetItems.reduce((itemSum, item) => itemSum + item.quantity, 0);
+    }, 0);
+    
+    const paidOrders = filteredOrders.filter(order => order.payment_status === 'paid').length;
+    const pendingOrders = filteredOrders.filter(order => order.payment_status === 'pending').length;
+    
+    return {
+      totalRevenue,
+      totalQuantity,
+      paidOrders,
+      pendingOrders,
+      totalOrders: filteredOrders.length
+    };
+  };
+
+  // Sort orders
+  const getSortedOrders = (ordersToSort: ProductOrder[]) => {
+    return [...ordersToSort].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'date':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'amount':
+          const aRevenue = getTargetProductItems(a).reduce((sum, item) => sum + (item.quantity * item.price), 0);
+          const bRevenue = getTargetProductItems(b).reduce((sum, item) => sum + (item.quantity * item.price), 0);
+          comparison = aRevenue - bRevenue;
+          break;
+        case 'status':
+          comparison = a.order_status.localeCompare(b.order_status);
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
   };
 
   // Export to CSV
@@ -561,11 +627,14 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
       filteredOrders = filteredOrders.filter(order => order.payment_status === paymentStatusFilter);
     }
 
+    // Sort orders
+    filteredOrders = getSortedOrders(filteredOrders);
+
     // Update total count
     setTotalOrders(filteredOrders.length);
 
     // Calculate pagination
-    const itemsPerPage = 15;
+    const itemsPerPage = viewMode === 'grid' ? 12 : 15;
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
     setTotalPages(totalPages);
 
@@ -596,7 +665,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
       const filteredOrders = getFilteredAndPaginatedOrders();
       setOrders(filteredOrders);
     }
-  }, [allOrders, orderStatusFilter, paymentStatusFilter, searchQuery, currentPage]);
+  }, [allOrders, orderStatusFilter, paymentStatusFilter, searchQuery, currentPage, viewMode, sortBy, sortOrder]);
 
   // Auto-dismiss success message
   useEffect(() => {
@@ -640,8 +709,10 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     );
   }
 
+  const stats = getSummaryStats();
+
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
       {/* Success Message */}
       {successMessage && (
         <div className="relative p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 rounded-lg">
@@ -668,18 +739,120 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
         </div>
       )}
 
-      {/* Simple Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <ShoppingBag className="w-5 h-5 text-primary" />
-          <span className="font-medium">Orders ({totalOrders})</span>
-          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) && (
-            <Badge variant="secondary" className="text-xs">
-              Filtered
-            </Badge>
-          )}
+      {/* Summary Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Orders</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.totalOrders}</p>
+              </div>
+              <ShoppingBag className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Revenue</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatPrice(stats.totalRevenue)}</p>
+              </div>
+              <DollarSign className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Total Quantity</p>
+                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.totalQuantity}</p>
+              </div>
+              <Package className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Paid Orders</p>
+                <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{stats.paidOrders}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-800">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending Orders</p>
+                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">{stats.pendingOrders}</p>
+              </div>
+              <Clock className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Controls Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Select value={sortBy} onValueChange={(value: 'date' | 'amount' | 'status') => setSortBy(value)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">Date</SelectItem>
+                <SelectItem value="amount">Amount</SelectItem>
+                <SelectItem value="status">Status</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
+        
         <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </Button>
+          
           {totalOrders > 0 && (
             <>
               <Button
@@ -687,7 +860,6 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                 size="sm"
                 onClick={exportToCSV}
                 disabled={exporting}
-                title="Export to CSV"
               >
                 {exporting ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -701,7 +873,6 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                 size="sm"
                 onClick={exportToExcel}
                 disabled={exporting}
-                title="Export to Excel"
               >
                 {exporting ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -712,6 +883,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
               </Button>
             </>
           )}
+          
           <Button
             variant="outline"
             size="sm"
@@ -722,210 +894,236 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-muted/30 rounded-lg p-4 border">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-primary" />
-            <span className="font-medium text-sm">Filters</span>
-          </div>
-          {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) && (
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-muted-foreground">Active:</span>
-              {searchQuery.trim() && (
-                <Badge variant="outline" className="text-xs">
-                  Search: "{searchQuery}"
-                </Badge>
-              )}
-              {orderStatusFilter !== 'all' && (
-                <Badge variant="outline" className="text-xs">
-                  Order: {getStatusInfo(orderStatusFilter).label}
-                </Badge>
-              )}
-              {paymentStatusFilter !== 'all' && (
-                <Badge variant="outline" className="text-xs">
-                  Payment: {getPaymentStatusInfo(paymentStatusFilter).label}
-                </Badge>
-              )}
+      {/* Filters Section */}
+      {showFilters && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center">
+              <Filter className="w-5 h-5 mr-2" />
+              Filters & Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Search orders by number, customer, email, phone, address, payment method, reference, or notes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          )}
-        </div>
-        
-        {/* Search Input */}
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="Search orders by number, customer, email, phone, address, payment method, reference, or notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Order Status</label>
-            <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All order statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Order Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="shipped">Shipped</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Payment Status</label>
-            <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All payment statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Payment Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="refunded">Refunded</SelectItem>
-                <SelectItem value="partially_refunded">Partially Refunded</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearFilters}
-              className="w-full"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        </div>
-      </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Order Status</label>
+                <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All order statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Order Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="shipped">Shipped</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">Payment Status</label>
+                <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All payment statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payment Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                    <SelectItem value="partially_refunded">Partially Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+            
+            {/* Active Filters Display */}
+            {(orderStatusFilter !== 'all' || paymentStatusFilter !== 'all' || searchQuery.trim()) && (
+              <div className="flex items-center space-x-2 pt-2 border-t">
+                <span className="text-sm text-muted-foreground">Active filters:</span>
+                {searchQuery.trim() && (
+                  <Badge variant="outline" className="text-xs">
+                    Search: "{searchQuery}"
+                  </Badge>
+                )}
+                {orderStatusFilter !== 'all' && (
+                  <Badge variant="outline" className="text-xs">
+                    Order: {getStatusInfo(orderStatusFilter).label}
+                  </Badge>
+                )}
+                {paymentStatusFilter !== 'all' && (
+                  <Badge variant="outline" className="text-xs">
+                    Payment: {getPaymentStatusInfo(paymentStatusFilter).label}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Orders List */}
-      {orders.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8">
-          <Package className="w-8 h-8 mx-auto mb-2" />
-          <p className="text-sm">No orders found</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const targetItems = getTargetProductItems(order);
-            const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
-            const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-            const isExpanded = isCardExpanded(order.id);
+      {/* Orders Display */}
+      <div className="flex-1 min-h-0">
+        {orders.length === 0 ? (
+          <div className="text-center text-muted-foreground py-12">
+            <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium mb-2">No orders found</p>
+            <p className="text-sm">Try adjusting your filters or search terms</p>
+          </div>
+        ) : (
+          <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'} h-full overflow-y-auto pb-4`}>
+            {orders.map((order) => {
+              const targetItems = getTargetProductItems(order);
+              const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
+              const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+              const isExpanded = isCardExpanded(order.id);
 
-            return (
-              <Card key={order.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
-                {/* Order Header */}
-                <div className="bg-gradient-to-r from-muted/30 to-transparent p-4 border-b">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div className="flex items-center space-x-3">
+                             if (viewMode === 'grid') {
+                 return (
+                   <Card key={order.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
+                     <CardHeader className={`pb-3 transition-all duration-200 ${isExpanded ? 'bg-gradient-to-b from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-b border-blue-200 dark:border-blue-800' : ''}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="w-4 h-4 text-primary" />
+                          <span className="font-semibold">#{order.order_number}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleCardExpansion(order.id)}
+                          className="h-6 w-6 p-0"
+                        >
+                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                                             <div className="flex items-center space-x-2">
+                         <Badge className={getStatusInfo(order.order_status).color} variant="outline">
+                           {getStatusInfo(order.order_status).label}
+                         </Badge>
+                         <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
+                           {getPaymentStatusInfo(order.payment_status).label}
+                         </Badge>
+                       </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <FileText className="w-5 h-5 text-primary" />
-                        <span className="font-semibold text-lg">#{order.order_number}</span>
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium truncate">{order.customer_name}</span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Package className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">{targetQuantity} × {formatPrice(targetItems[0]?.price || 0)}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-sm text-muted-foreground">Revenue:</span>
+                        <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
+                      </div>
+                      
+                      {isExpanded && (
+                        <div className="pt-3 border-t space-y-2">
+                          <div className="text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Mail className="w-3 h-3" />
+                              <span className="truncate">{order.customer_email}</span>
+                            </div>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="w-3 h-3" />
+                              <span>{formatDate(order.created_at)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              }
+
+              return (
+                <Card key={order.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
+                  {/* Order Header */}
+                  <div className={`p-4 border-b transition-all duration-200 ${isExpanded ? 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800' : 'bg-gradient-to-r from-muted/30 to-transparent'}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="w-5 h-5 text-primary" />
+                          <span className="font-semibold text-lg">#{order.order_number}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getStatusInfo(order.order_status).color} variant="outline">
+                            {getStatusInfo(order.order_status).label}
+                          </Badge>
+                          <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
+                            {getPaymentStatusInfo(order.payment_status).label}
+                          </Badge>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge className={getStatusInfo(order.order_status).color} variant="outline">
-                          Order: {getStatusInfo(order.order_status).label}
-                        </Badge>
-                        <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
-                          Payment: {getPaymentStatusInfo(order.payment_status).label}
-                        </Badge>
+                        <div className="text-sm text-muted-foreground flex items-center">
+                          <Calendar className="w-4 h-4 mr-1" />
+                          {formatDate(order.created_at)}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleCardExpansion(order.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="text-sm text-muted-foreground flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {formatDate(order.created_at)}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleCardExpansion(order.id)}
-                        className="h-8 w-8 p-0"
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
-                        )}
-                      </Button>
                     </div>
                   </div>
-                </div>
 
-                <CardContent className="p-0">
-                  {/* Condensed View (Always Visible) */}
-                  <div className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Customer Info */}
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <User className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">{order.customer_name}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                          <Mail className="w-4 h-4" />
-                          <span className="truncate">{order.customer_email}</span>
-                        </div>
-                      </div>
-                      
-                      {/* Product Summary */}
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Package className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">Product: {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)}</span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Revenue: <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
-                        </div>
-                      </div>
-                      
-                      {/* Order Total */}
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Receipt className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">Total: {formatPrice(order.total_amount)}</span>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Items: {order.order_items.length}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expanded View (Conditional) */}
-                  {isExpanded && (
-                    <>
-                      <Separator />
-                      
-                      {/* Detailed Customer Information */}
-                      <div className="p-4 bg-muted/20">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <User className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">Customer Information</span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CardContent className="p-0">
+                    {/* Condensed View (Only Visible When Not Expanded) */}
+                    {!isExpanded && (
+                      <div className="p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {/* Customer Info */}
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium">{order.customer_name}</span>
+                              <User className="w-4 h-4 text-primary" />
+                              <span className="font-medium text-sm">{order.customer_name}</span>
                             </div>
                             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                               <Mail className="w-4 h-4" />
-                              <span>{order.customer_email}</span>
+                              <span className="truncate">{order.customer_email}</span>
                             </div>
                             {order.customer_phone && (
                               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -934,148 +1132,190 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                               </div>
                             )}
                           </div>
+                          
+                          {/* Product Summary */}
                           <div className="space-y-2">
-                            {order.shipping_address && (
-                              <div className="flex items-start space-x-2 text-sm">
-                                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                                <div>
-                                  <span className="font-medium">Shipping:</span>
-                                  <p className="text-muted-foreground">{order.shipping_address}</p>
-                                </div>
-                              </div>
-                            )}
-                            {order.billing_address && (
-                              <div className="flex items-start space-x-2 text-sm">
-                                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                                <div>
-                                  <span className="font-medium">Billing:</span>
-                                  <p className="text-muted-foreground">{order.billing_address}</p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* Detailed Product Information */}
-                      <div className="p-4">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <Package className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">This Product in Order</span>
-                        </div>
-                        <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg border border-primary/20">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                                <Package className="w-5 h-5 text-primary" />
-                              </div>
-                              <div>
-                                <p className="font-medium">Product Details</p>
-                                <p className="text-sm text-muted-foreground">
-                                  Quantity: {targetQuantity} | Price: {formatPrice(targetItems[0]?.price || 0)}
-                                </p>
-                              </div>
+                            <div className="flex items-center space-x-2">
+                              <Package className="w-4 h-4 text-primary" />
+                              <span className="font-medium text-sm truncate">{targetItems[0]?.name || 'Product'}</span>
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm text-muted-foreground">Revenue</p>
-                              <p className="font-semibold text-lg text-primary">{formatPrice(targetRevenue)}</p>
+                            <div className="text-sm text-muted-foreground">
+                              {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)} | Revenue: <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
                             </div>
                           </div>
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* Detailed Order Summary */}
-                      <div className="p-4 bg-muted/10">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <Receipt className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm">Order Summary</span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          
+                          {/* Shipping Address */}
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">This product items:</span>
-                              <span className="font-medium">{targetQuantity}</span>
+                            <div className="flex items-center space-x-2">
+                              <MapPin className="w-4 h-4 text-primary" />
+                              <span className="font-medium text-sm">Shipping</span>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Total order items:</span>
-                              <span className="font-medium">{order.order_items.length}</span>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Product revenue:</span>
-                              <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Order total:</span>
-                              <span className="font-semibold">{formatPrice(order.total_amount)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment Information */}
-                      {order.payment_method && (
-                        <>
-                          <Separator />
-                          <div className="p-4">
-                            <div className="flex items-center space-x-2 mb-3">
-                              <CreditCard className="w-4 h-4 text-primary" />
-                              <span className="font-medium text-sm">Payment Information</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Method:</span>
-                                <span className="font-medium">{order.payment_method}</span>
-                              </div>
-                              {order.payment_reference && (
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-muted-foreground">Reference:</span>
-                                  <span className="font-medium">{order.payment_reference}</span>
-                                </div>
-                              )}
-                              {order.paid_at && (
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-muted-foreground">Paid:</span>
-                                  <span className="font-medium">{formatDate(order.paid_at)}</span>
-                                </div>
+                            <div className="text-sm text-muted-foreground">
+                              {order.shipping_address ? (
+                                <span className="truncate block">{order.shipping_address}</span>
+                              ) : (
+                                <span className="text-muted-foreground/60">No address</span>
                               )}
                             </div>
                           </div>
-                        </>
-                      )}
+                        </div>
+                      </div>
+                    )}
 
-                      {/* Notes */}
-                      {order.notes && (
-                        <>
-                          <Separator />
-                          <div className="p-4">
-                            <div className="flex items-center space-x-2 mb-3">
-                              <FileText className="w-4 h-4 text-primary" />
-                              <span className="font-medium text-sm">Notes</span>
+                    {/* Expanded View (Conditional) */}
+                    {isExpanded && (
+                      <>
+                        <Separator />
+                        
+                        {/* 3-Column Grid Layout */}
+                        <div className="p-3">
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            
+                            {/* Column 1: Customer Information */}
+                            <div className="space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <User className="w-4 h-4 text-primary" />
+                                <span className="font-medium text-sm">Customer</span>
+                              </div>
+                              <div className="bg-muted/20 p-3 rounded-lg space-y-2">
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-medium text-sm">{order.customer_name}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                  <Mail className="w-3 h-3" />
+                                  <span className="truncate">{order.customer_email}</span>
+                                </div>
+                                {order.customer_phone && (
+                                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                    <Phone className="w-3 h-3" />
+                                    <span>{order.customer_phone}</span>
+                                  </div>
+                                )}
+                                {order.shipping_address && (
+                                  <div className="flex items-start space-x-2 text-xs">
+                                    <MapPin className="w-3 h-3 text-muted-foreground mt-0.5" />
+                                    <div>
+                                      <span className="font-medium">Shipping:</span>
+                                      <p className="text-muted-foreground truncate">{order.shipping_address}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                {order.billing_address && (
+                                  <div className="flex items-start space-x-2 text-xs">
+                                    <MapPin className="w-3 h-3 text-muted-foreground mt-0.5" />
+                                    <div>
+                                      <span className="font-medium">Billing:</span>
+                                      <p className="text-muted-foreground truncate">{order.billing_address}</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                              {order.notes}
-                            </p>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Simple Pagination */}
+                            {/* Column 2: Product & Order Details */}
+                            <div className="space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <Package className="w-4 h-4 text-primary" />
+                                <span className="font-medium text-sm">Product & Order</span>
+                              </div>
+                              <div className="space-y-3">
+                                {/* Product Details */}
+                                <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 rounded-lg border border-primary/20">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                        <Package className="w-4 h-4 text-primary" />
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-sm">Quantity & Price</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-xs text-muted-foreground">Revenue</p>
+                                      <p className="font-semibold text-base text-primary">{formatPrice(targetRevenue)}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Order Summary */}
+                                <div className="bg-muted/10 p-3 rounded-lg space-y-2">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">This product items:</span>
+                                    <span className="font-medium">{targetQuantity}</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Total order items:</span>
+                                    <span className="font-medium">{order.order_items.length}</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Product revenue:</span>
+                                    <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
+                                  </div>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Order total:</span>
+                                    <span className="font-semibold">{formatPrice(order.total_amount)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Column 3: Payment & Notes */}
+                            <div className="space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <CreditCard className="w-4 h-4 text-primary" />
+                                <span className="font-medium text-sm">Payment & Notes</span>
+                              </div>
+                              <div className="space-y-3">
+                                {/* Payment Information */}
+                                {order.payment_method && (
+                                  <div className="bg-muted/10 p-3 rounded-lg space-y-2">
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-muted-foreground">Method:</span>
+                                      <span className="font-medium">{order.payment_method}</span>
+                                    </div>
+                                    {order.payment_reference && (
+                                      <div className="flex justify-between text-xs">
+                                        <span className="text-muted-foreground">Reference:</span>
+                                        <span className="font-medium">{order.payment_reference}</span>
+                                      </div>
+                                    )}
+                                    {order.paid_at && (
+                                      <div className="flex justify-between text-xs">
+                                        <span className="text-muted-foreground">Paid:</span>
+                                        <span className="font-medium">{formatDate(order.paid_at)}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Notes */}
+                                {order.notes && (
+                                  <div className="bg-muted/10 p-3 rounded-lg">
+                                    <p className="text-xs text-muted-foreground">
+                                      {order.notes}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center space-x-2 pt-4">
+        <div className="flex items-center justify-center space-x-2 pt-4 border-t">
           <Button
             variant="outline"
             size="sm"

@@ -1548,7 +1548,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
             }
           }}
         >
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-full h-full max-w-none max-h-none m-0 rounded-none overflow-hidden">
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 <ShoppingCart className="w-5 h-5 mr-2" />
