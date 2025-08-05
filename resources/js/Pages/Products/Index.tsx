@@ -590,6 +590,8 @@ const getStockStatus = (quantity?: number, type?: string) => {
             name: product.name,
             quantity: 1,
             price: product.price,
+            type: product.type,
+            weight: product.weight || 0,
             thumbnail_url: getProductImage(product) || product.thumbnail_url
         });
 

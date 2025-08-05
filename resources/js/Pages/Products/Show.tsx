@@ -235,6 +235,7 @@ export default function Show({ auth, product, currency }: Props) {
             quantity: quantity,
             price: effectivePrice,
             type: product.type,
+            weight: variant.weight || product.weight || 0,
             attributes: variant.attributes,
             thumbnail_url: variant.thumbnail_url || getProductImages(product)[0] || product.thumbnail_url
         });
@@ -249,6 +250,7 @@ export default function Show({ auth, product, currency }: Props) {
             quantity: 1,
             price: product.price,
             type: product.type,
+            weight: product.weight || 0,
             thumbnail_url: getProductImages(product)[0] || product.thumbnail_url
         });
     };

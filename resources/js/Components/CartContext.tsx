@@ -8,9 +8,10 @@ interface CartItem {
     name: string;
     quantity: number;
     price: number;
-    type?: 'physical' | 'digital' | 'service' | 'subscription';
+    type: 'physical' | 'digital' | 'service' | 'subscription';
     attributes?: Record<string, string>;
     thumbnail_url?: string;
+    weight?: number; // Add weight field for shipping calculations
 }
 
 interface CartState {

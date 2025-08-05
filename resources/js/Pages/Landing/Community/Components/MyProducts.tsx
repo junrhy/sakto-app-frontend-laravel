@@ -896,7 +896,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="published" disabled>Published</SelectItem>
                       <SelectItem value="archived">Archived</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
@@ -1396,7 +1396,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="draft">Draft</SelectItem>
-                                  <SelectItem value="published">Published</SelectItem>
+                                  <SelectItem value="published" disabled>Published</SelectItem>
                                   <SelectItem value="archived">Archived</SelectItem>
                                   <SelectItem value="inactive">Inactive</SelectItem>
                                 </SelectContent>
