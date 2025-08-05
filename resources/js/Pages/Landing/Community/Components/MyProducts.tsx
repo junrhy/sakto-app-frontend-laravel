@@ -1208,6 +1208,10 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                             variant="outline"
                             size="sm"
                             onClick={() => {
+                              if (product.status === 'published') {
+                                setError('Cannot edit published products. Please change the status to draft first.');
+                                return;
+                              }
                               if (editingProduct === product.id) {
                                 setEditingProduct(null);
                                 clearEditNewImages();
@@ -1219,7 +1223,11 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                                 ));
                               }
                             }}
-                            className="flex-1 text-xs px-2 py-1 h-7"
+                            className={`flex-1 text-xs px-2 py-1 h-7 ${
+                              product.status === 'published' ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            disabled={product.status === 'published'}
+                            title={product.status === 'published' ? 'Cannot edit published products' : 'Edit product'}
                           >
                             {editingProduct === product.id ? (
                               <>
