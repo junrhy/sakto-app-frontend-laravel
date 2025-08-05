@@ -197,6 +197,7 @@ export default function Checkout({ auth, currency }: Props) {
                 total_amount: getTotalPrice() * 1.12 + shippingFee + serviceFee,
                 payment_method: formData.payment_method,
                 notes: formData.notes,
+                client_identifier: (auth.user as any).identifier || auth.user.id.toString(),
                 country: formData.country,
                 state: formData.state,
                 city: formData.city,
