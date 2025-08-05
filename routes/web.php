@@ -703,6 +703,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::put('/{id}', [ProductOrderController::class, 'update'])->name('product-orders.update');
         Route::delete('/{id}', [ProductOrderController::class, 'destroy'])->name('product-orders.destroy');
         Route::post('/{id}/process-payment', [ProductOrderController::class, 'processPayment'])->name('product-orders.process-payment');
+        Route::patch('/{orderId}/items/{productId}/status', [ProductOrderController::class, 'updateItemStatus'])->name('product-orders.update-item-status');
     });
     
     // Content Management (subscription required)

@@ -470,4 +470,24 @@ class ProductOrderController extends Controller
             return back()->withErrors(['error' => 'An error occurred while loading order confirmation']);
         }
     }
+
+    public function updateItemStatus(Request $request, $orderId, $productId)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:pending,confirmed,processing,shipped,delivered,cancelled,out_of_stock',
+        ]);
+
+        $response = Http::withToken($this->apiToken)
+            ->patch("{$this->apiUrl}/product-orders/{$orderId}/items/{$productId}/status", $validated);
+
+        if (!$response->successful()) {
+            Log::error('Failed to update item status', [
+                'response' => $response->json(),
+                'status' => $response->status()
+            ]);
+            return response()->json(['error' => 'Failed to update item status'], $response->status());
+        }
+
+        return response()->json($response->json());
+    }
 } 

@@ -35,7 +35,9 @@ import {
   List,
   SortAsc,
   SortDesc,
-  Clock
+  Clock,
+  Save,
+  Loader2
 } from 'lucide-react';
 
 interface OrderItem {
@@ -113,6 +115,10 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Order item status update states
+  const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
+  const [itemStatusUpdates, setItemStatusUpdates] = useState<Record<string, string>>({});
 
   // Format price with currency
   const formatPrice = (price: number | string | null | undefined): string => {
@@ -733,6 +739,77 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     }
   }, [successMessage]);
 
+  // Update order item status
+  const updateOrderItemStatus = async (orderId: number, productId: number, newStatus: string) => {
+    const updateKey = `${orderId}-${productId}`;
+    setUpdatingItems(prev => new Set(prev).add(updateKey));
+    
+    try {
+      const response = await fetch(`/product-orders/${orderId}/items/${productId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update item status');
+      }
+
+      const result = await response.json();
+      
+      // Update the local state with the new order data
+      setAllOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId ? result.order : order
+        )
+      );
+      
+      setSuccessMessage(`Item status updated to ${getOrderItemStatusInfo(newStatus).label}`);
+      
+      // Clear the status update from local state
+      setItemStatusUpdates(prev => {
+        const newUpdates = { ...prev };
+        delete newUpdates[updateKey];
+        return newUpdates;
+      });
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update item status';
+      setError(errorMessage);
+    } finally {
+      setUpdatingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(updateKey);
+        return newSet;
+      });
+    }
+  };
+
+  // Handle status change for an item
+  const handleItemStatusChange = (orderId: number, productId: number, newStatus: string) => {
+    const updateKey = `${orderId}-${productId}`;
+    setItemStatusUpdates(prev => ({
+      ...prev,
+      [updateKey]: newStatus
+    }));
+  };
+
+  // Check if an item is being updated
+  const isItemUpdating = (orderId: number, productId: number) => {
+    return updatingItems.has(`${orderId}-${productId}`);
+  };
+
+  // Get the current status for an item (either updated or original)
+  const getItemCurrentStatus = (order: ProductOrder, item: OrderItem) => {
+    const updateKey = `${order.id}-${item.product_id}`;
+    return itemStatusUpdates[updateKey] || item.status;
+  };
+
   if (!contactId) {
     return (
       <div className="text-center text-muted-foreground py-8">
@@ -1279,6 +1356,11 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                                   <div className="space-y-2 max-h-48 overflow-y-auto">
                                     {order.order_items.map((item, index) => {
                                       const statusInfo = getOrderItemStatusInfo(item.status);
+                                      const currentItemStatus = getItemCurrentStatus(order, item);
+                                      const isUpdating = isItemUpdating(order.id, item.product_id);
+                                      const hasStatusChange = itemStatusUpdates[`${order.id}-${item.product_id}`] && 
+                                                             itemStatusUpdates[`${order.id}-${item.product_id}`] !== item.status;
+
                                       return (
                                         <div 
                                           key={index} 
@@ -1299,10 +1381,55 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                                             </div>
                                             <Badge className={`text-[10px] ${statusInfo.color} border ml-2`}>
                                               <span className="mr-0.5">{statusInfo.icon}</span>
-                                              {statusInfo.label}
+                                              {getOrderItemStatusInfo(currentItemStatus).label}
                                             </Badge>
                                           </div>
-                                          <div className="flex justify-between items-center">
+                                          
+                                          {/* Status Update Section */}
+                                          <div className="mt-2 pt-2 border-t border-muted/20">
+                                            <div className="flex items-center justify-between gap-2">
+                                              <div className="flex-1">
+                                                <Select
+                                                  value={currentItemStatus}
+                                                  onValueChange={(value) => handleItemStatusChange(order.id, item.product_id, value)}
+                                                  disabled={isUpdating}
+                                                >
+                                                  <SelectTrigger className="h-6 text-[10px]">
+                                                    <SelectValue placeholder="Select status" />
+                                                  </SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="pending">⏳ Pending</SelectItem>
+                                                    <SelectItem value="confirmed">✅ Confirmed</SelectItem>
+                                                    <SelectItem value="processing">⚙️ Processing</SelectItem>
+                                                    <SelectItem value="shipped">📦 Shipped</SelectItem>
+                                                    <SelectItem value="delivered">🎉 Delivered</SelectItem>
+                                                    <SelectItem value="cancelled">❌ Cancelled</SelectItem>
+                                                    <SelectItem value="out_of_stock">📦 Out of Stock</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+                                              
+                                              {hasStatusChange && !isUpdating && (
+                                                <Button
+                                                  size="sm"
+                                                  className="h-6 px-2 text-[10px]"
+                                                  onClick={() => updateOrderItemStatus(order.id, item.product_id, currentItemStatus)}
+                                                >
+                                                  <Save className="w-3 h-3 mr-1" />
+                                                  Save
+                                                </Button>
+                                              )}
+                                              
+                                              {isUpdating && (
+                                                <div className="flex items-center text-xs text-muted-foreground">
+                                                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                                                  Updating...
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="flex justify-between items-center mt-2">
                                             <span className="text-muted-foreground">Total:</span>
                                             <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
                                           </div>
