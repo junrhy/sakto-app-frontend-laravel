@@ -365,39 +365,6 @@ class ProductOrderController extends Controller
         }
     }
 
-    public function publicCheckout(Request $request)
-    {
-        try {
-            $clientIdentifier = $request->query('client_identifier');
-            
-            if (!$clientIdentifier) {
-                return back()->withErrors(['error' => 'Invalid request']);
-            }
-
-            // Find user by identifier
-            $user = User::where('identifier', $clientIdentifier)->first();
-            
-            if (!$user) {
-                return back()->withErrors(['error' => 'User not found']);
-            }
-
-            $jsonAppCurrency = json_decode($user->app_currency ?? '{"symbol": "$", "code": "USD"}');
-
-            return Inertia::render('ProductOrders/PublicCheckout', [
-                'currency' => $jsonAppCurrency,
-                'member' => $user,
-                'client_identifier' => $clientIdentifier
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Exception in public checkout', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return back()->withErrors(['error' => 'An error occurred while loading checkout']);
-        }
-    }
-
     public function publicStore(Request $request)
     {
         $validated = $request->validate([

@@ -348,7 +348,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/health-insurance/members/{id}/public', [HealthInsuranceController::class, 'showMember'])->name('health-insurance.members.show.public');
 
     // Public Checkout Routes (for member marketplace)
-    Route::get('/member/checkout', [ProductOrderController::class, 'publicCheckout'])->name('member.public-checkout');
     Route::post('/member/checkout', [ProductOrderController::class, 'publicStore'])->name('member.public-checkout.store');
     Route::get('/member/checkout/success', [ProductOrderController::class, 'publicCheckoutSuccess'])->name('member.public-checkout.success');
 
