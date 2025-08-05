@@ -8,6 +8,8 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  status: string;
+  is_target_product?: boolean;
 }
 
 interface Order {
@@ -198,6 +200,66 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
     setError(null);
   };
 
+  // Get order item status color and label
+  const getOrderItemStatusInfo = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return {
+          color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+          label: 'Pending',
+          icon: '⏳'
+        };
+      case 'confirmed':
+        return {
+          color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+          label: 'Confirmed',
+          icon: '✅'
+        };
+      case 'processing':
+        return {
+          color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+          label: 'Processing',
+          icon: '⚙️'
+        };
+      case 'shipped':
+        return {
+          color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+          label: 'Shipped',
+          icon: '📦'
+        };
+      case 'delivered':
+        return {
+          color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+          label: 'Delivered',
+          icon: '🎉'
+        };
+      case 'cancelled':
+        return {
+          color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+          label: 'Cancelled',
+          icon: '❌'
+        };
+      case 'refunded':
+        return {
+          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+          label: 'Refunded',
+          icon: '↩️'
+        };
+      case 'out_of_stock':
+        return {
+          color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800',
+          label: 'Out of Stock',
+          icon: '📦'
+        };
+      default:
+        return {
+          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+          label: status || 'Unknown',
+          icon: '❓'
+        };
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 p-8">
@@ -325,29 +387,79 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
               {/* Order Items */}
               <div>
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Order Items</h4>
-                <div className="space-y-3">
-                  {selectedOrder.order_items?.map((item: any, index: number) => (
-                    <div key={`${item.product_id}-${index}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-2 sm:space-y-0">
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{item.name || 'N/A'}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
-                          Qty: {item.quantity || 0} × {formatPrice(item.price || 0)}
-                        </div>
-                        {item.attributes && Object.keys(item.attributes).length > 0 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {Object.entries(item.attributes).map(([key, value]) => (
-                              <span key={key} className="mr-2">
-                                {key}: {String(value)}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-left sm:text-right">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{formatPrice((item.price || 0) * (item.quantity || 0))}</div>
-                      </div>
+                
+                {/* Status Summary */}
+                {selectedOrder.order_items && selectedOrder.order_items.length > 0 && (
+                  <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">Status Summary</div>
+                    <div className="flex flex-wrap gap-2">
+                      {(() => {
+                        const statusCounts: Record<string, number> = {};
+                        selectedOrder.order_items.forEach((item: any) => {
+                          const status = item.status || 'pending';
+                          statusCounts[status] = (statusCounts[status] || 0) + 1;
+                        });
+                        
+                        return Object.entries(statusCounts).map(([status, count]) => {
+                          const statusInfo = getOrderItemStatusInfo(status);
+                          return (
+                            <span key={status} className={`px-2 py-1 text-xs font-medium rounded-full border ${statusInfo.color}`}>
+                              <span className="mr-1">{statusInfo.icon}</span>
+                              {statusInfo.label}: {count}
+                            </span>
+                          );
+                        });
+                      })()}
                     </div>
-                  )) || <div className="text-gray-500 dark:text-gray-400 text-sm">No items found</div>}
+                  </div>
+                )}
+                
+                <div className="space-y-3">
+                  {selectedOrder.order_items?.map((item: any, index: number) => {
+                    const statusInfo = getOrderItemStatusInfo(item.status || 'pending');
+                    return (
+                      <div 
+                        key={`${item.product_id}-${index}`} 
+                        className={`p-3 rounded-lg ${
+                          item.is_target_product 
+                            ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
+                            : 'bg-gray-50 dark:bg-gray-700'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.name || 'N/A'}</div>
+                          </div>
+                          <div className="flex items-center ml-3 flex-shrink-0">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full border ${statusInfo.color}`}>
+                              <span className="mr-1">{statusInfo.icon}</span>
+                              {statusInfo.label}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="text-sm text-gray-600 dark:text-gray-300">
+                              Qty: {item.quantity || 0} × {formatPrice(item.price || 0)}
+                            </div>
+                            {item.attributes && Object.keys(item.attributes).length > 0 && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {Object.entries(item.attributes).map(([key, value]) => (
+                                  <span key={key} className="mr-2">
+                                    {key}: {String(value)}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right ml-3 flex-shrink-0">
+                            <div className="font-medium text-gray-900 dark:text-gray-100">{formatPrice((item.price || 0) * (item.quantity || 0))}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }) || <div className="text-gray-500 dark:text-gray-400 text-sm">No items found</div>}
                 </div>
               </div>
 
