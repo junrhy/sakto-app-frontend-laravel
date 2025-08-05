@@ -1548,21 +1548,23 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
             }
           }}
         >
-          <DialogContent className="w-full h-full max-w-none max-h-none m-0 rounded-none overflow-hidden">
-            <DialogHeader>
+          <DialogContent className="w-full max-w-7xl h-[90vh] m-0 rounded-lg overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0 pb-4">
               <DialogTitle className="flex items-center">
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Orders for {selectedProductForOrders?.name}
               </DialogTitle>
             </DialogHeader>
-            {selectedProductForOrders && (
-              <ProductOrders 
-                member={member}
-                appCurrency={appCurrency}
-                contactId={contactId}
-                productId={selectedProductForOrders.id}
-              />
-            )}
+            <div className="flex-1 overflow-hidden">
+              {selectedProductForOrders && (
+                <ProductOrders 
+                  member={member}
+                  appCurrency={appCurrency}
+                  contactId={contactId}
+                  productId={selectedProductForOrders.id}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

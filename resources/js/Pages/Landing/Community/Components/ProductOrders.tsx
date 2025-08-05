@@ -45,6 +45,7 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  status: string;
   is_target_product: boolean;
 }
 
@@ -173,6 +174,60 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
         return {
           color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
           label: status,
+          icon: '❓'
+        };
+    }
+  };
+
+  // Get order item status color and label
+  const getOrderItemStatusInfo = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return {
+          color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+          label: 'Pending',
+          icon: '⏳'
+        };
+      case 'confirmed':
+        return {
+          color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+          label: 'Confirmed',
+          icon: '✅'
+        };
+      case 'processing':
+        return {
+          color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+          label: 'Processing',
+          icon: '⚙️'
+        };
+      case 'shipped':
+        return {
+          color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+          label: 'Shipped',
+          icon: '📦'
+        };
+      case 'delivered':
+        return {
+          color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800',
+          label: 'Delivered',
+          icon: '🎉'
+        };
+      case 'cancelled':
+        return {
+          color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800',
+          label: 'Cancelled',
+          icon: '❌'
+        };
+      case 'refunded':
+        return {
+          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+          label: 'Refunded',
+          icon: '↩️'
+        };
+      default:
+        return {
+          color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700',
+          label: status || 'Unknown',
           icon: '❓'
         };
     }
@@ -712,7 +767,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   const stats = getSummaryStats();
 
   return (
-    <div className="h-full flex flex-col space-y-6 overflow-hidden">
+    <div className="h-full flex flex-col space-y-6 overflow-y-auto">
       {/* Success Message */}
       {successMessage && (
         <div className="relative p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 rounded-lg">
@@ -1023,12 +1078,12 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                         </Button>
                       </div>
-                                             <div className="flex items-center space-x-2">
+                       <div className="flex items-center space-x-2">
                          <Badge className={getStatusInfo(order.order_status).color} variant="outline">
-                           {getStatusInfo(order.order_status).label}
+                           Order Status: {getStatusInfo(order.order_status).label}
                          </Badge>
                          <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
-                           {getPaymentStatusInfo(order.payment_status).label}
+                           Payment Status: {getPaymentStatusInfo(order.payment_status).label}
                          </Badge>
                        </div>
                     </CardHeader>
@@ -1082,10 +1137,10 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                         </div>
                         <div className="flex items-center space-x-2">
                           <Badge className={getStatusInfo(order.order_status).color} variant="outline">
-                            {getStatusInfo(order.order_status).label}
+                            Order Status: {getStatusInfo(order.order_status).label}
                           </Badge>
                           <Badge className={getPaymentStatusInfo(order.payment_status).color} variant="outline">
-                            {getPaymentStatusInfo(order.payment_status).label}
+                            Payment Status: {getPaymentStatusInfo(order.payment_status).label}
                           </Badge>
                         </div>
                       </div>
@@ -1216,47 +1271,44 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                             <div className="space-y-3">
                               <div className="flex items-center space-x-2">
                                 <Package className="w-4 h-4 text-primary" />
-                                <span className="font-medium text-sm">Product & Order</span>
+                                <span className="font-medium text-sm">Order Items</span>
                               </div>
                               <div className="space-y-3">
-                                {/* Product Details */}
-                                <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-3 rounded-lg border border-primary/20">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                                        <Package className="w-4 h-4 text-primary" />
-                                      </div>
-                                      <div>
-                                        <p className="font-medium text-sm">Quantity & Price</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="text-xs text-muted-foreground">Revenue</p>
-                                      <p className="font-semibold text-base text-primary">{formatPrice(targetRevenue)}</p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Order Summary */}
+                                {/* Order Items */}
                                 <div className="bg-muted/10 p-3 rounded-lg space-y-2">
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">This product items:</span>
-                                    <span className="font-medium">{targetQuantity}</span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">Total order items:</span>
-                                    <span className="font-medium">{order.order_items.length}</span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">Product revenue:</span>
-                                    <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">Order total:</span>
-                                    <span className="font-semibold">{formatPrice(order.total_amount)}</span>
+                                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {order.order_items.map((item, index) => {
+                                      const statusInfo = getOrderItemStatusInfo(item.status);
+                                      return (
+                                        <div 
+                                          key={index} 
+                                          className={`p-2 rounded border text-xs ${
+                                            item.is_target_product 
+                                              ? 'bg-primary/5 border-primary/20' 
+                                              : 'bg-muted/5 border-muted/20'
+                                          }`}
+                                        >
+                                          <div className="flex items-start justify-between mb-1">
+                                            <div className="flex-1 min-w-0">
+                                              <p className="font-medium truncate">
+                                                {item.name}
+                                              </p>
+                                              <p className="text-muted-foreground">
+                                                {item.quantity} × {formatPrice(item.price)}
+                                              </p>
+                                            </div>
+                                            <Badge className={`text-[10px] ${statusInfo.color} border ml-2`}>
+                                              <span className="mr-0.5">{statusInfo.icon}</span>
+                                              {statusInfo.label}
+                                            </Badge>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">Total:</span>
+                                            <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               </div>
