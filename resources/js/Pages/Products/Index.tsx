@@ -49,6 +49,7 @@ import { useCart } from '@/Components/CartContext';
 import { CartButton } from '@/Components/CartButton';
 import { ShoppingCartPanel } from '@/Components/ShoppingCart';
 import { useTheme } from '@/Components/ThemeProvider';
+import { useToast } from '@/Components/ui/use-toast';
 
 // Product Image Carousel Component for Grid View
 const ProductImageCarousel = ({ images, productName }: { images: string[], productName: string }) => {
@@ -350,6 +351,7 @@ export default function Index({ auth, products, currency }: Props) {
     });
     const { addItem, getItemQuantity } = useCart();
     const { theme } = useTheme();
+    const { toast } = useToast();
 
     const canEdit = useMemo(() => {
         if (auth.selectedTeamMember) {
@@ -564,7 +566,11 @@ const getStockStatus = (quantity?: number, type?: string) => {
 
     const handleAddToCart = (product: Product) => {
         if (product.type === 'physical' && product.stock_quantity !== undefined && product.stock_quantity <= 0) {
-            alert('This product is out of stock');
+            toast({
+                title: "Out of Stock",
+                description: "This product is out of stock",
+                variant: "destructive",
+            });
             return;
         }
 
@@ -578,7 +584,11 @@ const getStockStatus = (quantity?: number, type?: string) => {
         const currentQuantity = getItemQuantity(product.id, 0); // 0 indicates no variant
         if (product.type === 'physical' && product.stock_quantity !== undefined) {
             if (currentQuantity >= product.stock_quantity) {
-                alert('Cannot add more items than available in stock');
+                toast({
+                    title: "Stock Limit Reached",
+                    description: "Cannot add more items than available in stock",
+                    variant: "destructive",
+                });
                 return;
             }
         }
@@ -595,7 +605,10 @@ const getStockStatus = (quantity?: number, type?: string) => {
             thumbnail_url: getProductImage(product) || product.thumbnail_url
         });
 
-        alert('Product added to cart!');
+        toast({
+            title: "Success",
+            description: "Product added to cart!",
+        });
     };
 
     const stats = {

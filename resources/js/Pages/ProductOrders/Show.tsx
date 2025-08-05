@@ -24,7 +24,10 @@ import {
     Archive,
     DollarSign,
     Calendar,
-    FileText
+    FileText,
+    Warehouse,
+    AlertTriangle,
+    CheckCircle2
 } from 'lucide-react';
 import {
     Table,
@@ -69,6 +72,26 @@ interface Order {
     paid_at?: string;
     shipped_at?: string;
     delivered_at?: string;
+    stock_availability?: StockAvailability[];
+    stock_summary?: StockSummary;
+}
+
+interface StockAvailability {
+    product_id: number;
+    product_name: string;
+    requested_quantity: number;
+    available_quantity: number | null;
+    is_available: boolean;
+    item_status: string;
+}
+
+interface StockSummary {
+    order_status: string;
+    total_physical_items: number;
+    confirmed_items: number;
+    pending_items: number;
+    stock_reserved: boolean;
+    can_confirm: boolean;
 }
 
 interface Props extends PageProps {
@@ -164,6 +187,18 @@ export default function Show({ auth, order, currency }: Props) {
         }
     };
 
+    const handleConfirmOrder = () => {
+        if (confirm('Are you sure you want to confirm this order? This will reserve stock for all physical products.')) {
+            router.post(route('product-orders.confirm', order.id));
+        }
+    };
+
+    const handleCancelOrder = () => {
+        if (confirm('Are you sure you want to cancel this order? This will restore stock for all physical products.')) {
+            router.post(route('product-orders.cancel', order.id));
+        }
+    };
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -192,6 +227,28 @@ export default function Show({ auth, order, currency }: Props) {
                             </div>
                         </div>
                         <div className="flex space-x-2">
+                            {/* Stock Management Actions */}
+                            {order.stock_summary?.can_confirm && (
+                                <Button 
+                                    variant="default" 
+                                    className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                                    onClick={() => handleConfirmOrder()}
+                                >
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                    Confirm Order
+                                </Button>
+                            )}
+                            
+                            {order.order_status === 'pending' && (
+                                <Button 
+                                    variant="destructive" 
+                                    onClick={() => handleCancelOrder()}
+                                >
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Cancel Order
+                                </Button>
+                            )}
+                            
                             <Link href={route('product-orders.edit', order.id)}>
                                 <Button>
                                     <Edit className="w-4 h-4 mr-2" />
@@ -429,6 +486,85 @@ export default function Show({ auth, order, currency }: Props) {
                                     )}
                                 </CardContent>
                             </Card>
+
+                            {/* Stock Status Summary */}
+                            {order.stock_summary && (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center">
+                                            <Warehouse className="w-4 h-4 mr-2" />
+                                            Stock Status Summary
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                                <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+                                                    {order.stock_summary.confirmed_items}
+                                                </div>
+                                                <div className="text-xs text-green-600 dark:text-green-400">Confirmed</div>
+                                            </div>
+                                            <div className="text-center p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                                                <div className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">
+                                                    {order.stock_summary.pending_items}
+                                                </div>
+                                                <div className="text-xs text-yellow-600 dark:text-yellow-400">Pending</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">Total Physical Items:</span>
+                                                <span className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {order.stock_summary.total_physical_items}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">Stock Reserved:</span>
+                                                <Badge variant={order.stock_summary.stock_reserved ? "default" : "secondary"}>
+                                                    {order.stock_summary.stock_reserved ? "Yes" : "No"}
+                                                </Badge>
+                                            </div>
+                                            {order.stock_summary.can_confirm && (
+                                                <div className="flex items-center justify-between text-sm">
+                                                    <span className="text-gray-600 dark:text-gray-400">Can Confirm:</span>
+                                                    <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                                        Yes
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Stock Availability Details */}
+                                        {order.stock_availability && order.stock_availability.length > 0 && (
+                                            <div className="mt-4">
+                                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Item Stock Status
+                                                </h4>
+                                                <div className="space-y-2">
+                                                    {order.stock_availability.map((item, index) => (
+                                                        <div key={index} className="flex items-center justify-between text-xs">
+                                                            <span className="text-gray-600 dark:text-gray-400 truncate max-w-[120px]">
+                                                                {item.product_name}
+                                                            </span>
+                                                            <div className="flex items-center space-x-1">
+                                                                {item.is_available ? (
+                                                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                                                ) : (
+                                                                    <AlertTriangle className="w-3 h-3 text-red-500" />
+                                                                )}
+                                                                <span className={`text-xs ${item.is_available ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                                    {item.available_quantity !== null ? `${item.available_quantity}/${item.requested_quantity}` : 'N/A'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
 
                             {/* Notes */}
                             {order.notes && (
