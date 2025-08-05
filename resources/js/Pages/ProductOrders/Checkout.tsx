@@ -188,6 +188,7 @@ export default function Checkout({ auth, currency }: Props) {
                     attributes: item.attributes ?? null,
                     weight: item.weight || 0,
                     shipping_fee: getItemShippingFee(item),
+                    status: 'pending', // Initial status, will be updated by backend based on stock
                 })),
                 subtotal: getTotalPrice(),
                 tax_amount: getTotalPrice() * 0.12, // 12% tax

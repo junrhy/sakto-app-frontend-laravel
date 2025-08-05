@@ -42,6 +42,7 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number;
+    status?: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'out_of_stock';
 }
 
 interface Order {
@@ -97,6 +98,28 @@ export default function Show({ auth, order, currency }: Props) {
             <Badge className={config.color}>
                 <Icon className="w-3 h-3 mr-1" />
                 {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Badge>
+        );
+    };
+
+    const getItemStatusBadge = (status?: string) => {
+        const statusConfig = {
+            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
+            confirmed: { color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300', icon: CheckCircle },
+            processing: { color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300', icon: Package },
+            shipped: { color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300', icon: Truck },
+            delivered: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
+            cancelled: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
+            out_of_stock: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: XCircle },
+        };
+
+        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+        const Icon = config.icon;
+
+        return (
+            <Badge className={config.color}>
+                <Icon className="w-3 h-3 mr-1" />
+                {status ? status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ') : 'Pending'}
             </Badge>
         );
     };
@@ -249,6 +272,7 @@ export default function Show({ auth, order, currency }: Props) {
                                                 <TableHead>Product</TableHead>
                                                 <TableHead>Quantity</TableHead>
                                                 <TableHead>Price</TableHead>
+                                                <TableHead>Status</TableHead>
                                                 <TableHead>Total</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -271,6 +295,9 @@ export default function Show({ auth, order, currency }: Props) {
                                                     </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-gray-100">{item.quantity}</TableCell>
                                                     <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price, currency.symbol)}</TableCell>
+                                                    <TableCell>
+                                                        {getItemStatusBadge(item.status)}
+                                                    </TableCell>
                                                     <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.quantity, currency.symbol)}</TableCell>
                                                 </TableRow>
                                             ))}

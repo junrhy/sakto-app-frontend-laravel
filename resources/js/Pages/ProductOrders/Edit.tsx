@@ -51,6 +51,7 @@ interface OrderItem {
     name: string;
     quantity: number;
     price: number;
+    status?: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'out_of_stock';
 }
 
 interface Order {
@@ -91,6 +92,7 @@ interface Props extends PageProps {
 }
 
 export default function Edit({ auth, order, currency, errors }: Props) {
+    const [processing, setProcessing] = useState(false);
     const [formData, setFormData] = useState({
         order_status: order.order_status,
         payment_status: order.payment_status,
@@ -98,14 +100,26 @@ export default function Edit({ auth, order, currency, errors }: Props) {
         payment_reference: order.payment_reference || '',
         shipping_address: order.shipping_address || '',
         billing_address: order.billing_address || '',
+        order_items: order.order_items.map(item => ({
+            ...item,
+            status: item.status || 'pending'
+        })),
         notes: order.notes || ''
     });
-    const [processing, setProcessing] = useState(false);
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
+        }));
+    };
+
+    const handleItemStatusChange = (itemIndex: number, status: string) => {
+        setFormData(prev => ({
+            ...prev,
+            order_items: prev.order_items.map((item, index) => 
+                index === itemIndex ? { ...item, status: status as any } : item
+            )
         }));
     };
 
@@ -140,6 +154,28 @@ export default function Edit({ auth, order, currency, errors }: Props) {
             <Badge className={config.color}>
                 <Icon className="w-3 h-3 mr-1" />
                 {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Badge>
+        );
+    };
+
+    const getItemStatusBadge = (status?: string) => {
+        const statusConfig = {
+            pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: Clock },
+            confirmed: { color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300', icon: CheckCircle },
+            processing: { color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300', icon: Package },
+            shipped: { color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300', icon: Truck },
+            delivered: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: CheckCircle },
+            cancelled: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: XCircle },
+            out_of_stock: { color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300', icon: XCircle },
+        };
+
+        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+        const Icon = config.icon;
+
+        return (
+            <Badge className={config.color}>
+                <Icon className="w-3 h-3 mr-1" />
+                {status ? status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ') : 'Pending'}
             </Badge>
         );
     };
@@ -413,23 +449,59 @@ export default function Edit({ auth, order, currency, errors }: Props) {
                                         <CardTitle>Order Items</CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="space-y-2">
-                                            {order.order_items.map((item, index) => (
-                                                <div key={index} className="flex justify-between text-sm">
-                                                    <div className="truncate">
-                                                        <div className="text-gray-900 dark:text-gray-100">{item.name} (x{item.quantity})</div>
-                                                        {item.variant_id && item.attributes && (
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                                {Object.entries(item.attributes)
-                                                                    .map(([key, value]) => `${key}: ${value}`)
-                                                                    .join(', ')}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <span className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.quantity, currency.symbol)}</span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Product</TableHead>
+                                                    <TableHead>Quantity</TableHead>
+                                                    <TableHead>Price</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                    <TableHead>Total</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {formData.order_items.map((item, index) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell>
+                                                            <div className="font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
+                                                            {item.variant_id && item.attributes && (
+                                                                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {Object.entries(item.attributes).map(([key, value]) => (
+                                                                            <Badge key={key} variant="secondary" className="text-xs">
+                                                                                {key}: {value}
+                                                                            </Badge>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-gray-900 dark:text-gray-100">{item.quantity}</TableCell>
+                                                        <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price, currency.symbol)}</TableCell>
+                                                        <TableCell>
+                                                            <Select 
+                                                                value={item.status || 'pending'} 
+                                                                onValueChange={(value) => handleItemStatusChange(index, value)}
+                                                            >
+                                                                <SelectTrigger className="w-32">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="pending">Pending</SelectItem>
+                                                                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                                                                    <SelectItem value="processing">Processing</SelectItem>
+                                                                    <SelectItem value="shipped">Shipped</SelectItem>
+                                                                    <SelectItem value="delivered">Delivered</SelectItem>
+                                                                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </TableCell>
+                                                        <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(item.price * item.quantity, currency.symbol)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
                                     </CardContent>
                                 </Card>
 

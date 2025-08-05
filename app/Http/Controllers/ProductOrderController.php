@@ -134,6 +134,14 @@ class ProductOrderController extends Controller
             'shipping_address' => 'nullable|string',
             'billing_address' => 'nullable|string',
             'notes' => 'nullable|string',
+            'order_items' => 'nullable|array',
+            'order_items.*.product_id' => 'required|integer',
+            'order_items.*.name' => 'nullable|string',
+            'order_items.*.variant_id' => 'nullable|integer',
+            'order_items.*.quantity' => 'required|integer|min:1',
+            'order_items.*.price' => 'required|numeric|min:0',
+            'order_items.*.attributes' => 'nullable|array',
+            'order_items.*.status' => 'nullable|string|in:pending,confirmed,processing,shipped,delivered,cancelled,out_of_stock',
         ]);
 
         $response = Http::withToken($this->apiToken)
@@ -296,6 +304,7 @@ class ProductOrderController extends Controller
             'order_items.*.price' => 'required|numeric|min:0',
             'order_items.*.weight' => 'nullable|numeric|min:0',
             'order_items.*.shipping_fee' => 'nullable|numeric|min:0',
+            'order_items.*.status' => 'nullable|string|in:pending,confirmed,processing,shipped,delivered,cancelled,out_of_stock',
             'subtotal' => 'required|numeric|min:0',
             'tax_amount' => 'nullable|numeric|min:0',
             'shipping_fee' => 'nullable|numeric|min:0',
