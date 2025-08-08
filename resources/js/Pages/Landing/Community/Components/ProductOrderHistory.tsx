@@ -8,6 +8,7 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  shipping_fee?: number;
   status: string;
   is_target_product?: boolean;
 }
@@ -443,6 +444,11 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                             <div className="text-sm text-gray-600 dark:text-gray-300">
                               Qty: {item.quantity || 0} × {formatPrice(item.price || 0)}
                             </div>
+                            {item.shipping_fee && item.shipping_fee > 0 && (
+                              <div className="text-sm text-blue-600 dark:text-blue-400">
+                                Shipping: {formatPrice(item.shipping_fee)}
+                              </div>
+                            )}
                             {item.attributes && Object.keys(item.attributes).length > 0 && (
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 {Object.entries(item.attributes).map(([key, value]) => (

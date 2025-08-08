@@ -49,6 +49,7 @@ interface OrderItem {
   price: number;
   status: string;
   is_target_product: boolean;
+  shipping_fee?: number;
 }
 
 interface ProductOrder {
@@ -411,6 +412,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
         'Product Quantity',
         'Product Price',
         'Product Revenue',
+        'Product Shipping Fee',
         'Order Subtotal',
         'Tax Amount',
         'Shipping Fee',
@@ -451,6 +453,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
           const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
           const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
           const targetPrice = targetItems[0]?.price || 0;
+          const targetShippingFee = targetItems[0]?.shipping_fee || 0;
 
           const row = [
             escapeCSVValue(order.order_number),
@@ -467,6 +470,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             escapeCSVValue(targetQuantity),
             escapeCSVValue(safeNumberFormat(targetPrice)),
             escapeCSVValue(safeNumberFormat(targetRevenue)),
+            escapeCSVValue(safeNumberFormat(targetShippingFee)),
             escapeCSVValue(safeNumberFormat(order.subtotal)),
             escapeCSVValue(safeNumberFormat(order.tax_amount)),
             escapeCSVValue(safeNumberFormat(order.shipping_fee)),
@@ -538,6 +542,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
           const targetQuantity = targetItems.reduce((sum, item) => sum + item.quantity, 0);
           const targetRevenue = targetItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
           const targetPrice = targetItems[0]?.price || 0;
+          const targetShippingFee = targetItems[0]?.shipping_fee || 0;
 
           return {
             'Order Number': order.order_number,
@@ -554,6 +559,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             'Product Quantity': targetQuantity,
             'Product Price': targetPrice,
             'Product Revenue': targetRevenue,
+            'Product Shipping Fee': targetShippingFee,
             'Order Subtotal': order.subtotal,
             'Tax Amount': order.tax_amount,
             'Shipping Fee': order.shipping_fee,
@@ -1433,6 +1439,12 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                                             <span className="text-muted-foreground">Total:</span>
                                             <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
                                           </div>
+                                          {item.shipping_fee && item.shipping_fee > 0 && (
+                                            <div className="flex justify-between items-center mt-1">
+                                              <span className="text-muted-foreground">Shipping:</span>
+                                              <span className="font-semibold text-blue-600 dark:text-blue-400">{formatPrice(item.shipping_fee)}</span>
+                                            </div>
+                                          )}
                                         </div>
                                       );
                                     })}
