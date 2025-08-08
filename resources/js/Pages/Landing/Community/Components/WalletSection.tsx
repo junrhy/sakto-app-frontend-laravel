@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import BillsSection from './BillsSection';
 
 interface WalletSectionProps {
     member: {
@@ -83,6 +84,9 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
     const [transferReference, setTransferReference] = useState('');
     const [transferring, setTransferring] = useState(false);
     const [transferError, setTransferError] = useState('');
+
+    // Bills state
+    const [showBillsModal, setShowBillsModal] = useState(false);
 
     // Add a new state for field-level contact search error
     const [contactSearchError, setContactSearchError] = useState('');
@@ -289,7 +293,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                 setShowTransferModal(false);
                 
                 // Set success message
-                setSuccessMessage('Transfer completed successfully! Reference: ' + (data.data?.reference || 'N/A'));
+                setSuccessMessage('Send completed successfully! Reference: ' + (data.data?.reference || 'N/A'));
                 
                 // Refresh wallet data and transaction history
                 await fetchWalletBalance();
@@ -461,7 +465,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <button
                         onClick={openTransferModal}
                         className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -469,7 +473,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                         <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                         </svg>
-                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Transfer</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Send</span>
                     </button>
                     <button
                         onClick={() => {
@@ -481,6 +485,15 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">View History</span>
+                    </button>
+                    <button
+                        onClick={() => setShowBillsModal(true)}
+                        className="flex items-center justify-center px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">Bills</span>
                     </button>
                 </div>
             </div>
@@ -589,7 +602,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Transfer Funds</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Send Funds</h3>
                             <button
                                 onClick={() => setShowTransferModal(false)}
                                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
@@ -705,12 +718,34 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                                 {transferring ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                        Transferring...
+                                        Sending...
                                     </>
                                 ) : (
-                                    'Transfer Funds'
+                                    'Send Funds'
                                 )}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bills Modal */}
+            {showBillsModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Bill Payments</h3>
+                            <button
+                                onClick={() => setShowBillsModal(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                            >
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            <BillsSection member={member} contactId={contactId} walletBalance={walletData?.wallet.balance} />
                         </div>
                     </div>
                 </div>
