@@ -21,17 +21,7 @@ interface Biller {
     is_favorite: boolean;
 }
 
-interface BillPayment {
-    id: number;
-    biller_id: number;
-    biller_name: string;
-    account_number: string;
-    amount: number;
-    description: string;
-    reference: string;
-    status: 'pending' | 'completed' | 'failed';
-    created_at: string;
-}
+
 
 export default function BillsSection({ member, contactId, walletBalance }: BillsSectionProps) {
     const [billers, setBillers] = useState<Biller[]>([]);
@@ -48,10 +38,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     const [processing, setProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState('');
 
-    // Payment history state
-    const [showHistoryModal, setShowHistoryModal] = useState(false);
-    const [paymentHistory, setPaymentHistory] = useState<BillPayment[]>([]);
-    const [loadingHistory, setLoadingHistory] = useState(false);
+
 
     // Search and category state
     const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +76,6 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     useEffect(() => {
         if (contactId) {
             fetchBillers();
-            fetchPaymentHistory();
         } else {
             setLoading(false);
         }
@@ -115,46 +101,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
         }
     };
 
-    const fetchPaymentHistory = async () => {
-        try {
-            setLoadingHistory(true);
-            
-            // Simulate API call - replace with actual API endpoint
-            // const response = await fetch(`/public/contacts/${contactId}/bill-payments`);
-            // const data = await response.json();
-            
-            // For now, use sample data
-            await new Promise(resolve => setTimeout(resolve, 300));
-            setPaymentHistory([
-                {
-                    id: 1,
-                    biller_id: 1,
-                    biller_name: 'Meralco',
-                    account_number: '1234567890',
-                    amount: 2500.00,
-                    description: 'Electricity bill payment',
-                    reference: 'BILL-2024-001',
-                    status: 'completed',
-                    created_at: '2024-01-15T10:30:00Z'
-                },
-                {
-                    id: 2,
-                    biller_id: 2,
-                    biller_name: 'Maynilad',
-                    account_number: '0987654321',
-                    amount: 850.00,
-                    description: 'Water bill payment',
-                    reference: 'BILL-2024-002',
-                    status: 'completed',
-                    created_at: '2024-01-10T14:20:00Z'
-                }
-            ]);
-        } catch (err) {
-            console.error('Failed to load payment history:', err);
-        } finally {
-            setLoadingHistory(false);
-        }
-    };
+
 
     const toggleFavorite = async (billerId: number) => {
         try {
@@ -254,9 +201,6 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
             setShowPaymentModal(false);
             
             toast.success('Bill payment completed successfully!');
-            
-            // Refresh payment history
-            await fetchPaymentHistory();
         } catch (err) {
             setPaymentError('Payment failed. Please try again.');
         } finally {
@@ -436,39 +380,23 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
 
     return (
         <div className="space-y-3 sm:space-y-4">
-            {/* Header with Search and Back Button */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Header - Only show when viewing billers */}
+            {!showCategories && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+                    <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3">
-                            {!showCategories && (
-                                <button
-                                    onClick={handleBackToCategories}
-                                    className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                                >
-                                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                    Back to Categories
-                                </button>
-                            )}
-                            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                {showCategories ? 'Bill Categories' : `${categories.find(c => c.id === selectedCategory)?.name} Billers`}
-                            </h2>
+                            <button
+                                onClick={handleBackToCategories}
+                                className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                            >
+                                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back to Categories
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setShowHistoryModal(true)}
-                            className="flex items-center px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                        >
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Payment History
-                        </button>
-                    </div>
-                    
-                    {/* Search Bar - Only show when viewing billers */}
-                    {!showCategories && (
+                        
+                        {/* Search Bar */}
                         <div className="flex-1">
                             <input
                                 type="text"
@@ -478,9 +406,9 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                             />
                         </div>
-                    )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Favorite Billers - Only show when viewing categories */}
             {showCategories && favoriteBillers.length > 0 && (
@@ -524,7 +452,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
             {/* Categories View */}
             {showCategories && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Bill Categories</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Categories</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {categories.map((category) => {
                             const billerCount = getCategoryBillersCount(category.id);
@@ -754,90 +682,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                 </div>
             )}
 
-            {/* Payment History Modal */}
-            {showHistoryModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
-                        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Payment History</h3>
-                            <button
-                                onClick={() => setShowHistoryModal(false)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
-                            >
-                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                            {loadingHistory ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                                    <span className="ml-2 text-gray-600 dark:text-gray-400">Loading payment history...</span>
-                                </div>
-                            ) : paymentHistory.length > 0 ? (
-                                <div className="space-y-0">
-                                    <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-                                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                            <thead className="bg-gray-50 dark:bg-gray-700">
-                                                <tr>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Biller</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Account</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reference</th>
-                                                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                                {paymentHistory.map((payment) => (
-                                                    <tr key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                            {payment.biller_name}
-                                                        </td>
-                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                            {payment.account_number}
-                                                        </td>
-                                                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                            {formatPrice(payment.amount)}
-                                                        </td>
-                                                        <td className="px-3 py-2 whitespace-nowrap">
-                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                                payment.status === 'completed' 
-                                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                    : payment.status === 'pending'
-                                                                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                            }`}>
-                                                                {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 font-mono text-xs">
-                                                            {payment.reference}
-                                                        </td>
-                                                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                            {new Date(payment.created_at).toLocaleDateString()}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <div className="text-gray-400 mb-4">
-                                        <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                    <p className="text-gray-600 dark:text-gray-400">No payment history found</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 } 
