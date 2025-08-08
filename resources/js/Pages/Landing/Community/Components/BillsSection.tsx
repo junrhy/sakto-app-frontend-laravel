@@ -53,21 +53,21 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     const [paymentHistory, setPaymentHistory] = useState<BillPayment[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
 
-    // Search state
+    // Search and category state
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [showCategories, setShowCategories] = useState(true);
 
     const categories = [
-        'all',
-        'electricity',
-        'water',
-        'internet',
-        'mobile',
-        'cable',
-        'insurance',
-        'credit_card',
-        'loan',
-        'other'
+        { id: 'electricity', name: 'Electricity', icon: 'electricity' },
+        { id: 'water', name: 'Water', icon: 'water' },
+        { id: 'internet', name: 'Internet', icon: 'internet' },
+        { id: 'mobile', name: 'Mobile', icon: 'mobile' },
+        { id: 'cable', name: 'Cable TV', icon: 'cable' },
+        { id: 'credit_card', name: 'Credit Card', icon: 'credit_card' },
+        { id: 'insurance', name: 'Insurance', icon: 'insurance' },
+        { id: 'loan', name: 'Loan', icon: 'loan' },
+        { id: 'other', name: 'Other', icon: 'other' }
     ];
 
     // Sample billers data - in real app, this would come from API
@@ -185,6 +185,18 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
         } catch (err) {
             toast.error('Failed to update favorite');
         }
+    };
+
+    const handleCategoryClick = (categoryId: string) => {
+        setSelectedCategory(categoryId);
+        setShowCategories(false);
+        setSearchTerm(''); // Clear search when switching categories
+    };
+
+    const handleBackToCategories = () => {
+        setSelectedCategory(null);
+        setShowCategories(true);
+        setSearchTerm('');
     };
 
     const handlePayment = async () => {
@@ -351,11 +363,24 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
         }
     };
 
-    const filteredBillers = billers.filter(biller => {
-        const matchesSearch = biller.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' || biller.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
+    const getCategoryBillers = (categoryId: string) => {
+        return billers.filter(biller => biller.category === categoryId);
+    };
+
+    const getFilteredBillers = () => {
+        if (!selectedCategory) return [];
+        
+        const categoryBillers = getCategoryBillers(selectedCategory);
+        if (!searchTerm) return categoryBillers;
+        
+        return categoryBillers.filter(biller => 
+            biller.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    };
+
+    const getCategoryBillersCount = (categoryId: string) => {
+        return billers.filter(biller => biller.category === categoryId).length;
+    };
 
     if (!contactId) {
         return (
@@ -411,35 +436,25 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
 
     return (
         <div className="space-y-3 sm:space-y-4">
-            {/* Header with Search */}
+            {/* Header with Search and Back Button */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex-1">
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        placeholder="Search billers..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                    />
-                                </div>
-                                <div className="sm:w-48">
-                                    <select
-                                        value={selectedCategory}
-                                        onChange={(e) => setSelectedCategory(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                    >
-                                        {categories.map(category => (
-                                            <option key={category} value={category}>
-                                                {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
+                        <div className="flex items-center gap-3">
+                            {!showCategories && (
+                                <button
+                                    onClick={handleBackToCategories}
+                                    className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                                >
+                                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    Back to Categories
+                                </button>
+                            )}
+                            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                {showCategories ? 'Bill Categories' : `${categories.find(c => c.id === selectedCategory)?.name} Billers`}
+                            </h2>
                         </div>
                         <button
                             onClick={() => setShowHistoryModal(true)}
@@ -451,11 +466,24 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                             Payment History
                         </button>
                     </div>
+                    
+                    {/* Search Bar - Only show when viewing billers */}
+                    {!showCategories && (
+                        <div className="flex-1">
+                            <input
+                                type="text"
+                                placeholder="Search billers..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Favorite Billers */}
-            {favoriteBillers.length > 0 && (
+            {/* Favorite Billers - Only show when viewing categories */}
+            {showCategories && favoriteBillers.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                         <svg className="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -493,48 +521,92 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                 </div>
             )}
 
-            {/* All Billers */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">All Billers</h3>
-                {filteredBillers.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {filteredBillers.map((biller) => (
-                            <div
-                                key={biller.id}
-                                className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                                onClick={() => openPaymentModal(biller)}
-                            >
-                                <div className="flex items-center">
-                                    <div className={`mr-3 ${getCategoryColor(biller.category)}`}>
-                                        {getCategoryIcon(biller.category)}
-                                    </div>
-                                    <span className="text-gray-900 dark:text-gray-100 font-medium">{biller.name}</span>
-                                </div>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleFavorite(biller.id);
-                                    }}
-                                    className={`${biller.is_favorite ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-600`}
+            {/* Categories View */}
+            {showCategories && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Bill Categories</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {categories.map((category) => {
+                            const billerCount = getCategoryBillersCount(category.id);
+                            return (
+                                <div
+                                    key={category.id}
+                                    className={`p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
+                                        billerCount === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                    onClick={() => billerCount > 0 && handleCategoryClick(category.id)}
                                 >
-                                    <svg className="w-5 h-5" fill={biller.is_favorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        ))}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <div className={`mr-3 ${getCategoryColor(category.id)}`}>
+                                                {getCategoryIcon(category.id)}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-gray-900 dark:text-gray-100 font-medium">{category.name}</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {billerCount} biller{billerCount !== 1 ? 's' : ''}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                ) : (
-                    <div className="text-center py-8">
-                        <div className="text-gray-400 mb-4">
-                            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
+                </div>
+            )}
+
+            {/* Billers View */}
+            {!showCategories && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                        {categories.find(c => c.id === selectedCategory)?.name} Billers
+                    </h3>
+                    {getFilteredBillers().length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {getFilteredBillers().map((biller) => (
+                                <div
+                                    key={biller.id}
+                                    className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                    onClick={() => openPaymentModal(biller)}
+                                >
+                                    <div className="flex items-center">
+                                        <div className={`mr-3 ${getCategoryColor(biller.category)}`}>
+                                            {getCategoryIcon(biller.category)}
+                                        </div>
+                                        <span className="text-gray-900 dark:text-gray-100 font-medium">{biller.name}</span>
+                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFavorite(biller.id);
+                                        }}
+                                        className={`${biller.is_favorite ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-600`}
+                                    >
+                                        <svg className="w-5 h-5" fill={biller.is_favorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ))}
                         </div>
-                        <p className="text-gray-600 dark:text-gray-400">No billers found matching your search</p>
-                    </div>
-                )}
-            </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <div className="text-gray-400 mb-4">
+                                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                {searchTerm ? 'No billers found matching your search' : 'No billers available in this category'}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Payment Modal */}
             {showPaymentModal && selectedBiller && (
