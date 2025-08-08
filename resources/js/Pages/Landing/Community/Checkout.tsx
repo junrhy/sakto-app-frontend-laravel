@@ -287,13 +287,6 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
     setIsProcessing(true);
 
     try {
-      const shippingFee = calculateShippingFee(
-        formData.country,
-        formData.state,
-        formData.city,
-        formData.shippingMethod
-      );
-
       // Get contact ID from visitor authorization data
       let contactId = null;
       const authData = localStorage.getItem(`visitor_auth_${member.id}`);
@@ -314,6 +307,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
         billing_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
         order_items: cartItems.map(item => {
           const product = products.find(p => p.id === item.id);
+          const itemShippingFee = getItemShippingFee(item);
           return {
             product_id: item.id,
             name: product?.name || '',
@@ -321,6 +315,7 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
             attributes: item.variant?.attributes || null,
             quantity: item.quantity,
             price: product ? getEffectivePrice(product, item.variant) : 0,
+            shipping_fee: itemShippingFee,
           };
         }),
         subtotal: getCartTotal(),
@@ -336,6 +331,15 @@ export default function Checkout({ products, member, appCurrency }: CheckoutProp
       };
 
       console.log('Order data being sent:', orderData);
+      console.log('Service fee calculation:', { subtotal: getCartTotal(), serviceFee, percentage: '10%' });
+      console.log('Shipping fee calculation:', { 
+        totalShippingFee: shippingFee, 
+        itemShippingFees: cartItems.map(item => ({
+          productId: item.id,
+          itemShippingFee: getItemShippingFee(item),
+          weight: (item.variant?.weight || products.find(p => p.id === item.id)?.weight || 0) * item.quantity
+        }))
+      });
 
       // Submit order using Inertia router
       await router.post(route('member.public-checkout.store'), orderData as any, {
