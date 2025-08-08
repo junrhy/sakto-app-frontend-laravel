@@ -629,6 +629,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
       const params = new URLSearchParams({
         client_identifier: member.identifier || member.id.toString(),
         contact_id: contactId.toString(),
+        status: 'pending', // Only count pending orders
         page: '1',
         per_page: '1' // We only need to know if there are any orders
       });
@@ -1178,7 +1179,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                           <div className="flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400">
                             <ShoppingCart className="w-3 h-3" />
                             <span>
-                              {productOrdersCount[product.id]} order{productOrdersCount[product.id] === 1 ? '' : 's'}
+                              {productOrdersCount[product.id]} pending order{productOrdersCount[product.id] === 1 ? '' : 's'}
                             </span>
                           </div>
                         ) : null}
@@ -1260,7 +1261,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                             size="sm"
                             onClick={() => {
                               if (productOrdersCount[product.id] > 0) {
-                                setError(`Cannot delete "${product.name}" because it has ${productOrdersCount[product.id]} order${productOrdersCount[product.id] === 1 ? '' : 's'}.`);
+                                setError(`Cannot delete "${product.name}" because it has ${productOrdersCount[product.id]} pending order${productOrdersCount[product.id] === 1 ? '' : 's'}.`);
                                 return;
                               }
                               handleDelete(product.id);
@@ -1273,7 +1274,7 @@ export default function MyProducts({ member, appCurrency, contactId }: MyProduct
                             disabled={deleting || productOrdersCount[product.id] > 0}
                             title={
                               productOrdersCount[product.id] > 0
-                                ? `Cannot delete product with ${productOrdersCount[product.id]} order${productOrdersCount[product.id] === 1 ? '' : 's'}`
+                                ? `Cannot delete product with ${productOrdersCount[product.id]} pending order${productOrdersCount[product.id] === 1 ? '' : 's'}`
                                 : 'Delete product'
                             }
                           >

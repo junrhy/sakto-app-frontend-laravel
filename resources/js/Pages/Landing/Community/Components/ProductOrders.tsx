@@ -102,7 +102,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
   const [exporting, setExporting] = useState(false);
   
   // Filter states
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('pending');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   
   // Search state
@@ -293,6 +293,26 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
     });
   };
 
+  // Format payment method
+  const formatPaymentMethod = (method: string | null | undefined): string => {
+    if (!method) return 'Not specified';
+    
+    switch (method.toLowerCase()) {
+      case 'cash':
+        return 'Cash';
+      case 'card':
+        return 'Credit/Debit Card';
+      case 'bank_transfer':
+        return 'Bank Transfer';
+      case 'digital_wallet':
+        return 'Digital Wallet';
+      case 'cod':
+        return 'Cash on Delivery';
+      default:
+        return method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, ' ');
+    }
+  };
+
   // Get target product items from order
   const getTargetProductItems = (order: ProductOrder) => {
     return order.order_items.filter(item => item.is_target_product);
@@ -465,7 +485,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             escapeCSVValue(order.billing_address || ''),
             escapeCSVValue(getStatusInfo(order.order_status).label),
             escapeCSVValue(getPaymentStatusInfo(order.payment_status).label),
-            escapeCSVValue(order.payment_method || ''),
+            escapeCSVValue(formatPaymentMethod(order.payment_method)),
             escapeCSVValue(order.payment_reference || ''),
             escapeCSVValue(targetQuantity),
             escapeCSVValue(safeNumberFormat(targetPrice)),
@@ -554,7 +574,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
             'Billing Address': order.billing_address || '',
             'Order Status': getStatusInfo(order.order_status).label,
             'Payment Status': getPaymentStatusInfo(order.payment_status).label,
-            'Payment Method': order.payment_method || '',
+            'Payment Method': formatPaymentMethod(order.payment_method),
             'Payment Reference': order.payment_reference || '',
             'Product Quantity': targetQuantity,
             'Product Price': targetPrice,
@@ -1280,6 +1300,11 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                             <div className="text-sm text-muted-foreground">
                               {targetQuantity} × {formatPrice(targetItems[0]?.price || 0)} | Revenue: <span className="font-semibold text-primary">{formatPrice(targetRevenue)}</span>
                             </div>
+                            {targetItems[0]?.shipping_fee && targetItems[0].shipping_fee > 0 && (
+                              <div className="text-sm text-blue-600 dark:text-blue-400">
+                                Shipping: {formatPrice(targetItems[0].shipping_fee)}
+                              </div>
+                            )}
                           </div>
                           
                           {/* Shipping Address */}
@@ -1465,7 +1490,7 @@ export default function ProductOrders({ member, appCurrency, contactId, productI
                                   <div className="bg-muted/10 p-3 rounded-lg space-y-2">
                                     <div className="flex justify-between text-xs">
                                       <span className="text-muted-foreground">Method:</span>
-                                      <span className="font-medium">{order.payment_method}</span>
+                                      <span className="font-medium">{formatPaymentMethod(order.payment_method)}</span>
                                     </div>
                                     {order.payment_reference && (
                                       <div className="flex justify-between text-xs">

@@ -71,6 +71,26 @@ export default function View({ auth, subscription, flash = {} }: Props) {
     return new Date(dateString).toLocaleString();
   };
 
+  // Format payment method
+  const formatPaymentMethod = (method: string | null | undefined): string => {
+    if (!method) return 'Not specified';
+    
+    switch (method.toLowerCase()) {
+      case 'cash':
+        return 'Cash';
+      case 'card':
+        return 'Credit/Debit Card';
+      case 'bank_transfer':
+        return 'Bank Transfer';
+      case 'digital_wallet':
+        return 'Digital Wallet';
+      case 'cod':
+        return 'Cash on Delivery';
+      default:
+        return method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, ' ');
+    }
+  };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'active':
@@ -243,7 +263,7 @@ export default function View({ auth, subscription, flash = {} }: Props) {
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">Payment Method</h4>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                      {subscription.payment_method || 'N/A'}
+                      {formatPaymentMethod(subscription.payment_method)}
                     </p>
                   </div>
 

@@ -104,6 +104,26 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
     }
   };
 
+  // Format payment method
+  const formatPaymentMethod = (method: string | null | undefined): string => {
+    if (!method) return 'Not specified';
+    
+    switch (method.toLowerCase()) {
+      case 'cash':
+        return 'Cash';
+      case 'card':
+        return 'Credit/Debit Card';
+      case 'bank_transfer':
+        return 'Bank Transfer';
+      case 'digital_wallet':
+        return 'Digital Wallet';
+      case 'cod':
+        return 'Cash on Delivery';
+      default:
+        return method.charAt(0).toUpperCase() + method.slice(1).replace(/_/g, ' ');
+    }
+  };
+
   const getStatusColor = (status: string): string => {
     if (!status) return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     
@@ -332,7 +352,7 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                 <span className="font-medium">{order.order_items?.length || 0}</span> item{(order.order_items?.length || 0) !== 1 ? 's' : ''}
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
-                <span>Payment: {order.payment_method || 'N/A'}</span>
+                                        <span>Payment: {formatPaymentMethod(order.payment_method)}</span>
                 <span>Shipping: {formatPrice(order.shipping_fee || 0)}</span>
               </div>
             </div>
