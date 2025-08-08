@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
@@ -19,7 +19,9 @@ import {
     Calendar,
     Clock,
     CheckCircle,
-    XCircle
+    XCircle,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 interface Statistics {
@@ -45,6 +47,11 @@ interface Statistics {
     revenue_by_month: Array<{
         month: string;
         revenue: number;
+        subtotal: number;
+        service_fee: number;
+        tax_amount: number;
+        shipping_fee: number;
+        discount_amount: number;
         orders: number;
     }>;
     top_products: Array<{
@@ -75,6 +82,23 @@ interface Props extends PageProps {
 }
 
 export default function Statistics({ auth, statistics, currency, errors }: Props) {
+    const [currentPage, setCurrentPage] = useState(1);
+    const recordsPerPage = 12;
+    const maxRecords = 60;
+
+    // Pagination logic for revenue by month
+    const paginatedRevenueData = useMemo(() => {
+        const limitedData = statistics.revenue_by_month.slice(0, maxRecords);
+        const startIndex = (currentPage - 1) * recordsPerPage;
+        const endIndex = startIndex + recordsPerPage;
+        return limitedData.slice(startIndex, endIndex);
+    }, [statistics.revenue_by_month, currentPage]);
+
+    const totalPages = useMemo(() => {
+        const limitedData = statistics.revenue_by_month.slice(0, maxRecords);
+        return Math.ceil(limitedData.length / recordsPerPage);
+    }, [statistics.revenue_by_month]);
+
     const getStatusColor = (status: string) => {
         const colors = {
             pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/50',
@@ -244,30 +268,105 @@ export default function Statistics({ auth, statistics, currency, errors }: Props
                             <CardTitle>Revenue by Month</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
-                                {statistics.revenue_by_month.map((monthData, index) => (
-                                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                        <div className="flex items-center space-x-4">
-                                            <Calendar className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                                            <div>
-                                                <div className="font-medium text-gray-900 dark:text-gray-100">{monthData.month}</div>
-                                                <div className="text-sm text-gray-500 dark:text-gray-400">{monthData.orders} orders</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="font-medium text-gray-900 dark:text-gray-100">
-                                                {formatCurrency(monthData.revenue, currency.symbol)}
-                                            </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                {monthData.revenue > 0 ? 
-                                                    formatCurrency(monthData.revenue / monthData.orders, currency.symbol) + ' avg' : 
-                                                    'No orders'
-                                                }
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                                            <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Month</th>
+                                            <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Orders</th>
+                                            <th className="text-right py-3 px-4 font-medium text-blue-600 dark:text-blue-400">Subtotal</th>
+                                            <th className="text-right py-3 px-4 font-medium text-purple-600 dark:text-purple-400">Service Fee</th>
+                                            <th className="text-right py-3 px-4 font-medium text-orange-600 dark:text-orange-400">Tax</th>
+                                            <th className="text-right py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">Shipping</th>
+                                            <th className="text-right py-3 px-4 font-medium text-red-600 dark:text-red-400">Discount</th>
+                                            <th className="text-right py-3 px-4 font-medium text-green-600 dark:text-green-400">Total Revenue</th>
+                                            <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Avg Order</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedRevenueData.map((monthData, index) => (
+                                            <tr key={index} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                        <span className={`font-medium ${monthData.month.includes(new Date().getFullYear().toString()) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
+                                                            {monthData.month}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="text-right py-3 px-4 text-gray-900 dark:text-gray-100 font-medium">{monthData.orders > 0 ? monthData.orders : '-'}</td>
+                                                <td className="text-right py-3 px-4 text-blue-600 dark:text-blue-400 font-medium">{monthData.subtotal > 0 ? formatCurrency(monthData.subtotal, currency.symbol) : '-'}</td>
+                                                <td className="text-right py-3 px-4 text-purple-600 dark:text-purple-400 font-medium">{monthData.service_fee > 0 ? formatCurrency(monthData.service_fee, currency.symbol) : '-'}</td>
+                                                <td className="text-right py-3 px-4 text-orange-600 dark:text-orange-400 font-medium">{monthData.tax_amount > 0 ? formatCurrency(monthData.tax_amount, currency.symbol) : '-'}</td>
+                                                <td className="text-right py-3 px-4 text-indigo-600 dark:text-indigo-400 font-medium">{monthData.shipping_fee > 0 ? formatCurrency(monthData.shipping_fee, currency.symbol) : '-'}</td>
+                                                <td className="text-right py-3 px-4 text-red-600 dark:text-red-400 font-medium">{monthData.discount_amount > 0 ? formatCurrency(monthData.discount_amount, currency.symbol) : '-'}</td>
+                                                <td className="text-right py-3 px-4 font-bold text-green-600 dark:text-green-400">{monthData.revenue > 0 ? formatCurrency(monthData.revenue, currency.symbol) : '-'}</td>
+                                                <td className="text-right py-3 px-4 text-sm text-gray-500 dark:text-gray-400">
+                                                    {monthData.revenue > 0 ? 
+                                                        formatCurrency(monthData.revenue / monthData.orders, currency.symbol) : 
+                                                        '-'
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-6">
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                        Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, Math.min(statistics.revenue_by_month.length, maxRecords))} of {Math.min(statistics.revenue_by_month.length, maxRecords)} months
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                            Previous
+                                        </Button>
+                                        <div className="flex items-center space-x-1">
+                                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                                let pageNum;
+                                                if (totalPages <= 5) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage <= 3) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage >= totalPages - 2) {
+                                                    pageNum = totalPages - 4 + i;
+                                                } else {
+                                                    pageNum = currentPage - 2 + i;
+                                                }
+                                                
+                                                return (
+                                                    <Button
+                                                        key={pageNum}
+                                                        variant={currentPage === pageNum ? "default" : "outline"}
+                                                        size="sm"
+                                                        onClick={() => setCurrentPage(pageNum)}
+                                                        className="w-8 h-8 p-0"
+                                                    >
+                                                        {pageNum}
+                                                    </Button>
+                                                );
+                                            })}
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
