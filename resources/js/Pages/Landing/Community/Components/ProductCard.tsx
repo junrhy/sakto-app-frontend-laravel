@@ -194,6 +194,49 @@ export default function ProductCard({
           </p>
         </div>
 
+        {/* Price and Stock Info */}
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {formatPrice(getEffectivePrice(product))}
+            </span>
+            <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+              getEffectiveStock(product) > 0 
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+            }`}>
+              {getEffectiveStock(product) > 0 
+                ? `${getEffectiveStock(product)} in stock`
+                : 'Out of stock'
+              }
+            </span>
+          </div>
+        </div>
+
+        {/* Weight and Dimensions Info */}
+        {(product.weight || product.dimensions) && (
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-400">
+              {product.weight && (
+                <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                  {product.weight} kg
+                </span>
+              )}
+              {product.dimensions && (
+                <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                  {product.dimensions}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Status and Stock Info */}
         <div className="mb-2">
           <div className="flex items-center gap-2 mb-1">

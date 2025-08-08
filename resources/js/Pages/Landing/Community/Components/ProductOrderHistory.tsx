@@ -26,6 +26,7 @@ interface Order {
   subtotal: string;
   tax_amount: string;
   shipping_fee: string;
+  service_fee: string;
   discount_amount: string;
   total_amount: string;
   order_status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
@@ -354,6 +355,7 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
               <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4">
                                         <span>Payment: {formatPaymentMethod(order.payment_method)}</span>
                 <span>Shipping: {formatPrice(order.shipping_fee || 0)}</span>
+                <span>Service: {formatPrice(order.service_fee || 0)}</span>
               </div>
             </div>
           </div>
@@ -499,6 +501,10 @@ export default function ProductOrderHistory({ contactId, appCurrency, member, or
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Shipping</span>
                     <span className="text-gray-900 dark:text-gray-100">{formatPrice(selectedOrder.shipping_fee || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Service Fee</span>
+                    <span className="text-gray-900 dark:text-gray-100">{formatPrice(selectedOrder.service_fee || 0)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Tax</span>
