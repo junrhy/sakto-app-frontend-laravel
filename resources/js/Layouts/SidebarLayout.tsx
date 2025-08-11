@@ -49,6 +49,9 @@ export default function SidebarLayout({ children, header, user, auth }: Props) {
     const hasDigitalProductsAccess = (auth?.modules?.includes('digital-products') && appParam === 'digital-products') ?? false;
     const hasPagesAccess = (auth?.modules?.includes('pages') && appParam === 'pages') ?? false;
     const hasHealthInsuranceAccess = (auth?.modules?.includes('health-insurance') && appParam === 'health-insurance') ?? false;
+    const hasBillersAccess = (auth?.modules?.includes('billers') && appParam === 'billers') ?? false;
+    const hasBillPaymentsAccess = (auth?.modules?.includes('bill-payments') && appParam === 'bill-payments') ?? false;
+    const hasCoursesAccess = (auth?.modules?.includes('courses') && appParam === 'courses') ?? false;
 
     return (
         <ThemeProvider>
@@ -310,6 +313,39 @@ export default function SidebarLayout({ children, header, user, auth }: Props) {
                                     <div className="font-medium text-base text-white/90">Health Insurance</div>
                                     <ResponsiveNavLink href={`/health-insurance?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
                                         Health Insurance
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasBillersAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Billers</div>
+                                    <ResponsiveNavLink href={`/billers?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Billers
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasBillPaymentsAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Bill Payments</div>
+                                    <ResponsiveNavLink href={`/bill-payments?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Bill Payments
+                                    </ResponsiveNavLink>
+                                </div>
+                            </div>
+                        )}
+
+                        {hasCoursesAccess && (
+                            <div className="border-t border-white/10">
+                                <div className="px-4 py-2">
+                                    <div className="font-medium text-base text-white/90">Courses</div>
+                                    <ResponsiveNavLink href={`/courses?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        Course Management
                                     </ResponsiveNavLink>
                                 </div>
                             </div>

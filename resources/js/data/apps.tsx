@@ -60,7 +60,8 @@ type AppTitle =
     | 'Healthcare'
     | 'Mortuary'
     | 'Bill Payments'
-    | 'Billers';
+    | 'Billers'
+    | 'Courses';
 
 // Map of app titles to their respective icons
 const iconMap: Record<AppTitle, JSX.Element> = {
@@ -86,7 +87,8 @@ const iconMap: Record<AppTitle, JSX.Element> = {
     'Healthcare': <RxHeart />,
     'Mortuary': <RxCross1 />,
     'Bill Payments': <RxIdCard />,
-    'Billers': <RxIdCard />
+    'Billers': <RxIdCard />,
+    'Courses': <RxPencil1 />
 };
 
 // Map of app titles to their respective background colors
@@ -113,7 +115,8 @@ const bgColorMap: Record<AppTitle, string> = {
     'Healthcare': 'bg-red-100 dark:bg-red-900/30',
     'Mortuary': 'bg-gray-100 dark:bg-gray-900/30',
     'Bill Payments': 'bg-emerald-100 dark:bg-emerald-900/30',
-    'Billers': 'bg-indigo-100 dark:bg-indigo-900/30'
+    'Billers': 'bg-indigo-100 dark:bg-indigo-900/30',
+    'Courses': 'bg-purple-100 dark:bg-purple-900/30'
 };
 
 // Function to get apps from backend

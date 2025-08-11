@@ -299,5 +299,18 @@ return [
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
         'bgColor' => 'bg-indigo-100 dark:bg-indigo-900/30',
         'rating' => 4.6
+    ],
+    [
+        'title' => 'Courses',
+        'route' => '/courses',
+        'visible' => false,
+        'description' => 'Create and manage online courses with lessons, student enrollments, progress tracking, and certificates.',
+        'price' => 199,
+        'categories' => ['Education', 'Training', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
+        'bgColor' => 'bg-purple-100 dark:bg-purple-900/30',
+        'rating' => 4.9
     ]
 ]; 

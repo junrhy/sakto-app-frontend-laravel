@@ -44,6 +44,7 @@ use App\Http\Controllers\CommunityKioskTerminalController;
 use App\Http\Controllers\TeamsController;
 use App\Http\Controllers\BillPaymentController;
 use App\Http\Controllers\BillerController;
+use App\Http\Controllers\CourseController;
 
 use App\Models\User;
 
@@ -707,21 +708,44 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::post('/{id}/process-payment', [ProductOrderController::class, 'processPayment'])->name('product-orders.process-payment');
         Route::patch('/{orderId}/items/{productId}/status', [ProductOrderController::class, 'updateItemStatus'])->name('product-orders.update-item-status');
     });
+
+    // Courses (subscription required)
+    Route::prefix('courses')->group(function () {
+        Route::get('/', [CourseController::class, 'index'])->name('courses.index');
+        Route::get('/create', [CourseController::class, 'create'])->name('courses.create');
+        Route::post('/', [CourseController::class, 'store'])->name('courses.store');
+        
+        // API routes for frontend data fetching (must come before parameter routes)
+        Route::get('/list', [CourseController::class, 'getCourses'])->name('courses.list');
+        Route::get('/categories', [CourseController::class, 'getCategories'])->name('courses.categories');
+        Route::get('/progress/{courseId}/{contactId}', [CourseController::class, 'getProgress'])->name('courses.progress');
+        
+        // Parameter routes (must come after specific routes)
+        Route::get('/{id}', [CourseController::class, 'show'])->name('courses.show');
+        Route::get('/{id}/edit', [CourseController::class, 'edit'])->name('courses.edit');
+        Route::put('/{id}', [CourseController::class, 'update'])->name('courses.update');
+        Route::delete('/{id}', [CourseController::class, 'destroy'])->name('courses.destroy');
+        Route::post('/{id}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
+        Route::get('/{id}/learn', [CourseController::class, 'learn'])->name('courses.learn');
+    });
     
     // Content Management (subscription required)
     Route::prefix('content-creator')->group(function () {
         Route::get('/', [ContentCreatorController::class, 'index'])->name('content-creator.index');
         Route::get('/create', [ContentCreatorController::class, 'create'])->name('content-creator.create');
         Route::post('/', [ContentCreatorController::class, 'store'])->name('content-creator.store');
+        Route::get('/settings', [ContentCreatorController::class, 'settings'])->name('content-creator.settings');
+        Route::get('/list', [ContentCreatorController::class, 'getContent'])->name('content-creator.list');
+        
+        // Parameter routes (must come after specific routes)
         Route::get('/{id}', [ContentCreatorController::class, 'show'])->name('content-creator.show');
         Route::get('/{id}/edit', [ContentCreatorController::class, 'edit'])->name('content-creator.edit');
         Route::put('/{id}', [ContentCreatorController::class, 'update'])->name('content-creator.update');
         Route::delete('/{id}', [ContentCreatorController::class, 'destroy'])->name('content-creator.destroy');
-        Route::get('/settings', [ContentCreatorController::class, 'settings'])->name('content-creator.settings');
-        Route::get('/list', [ContentCreatorController::class, 'getContent'])->name('content-creator.list');
         Route::patch('/{id}/status', [ContentCreatorController::class, 'updateStatus'])->name('content-creator.update-status');
-        Route::post('/bulk-delete', [ContentCreatorController::class, 'bulkDestroy'])->name('content-creator.bulk-destroy');
         Route::get('/{id}/preview', [ContentCreatorController::class, 'preview'])->name('content-creator.preview');
+        
+        Route::post('/bulk-delete', [ContentCreatorController::class, 'bulkDestroy'])->name('content-creator.bulk-destroy');
     });
     
     // Challenges (subscription required)
@@ -731,9 +755,11 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::get('/list', [ChallengeController::class, 'getList'])->name('challenges.list');
         Route::get('/participants-list', [ChallengeController::class, 'getParticipantsList'])->name('challenges.participants-list');
         Route::post('/', [ChallengeController::class, 'store'])->name('challenges.store');
+        Route::delete('/bulk', [ChallengeController::class, 'bulkDestroy'])->name('challenges.bulk-destroy');
+        
+        // Parameter routes (must come after specific routes)
         Route::put('/{id}', [ChallengeController::class, 'update'])->name('challenges.update');
         Route::delete('/{id}', [ChallengeController::class, 'destroy'])->name('challenges.destroy');
-        Route::delete('/bulk', [ChallengeController::class, 'bulkDestroy'])->name('challenges.bulk-destroy');
         
         // Social features
         Route::get('/{id}/participants', [ChallengeController::class, 'getParticipants'])->name('challenges.participants');
@@ -779,9 +805,11 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::get('/settings', [RentalPropertyController::class, 'settings'])->name('rental-property.settings');
         Route::get('/list', [RentalPropertyController::class, 'getProperties']);
         Route::post('/', [RentalPropertyController::class, 'store']);
+        Route::post('/bulk', [RentalPropertyController::class, 'bulkDestroy']);
+        
+        // Parameter routes (must come after specific routes)
         Route::put('/{id}', [RentalPropertyController::class, 'update']);
         Route::delete('/{id}', [RentalPropertyController::class, 'destroy']);
-        Route::post('/bulk', [RentalPropertyController::class, 'bulkDestroy']);
         Route::post('/{id}/payment', [RentalPropertyController::class, 'recordPayment']);
         Route::get('/{id}/payment-history', [RentalPropertyController::class, 'getPaymentHistory']);
     });
@@ -811,11 +839,13 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::get('/list', [BillerController::class, 'getBillers'])->name('billers.list');
         Route::get('/categories', [BillerController::class, 'getCategories'])->name('billers.categories');
         Route::post('/', [BillerController::class, 'store'])->name('billers.store');
+        Route::post('/bulk-update-status', [BillerController::class, 'bulkUpdateStatus'])->name('billers.bulk-update-status');
+        Route::post('/bulk-delete', [BillerController::class, 'bulkDelete'])->name('billers.bulk-delete');
+        
+        // Parameter routes (must come after specific routes)
         Route::get('/{id}', [BillerController::class, 'show'])->name('billers.show');
         Route::put('/{id}', [BillerController::class, 'update'])->name('billers.update');
         Route::delete('/{id}', [BillerController::class, 'destroy'])->name('billers.destroy');
-        Route::post('/bulk-update-status', [BillerController::class, 'bulkUpdateStatus'])->name('billers.bulk-update-status');
-        Route::post('/bulk-delete', [BillerController::class, 'bulkDelete'])->name('billers.bulk-delete');
     });
     
     // SMS (subscription required)
@@ -849,6 +879,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
             Route::get('/list', [EmailTemplateController::class, 'getTemplates'])->name('email.templates.list');
             Route::get('/create', [EmailTemplateController::class, 'create'])->name('email.templates.create');
             Route::post('/', [EmailTemplateController::class, 'store'])->name('email.templates.store');
+            
+            // Parameter routes (must come after specific routes)
             Route::get('/{template}', [EmailTemplateController::class, 'show'])->name('email.templates.show');
             Route::get('/{template}/edit', [EmailTemplateController::class, 'edit'])->name('email.templates.edit');
             Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('email.templates.update');
