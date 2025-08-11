@@ -28,7 +28,7 @@ class ProjectSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Community',
                 'identifier' => 'community',
-                'enabledModules' => json_encode(array_values(['genealogy', 'email', 'sms', 'contacts', 'pages', 'challenges', 'content-creator', 'products', 'healthcare', 'lending', 'events', 'mortuary'])),
+                'enabledModules' => json_encode(array_values(['genealogy', 'email', 'sms', 'contacts', 'pages', 'challenges', 'content-creator', 'products', 'healthcare', 'lending', 'events', 'mortuary', 'bill-payments', 'billers'])),
             ],
             [
                 'id' => 3,

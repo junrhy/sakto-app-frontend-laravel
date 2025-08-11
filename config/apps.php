@@ -273,5 +273,31 @@ return [
         'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
         'bgColor' => 'bg-gray-100 dark:bg-gray-900/30',
         'rating' => 4.1
+    ],
+    [
+        'title' => 'Bill Payments',
+        'route' => '/bill-payments',
+        'visible' => false,
+        'description' => 'Comprehensive bill payment management system with recurring payments, reminders, and payment tracking.',
+        'price' => 99,
+        'categories' => ['Finance', 'Payments', 'Business'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
+        'bgColor' => 'bg-emerald-100 dark:bg-emerald-900/30',
+        'rating' => 4.8
+    ],
+    [
+        'title' => 'Billers',
+        'route' => '/billers',
+        'visible' => false,
+        'description' => 'Manage your billers and service providers with complete contact information, categories, and account tracking.',
+        'price' => 0,
+        'categories' => ['Finance', 'Business', 'Contacts'],
+        'comingSoon' => false,
+        'pricingType' => 'subscription',
+        'includedInPlans' => ['basic-plan', 'pro-plan', 'business-plan', 'annual-basic', 'annual-pro', 'annual-business'],
+        'bgColor' => 'bg-indigo-100 dark:bg-indigo-900/30',
+        'rating' => 4.6
     ]
 ]; 
