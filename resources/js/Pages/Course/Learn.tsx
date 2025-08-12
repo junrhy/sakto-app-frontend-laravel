@@ -10,6 +10,120 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import ContactSelector from '@/Components/ContactSelector';
 import html2pdf from 'html2pdf.js';
+import { extractYouTubeVideos } from '@/lib/youtube-utils';
+
+// YouTube Video Player Component with Progress Tracking
+const YouTubeVideoPlayer = React.memo(({ 
+    videoUrl, 
+    title, 
+    lessonId, 
+    onProgress 
+}: { 
+    videoUrl: string; 
+    title: string; 
+    lessonId: number; 
+    onProgress: (lessonId: number, currentTime: number, duration: number) => void; 
+}) => {
+    const iframeRef = React.useRef<HTMLIFrameElement>(null);
+    const [player, setPlayer] = useState<any>(null);
+    const [isReady, setIsReady] = useState(false);
+    const progressIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        // Load YouTube API if not already loaded
+        if (!(window as any).YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        }
+
+        // Initialize YouTube player when API is ready
+        const initializePlayer = () => {
+            const videoId = getYouTubeVideoId(videoUrl);
+            if (videoId && iframeRef.current && (window as any).YT) {
+                const newPlayer = new (window as any).YT.Player(iframeRef.current, {
+                    height: '100%',
+                    width: '100%',
+                    videoId: videoId,
+                    playerVars: {
+                        rel: 0,
+                        modestbranding: 1,
+                        showinfo: 0,
+                        enablejsapi: 1,
+                        origin: window.location.origin
+                    },
+                    events: {
+                        onReady: () => {
+                            setIsReady(true);
+                            setPlayer(newPlayer);
+                        },
+                        onStateChange: (event: any) => {
+                            // Clear any existing interval
+                            if (progressIntervalRef.current) {
+                                clearInterval(progressIntervalRef.current);
+                                progressIntervalRef.current = null;
+                            }
+
+                            // Track progress when video is playing
+                            if (event.data === (window as any).YT.PlayerState.PLAYING) {
+                                progressIntervalRef.current = setInterval(() => {
+                                    if (newPlayer && newPlayer.getCurrentTime && newPlayer.getDuration) {
+                                        const currentTime = newPlayer.getCurrentTime();
+                                        const duration = newPlayer.getDuration();
+                                        if (currentTime > 0 && duration > 0) {
+                                            onProgress(lessonId, currentTime, duration);
+                                        }
+                                    }
+                                }, 2000); // Update every 2 seconds to reduce re-renders
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        // Check if API is already ready
+        if ((window as any).YT && (window as any).YT.Player) {
+            initializePlayer();
+        } else {
+            // Wait for API to be ready
+            (window as any).onYouTubeIframeAPIReady = initializePlayer;
+        }
+
+        return () => {
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+            }
+            if (player) {
+                player.destroy();
+            }
+        };
+    }, [videoUrl, lessonId]); // Remove onProgress from dependencies to prevent re-renders
+
+    const getYouTubeVideoId = (url: string) => {
+        const patterns = [
+            /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+            /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
+        ];
+
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) {
+                return match[1];
+            }
+        }
+        return null;
+    };
+
+    return (
+        <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+            <div ref={iframeRef} className="w-full h-full" />
+        </div>
+    );
+});
 
 interface Lesson {
     id: number;
@@ -83,6 +197,8 @@ export default function Learn({ auth, course, progress, flash, viewingContact }:
     const [showContactSelector, setShowContactSelector] = useState(false);
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [isCheckingEnrollment, setIsCheckingEnrollment] = useState(false);
+    const [videoProgress, setVideoProgress] = useState<{ [lessonId: number]: number }>({});
+    const [videoWatched, setVideoWatched] = useState<{ [lessonId: number]: boolean }>({});
 
     // Handle flash messages
     useEffect(() => {
@@ -268,6 +384,38 @@ export default function Learn({ auth, course, progress, flash, viewingContact }:
         const mins = minutes % 60;
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
     };
+
+    const getYouTubeEmbedUrl = (videoUrl: string) => {
+        // Extract video ID from various YouTube URL formats
+        const patterns = [
+            /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+            /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
+        ];
+
+        for (const pattern of patterns) {
+            const match = videoUrl.match(pattern);
+            if (match) {
+                const videoId = match[1];
+                console.log('YouTube video ID extracted:', videoId); // Debug log
+                return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&enablejsapi=1`;
+            }
+        }
+
+        console.log('Could not extract YouTube video ID from URL:', videoUrl); // Debug log
+        return null;
+    };
+
+    const handleVideoProgress = React.useCallback((lessonId: number, currentTime: number, duration: number) => {
+        const progress = (currentTime / duration) * 100;
+        setVideoProgress(prev => ({ ...prev, [lessonId]: progress }));
+        
+        // Mark as watched if 90% or more of the video has been viewed
+        if (progress >= 90) {
+            setVideoWatched(prev => ({ ...prev, [lessonId]: true }));
+        }
+    }, []);
 
     const checkEnrollmentStatus = async (contact: Contact) => {
         setIsCheckingEnrollment(true);
@@ -550,21 +698,81 @@ export default function Learn({ auth, course, progress, flash, viewingContact }:
 
                                             {currentLesson.video_url && (
                                                 <div className="mb-6">
-                                                    <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                                        <div className="text-center">
-                                                            <Video className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                                                            <p className="text-gray-600 dark:text-gray-400">Video content available</p>
-                                                            <Button 
-                                                                onClick={() => markLessonAsStarted(currentLesson.id)}
-                                                                className="mt-2"
-                                                                disabled={!viewingContact || !isEnrolled || isCheckingEnrollment || currentLesson.status === 'in_progress' || currentLesson.status === 'completed'}
-                                                            >
-                                                                <Play className="w-4 h-4 mr-2" />
-                                                                {currentLesson.status === 'not_started' ? 'Start Video' : 
-                                                                 currentLesson.status === 'in_progress' ? 'Video In Progress' : 
-                                                                 currentLesson.status === 'completed' ? 'Video Completed' : 'Start Video'}
-                                                            </Button>
-                                                        </div>
+                                                    {(() => {
+                                                        console.log('Processing video URL:', currentLesson.video_url); // Debug log
+                                                        const embedUrl = getYouTubeEmbedUrl(currentLesson.video_url);
+                                                        console.log('Generated embed URL:', embedUrl); // Debug log
+                                                        
+                                                        if (embedUrl) {
+                                                            return (
+                                                                <div>
+                                                                    <YouTubeVideoPlayer
+                                                                        videoUrl={currentLesson.video_url}
+                                                                        title={currentLesson.title}
+                                                                        lessonId={currentLesson.id}
+                                                                        onProgress={handleVideoProgress}
+                                                                    />
+                                                                    
+                                                                    {/* Video Progress Indicator */}
+                                                                    {videoProgress[currentLesson.id] !== undefined && (
+                                                                        <div className="mt-3">
+                                                                            <div className="flex justify-between items-center mb-1">
+                                                                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                                                    Video Progress
+                                                                                </span>
+                                                                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                                                    {Math.round(videoProgress[currentLesson.id])}%
+                                                                                </span>
+                                                                            </div>
+                                                                            <Progress 
+                                                                                value={videoProgress[currentLesson.id]} 
+                                                                                className="h-2"
+                                                                            />
+                                                                            {videoWatched[currentLesson.id] && (
+                                                                                <div className="mt-2 text-center">
+                                                                                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                                                                        Video Watched
+                                                                                    </Badge>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        } else {
+                                                            return (
+                                                                <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                                                                    <div className="text-center">
+                                                                        <Video className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                                                                        <p className="text-gray-600 dark:text-gray-400">Invalid video URL</p>
+                                                                        <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                                                                            {currentLesson.video_url}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        }
+                                                    })()}
+                                                    
+                                                    <div className="mt-4 flex justify-center gap-2">
+                                                        <Button 
+                                                            onClick={() => markLessonAsStarted(currentLesson.id)}
+                                                            disabled={!viewingContact || !isEnrolled || isCheckingEnrollment || currentLesson.status === 'in_progress' || currentLesson.status === 'completed'}
+                                                        >
+                                                            <Play className="w-4 h-4 mr-2" />
+                                                            {currentLesson.status === 'not_started' ? 'Mark as Started' : 
+                                                             currentLesson.status === 'in_progress' ? 'Video In Progress' : 
+                                                             currentLesson.status === 'completed' ? 'Video Completed' : 'Mark as Started'}
+                                                        </Button>
+                                                        
+                                                        <Button 
+                                                            variant="outline"
+                                                            onClick={() => window.open(currentLesson.video_url, '_blank')}
+                                                        >
+                                                            <Video className="w-4 h-4 mr-2" />
+                                                            Open in YouTube
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             )}
@@ -587,10 +795,25 @@ export default function Learn({ auth, course, progress, flash, viewingContact }:
                                                 
                                                 <Button 
                                                     onClick={() => markLessonAsCompleted(currentLesson.id)}
-                                                    disabled={currentLesson.status === 'completed' || !viewingContact || !isEnrolled || isCheckingEnrollment || currentLesson.status === 'not_started'}
+                                                    disabled={
+                                                        currentLesson.status === 'completed' || 
+                                                        !viewingContact || 
+                                                        !isEnrolled || 
+                                                        isCheckingEnrollment || 
+                                                        currentLesson.status === 'not_started' ||
+                                                        (!!currentLesson.video_url && !videoWatched[currentLesson.id])
+                                                    }
                                                 >
                                                     <CheckCircle className="w-4 h-4 mr-2" />
-                                                    {currentLesson.status === 'completed' ? 'Completed' : 'Mark as Complete'}
+                                                    {(() => {
+                                                        if (currentLesson.status === 'completed') {
+                                                            return 'Completed';
+                                                        } else if (currentLesson.video_url && !videoWatched[currentLesson.id]) {
+                                                            return 'Watch Video First';
+                                                        } else {
+                                                            return 'Mark as Complete';
+                                                        }
+                                                    })()}
                                                 </Button>
                                             </div>
                                         </div>
