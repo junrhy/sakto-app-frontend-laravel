@@ -12,17 +12,16 @@ interface Course {
     title: string;
     description: string;
     slug: string;
-    price: number;
+    price: string;
     is_free: boolean;
-    featured: boolean;
+    is_featured: boolean;
     status: string;
-    category: string;
-    instructor_name: string;
-    duration: string;
+    category: string | null;
+    instructor_name: string | null;
+    duration_minutes: number;
     lessons_count: number;
-    students_count: number;
-    rating: number;
-    image_url?: string;
+    enrolled_count: number;
+    thumbnail_url?: string;
     created_at: string;
     updated_at: string;
 }
@@ -41,7 +40,7 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
     const [isLoading, setIsLoading] = useState(false);
 
     // Get unique categories from courses
-    const categories = Array.from(new Set(courses.map(course => course.category).filter(Boolean)));
+    const categories = Array.from(new Set(courses.map(course => course.category).filter((category): category is string => category !== null)));
 
     // Filter courses based on search term, category, and filter
     useEffect(() => {
@@ -52,7 +51,7 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
             filtered = filtered.filter(course =>
                 course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                course.instructor_name.toLowerCase().includes(searchTerm.toLowerCase())
+                (course.instructor_name && course.instructor_name.toLowerCase().includes(searchTerm.toLowerCase()))
             );
         }
 
@@ -70,7 +69,7 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
                 filtered = filtered.filter(course => !course.is_free);
                 break;
             case 'featured':
-                filtered = filtered.filter(course => course.featured);
+                filtered = filtered.filter(course => course.is_featured);
                 break;
             default:
                 break;
@@ -79,16 +78,21 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
         setFilteredCourses(filtered);
     }, [courses, searchTerm, selectedCategory, selectedFilter]);
 
-    const formatPrice = (price: number) => {
+    const formatPrice = (price: string) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'PHP',
-        }).format(price || 0);
+        }).format(parseFloat(price) || 0);
     };
 
-    const formatDuration = (duration: string) => {
-        if (!duration) return 'N/A';
-        return duration;
+    const formatDuration = (durationMinutes: number) => {
+        if (!durationMinutes || durationMinutes === 0) return 'N/A';
+        const hours = Math.floor(durationMinutes / 60);
+        const minutes = durationMinutes % 60;
+        if (hours > 0) {
+            return `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim();
+        }
+        return `${minutes}m`;
     };
 
     const getCourseUrl = (course: Course) => {
@@ -171,18 +175,25 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
                     {filteredCourses.map((course) => (
                         <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                             <div className="aspect-video bg-muted relative">
-                                {course.image_url ? (
+                                {course.thumbnail_url ? (
                                     <img
-                                        src={course.image_url}
+                                        src={course.thumbnail_url}
                                         alt={course.title}
                                         className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            target.nextElementSibling?.classList.remove('hidden');
+                                        }}
                                     />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30">
-                                        <BookOpen className="h-12 w-12 text-muted-foreground" />
+                                ) : null}
+                                <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 ${course.thumbnail_url ? 'hidden' : ''}`}>
+                                    <div className="text-center">
+                                        <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                                        <p className="text-xs text-muted-foreground font-medium">{course.title}</p>
                                     </div>
-                                )}
-                                {course.featured && (
+                                </div>
+                                {course.is_featured && (
                                     <Badge className="absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-600">
                                         <Star className="h-3 w-3 mr-1" />
                                         Featured
@@ -208,7 +219,7 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                             <Clock className="h-4 w-4" />
-                                            <span>{formatDuration(course.duration)}</span>
+                                            <span>{formatDuration(course.duration_minutes)}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Play className="h-4 w-4" />
@@ -216,24 +227,18 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Users className="h-4 w-4" />
-                                            <span>{course.students_count || 0} students</span>
+                                            <span>{course.enrolled_count || 0} students</span>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                                <span className="text-sm font-medium">{(course.rating || 0).toFixed(1)}</span>
-                                            </div>
                                             <span className="text-sm text-muted-foreground">
                                                 by {course.instructor_name || 'Unknown Instructor'}
                                             </span>
                                         </div>
                                         <div className="text-right">
-                                            {course.is_free ? (
-                                                <span className="text-sm font-semibold text-green-600">Free</span>
-                                            ) : (
+                                            {!course.is_free && (
                                                 <span className="text-sm font-semibold">{formatPrice(course.price)}</span>
                                             )}
                                         </div>
