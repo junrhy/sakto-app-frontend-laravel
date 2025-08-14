@@ -1218,14 +1218,43 @@ class CommunityController extends Controller
 
             // Get contact information if contact_id is provided
             $contact = null;
+            $contactId = null;
+            
             if ($request->has('contact_id')) {
+                $contactId = $request->contact_id;
                 $contactResponse = Http::withToken($this->apiToken)
-                    ->get("{$this->apiUrl}/contacts/{$request->contact_id}", [
+                    ->get("{$this->apiUrl}/contacts/{$contactId}", [
                         'client_identifier' => $member->identifier
                     ]);
-
+                
                 if ($contactResponse->successful()) {
                     $contact = $contactResponse->json();
+                }
+            }
+
+            // Check enrollment status and get progress if contact is provided
+            $progress = null;
+            if ($contactId) {
+                // First check enrollment status
+                $enrollmentCheckResponse = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/course-enrollments/check-status", [
+                        'course_id' => $courseId,
+                        'contact_id' => $contactId,
+                        'client_identifier' => $member->identifier,
+                    ]);
+
+                if ($enrollmentCheckResponse->successful()) {
+                    $enrollmentData = $enrollmentCheckResponse->json()['data'];
+                    
+                    if ($enrollmentData['is_enrolled'] && $enrollmentData['enrollment']) {
+                        // Get detailed progress for enrolled user
+                        $progressResponse = Http::withToken($this->apiToken)
+                            ->get("{$this->apiUrl}/course-progress/{$courseId}/{$contactId}");
+
+                        if ($progressResponse->successful()) {
+                            $progress = $progressResponse->json()['data'];
+                        }
+                    }
                 }
             }
 
@@ -1233,6 +1262,7 @@ class CommunityController extends Controller
                 'member' => $member,
                 'course' => $course,
                 'viewingContact' => $contact,
+                'progress' => $progress,
                 'canLogin' => Route::has('login'),
                 'canRegister' => Route::has('register'),
                 'laravelVersion' => Application::VERSION,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX, Maximize, CheckCircle, Clock, BookOpen, Video, FileText, Circle } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
+import { ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX, Maximize, CheckCircle, Clock, BookOpen, Video, FileText, Circle, Menu, X } from 'lucide-react';
 
 // YouTube Video Player Component with Progress Tracking
 const YouTubeVideoPlayer = React.memo(({ 
@@ -109,7 +110,7 @@ const YouTubeVideoPlayer = React.memo(({
     };
 
     return (
-        <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+        <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden w-full">
             <div ref={iframeRef} className="w-full h-full" />
         </div>
     );
@@ -242,8 +243,7 @@ export default function Learn({
     phpVersion, 
     appUrl 
 }: Props) {
-    // Debug logging
-    console.log('Learn component props:', { member, course, progress, viewingContact });
+
     const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
@@ -254,6 +254,7 @@ export default function Learn({
     const [loading, setLoading] = useState(true);
     const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
     const [isEnrolled, setIsEnrolled] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Get lesson_id from URL params
     const urlParams = new URLSearchParams(window.location.search);
@@ -327,12 +328,11 @@ export default function Learn({
             const match = videoUrl.match(pattern);
             if (match) {
                 const videoId = match[1];
-                console.log('YouTube video ID extracted:', videoId); // Debug log
                 return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&showinfo=0&enablejsapi=1`;
             }
         }
 
-        console.log('Could not extract YouTube video ID from URL:', videoUrl); // Debug log
+        return null;
         return null;
     };
 
@@ -350,7 +350,6 @@ export default function Learn({
             });
 
             const data = await response.json();
-            console.log('Enrollment check response:', data); // Debug log
             
             // Handle the actual response structure
             if (data.data && typeof data.data.is_enrolled === 'boolean') {
@@ -401,7 +400,7 @@ export default function Learn({
             });
 
             if (response.ok) {
-                console.log('Lesson marked as started successfully');
+                // Lesson marked as started successfully
             } else {
                 console.error('Failed to mark lesson as started:', response.statusText);
             }
@@ -490,7 +489,7 @@ export default function Learn({
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading lesson...</p>
@@ -501,8 +500,8 @@ export default function Learn({
 
     if (!currentLesson) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="text-center max-w-md">
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">No lesson found</h2>
                     <p className="text-gray-600 mb-4">This lesson is not available or doesn't exist.</p>
                     <Link
@@ -522,39 +521,62 @@ export default function Learn({
             
             <div className="min-h-screen bg-gray-50">
                 {/* Header */}
-                <div className="bg-white shadow-sm border-b">
+                <div className="bg-white shadow-sm border-b sticky top-0 z-40">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between h-16">
-                            <div className="flex items-center space-x-4">
-                                <Link
-                                    href={`/m/${member.slug}/courses/${course.id}/lessons${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}
-                                    className="flex items-center text-gray-600 hover:text-gray-900"
-                                >
-                                    <ChevronLeft className="h-5 w-5 mr-1" />
-                                    Back to Lessons
+                            <div className="flex items-center">
+                                <Link href={`/m/${member.slug}/courses/${course.id}/lessons${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}>
+                                    <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                        <ChevronLeft className="w-4 h-4 mr-2" />
+                                        Back to Lessons
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="sm:hidden">
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </Button>
                                 </Link>
                             </div>
                             
+                            {/* Simple Enrollment Status */}
                             {viewingContact && (
-                                <div className="text-sm text-gray-500">
-                                    Viewing as: {formatContactName(viewingContact)}
+                                <div className="flex items-center">
+                                    <span className={`text-xs px-2 py-1 rounded-full ${
+                                        progress 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : 'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                        {progress ? 'Enrolled' : 'Not Enrolled'}
+                                    </span>
                                 </div>
                             )}
+                            
+                            {/* Mobile menu button */}
+                            <div className="flex items-center lg:hidden">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                                    className="p-2"
+                                >
+                                    {sidebarOpen ? (
+                                        <X className="w-5 h-5" />
+                                    ) : (
+                                        <Menu className="w-5 h-5" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                         {/* Main Content */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 order-2 lg:order-1">
                             {/* Video Player */}
                             {currentLesson.video_url && (
-                                <div className="mb-6">
+                                <div className="mb-4 sm:mb-6">
                                     {(() => {
-                                        console.log('Processing video URL:', currentLesson.video_url); // Debug log
                                         const embedUrl = getYouTubeEmbedUrl(currentLesson.video_url);
-                                        console.log('Generated embed URL:', embedUrl); // Debug log
                                         
                                         if (embedUrl) {
                                             return (
@@ -598,10 +620,10 @@ export default function Learn({
                                         } else {
                                             return (
                                                 <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                                                    <div className="text-center">
-                                                        <Video className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                                                        <p className="text-gray-600 dark:text-gray-400">Invalid video URL</p>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                                                    <div className="text-center p-4">
+                                                        <Video className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                                                        <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Invalid video URL</p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 break-all">
                                                             {currentLesson.video_url}
                                                         </p>
                                                     </div>
@@ -613,17 +635,17 @@ export default function Learn({
                             )}
 
                             {/* Lesson Content */}
-                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h1 className="text-2xl font-bold text-gray-900">
+                                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 pr-2">
                                         {currentLesson.title}
                                     </h1>
                                     {currentLesson.is_completed && (
-                                        <CheckCircle className="h-6 w-6 text-green-500" />
+                                        <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" />
                                     )}
                                 </div>
                                 
-                                <div className="flex items-center space-x-4 text-sm text-gray-500 mb-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 text-sm text-gray-500 mb-4 sm:mb-6">
                                     <div className="flex items-center">
                                         <Clock className="h-4 w-4 mr-1" />
                                         {formatDuration(currentLesson.duration_minutes)}
@@ -634,7 +656,7 @@ export default function Learn({
                                     </div>
                                 </div>
                                 
-                                <div className="prose max-w-none">
+                                <div className="prose max-w-none prose-sm sm:prose-base">
                                     {currentLesson.content ? (
                                         <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
                                     ) : (
@@ -644,17 +666,17 @@ export default function Learn({
                                 
                                 {/* Complete Lesson Button */}
                                 {viewingContact && (
-                                    <div className="mt-8 pt-6 border-t">
+                                    <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
                                         {!progress ? (
-                                            <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                                                <p className="text-yellow-800">
+                                            <div className="text-center p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                                                <p className="text-yellow-800 text-sm sm:text-base">
                                                     You need to enroll in this course to track your progress.
                                                 </p>
                                             </div>
                                         ) : currentLesson.is_completed ? (
-                                            <div className="text-center p-4 bg-green-50 border border-green-200 rounded-md">
-                                                <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                                                <p className="text-green-800 font-medium">
+                                            <div className="text-center p-3 sm:p-4 bg-green-50 border border-green-200 rounded-md">
+                                                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mx-auto mb-2" />
+                                                <p className="text-green-800 font-medium text-sm sm:text-base">
                                                     Lesson Completed!
                                                 </p>
                                             </div>
@@ -664,13 +686,13 @@ export default function Learn({
                                                 disabled={
                                                     !!currentLesson.video_url && !videoWatched[currentLesson.id]
                                                 }
-                                                className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                                                className={`w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-sm sm:text-base font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                                                     !!currentLesson.video_url && !videoWatched[currentLesson.id]
                                                         ? 'bg-gray-400 cursor-not-allowed'
                                                         : 'bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white'
                                                 }`}
                                             >
-                                                <CheckCircle className="h-5 w-5 mr-2" />
+                                                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                                                 {(() => {
                                                     if (currentLesson.video_url && !videoWatched[currentLesson.id]) {
                                                         return 'Watch Video First';
@@ -686,37 +708,31 @@ export default function Learn({
                         </div>
 
                         {/* Sidebar */}
-                        <div className="lg:col-span-1">
-                            {/* Course Info */}
-                            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Course Progress
-                                </h3>
-                                
-                                {/* Enrollment Status */}
-                                {viewingContact && (
-                                    <div className="mb-4 p-3 rounded-md border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-700">Enrollment Status:</span>
-                                            <span className={`text-sm px-2 py-1 rounded-full ${
-                                                progress 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                                {progress ? 'Enrolled' : 'Not Enrolled'}
-                                            </span>
-                                        </div>
-                                        {progress && (
-                                            <div className="text-xs text-gray-600">
-                                                <div>Progress: {progress.progress_percentage}%</div>
-                                                <div>Lessons Completed: {progress.lessons_completed}</div>
-                                                <div>Status: {progress.status}</div>
-                                            </div>
-                                        )}
+                        <div className={`lg:col-span-1 order-1 lg:order-2 ${
+                            sidebarOpen ? 'fixed inset-y-0 right-0 w-full bg-white shadow-lg z-50 lg:relative lg:w-auto lg:shadow-none lg:bg-transparent' : 'hidden lg:block'
+                        }`}>
+                            <div className={`${sidebarOpen ? 'h-full overflow-y-auto p-4' : ''}`}>
+                                {/* Mobile Close Button */}
+                                {sidebarOpen && (
+                                    <div className="flex justify-end mb-4 lg:hidden">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setSidebarOpen(false)}
+                                            className="p-2"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </Button>
                                     </div>
                                 )}
                                 
-                                {/* Progress Display */}
+                                                                {/* Course Info */}
+                                <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                                        Course Progress
+                                    </h3>
+                                    
+                                    {/* Progress Display */}
                                 <div className="mb-4">
                                     <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                                         <span>Overall Progress</span>
@@ -733,7 +749,7 @@ export default function Learn({
                                 <div className="text-sm text-gray-600">
                                     <div className="flex items-center justify-between mb-2">
                                         <span>Course:</span>
-                                        <span className="font-medium">{course.title}</span>
+                                        <span className="font-medium text-right max-w-[60%]">{course.title}</span>
                                     </div>
                                     <div className="flex items-center justify-between mb-2">
                                         <span>Total Lessons:</span>
@@ -748,22 +764,23 @@ export default function Learn({
 
                             {/* Lessons List */}
                             <div className="bg-white rounded-lg shadow-sm border">
-                                <div className="px-6 py-4 border-b">
-                                    <h3 className="text-lg font-semibold text-gray-900">
+                                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                                         Course Content
                                     </h3>
                                 </div>
                                 
-                                <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+                                <div className="divide-y divide-gray-200 max-h-64 sm:max-h-96 lg:max-h-96 overflow-y-auto">
                                     {lessons.map((lesson) => (
                                         <div
                                             key={lesson.id}
-                                            className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                                            className={`p-3 sm:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
                                                 lesson.id === currentLesson.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
                                             } ${!lesson.is_accessible ? 'opacity-60' : ''}`}
                                             onClick={() => {
                                                 if (lesson.is_accessible) {
                                                     setCurrentLesson(lesson);
+                                                    setSidebarOpen(false); // Close sidebar on mobile
                                                     router.visit(`/m/${member.slug}/courses/${course.id}/learn?lesson_id=${lesson.id}${viewingContact ? `&contact_id=${viewingContact.id}` : ''}`);
                                                 }
                                             }}
@@ -788,9 +805,18 @@ export default function Learn({
                                     ))}
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile overlay for sidebar */}
+                {sidebarOpen && (
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
             </div>
         </>
     );

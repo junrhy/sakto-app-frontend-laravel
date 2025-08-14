@@ -1,5 +1,6 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
+import { Button } from '@/Components/ui/button';
 import { ChevronLeft, Play, CheckCircle, Lock, Clock, BookOpen, Video, FileText, Circle } from 'lucide-react';
 
 interface Lesson {
@@ -20,7 +21,7 @@ interface Course {
     id: number;
     title: string;
     description: string;
-    image_url?: string;
+    thumbnail_url?: string;
     lessons_count?: number;
     duration_minutes?: number;
     difficulty?: string;
@@ -166,18 +167,18 @@ export default function LessonsIndex({
 
     const getLessonStatusIcon = (lesson: any) => {
         if (lesson.is_completed) {
-            return <CheckCircle className="h-6 w-6 text-green-500" />;
+            return <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />;
         } else if (lesson.progress?.status === 'started') {
             return (
                 <div className="relative">
-                    <Play className="h-6 w-6 text-orange-500" />
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <Play className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+                    <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-orange-500 rounded-full"></div>
                 </div>
             );
         } else if (isEnrolled) {
-            return <Play className="h-6 w-6 text-blue-500" />;
+            return <Play className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />;
         } else {
-            return <Lock className="h-6 w-6 text-gray-400" />;
+            return <Lock className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />;
         }
     };
 
@@ -187,73 +188,164 @@ export default function LessonsIndex({
             
             <div className="min-h-screen bg-gray-50">
                 {/* Header */}
-                <div className="bg-white shadow-sm border-b">
+                <div className="bg-white shadow-sm border-b sticky top-0 z-40">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between h-16">
-                            <div className="flex items-center space-x-4">
-                                <Link
-                                    href={`/m/${member.slug}/courses/${course.id}${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}
-                                    className="flex items-center text-gray-600 hover:text-gray-900"
-                                >
-                                    <ChevronLeft className="h-5 w-5 mr-1" />
-                                    Back to Course
+                            <div className="flex items-center">
+                                <Link href={`/m/${member.slug}/courses/${course.id}${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}>
+                                    <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                        <ChevronLeft className="w-4 h-4 mr-2" />
+                                        Back to Course
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="sm:hidden">
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </Button>
                                 </Link>
                             </div>
                             
+                            {/* Status Badges */}
                             {viewingContact && (
-                                <div className="text-sm text-gray-500">
-                                    Viewing as: {formatContactName(viewingContact)}
+                                <div className="flex items-center gap-2">
+                                    {/* Enrollment Status */}
+                                    <span className={`text-xs px-2 py-1 rounded-full ${
+                                        isEnrolled 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : 'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                        {isEnrolled ? 'Enrolled' : 'Not Enrolled'}
+                                    </span>
+                                    
+                                    {/* Progress Status */}
+                                    {progress && (
+                                        <span className={`text-xs px-2 py-1 rounded-full ${
+                                            progress.status === 'completed' 
+                                                ? 'bg-blue-100 text-blue-800' 
+                                                : progress.status === 'in_progress'
+                                                ? 'bg-orange-100 text-orange-800'
+                                                : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {progress.status === 'completed' ? 'Completed' : 
+                                             progress.status === 'in_progress' ? 'In Progress' : 
+                                             progress.status || 'Enrolled'}
+                                        </span>
+                                    )}
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Course Header */}
-                    <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-                        <div className="flex items-start space-x-6">
-                            {course.image_url && (
-                                <img
-                                    src={course.image_url}
-                                    alt={course.title}
-                                    className="w-24 h-24 object-cover rounded-lg"
-                                />
-                            )}
-                            <div className="flex-1">
-                                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+                                        {/* Course Header */}
+                    <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
+                        {/* Mobile Layout */}
+                        <div className="block sm:hidden">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="flex-shrink-0">
+                                    {course.thumbnail_url ? (
+                                        <img
+                                            src={course.thumbnail_url}
+                                            alt={course.title}
+                                            className="w-16 h-16 object-cover rounded-lg"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                                const fallback = target.nextElementSibling as HTMLElement;
+                                                if (fallback) {
+                                                    fallback.style.display = 'flex';
+                                                }
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div 
+                                        className={`w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-base ${course.thumbnail_url ? 'hidden' : ''}`}
+                                        style={{ display: course.thumbnail_url ? 'none' : 'flex' }}
+                                    >
+                                        {course.title.charAt(0).toUpperCase()}
+                                    </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h1 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2">
+                                        {course.title}
+                                    </h1>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <div className="flex items-center">
+                                            <BookOpen className="h-3 w-3 mr-1" />
+                                            {course.lessons_count || lessons.length} lessons
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Clock className="h-3 w-3 mr-1" />
+                                            {formatDuration(course.duration_minutes)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                                {course.description}
+                            </p>
+
+                            {/* Progress Bar - Mobile */}
+                            <div className="mb-4">
+                                <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
+                                    <span>Progress</span>
+                                    <span>{completedLessons}/{lessons.length}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className={`h-2 rounded-full transition-all duration-300 ${
+                                            isEnrolled ? 'bg-blue-600' : 'bg-gray-400'
+                                        }`}
+                                        style={{ width: `${progressPercentage}%` }}
+                                    />
+                                </div>
+                                {progress && (
+                                    <div className="mt-2 text-xs text-gray-500">
+                                        <div className="flex flex-col gap-1">
+                                            <span>Overall: {progress.progress_percentage || 0}%</span>
+                                            <span>Completed: {progress.lessons_completed || 0} lessons</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Desktop Layout */}
+                        <div className="hidden sm:flex sm:flex-row sm:items-start gap-6">
+                            <div className="flex-shrink-0">
+                                {course.thumbnail_url ? (
+                                    <img
+                                        src={course.thumbnail_url}
+                                        alt={course.title}
+                                        className="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-lg"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            const fallback = target.nextElementSibling as HTMLElement;
+                                            if (fallback) {
+                                                fallback.style.display = 'flex';
+                                            }
+                                        }}
+                                    />
+                                ) : null}
+                                <div 
+                                    className={`w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg lg:text-xl ${course.thumbnail_url ? 'hidden' : ''}`}
+                                    style={{ display: course.thumbnail_url ? 'none' : 'flex' }}
+                                >
+                                    {course.title.charAt(0).toUpperCase()}
+                                </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
                                     {course.title}
                                 </h1>
-                                <p className="text-gray-600 mb-4">
+                                <p className="text-base text-gray-600 mb-4">
                                     {course.description}
                                 </p>
                                 
-                                {/* Enrollment Status */}
+                                {/* Progress Bar - Desktop */}
                                 <div className="mb-4">
-                                    {isEnrolled ? (
-                                        <div className="flex items-center space-x-2 mb-3">
-                                            <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                                <CheckCircle className="h-4 w-4 mr-1" />
-                                                Enrolled
-                                            </div>
-                                            {progress?.status === 'completed' && (
-                                                <div className="flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                                    Course Completed
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-medium mb-3">
-                                            <Lock className="h-4 w-4 mr-2" />
-                                            Not Enrolled - Lessons are locked
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Progress Bar */}
-                                <div className="mb-4">
-                                    <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                                    <div className="flex flex-row items-center justify-between text-sm text-gray-600 mb-2">
                                         <span>Progress</span>
                                         <span>{completedLessons} of {lessons.length} lessons completed</span>
                                     </div>
@@ -267,15 +359,19 @@ export default function LessonsIndex({
                                     </div>
                                     {progress && (
                                         <div className="mt-2 text-xs text-gray-500">
-                                            Overall progress: {progress.progress_percentage || 0}% • 
-                                            Lessons completed: {progress.lessons_completed || 0} • 
-                                            Status: {progress.status || 'Unknown'}
+                                            <div className="flex flex-row items-center gap-2">
+                                                <span>Overall progress: {progress.progress_percentage || 0}%</span>
+                                                <span>•</span>
+                                                <span>Lessons completed: {progress.lessons_completed || 0}</span>
+                                                <span>•</span>
+                                                <span>Status: {progress.status || 'Unknown'}</span>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Course Stats */}
-                                <div className="flex items-center space-x-6 text-sm text-gray-500">
+                                {/* Course Stats - Desktop */}
+                                <div className="flex flex-row items-center gap-6 text-sm text-gray-500">
                                     <div className="flex items-center">
                                         <BookOpen className="h-4 w-4 mr-1" />
                                         {course.lessons_count || lessons.length} lessons
@@ -291,17 +387,17 @@ export default function LessonsIndex({
 
                     {/* Lessons List */}
                     <div className="bg-white rounded-lg shadow-sm border">
-                        <div className="px-6 py-4 border-b">
-                            <h2 className="text-lg font-semibold text-gray-900">
+                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
+                            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                                 Course Content
                             </h2>
                         </div>
                         
                         {!isEnrolled && (
-                            <div className="p-6 bg-yellow-50 border-l-4 border-yellow-400">
+                            <div className="p-4 sm:p-6 bg-yellow-50 border-l-4 border-yellow-400">
                                 <div className="flex">
                                     <div className="flex-shrink-0">
-                                        <Lock className="h-5 w-5 text-yellow-400" />
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
                                     </div>
                                     <div className="ml-3">
                                         <p className="text-sm text-yellow-700">
@@ -326,35 +422,35 @@ export default function LessonsIndex({
                             {lessonsWithProgress.map((lesson, index) => (
                                 <div
                                     key={lesson.id}
-                                    className={`p-6 hover:bg-gray-50 transition-colors ${
+                                    className={`p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors ${
                                         !isEnrolled ? 'opacity-60' : ''
                                     }`}
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="flex-shrink-0">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                                        <div className="flex items-start space-x-3 sm:space-x-4">
+                                            <div className="flex-shrink-0 mt-1">
                                                 {getLessonStatusIcon(lesson)}
                                             </div>
                                             
-                                            <div className="flex-1">
-                                                <h3 className={`text-lg font-medium ${
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className={`text-sm sm:text-base lg:text-lg font-medium ${
                                                     lesson.is_completed ? 'text-green-700' : 'text-gray-900'
                                                 }`}>
                                                     {index + 1}. {lesson.title}
                                                 </h3>
                                                 {lesson.description && (
-                                                    <p className="text-gray-600 mt-1">
+                                                    <p className="text-gray-600 mt-1 text-xs sm:text-sm lg:text-base line-clamp-2 sm:line-clamp-none">
                                                         {lesson.description}
                                                     </p>
                                                 )}
-                                                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-500">
                                                     <div className="flex items-center">
                                                         {getLessonIcon(lesson)}
                                                         <span className="ml-1">{formatDuration(lesson.duration_minutes)}</span>
                                                     </div>
                                                     {lesson.is_completed && (
                                                         <span className="text-green-600 font-medium flex items-center">
-                                                            <CheckCircle className="h-4 w-4 mr-1" />
+                                                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                                             Completed
                                                         </span>
                                                     )}
@@ -374,7 +470,7 @@ export default function LessonsIndex({
                                                     )}
                                                     {!isEnrolled && (
                                                         <span className="text-gray-500 font-medium flex items-center">
-                                                            <Lock className="h-4 w-4 mr-1" />
+                                                            <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                                             Locked
                                                         </span>
                                                     )}
@@ -388,12 +484,12 @@ export default function LessonsIndex({
                                                     href={`/m/${member.slug}/courses/${course.id}/learn?lesson_id=${lesson.id}${
                                                         viewingContact ? `&contact_id=${viewingContact.id}` : ''
                                                     }`}
-                                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                    className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                                 >
                                                     {lesson.is_completed ? 'Review' : 'Learn'}
                                                 </Link>
                                             ) : (
-                                                <span className="text-gray-400 text-sm">
+                                                <span className="text-gray-400 text-xs sm:text-sm block text-center sm:text-left">
                                                     Enroll to Access
                                                 </span>
                                             )}

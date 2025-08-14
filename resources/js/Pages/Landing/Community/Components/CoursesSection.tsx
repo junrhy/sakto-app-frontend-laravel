@@ -244,17 +244,19 @@ export default function CoursesSection({ member, courses, contactId }: CoursesSe
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                        <Button asChild variant="outline" className="flex-1">
+                                    <div className="flex flex-col sm:flex-row gap-2">
+                                        <Button asChild variant="outline" className="flex-1 min-w-0">
                                             <Link href={`/m/${member.slug || member.id}/courses/${course.id}${contactId ? `?contact_id=${contactId}` : ''}`}>
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                View Course
+                                                <Eye className="h-4 w-4 mr-1 sm:mr-2" />
+                                                <span className="hidden sm:inline">View Course</span>
+                                                <span className="sm:hidden">Course</span>
                                             </Link>
                                         </Button>
-                                        <Button asChild className="flex-1">
+                                        <Button asChild className="flex-1 min-w-0">
                                             <Link href={`/m/${member.slug || member.id}/courses/${course.id}/lessons${contactId ? `?contact_id=${contactId}` : ''}`}>
-                                                <BookOpen className="h-4 w-4 mr-2" />
-                                                View Lessons
+                                                <BookOpen className="h-4 w-4 mr-1 sm:mr-2" />
+                                                <span className="hidden sm:inline">View Lessons</span>
+                                                <span className="sm:hidden">Lessons</span>
                                             </Link>
                                         </Button>
                                     </div>
