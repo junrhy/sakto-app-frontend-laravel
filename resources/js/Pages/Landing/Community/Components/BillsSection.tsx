@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 interface BillsSectionProps {
     member: {
         id: number;
+        identifier?: string;
         app_currency: {
             code: string;
             symbol: string;
@@ -19,6 +20,7 @@ interface Biller {
     category: string;
     logo?: string;
     is_favorite: boolean;
+    account_number?: string;
 }
 
 
@@ -34,9 +36,9 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     const [selectedBiller, setSelectedBiller] = useState<Biller | null>(null);
     const [accountNumber, setAccountNumber] = useState('');
     const [paymentAmount, setPaymentAmount] = useState('');
-    const [paymentDescription, setPaymentDescription] = useState('');
     const [processing, setProcessing] = useState(false);
     const [paymentError, setPaymentError] = useState('');
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
 
 
@@ -44,34 +46,9 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [showCategories, setShowCategories] = useState(true);
+    const [categories, setCategories] = useState<Array<{id: string, name: string, icon: string}>>([]);
 
-    const categories = [
-        { id: 'electricity', name: 'Electricity', icon: 'electricity' },
-        { id: 'water', name: 'Water', icon: 'water' },
-        { id: 'internet', name: 'Internet', icon: 'internet' },
-        { id: 'mobile', name: 'Mobile', icon: 'mobile' },
-        { id: 'cable', name: 'Cable TV', icon: 'cable' },
-        { id: 'credit_card', name: 'Credit Card', icon: 'credit_card' },
-        { id: 'insurance', name: 'Insurance', icon: 'insurance' },
-        { id: 'loan', name: 'Loan', icon: 'loan' },
-        { id: 'other', name: 'Other', icon: 'other' }
-    ];
 
-    // Sample billers data - in real app, this would come from API
-    const sampleBillers: Biller[] = [
-        { id: 1, name: 'Meralco', category: 'electricity', is_favorite: false },
-        { id: 2, name: 'Maynilad', category: 'water', is_favorite: true },
-        { id: 3, name: 'PLDT', category: 'internet', is_favorite: false },
-        { id: 4, name: 'Globe', category: 'mobile', is_favorite: true },
-        { id: 5, name: 'Smart', category: 'mobile', is_favorite: false },
-        { id: 6, name: 'Sky Cable', category: 'cable', is_favorite: false },
-        { id: 7, name: 'Cignal', category: 'cable', is_favorite: false },
-        { id: 8, name: 'BDO Credit Card', category: 'credit_card', is_favorite: false },
-        { id: 9, name: 'BPI Credit Card', category: 'credit_card', is_favorite: false },
-        { id: 10, name: 'Manulife Insurance', category: 'insurance', is_favorite: false },
-        { id: 11, name: 'Prulife Insurance', category: 'insurance', is_favorite: false },
-        { id: 12, name: 'Home Credit', category: 'loan', is_favorite: false },
-    ];
 
     useEffect(() => {
         if (contactId) {
@@ -86,14 +63,44 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
             setLoading(true);
             setError('');
             
-            // Simulate API call - replace with actual API endpoint
-            // const response = await fetch(`/public/contacts/${contactId}/billers`);
-            // const data = await response.json();
+            if (!member.identifier) {
+                setError('Member identifier not available');
+                return;
+            }
             
-            // For now, use sample data
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
-            setBillers(sampleBillers);
-            setFavoriteBillers(sampleBillers.filter(biller => biller.is_favorite));
+            const params = new URLSearchParams();
+            if (contactId) {
+                params.append('contact_id', contactId.toString());
+            }
+            
+            const response = await fetch(`/m/${member.identifier}/billers?${params.toString()}`);
+            const data = await response.json();
+            
+            if (response.ok && data.data) {
+                const billersData = data.data.map((biller: any) => ({
+                    id: biller.id,
+                    name: biller.name,
+                    category: biller.category || 'other',
+                    logo: biller.logo,
+                    is_favorite: biller.is_favorite || false,
+                    account_number: biller.account_number || ''
+                }));
+                
+                setBillers(billersData);
+                setFavoriteBillers(billersData.filter((biller: Biller) => biller.is_favorite));
+                
+                // Extract unique categories from biller data
+                const uniqueCategories = [...new Set(billersData.map((biller: Biller) => biller.category))] as string[];
+                const categoryData = uniqueCategories.map((category: string) => ({
+                    id: category,
+                    name: category,
+                    icon: getCategoryIconName(category)
+                }));
+                
+                setCategories(categoryData);
+            } else {
+                setError(data.error || 'Failed to load billers');
+            }
         } catch (err) {
             setError('Failed to load billers');
         } finally {
@@ -105,30 +112,51 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
 
     const toggleFavorite = async (billerId: number) => {
         try {
-            // Simulate API call - replace with actual API endpoint
-            // const response = await fetch(`/public/contacts/${contactId}/billers/${billerId}/favorite`, {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' }
-            // });
+            if (!member.identifier) {
+                toast.error('Member identifier not available');
+                return;
+            }
             
-            setBillers(prev => prev.map(biller => 
-                biller.id === billerId 
-                    ? { ...biller, is_favorite: !biller.is_favorite }
-                    : biller
-            ));
+            if (!contactId) {
+                toast.error('Contact ID is required to manage favorites');
+                return;
+            }
             
-            setFavoriteBillers(prev => {
-                const biller = billers.find(b => b.id === billerId);
-                if (!biller) return prev;
-                
-                if (biller.is_favorite) {
-                    return prev.filter(b => b.id !== billerId);
-                } else {
-                    return [...prev, { ...biller, is_favorite: true }];
-                }
+            const response = await fetch(`/m/${member.identifier}/billers/${billerId}/favorite`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    contact_id: contactId
+                })
             });
             
-            toast.success('Favorite updated successfully');
+            const data = await response.json();
+            
+            if (response.ok) {
+                setBillers(prev => prev.map(biller => 
+                    biller.id === billerId 
+                        ? { ...biller, is_favorite: !biller.is_favorite }
+                        : biller
+                ));
+                
+                setFavoriteBillers(prev => {
+                    const biller = billers.find(b => b.id === billerId);
+                    if (!biller) return prev;
+                    
+                    if (biller.is_favorite) {
+                        return prev.filter(b => b.id !== billerId);
+                    } else {
+                        return [...prev, { ...biller, is_favorite: true }];
+                    }
+                });
+                
+                toast.success('Favorite updated successfully');
+            } else {
+                toast.error(data.error || 'Failed to update favorite');
+            }
         } catch (err) {
             toast.error('Failed to update favorite');
         }
@@ -159,7 +187,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
         }
 
         // Calculate total with service fee
-        const serviceFee = 40;
+        const serviceFee = 10;
         const totalAmount = amount + serviceFee;
 
         // Check if total amount exceeds wallet balance
@@ -173,34 +201,51 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
             setProcessing(true);
             setPaymentError('');
 
-            // Simulate API call - replace with actual API endpoint
-            // const response = await fetch(`/public/contacts/${contactId}/bill-payments`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            //     },
-            //     body: JSON.stringify({
-            //         biller_id: selectedBiller.id,
-            //         account_number: accountNumber,
-            //         amount: amount,
-            //         service_fee: serviceFee,
-            //         total_amount: totalAmount,
-            //         description: paymentDescription || undefined,
-            //     }),
-            // });
+            if (!member.identifier) {
+                setPaymentError('Member identifier not available');
+                return;
+            }
 
-            // Simulate processing time
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const response = await fetch(`/m/${member.identifier}/bill-payments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    biller_id: selectedBiller.id,
+                    biller_name: selectedBiller.name,
+                    account_number: accountNumber,
+                    amount: amount,
+                    category: selectedBiller.category,
+                    contact_id: contactId,
+                }),
+            });
 
-            // Reset form
-            setAccountNumber('');
-            setPaymentAmount('');
-            setPaymentDescription('');
-            setSelectedBiller(null);
-            setShowPaymentModal(false);
-            
-            toast.success('Bill payment completed successfully!');
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Reset form
+                setAccountNumber('');
+                setPaymentAmount('');
+                setSelectedBiller(null);
+                setShowPaymentModal(false);
+                
+                // Show success toast with payment details
+                const amount = parseFloat(paymentAmount);
+                const serviceFee = 10;
+                const totalAmount = amount + serviceFee;
+                
+                toast.success(
+                    `Payment successful! ${selectedBiller.name}`,
+                    {
+                        description: `Total: ${formatPrice(totalAmount)} | Account: ${accountNumber}`,
+                        duration: 5000,
+                    }
+                );
+            } else {
+                setPaymentError(data.message || data.error || 'Payment failed. Please try again.');
+            }
         } catch (err) {
             setPaymentError('Payment failed. Please try again.');
         } finally {
@@ -212,9 +257,9 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
         setSelectedBiller(biller);
         setShowPaymentModal(true);
         setPaymentError('');
-        setAccountNumber('');
+        setAccountNumber(biller.account_number || '');
         setPaymentAmount('');
-        setPaymentDescription('');
+        setPaymentConfirmed(false);
     };
 
     const formatPrice = (price: number | string | null | undefined): string => {
@@ -235,7 +280,10 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     };
 
     const getCategoryIcon = (category: string) => {
-        switch (category) {
+        // Map category to icon identifier first
+        const iconName = getCategoryIconName(category);
+        
+        switch (iconName) {
             case 'electricity':
                 return (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,8 +341,34 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
         }
     };
 
+    const getCategoryIconName = (category: string): string => {
+        // Map category names to icon identifiers
+        const categoryMap: { [key: string]: string } = {
+            'electricity': 'electricity',
+            'water': 'water',
+            'internet': 'internet',
+            'mobile': 'mobile',
+            'cable': 'cable',
+            'credit_card': 'credit_card',
+            'insurance': 'insurance',
+            'loan': 'loan',
+            'utilities': 'electricity',
+            'telecommunications': 'internet',
+            'banking': 'credit_card',
+            'healthcare': 'insurance',
+            'transportation': 'mobile',
+            'entertainment': 'cable',
+            'education': 'other',
+            'government': 'other',
+            'retail': 'other',
+            'other': 'other'
+        };
+        
+        return categoryMap[category.toLowerCase()] || 'other';
+    };
+
     const getCategoryColor = (category: string) => {
-        switch (category) {
+        switch (category.toLowerCase()) {
             case 'electricity': return 'text-yellow-600';
             case 'water': return 'text-blue-600';
             case 'internet': return 'text-purple-600';
@@ -303,6 +377,12 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
             case 'credit_card': return 'text-indigo-600';
             case 'insurance': return 'text-emerald-600';
             case 'loan': return 'text-orange-600';
+            case 'utilities': return 'text-yellow-600';
+            case 'telecommunications': return 'text-purple-600';
+            case 'banking': return 'text-indigo-600';
+            case 'healthcare': return 'text-emerald-600';
+            case 'transportation': return 'text-green-600';
+            case 'entertainment': return 'text-red-600';
             default: return 'text-gray-600';
         }
     };
@@ -379,7 +459,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
     }
 
     return (
-        <div className="space-y-3 sm:space-y-4">
+        <div>
             {/* Header - Only show when viewing billers */}
             {!showCategories && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
@@ -420,31 +500,38 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                         Favorite Billers
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {favoriteBillers.map((biller) => (
-                            <div
-                                key={biller.id}
-                                className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                                onClick={() => openPaymentModal(biller)}
-                            >
-                                <div className="flex items-center">
-                                    <div className={`mr-3 ${getCategoryColor(biller.category)}`}>
-                                        {getCategoryIcon(biller.category)}
-                                    </div>
-                                    <span className="text-gray-900 dark:text-gray-100 font-medium">{biller.name}</span>
-                                </div>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleFavorite(biller.id);
-                                    }}
-                                    className="text-yellow-500 hover:text-yellow-600"
+                                                    {favoriteBillers.map((biller) => (
+                                <div
+                                    key={biller.id}
+                                    className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                    onClick={() => openPaymentModal(biller)}
                                 >
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        ))}
+                                    <div className="flex items-center flex-1 min-w-0">
+                                        <div className={`mr-3 ${getCategoryColor(biller.category)} flex-shrink-0`}>
+                                            {getCategoryIcon(biller.category)}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-gray-900 dark:text-gray-100 font-medium truncate">{biller.name}</div>
+                                            {biller.account_number && (
+                                                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                                    Account: {biller.account_number}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFavorite(biller.id);
+                                        }}
+                                        className="text-yellow-500 hover:text-yellow-600 flex-shrink-0 ml-2"
+                                    >
+                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ))}
                     </div>
                 </div>
             )}
@@ -501,18 +588,25 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                                     className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                                     onClick={() => openPaymentModal(biller)}
                                 >
-                                    <div className="flex items-center">
-                                        <div className={`mr-3 ${getCategoryColor(biller.category)}`}>
+                                    <div className="flex items-center flex-1 min-w-0">
+                                        <div className={`mr-3 ${getCategoryColor(biller.category)} flex-shrink-0`}>
                                             {getCategoryIcon(biller.category)}
                                         </div>
-                                        <span className="text-gray-900 dark:text-gray-100 font-medium">{biller.name}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="text-gray-900 dark:text-gray-100 font-medium truncate">{biller.name}</div>
+                                            {biller.account_number && (
+                                                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                                    Account: {biller.account_number}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             toggleFavorite(biller.id);
                                         }}
-                                        className={`${biller.is_favorite ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-600`}
+                                        className={`${biller.is_favorite ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-600 flex-shrink-0 ml-2`}
                                     >
                                         <svg className="w-5 h-5" fill={biller.is_favorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 20 20">
                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -538,8 +632,8 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
 
             {/* Payment Modal */}
             {showPaymentModal && selectedBiller && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+                    <div className="bg-white dark:bg-gray-800 w-full h-full sm:rounded-lg sm:shadow-xl sm:w-full sm:max-w-md sm:max-h-[90vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Pay Bill</h3>
                             <button
@@ -606,7 +700,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                                         min="0.01"
                                         max={(() => {
                                             const currentBalance = typeof walletBalance === 'string' ? parseFloat(walletBalance) : walletBalance;
-                                            return currentBalance !== null && currentBalance !== undefined ? currentBalance - 40 : undefined;
+                                            return currentBalance !== null && currentBalance !== undefined ? currentBalance - 10 : undefined;
                                         })()}
                                         value={paymentAmount}
                                         onChange={(e) => setPaymentAmount(e.target.value)}
@@ -626,31 +720,32 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-600 dark:text-gray-400">Service Fee:</span>
-                                                <span className="text-gray-900 dark:text-gray-100">{formatPrice(40)}</span>
+                                                <span className="text-gray-900 dark:text-gray-100">{formatPrice(10)}</span>
                                             </div>
                                             <div className="border-t border-gray-200 dark:border-gray-600 pt-2">
                                                 <div className="flex justify-between font-medium">
                                                     <span className="text-gray-900 dark:text-gray-100">Total Amount:</span>
-                                                    <span className="text-blue-600 dark:text-blue-400">{formatPrice(parseFloat(paymentAmount) + 40)}</span>
+                                                    <span className="text-blue-600 dark:text-blue-400">{formatPrice(parseFloat(paymentAmount) + 10)}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Description */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Description (Optional)
-                                    </label>
+
+
+                                {/* Payment Confirmation Checkbox */}
+                                <div className="flex items-start space-x-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                                     <input
-                                        type="text"
-                                        value={paymentDescription}
-                                        onChange={(e) => setPaymentDescription(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Enter description"
-                                        maxLength={255}
+                                        type="checkbox"
+                                        id="payment-confirmation"
+                                        checked={paymentConfirmed}
+                                        onChange={(e) => setPaymentConfirmed(e.target.checked)}
+                                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                     />
+                                    <label htmlFor="payment-confirmation" className="text-sm text-gray-700 dark:text-gray-300">
+                                        I confirm that I want to proceed with this payment. I understand that this action cannot be undone and the amount will be deducted from my wallet balance.
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -665,7 +760,7 @@ export default function BillsSection({ member, contactId, walletBalance }: Bills
                             </button>
                             <button
                                 onClick={handlePayment}
-                                disabled={processing || !accountNumber || !paymentAmount}
+                                disabled={processing || !accountNumber || !paymentAmount || !paymentConfirmed}
                                 className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                             >
                                 {processing ? (

@@ -550,6 +550,15 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                     onChange={(e) => setFormData({ ...formData, bill_description: e.target.value })}
                                                 />
                                             </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="reference_number">Reference Number</Label>
+                                                <Input
+                                                    id="reference_number"
+                                                    value={formData.reference_number}
+                                                    onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
+                                                    placeholder="Enter reference number"
+                                                />
+                                            </div>
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="is_recurring"
@@ -681,10 +690,36 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                         {getStatusIcon(bill.status)}
                                                         <div>
                                                             <div className="font-medium">{bill.bill_title}</div>
-                                                            <div className="text-sm text-muted-foreground">
-                                                                {bill.bill_number} • {bill.category}
-                                                                {bill.biller && ` • ${bill.biller.name}`}
-                                                                {bill.biller?.account_number && ` • Acc: ${bill.biller.account_number}`}
+                                                            <div className="text-sm text-muted-foreground space-y-1">
+                                                                {bill.bill_description && (
+                                                                    <div className="text-sm text-muted-foreground">
+                                                                        {bill.bill_description}
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex items-center space-x-4">
+                                                                    <span>{bill.bill_number}</span>
+                                                                    {bill.category && (
+                                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                                            {bill.category}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {(bill.biller || bill.reference_number) && (
+                                                                    <div className="flex items-center space-x-4 text-xs">
+                                                                        {bill.biller && (
+                                                                            <span className="flex items-center space-x-1">
+                                                                                <span className="text-muted-foreground">Biller:</span>
+                                                                                <span>{bill.biller.name}</span>
+                                                                            </span>
+                                                                        )}
+                                                                        {bill.biller?.account_number && (
+                                                                            <span className="flex items-center space-x-1">
+                                                                                <span className="text-muted-foreground">Acc:</span>
+                                                                                <span className="font-mono">{bill.biller.account_number}</span>
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -693,7 +728,7 @@ export default function BillPayment({ auth }: { auth: any }) {
                                                     <div className="text-right">
                                                         <div className="font-medium">{formatCurrency(bill.amount)}</div>
                                                         <div className="text-sm text-muted-foreground">
-                                                            Due: {formatDate(bill.due_date)}
+                                                            Payment Date: {formatDate(bill.created_at)}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
@@ -973,6 +1008,15 @@ export default function BillPayment({ auth }: { auth: any }) {
                             id="edit_notes"
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit_reference_number">Reference Number</Label>
+                        <Input
+                            id="edit_reference_number"
+                            value={formData.reference_number}
+                            onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
+                            placeholder="Enter reference number"
                         />
                     </div>
                     <DialogFooter>

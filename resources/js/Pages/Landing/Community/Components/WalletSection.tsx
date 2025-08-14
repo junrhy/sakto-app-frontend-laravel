@@ -6,6 +6,7 @@ import BillsSection from './BillsSection';
 interface WalletSectionProps {
     member: {
         id: number;
+        identifier?: string;
         app_currency: {
             code: string;
             symbol: string;
@@ -391,9 +392,9 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
     }
 
     return (
-        <div className="space-y-4 sm:space-y-6">
+        <div>
             {/* Wallet Balance Card */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 rounded-lg shadow-sm p-4 sm:p-6 text-white">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 rounded-lg shadow-sm p-4 sm:p-6 text-white mb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h2 className="text-lg sm:text-xl font-medium mb-1">Wallet Balance</h2>
@@ -414,7 +415,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
 
             {/* Success Message */}
             {successMessage && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
                     <div className="flex items-center">
                         <div className="flex-shrink-0">
                             <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
@@ -430,40 +431,10 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                 </div>
             )}
 
-            {/* Wallet Status */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Wallet Information</h3>
-                <div className="space-y-3 sm:space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Status</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${
-                            walletData?.wallet.status === 'active' 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                        }`}>
-                            {walletData?.wallet.status === 'active' ? 'Active' : 'Inactive'}
-                        </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Currency</span>
-                        <span className="text-gray-900 dark:text-gray-100 font-medium text-sm sm:text-base">
-                            {walletData?.wallet.currency || member.app_currency?.code || 'PHP'}
-                        </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                        <span className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">Last Updated</span>
-                        <span className="text-gray-900 dark:text-gray-100 text-sm">
-                            {walletData?.wallet.updated_at 
-                                ? new Date(walletData.wallet.updated_at).toLocaleDateString()
-                                : 'N/A'
-                            }
-                        </span>
-                    </div>
-                </div>
-            </div>
+
 
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <button
@@ -484,7 +455,7 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
                         <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">View History</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">History</span>
                     </button>
                     <button
                         onClick={() => setShowBillsModal(true)}
@@ -500,8 +471,8 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
 
             {/* Transaction History Dialog */}
             {transactionHistoryOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[95vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Transaction History</h3>
                             <button
@@ -599,8 +570,8 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
 
             {/* Transfer Modal */}
             {showTransferModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-w-md sm:max-h-[90vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Send Funds</h3>
                             <button
@@ -731,8 +702,8 @@ export default function WalletSection({ member, contactId }: WalletSectionProps)
 
             {/* Bills Modal */}
             {showBillsModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-w-6xl sm:max-h-[95vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Bill Payments</h3>
                             <button

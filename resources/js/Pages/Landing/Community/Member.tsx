@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useState, useEffect } from 'react';
+import { Toaster } from 'sonner';
 import UpdatesSection from './Components/UpdatesSection';
 import ProfileSection from './Components/ProfileSection';
 import MyRecordsSection from './Components/MyRecordsSection';
@@ -105,8 +106,8 @@ export default function Member({ member, challenges, events, pages, contacts, up
             ]
         },
         {
-            id: 'financial',
-            label: 'Financial',
+            id: 'business',
+            label: 'Business',
             items: [
                 { id: 'products', label: 'Marketplace', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
                 { id: 'wallet', label: 'Wallet', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' }
@@ -701,6 +702,9 @@ export default function Member({ member, challenges, events, pages, contacts, up
                     {renderContent()}
                 </div>
             </div>
+
+            {/* Toast Notifications */}
+            <Toaster position="top-right" richColors />
         </>
     );
 } 

@@ -230,6 +230,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/m/{identifier}/search-healthcare', [CommunityController::class, 'searchHealthcareRecords'])->name('member.search-healthcare');
     Route::get('/m/{identifier}/search-mortuary', [CommunityController::class, 'searchMortuaryRecords'])->name('member.search-mortuary');
     
+    // Community Billers routes
+    Route::get('/m/{identifier}/billers', [CommunityController::class, 'getBillers'])->name('member.billers.list');
+    Route::post('/m/{identifier}/billers/{billerId}/favorite', [CommunityController::class, 'toggleBillerFavorite'])->name('member.billers.favorite');
+    Route::post('/m/{identifier}/bill-payments', [CommunityController::class, 'storeBillPayment'])->name('member.bill-payments.store');
+    
     // Community Courses routes (view only)
     Route::prefix('m/{identifier}/courses')->group(function () {
         Route::get('/', [CommunityController::class, 'getCourses'])->name('member.courses.list');

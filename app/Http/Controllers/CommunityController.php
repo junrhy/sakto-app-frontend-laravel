@@ -1708,4 +1708,219 @@ class CommunityController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get billers for a community member.
+     */
+    public function getBillers(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $params = [
+                'client_identifier' => $member->identifier,
+                'per_page' => $request->get('per_page', 50),
+                'page' => $request->get('page', 1),
+                'search' => $request->get('search', ''),
+                'category' => $request->get('category', ''),
+                'status' => 'active'
+            ];
+
+            // Add contact_id if provided for favorite status
+            if ($request->filled('contact_id')) {
+                $params['contact_id'] = $request->contact_id;
+            }
+
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/billers", $params);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json([
+                    'error' => 'Failed to fetch billers',
+                    'data' => []
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while fetching billers',
+                'data' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle favorite status for a biller.
+     */
+    public function toggleBillerFavorite(Request $request, $identifier, $billerId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        // Validate contact_id is provided
+        if (!$request->filled('contact_id')) {
+            return response()->json(['error' => 'Contact ID is required'], 400);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/billers/{$billerId}/toggle-favorite", [
+                    'client_identifier' => $member->identifier,
+                    'contact_id' => $request->contact_id
+                ]);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json([
+                    'error' => 'Failed to toggle favorite status',
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while toggling favorite status',
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a new bill payment for a community member.
+     */
+    public function storeBillPayment(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('identifier', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            // Fetch contact details to get name information
+            $contactName = '';
+            if ($request->contact_id) {
+                try {
+                    $contactResponse = Http::withToken($this->apiToken)
+                        ->get("{$this->apiUrl}/contacts/{$request->contact_id}");
+
+                    if ($contactResponse->successful()) {
+                        $contact = $contactResponse->json() ?? null;
+                        if ($contact) {
+                            $firstName = $contact['first_name'] ?? '';
+                            $middleName = $contact['middle_name'] ?? '';
+                            $lastName = $contact['last_name'] ?? '';
+                            
+                            // Build full name
+                            $nameParts = array_filter([$firstName, $middleName, $lastName]);
+                            $contactName = implode(' ', $nameParts);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Log error but continue with empty contact name
+                    \Log::error('Failed to fetch contact details: ' . $e->getMessage());
+                }
+            }
+
+            // Prepare payment data
+            $paymentData = [
+                'bill_title' => $request->biller_name . ' Payment',
+                'bill_description' => $request->description ?? 'Bill payment' . ($contactName ? ' for ' . $contactName : ''),
+                'biller_id' => $request->biller_id,
+                'amount' => $request->amount,
+                'due_date' => now()->format('Y-m-d'), // Payment is due immediately
+                'payment_date' => now()->format('Y-m-d'), // Payment is made immediately
+                'status' => 'paid', // Payment is completed
+                'payment_method' => 'wallet', // Payment method used
+                'reference_number' => $request->account_number, // Use account number as reference
+                'notes' => $request->description ?? null,
+                'client_identifier' => $member->identifier,
+                'category' => $request->category ?? 'Utilities',
+                'priority' => 'medium',
+                'is_recurring' => false,
+            ];
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/bill-payments", $paymentData);
+
+            if ($response->successful()) {
+                // Calculate total amount including service fee
+                $serviceFee = 10;
+                $totalAmount = $request->amount + $serviceFee;
+                
+                // Deduct funds from the contact's wallet
+                $deductResponse = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/contact-wallets/{$request->contact_id}/deduct-funds", [
+                        'amount' => $totalAmount,
+                        'description' => "Bill payment to {$request->biller_name}",
+                        'reference' => $request->account_number,
+                    ]);
+
+                if (!$deductResponse->successful()) {
+                    // If wallet deduction fails, we should ideally rollback the payment
+                    // For now, we'll return an error indicating the payment was created but wallet deduction failed
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Payment created but wallet deduction failed',
+                        'error' => $deductResponse->json()['message'] ?? 'Unknown error',
+                    ], 500);
+                }
+
+                return response()->json($response->json());
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create bill payment',
+                'error' => $response->json()['message'] ?? 'Unknown error',
+                'errors' => $response->json()['errors'] ?? null
+            ], $response->status());
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating bill payment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 } 
