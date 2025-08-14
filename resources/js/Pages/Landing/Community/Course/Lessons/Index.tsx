@@ -2,6 +2,7 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { ChevronLeft, Play, CheckCircle, Lock, Clock, BookOpen, Video, FileText, Circle } from 'lucide-react';
+import { useTheme } from '@/Components/ThemeProvider';
 
 interface Lesson {
     id: number;
@@ -119,6 +120,10 @@ export default function LessonsIndex({
     // Check if user is enrolled
     const isEnrolled = !!progress;
     
+    // Get theme for dark mode support
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
+    
     // Create a map of lesson progress for quick lookup
     const lessonProgressMap = new Map();
     if (progress?.lesson_progress) {
@@ -186,18 +191,18 @@ export default function LessonsIndex({
         <>
             <Head title={`${course.title} - Lessons`} />
             
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 {/* Header */}
-                <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+                <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between h-16">
                             <div className="flex items-center">
                                 <Link href={`/m/${member.slug}/courses/${course.id}${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}>
-                                    <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                    <Button variant="ghost" size="sm" className="hidden sm:flex text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <ChevronLeft className="w-4 h-4 mr-2" />
                                         Back to Course
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="sm:hidden">
+                                    <Button variant="ghost" size="sm" className="sm:hidden text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <ChevronLeft className="w-4 h-4" />
                                     </Button>
                                 </Link>
@@ -209,8 +214,8 @@ export default function LessonsIndex({
                                     {/* Enrollment Status */}
                                     <span className={`text-xs px-2 py-1 rounded-full ${
                                         isEnrolled 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : 'bg-yellow-100 text-yellow-800'
+                                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                                            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                                     }`}>
                                         {isEnrolled ? 'Enrolled' : 'Not Enrolled'}
                                     </span>
@@ -219,10 +224,10 @@ export default function LessonsIndex({
                                     {progress && (
                                         <span className={`text-xs px-2 py-1 rounded-full ${
                                             progress.status === 'completed' 
-                                                ? 'bg-blue-100 text-blue-800' 
+                                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' 
                                                 : progress.status === 'in_progress'
-                                                ? 'bg-orange-100 text-orange-800'
-                                                : 'bg-gray-100 text-gray-800'
+                                                ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                                         }`}>
                                             {progress.status === 'completed' ? 'Completed' : 
                                              progress.status === 'in_progress' ? 'In Progress' : 
@@ -236,8 +241,8 @@ export default function LessonsIndex({
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-                                        {/* Course Header */}
-                    <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
+                    {/* Course Header */}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-4 sm:mb-6">
                         {/* Mobile Layout */}
                         <div className="block sm:hidden">
                             <div className="flex items-center gap-3 mb-4">
@@ -265,10 +270,10 @@ export default function LessonsIndex({
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h1 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2">
+                                    <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">
                                         {course.title}
                                     </h1>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                                         <div className="flex items-center">
                                             <BookOpen className="h-3 w-3 mr-1" />
                                             {course.lessons_count || lessons.length} lessons
@@ -281,26 +286,26 @@ export default function LessonsIndex({
                                 </div>
                             </div>
                             
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                                 {course.description}
                             </p>
 
                             {/* Progress Bar - Mobile */}
                             <div className="mb-4">
-                                <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
+                                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
                                     <span>Progress</span>
                                     <span>{completedLessons}/{lessons.length}</span>
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                     <div
                                         className={`h-2 rounded-full transition-all duration-300 ${
-                                            isEnrolled ? 'bg-blue-600' : 'bg-gray-400'
+                                            isEnrolled ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-400 dark:bg-gray-600'
                                         }`}
                                         style={{ width: `${progressPercentage}%` }}
                                     />
                                 </div>
                                 {progress && (
-                                    <div className="mt-2 text-xs text-gray-500">
+                                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                         <div className="flex flex-col gap-1">
                                             <span>Overall: {progress.progress_percentage || 0}%</span>
                                             <span>Completed: {progress.lessons_completed || 0} lessons</span>
@@ -336,29 +341,29 @@ export default function LessonsIndex({
                                 </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                                     {course.title}
                                 </h1>
-                                <p className="text-base text-gray-600 mb-4">
+                                <p className="text-base text-gray-600 dark:text-gray-300 mb-4">
                                     {course.description}
                                 </p>
                                 
                                 {/* Progress Bar - Desktop */}
                                 <div className="mb-4">
-                                    <div className="flex flex-row items-center justify-between text-sm text-gray-600 mb-2">
+                                    <div className="flex flex-row items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                                         <span>Progress</span>
                                         <span>{completedLessons} of {lessons.length} lessons completed</span>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                         <div
                                             className={`h-2 rounded-full transition-all duration-300 ${
-                                                isEnrolled ? 'bg-blue-600' : 'bg-gray-400'
+                                                isEnrolled ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-400 dark:bg-gray-600'
                                             }`}
                                             style={{ width: `${progressPercentage}%` }}
                                         />
                                     </div>
                                     {progress && (
-                                        <div className="mt-2 text-xs text-gray-500">
+                                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                             <div className="flex flex-row items-center gap-2">
                                                 <span>Overall progress: {progress.progress_percentage || 0}%</span>
                                                 <span>•</span>
@@ -371,7 +376,7 @@ export default function LessonsIndex({
                                 </div>
 
                                 {/* Course Stats - Desktop */}
-                                <div className="flex flex-row items-center gap-6 text-sm text-gray-500">
+                                <div className="flex flex-row items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                                     <div className="flex items-center">
                                         <BookOpen className="h-4 w-4 mr-1" />
                                         {course.lessons_count || lessons.length} lessons
@@ -386,21 +391,21 @@ export default function LessonsIndex({
                     </div>
 
                     {/* Lessons List */}
-                    <div className="bg-white rounded-lg shadow-sm border">
-                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
-                            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                                 Course Content
                             </h2>
                         </div>
                         
                         {!isEnrolled && (
-                            <div className="p-4 sm:p-6 bg-yellow-50 border-l-4 border-yellow-400">
+                            <div className="p-4 sm:p-6 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-500">
                                 <div className="flex">
                                     <div className="flex-shrink-0">
-                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 dark:text-yellow-500" />
                                     </div>
                                     <div className="ml-3">
-                                        <p className="text-sm text-yellow-700">
+                                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
                                             <strong>Enrollment Required:</strong> You need to enroll in this course to access the lessons.
                                         </p>
                                         <div className="mt-2">
@@ -408,7 +413,7 @@ export default function LessonsIndex({
                                                 href={`/m/${member.slug}/courses/${course.id}${
                                                     viewingContact ? `?contact_id=${viewingContact.id}` : ''
                                                 }`}
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-800 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-800 dark:text-yellow-200 bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 dark:focus:ring-offset-gray-800"
                                             >
                                                 View Course Details
                                             </Link>
@@ -418,11 +423,11 @@ export default function LessonsIndex({
                             </div>
                         )}
 
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
                             {lessonsWithProgress.map((lesson, index) => (
                                 <div
                                     key={lesson.id}
-                                    className={`p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors ${
+                                    className={`p-3 sm:p-4 lg:p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
                                         !isEnrolled ? 'opacity-60' : ''
                                     }`}
                                 >
@@ -434,22 +439,22 @@ export default function LessonsIndex({
                                             
                                             <div className="flex-1 min-w-0">
                                                 <h3 className={`text-sm sm:text-base lg:text-lg font-medium ${
-                                                    lesson.is_completed ? 'text-green-700' : 'text-gray-900'
+                                                    lesson.is_completed ? 'text-green-700 dark:text-green-400' : 'text-gray-900 dark:text-white'
                                                 }`}>
                                                     {index + 1}. {lesson.title}
                                                 </h3>
                                                 {lesson.description && (
-                                                    <p className="text-gray-600 mt-1 text-xs sm:text-sm lg:text-base line-clamp-2 sm:line-clamp-none">
+                                                    <p className="text-gray-600 dark:text-gray-300 mt-1 text-xs sm:text-sm lg:text-base line-clamp-2 sm:line-clamp-none">
                                                         {lesson.description}
                                                     </p>
                                                 )}
-                                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-500">
+                                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                                                     <div className="flex items-center">
                                                         {getLessonIcon(lesson)}
                                                         <span className="ml-1">{formatDuration(lesson.duration_minutes)}</span>
                                                     </div>
                                                     {lesson.is_completed && (
-                                                        <span className="text-green-600 font-medium flex items-center">
+                                                        <span className="text-green-600 dark:text-green-400 font-medium flex items-center">
                                                             <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                                             Completed
                                                         </span>
@@ -457,19 +462,19 @@ export default function LessonsIndex({
                                                     {lesson.progress && (
                                                         <>
                                                             {lesson.progress.completion_percentage > 0 && lesson.progress.completion_percentage < 100 && (
-                                                                <span className="text-blue-600 font-medium">
+                                                                <span className="text-blue-600 dark:text-blue-400 font-medium">
                                                                     {lesson.progress.completion_percentage}% complete
                                                                 </span>
                                                             )}
                                                             {lesson.progress.status === 'started' && (
-                                                                <span className="text-orange-600 font-medium">
+                                                                <span className="text-orange-600 dark:text-orange-400 font-medium">
                                                                     In Progress
                                                                 </span>
                                                             )}
                                                         </>
                                                     )}
                                                     {!isEnrolled && (
-                                                        <span className="text-gray-500 font-medium flex items-center">
+                                                        <span className="text-gray-500 dark:text-gray-400 font-medium flex items-center">
                                                             <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                                             Locked
                                                         </span>
@@ -484,12 +489,12 @@ export default function LessonsIndex({
                                                     href={`/m/${member.slug}/courses/${course.id}/learn?lesson_id=${lesson.id}${
                                                         viewingContact ? `&contact_id=${viewingContact.id}` : ''
                                                     }`}
-                                                    className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                    className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
                                                 >
                                                     {lesson.is_completed ? 'Review' : 'Learn'}
                                                 </Link>
                                             ) : (
-                                                <span className="text-gray-400 text-xs sm:text-sm block text-center sm:text-left">
+                                                <span className="text-gray-400 dark:text-gray-500 text-xs sm:text-sm block text-center sm:text-left">
                                                     Enroll to Access
                                                 </span>
                                             )}

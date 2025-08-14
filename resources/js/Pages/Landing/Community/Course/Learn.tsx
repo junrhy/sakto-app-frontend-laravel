@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { ChevronLeft, ChevronRight, Play, Pause, Volume2, VolumeX, Maximize, CheckCircle, Clock, BookOpen, Video, FileText, Circle, Menu, X } from 'lucide-react';
+import { useTheme } from '@/Components/ThemeProvider';
 
 // YouTube Video Player Component with Progress Tracking
 const YouTubeVideoPlayer = React.memo(({ 
@@ -256,6 +257,10 @@ export default function Learn({
     const [isEnrolled, setIsEnrolled] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    // Get theme for dark mode support
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
+
     // Get lesson_id from URL params
     const urlParams = new URLSearchParams(window.location.search);
     const lessonId = urlParams.get('lesson_id');
@@ -464,11 +469,11 @@ export default function Learn({
 
     const getLessonStatusIcon = (lesson: Lesson) => {
         if (lesson.is_completed) {
-            return <CheckCircle className="h-4 w-4 text-green-600" />;
+            return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
         } else if (lesson.is_accessible) {
-            return <Play className="h-4 w-4 text-blue-600" />;
+            return <Play className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
         } else {
-            return <Circle className="h-4 w-4 text-gray-400" />;
+            return <Circle className="h-4 w-4 text-gray-400 dark:text-gray-500" />;
         }
     };
 
@@ -489,10 +494,10 @@ export default function Learn({
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading lesson...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+                    <p className="mt-4 text-gray-600 dark:text-gray-300">Loading lesson...</p>
                 </div>
             </div>
         );
@@ -500,13 +505,13 @@ export default function Learn({
 
     if (!currentLesson) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
                 <div className="text-center max-w-md">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">No lesson found</h2>
-                    <p className="text-gray-600 mb-4">This lesson is not available or doesn't exist.</p>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No lesson found</h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">This lesson is not available or doesn't exist.</p>
                     <Link
                         href={`/m/${member.slug}/courses/${course.id}/lessons${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                     >
                         Back to Lessons
                     </Link>
@@ -519,18 +524,18 @@ export default function Learn({
         <>
             <Head title={`${currentLesson.title} - ${course.title}`} />
             
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 {/* Header */}
-                <div className="bg-white shadow-sm border-b sticky top-0 z-40">
+                <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between h-16">
                             <div className="flex items-center">
                                 <Link href={`/m/${member.slug}/courses/${course.id}/lessons${viewingContact ? `?contact_id=${viewingContact.id}` : ''}`}>
-                                    <Button variant="ghost" size="sm" className="hidden sm:flex">
+                                    <Button variant="ghost" size="sm" className="hidden sm:flex text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <ChevronLeft className="w-4 h-4 mr-2" />
                                         Back to Lessons
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="sm:hidden">
+                                    <Button variant="ghost" size="sm" className="sm:hidden text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                         <ChevronLeft className="w-4 h-4" />
                                     </Button>
                                 </Link>
@@ -541,8 +546,8 @@ export default function Learn({
                                 <div className="flex items-center">
                                     <span className={`text-xs px-2 py-1 rounded-full ${
                                         progress 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : 'bg-yellow-100 text-yellow-800'
+                                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                                            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                                     }`}>
                                         {progress ? 'Enrolled' : 'Not Enrolled'}
                                     </span>
@@ -555,7 +560,7 @@ export default function Learn({
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                                    className="p-2"
+                                    className="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 >
                                     {sidebarOpen ? (
                                         <X className="w-5 h-5" />
@@ -599,15 +604,15 @@ export default function Learn({
                                                                     {Math.round(videoProgress[currentLesson.id])}%
                                                                 </span>
                                                             </div>
-                                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                                                 <div
-                                                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                                    className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
                                                                     style={{ width: `${videoProgress[currentLesson.id]}%` }}
                                                                 />
                                                             </div>
                                                             {videoWatched[currentLesson.id] && (
                                                                 <div className="mt-2 text-center">
-                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                                                                         <CheckCircle className="w-3 h-3 mr-1" />
                                                                         Video Watched
                                                                     </span>
@@ -635,17 +640,17 @@ export default function Learn({
                             )}
 
                             {/* Lesson Content */}
-                            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 pr-2">
+                                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white pr-2">
                                         {currentLesson.title}
                                     </h1>
                                     {currentLesson.is_completed && (
-                                        <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" />
+                                        <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 dark:text-green-400 flex-shrink-0" />
                                     )}
                                 </div>
                                 
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 text-sm text-gray-500 mb-4 sm:mb-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
                                     <div className="flex items-center">
                                         <Clock className="h-4 w-4 mr-1" />
                                         {formatDuration(currentLesson.duration_minutes)}
@@ -656,27 +661,27 @@ export default function Learn({
                                     </div>
                                 </div>
                                 
-                                <div className="prose max-w-none prose-sm sm:prose-base">
+                                <div className="prose max-w-none prose-sm sm:prose-base dark:prose-invert">
                                     {currentLesson.content ? (
                                         <div dangerouslySetInnerHTML={{ __html: currentLesson.content }} />
                                     ) : (
-                                        <p className="text-gray-600">{currentLesson.description}</p>
+                                        <p className="text-gray-600 dark:text-gray-300">{currentLesson.description}</p>
                                     )}
                                 </div>
                                 
                                 {/* Complete Lesson Button */}
                                 {viewingContact && (
-                                    <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
+                                    <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
                                         {!progress ? (
-                                            <div className="text-center p-3 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                                                <p className="text-yellow-800 text-sm sm:text-base">
+                                            <div className="text-center p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md">
+                                                <p className="text-yellow-800 dark:text-yellow-300 text-sm sm:text-base">
                                                     You need to enroll in this course to track your progress.
                                                 </p>
                                             </div>
                                         ) : currentLesson.is_completed ? (
-                                            <div className="text-center p-3 sm:p-4 bg-green-50 border border-green-200 rounded-md">
-                                                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 mx-auto mb-2" />
-                                                <p className="text-green-800 font-medium text-sm sm:text-base">
+                                            <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md">
+                                                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                                                <p className="text-green-800 dark:text-green-300 font-medium text-sm sm:text-base">
                                                     Lesson Completed!
                                                 </p>
                                             </div>
@@ -686,10 +691,10 @@ export default function Learn({
                                                 disabled={
                                                     !!currentLesson.video_url && !videoWatched[currentLesson.id]
                                                 }
-                                                className={`w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-sm sm:text-base font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                                                className={`w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 border border-transparent text-sm sm:text-base font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
                                                     !!currentLesson.video_url && !videoWatched[currentLesson.id]
-                                                        ? 'bg-gray-400 cursor-not-allowed'
-                                                        : 'bg-green-600 hover:bg-green-700 focus:ring-green-500 text-white'
+                                                        ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                                                        : 'bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:ring-green-500 text-white'
                                                 }`}
                                             >
                                                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
@@ -709,7 +714,7 @@ export default function Learn({
 
                         {/* Sidebar */}
                         <div className={`lg:col-span-1 order-1 lg:order-2 ${
-                            sidebarOpen ? 'fixed inset-y-0 right-0 w-full bg-white shadow-lg z-50 lg:relative lg:w-auto lg:shadow-none lg:bg-transparent' : 'hidden lg:block'
+                            sidebarOpen ? 'fixed inset-y-0 right-0 w-full bg-white dark:bg-gray-800 shadow-lg z-50 lg:relative lg:w-auto lg:shadow-none lg:bg-transparent' : 'hidden lg:block'
                         }`}>
                             <div className={`${sidebarOpen ? 'h-full overflow-y-auto p-4' : ''}`}>
                                 {/* Mobile Close Button */}
@@ -719,92 +724,92 @@ export default function Learn({
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setSidebarOpen(false)}
-                                            className="p-2"
+                                            className="p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                         >
                                             <X className="w-5 h-5" />
                                         </Button>
                                     </div>
                                 )}
                                 
-                                                                {/* Course Info */}
-                                <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6">
-                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                                {/* Course Info */}
+                                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-4 sm:mb-6">
+                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
                                         Course Progress
                                     </h3>
                                     
                                     {/* Progress Display */}
-                                <div className="mb-4">
-                                    <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                                        <span>Overall Progress</span>
-                                        <span>{progress ? Math.round(progress.progress_percentage || 0) : 0}%</span>
+                                    <div className="mb-4">
+                                        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                            <span>Overall Progress</span>
+                                            <span>{progress ? Math.round(progress.progress_percentage || 0) : 0}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                            <div
+                                                className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                                style={{ width: `${Math.min(progress?.progress_percentage || 0, 100)}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div
-                                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                            style={{ width: `${Math.min(progress?.progress_percentage || 0, 100)}%` }}
-                                        />
+                                    
+                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span>Course:</span>
+                                            <span className="font-medium text-right max-w-[60%]">{course.title}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span>Total Lessons:</span>
+                                            <span>{course.lessons_count || 0}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>Duration:</span>
+                                            <span>{formatDuration(course.duration_minutes)}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div className="text-sm text-gray-600">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span>Course:</span>
-                                        <span className="font-medium text-right max-w-[60%]">{course.title}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span>Total Lessons:</span>
-                                        <span>{course.lessons_count || 0}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>Duration:</span>
-                                        <span>{formatDuration(course.duration_minutes)}</span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Lessons List */}
-                            <div className="bg-white rounded-lg shadow-sm border">
-                                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b">
-                                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                                        Course Content
-                                    </h3>
-                                </div>
-                                
-                                <div className="divide-y divide-gray-200 max-h-64 sm:max-h-96 lg:max-h-96 overflow-y-auto">
-                                    {lessons.map((lesson) => (
-                                        <div
-                                            key={lesson.id}
-                                            className={`p-3 sm:p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                                                lesson.id === currentLesson.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                                            } ${!lesson.is_accessible ? 'opacity-60' : ''}`}
-                                            onClick={() => {
-                                                if (lesson.is_accessible) {
-                                                    setCurrentLesson(lesson);
-                                                    setSidebarOpen(false); // Close sidebar on mobile
-                                                    router.visit(`/m/${member.slug}/courses/${course.id}/learn?lesson_id=${lesson.id}${viewingContact ? `&contact_id=${viewingContact.id}` : ''}`);
-                                                }
-                                            }}
-                                        >
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex-shrink-0">
-                                                    {getLessonStatusIcon(lesson)}
-                                                </div>
-                                                
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`text-sm font-medium truncate ${
-                                                        lesson.id === currentLesson.id ? 'text-blue-700' : 'text-gray-900'
-                                                    }`}>
-                                                        {lesson.title}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {formatDuration(lesson.duration_minutes)}
-                                                    </p>
+                                {/* Lessons List */}
+                                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                                    <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
+                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                                            Course Content
+                                        </h3>
+                                    </div>
+                                    
+                                    <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-64 sm:max-h-96 lg:max-h-96 overflow-y-auto">
+                                        {lessons.map((lesson) => (
+                                            <div
+                                                key={lesson.id}
+                                                className={`p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${
+                                                    lesson.id === currentLesson.id ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400' : ''
+                                                } ${!lesson.is_accessible ? 'opacity-60' : ''}`}
+                                                onClick={() => {
+                                                    if (lesson.is_accessible) {
+                                                        setCurrentLesson(lesson);
+                                                        setSidebarOpen(false); // Close sidebar on mobile
+                                                        router.visit(`/m/${member.slug}/courses/${course.id}/learn?lesson_id=${lesson.id}${viewingContact ? `&contact_id=${viewingContact.id}` : ''}`);
+                                                    }
+                                                }}
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="flex-shrink-0">
+                                                        {getLessonStatusIcon(lesson)}
+                                                    </div>
+                                                    
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={`text-sm font-medium truncate ${
+                                                            lesson.id === currentLesson.id ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'
+                                                        }`}>
+                                                            {lesson.title}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {formatDuration(lesson.duration_minutes)}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
                             </div>
                         </div>
                     </div>
