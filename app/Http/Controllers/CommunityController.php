@@ -219,6 +219,23 @@ class CommunityController extends Controller
             // Optionally log error
         }
 
+        // Fetch courses from API
+        $courses = [];
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses", [
+                    'client_identifier' => $member->identifier,
+                    'status' => 'published',
+                    'limit' => 6 // Get only the latest 6 courses for display
+                ]);
+            if ($response->successful()) {
+                $responseData = $response->json();
+                $courses = $responseData['data'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+        }
+
         // Fetch order history from API (will be used when visitor is authenticated)
         $orderHistory = [];
         try {
@@ -247,6 +264,7 @@ class CommunityController extends Controller
             'contacts' => $contacts,
             'updates' => $updates,
             'products' => $products,
+            'courses' => $courses,
             'orderHistory' => $orderHistory,
             'appUrl' => config('app.url')
         ]);
@@ -1071,5 +1089,593 @@ class CommunityController extends Controller
         }
     }
 
+    /**
+     * Get courses for a community member (view only).
+     */
+    public function getCourses(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
 
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses", [
+                    'client_identifier' => $member->identifier,
+                    'status' => 'published',
+                    'per_page' => $request->get('per_page', 12),
+                    'page' => $request->get('page', 1),
+                    'search' => $request->get('search', ''),
+                    'category' => $request->get('category', ''),
+                    'featured' => $request->get('featured', false),
+                    'free' => $request->get('free', false),
+                ]);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json([
+                    'error' => 'Failed to fetch courses',
+                    'data' => []
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while fetching courses',
+                'data' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * Get course categories for a community member (view only).
+     */
+    public function getCourseCategories(Request $request, $identifier)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses/categories", [
+                    'client_identifier' => $member->identifier
+                ]);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            } else {
+                return response()->json([
+                    'error' => 'Failed to fetch course categories',
+                    'data' => []
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Network error occurred while fetching course categories',
+                'data' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * Show a specific course for a community member (view only).
+     */
+    public function showCourse(Request $request, $identifier, $courseId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            abort(404, 'Member not found');
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses/{$courseId}");
+
+            if ($response->successful()) {
+                $course = $response->json()['data'];
+            } else {
+                abort(404, 'Course not found');
+            }
+
+            // Get contact information if contact_id is provided
+            $contact = null;
+            if ($request->has('contact_id')) {
+                $contactResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/contacts/{$request->contact_id}", [
+                        'client_identifier' => $member->identifier
+                    ]);
+
+                if ($contactResponse->successful()) {
+                    $contact = $contactResponse->json();
+                }
+            }
+
+            return Inertia::render('Landing/Community/Course/Show', [
+                'member' => $member,
+                'course' => $course,
+                'viewingContact' => $contact,
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+                'appUrl' => config('app.url')
+            ]);
+        } catch (\Exception $e) {
+            abort(404, 'Course not found');
+        }
+    }
+
+    /**
+     * Get course lessons for a community member (view only).
+     */
+    public function getCourseLessons(Request $request, $identifier, $courseId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            // Build the API URL with contact_id if provided
+            $apiUrl = "{$this->apiUrl}/courses/{$courseId}/lessons";
+            if ($request->has('contact_id')) {
+                $apiUrl .= '?contact_id=' . $request->contact_id;
+            }
+
+            $response = Http::withToken($this->apiToken)
+                ->get($apiUrl);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch lessons',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Show course lessons page for a community member (view only).
+     */
+    public function showCourseLessons(Request $request, $identifier, $courseId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            abort(404, 'Member not found');
+        }
+
+        try {
+            // Get course details
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses/{$courseId}");
+
+            if ($response->successful()) {
+                $course = $response->json()['data'];
+            } else {
+                abort(404, 'Course not found');
+            }
+
+            // Get contact information if contact_id is provided
+            $contact = null;
+            $contactId = null;
+            
+            if ($request->has('contact_id')) {
+                $contactId = $request->contact_id;
+                $contactResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/contacts/{$contactId}", [
+                        'client_identifier' => $member->identifier
+                    ]);
+                
+                if ($contactResponse->successful()) {
+                    $contact = $contactResponse->json();
+                }
+            }
+
+            // Get lessons for this course
+            $lessonsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses/{$courseId}/lessons");
+
+            $lessons = [];
+            if ($lessonsResponse->successful()) {
+                $lessons = $lessonsResponse->json()['data'] ?? [];
+            }
+
+            // Check enrollment status and get progress if contact is provided
+            $progress = null;
+            if ($contactId) {
+                // First check enrollment status
+                $enrollmentCheckResponse = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/course-enrollments/check-status", [
+                        'course_id' => $courseId,
+                        'contact_id' => $contactId,
+                        'client_identifier' => $member->identifier,
+                    ]);
+
+                if ($enrollmentCheckResponse->successful()) {
+                    $enrollmentData = $enrollmentCheckResponse->json()['data'];
+                    
+                    if ($enrollmentData['is_enrolled'] && $enrollmentData['enrollment']) {
+                        // Get detailed progress for enrolled user
+                        $progressResponse = Http::withToken($this->apiToken)
+                            ->get("{$this->apiUrl}/course-progress/{$courseId}/{$contactId}");
+
+                        if ($progressResponse->successful()) {
+                            $progress = $progressResponse->json()['data'];
+                        }
+                    }
+                }
+            }
+
+            // Update lessons with progress data if available
+            if ($progress && isset($progress['enrollment']['lesson_progress'])) {
+                $lessonProgressMap = [];
+                foreach ($progress['enrollment']['lesson_progress'] as $lp) {
+                    $lessonProgressMap[$lp['lesson_id']] = $lp;
+                }
+
+                foreach ($lessons as &$lesson) {
+                    if (isset($lessonProgressMap[$lesson['id']])) {
+                        $lesson['is_completed'] = $lessonProgressMap[$lesson['id']]['status'] === 'completed';
+                        $lesson['is_accessible'] = true; // If enrolled, all lessons are accessible
+                        $lesson['progress'] = $lessonProgressMap[$lesson['id']];
+                    } else {
+                        $lesson['is_completed'] = false;
+                        $lesson['is_accessible'] = $contactId ? true : false; // Accessible if viewing as contact
+                        $lesson['progress'] = null;
+                    }
+                }
+            } else {
+                // No enrollment or progress data
+                foreach ($lessons as &$lesson) {
+                    $lesson['is_completed'] = false;
+                    $lesson['is_accessible'] = false; // Not enrolled, lessons are locked
+                    $lesson['progress'] = null;
+                }
+            }
+
+            return Inertia::render('Landing/Community/Course/Lessons/Index', [
+                'member' => $member,
+                'course' => $course,
+                'lessons' => $lessons,
+                'progress' => $progress,
+                'viewingContact' => $contact,
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+                'appUrl' => config('app.url')
+            ]);
+        } catch (\Exception $e) {
+            abort(404, 'Course not found');
+        }
+    }
+
+    /**
+     * Get course learning page for a community member (view only).
+     */
+    public function learnCourse(Request $request, $identifier, $courseId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            abort(404, 'Member not found');
+        }
+
+        try {
+            // Get course details
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses/{$courseId}");
+
+            if ($response->successful()) {
+                $course = $response->json()['data'];
+            } else {
+                abort(404, 'Course not found');
+            }
+
+            // Get contact information if contact_id is provided
+            $contact = null;
+            $contactId = null;
+            
+            if ($request->has('contact_id')) {
+                $contactId = $request->contact_id;
+                $contactResponse = Http::withToken($this->apiToken)
+                    ->get("{$this->apiUrl}/contacts/{$contactId}", [
+                        'client_identifier' => $member->identifier
+                    ]);
+                
+                if ($contactResponse->successful()) {
+                    $contact = $contactResponse->json();
+                }
+            }
+
+            // Check enrollment status and get progress if contact is provided
+            $progress = null;
+            if ($contactId) {
+                // First check enrollment status
+                $enrollmentCheckResponse = Http::withToken($this->apiToken)
+                    ->post("{$this->apiUrl}/course-enrollments/check-status", [
+                        'course_id' => $courseId,
+                        'contact_id' => $contactId,
+                        'client_identifier' => $member->identifier,
+                    ]);
+
+                if ($enrollmentCheckResponse->successful()) {
+                    $enrollmentData = $enrollmentCheckResponse->json()['data'];
+                    
+                    if ($enrollmentData['is_enrolled'] && $enrollmentData['enrollment']) {
+                        // Get detailed progress for enrolled user
+                        $progressResponse = Http::withToken($this->apiToken)
+                            ->get("{$this->apiUrl}/course-progress/{$courseId}/{$contactId}");
+
+                        if ($progressResponse->successful()) {
+                            $progress = $progressResponse->json()['data'];
+                        }
+                    }
+                }
+            }
+
+            // Get lessons for the course
+            $lessonsResponse = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/courses/{$courseId}/lessons");
+
+            $lessons = [];
+            if ($lessonsResponse->successful()) {
+                $lessons = $lessonsResponse->json()['data'] ?? [];
+            }
+
+            // Get specific lesson if lesson_id is provided
+            $currentLesson = null;
+            if ($request->has('lesson_id')) {
+                $lessonId = $request->lesson_id;
+                $currentLesson = collect($lessons)->firstWhere('id', $lessonId);
+                
+                if (!$currentLesson) {
+                    abort(404, 'Lesson not found');
+                }
+            } else {
+                // Default to first lesson if no lesson_id provided
+                $currentLesson = $lessons[0] ?? null;
+            }
+
+            return Inertia::render('Landing/Community/Course/Learn', [
+                'member' => $member,
+                'course' => $course,
+                'lessons' => $lessons,
+                'currentLesson' => $currentLesson,
+                'progress' => $progress,
+                'viewingContact' => $contact,
+                'canLogin' => Route::has('login'),
+                'canRegister' => Route::has('register'),
+                'laravelVersion' => Application::VERSION,
+                'phpVersion' => PHP_VERSION,
+                'appUrl' => config('app.url')
+            ]);
+        } catch (\Exception $e) {
+            abort(404, 'Course not found');
+        }
+    }
+
+    /**
+     * Get course progress for a community member (view only).
+     */
+    public function getCourseProgress(Request $request, $identifier, $courseId, $contactId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/course-progress/{$courseId}/{$contactId}");
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch course progress',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Check enrollment status for a contact in a community member's course.
+     */
+    public function checkEnrollmentStatus(Request $request, $identifier, $courseId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $request->merge([
+                'course_id' => $courseId,
+                'client_identifier' => $member->identifier,
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/course-enrollments/check-status', $request->all());
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to check enrollment status',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mark a lesson as started for an enrollment in a community member's course.
+     */
+    public function markLessonAsStarted(Request $request, $identifier, $enrollmentId, $lessonId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/course-enrollments/{$enrollmentId}/progress/{$lessonId}/start");
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark lesson as started',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mark a lesson as completed for an enrollment in a community member's course.
+     */
+    public function markLessonAsCompleted(Request $request, $identifier, $enrollmentId, $lessonId)
+    {
+        // Check if identifier is numeric (ID) or string (slug)
+        $member = null;
+        
+        if (is_numeric($identifier)) {
+            $member = User::where('project_identifier', 'community')
+                ->where('id', $identifier)
+                ->first();
+        } else {
+            $member = User::where('project_identifier', 'community')
+                ->where('slug', $identifier)
+                ->first();
+        }
+
+        if (!$member) {
+            return response()->json(['error' => 'Member not found'], 404);
+        }
+
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/course-enrollments/{$enrollmentId}/progress/{$lessonId}/complete");
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark lesson as completed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 } 

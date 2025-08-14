@@ -229,6 +229,23 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/m/{identifier}/search-lending', [CommunityController::class, 'searchLendingRecords'])->name('member.search-lending');
     Route::get('/m/{identifier}/search-healthcare', [CommunityController::class, 'searchHealthcareRecords'])->name('member.search-healthcare');
     Route::get('/m/{identifier}/search-mortuary', [CommunityController::class, 'searchMortuaryRecords'])->name('member.search-mortuary');
+    
+    // Community Courses routes (view only)
+    Route::prefix('m/{identifier}/courses')->group(function () {
+        Route::get('/', [CommunityController::class, 'getCourses'])->name('member.courses.list');
+        Route::get('/categories', [CommunityController::class, 'getCourseCategories'])->name('member.courses.categories');
+        Route::get('/{courseId}', [CommunityController::class, 'showCourse'])->name('member.courses.show');
+        Route::get('/{courseId}/lessons', [CommunityController::class, 'showCourseLessons'])->name('member.courses.lessons');
+        Route::get('/{courseId}/learn', [CommunityController::class, 'learnCourse'])->name('member.courses.learn');
+        Route::get('/{courseId}/lessons/api', [CommunityController::class, 'getCourseLessons'])->name('member.courses.lessons.api');
+        Route::get('/progress/{courseId}/{contactId}', [CommunityController::class, 'getCourseProgress'])->name('member.courses.progress');
+        Route::post('/{courseId}/check-enrollment', [CommunityController::class, 'checkEnrollmentStatus'])->name('member.courses.check-enrollment');
+        
+        // Lesson progress routes
+        Route::post('/enrollments/{enrollmentId}/progress/{lessonId}/start', [CommunityController::class, 'markLessonAsStarted'])->name('member.courses.lessons.start');
+        Route::post('/enrollments/{enrollmentId}/progress/{lessonId}/complete', [CommunityController::class, 'markLessonAsCompleted'])->name('member.courses.lessons.complete');
+    });
+    
     Route::get('/m/{identifier}', [CommunityController::class, 'member'])->name('member.short');
     Route::post('/community/send-signup-link', [CommunityController::class, 'sendSignUpLink'])->name('api.send-signup-link');
     Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
