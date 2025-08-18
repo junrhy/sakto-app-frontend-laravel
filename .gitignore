@@ -21,3 +21,6 @@ yarn-error.log
 /.idea
 /.vscode
 /.zed
+
+# Dynamic config files
+/config/apps.php

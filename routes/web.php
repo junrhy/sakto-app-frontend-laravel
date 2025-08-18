@@ -1094,6 +1094,17 @@ Route::middleware(['auth', 'ip_restriction', 'admin'])->group(function () {
         Route::post('/{id}/mark-as-paid', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'markAsPaid'])->name('admin.subscriptions.mark-as-paid');
         Route::post('/run-renewal', [App\Http\Controllers\Admin\SubscriptionAdminController::class, 'runRenewalCommand'])->name('admin.subscriptions.run-renewal');
     });
+    
+    // Admin Apps Management
+    Route::prefix('admin/apps')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\AppsController::class, 'index'])->name('admin.apps.index');
+        Route::get('/create', [App\Http\Controllers\Admin\AppsController::class, 'create'])->name('admin.apps.create');
+        Route::post('/', [App\Http\Controllers\Admin\AppsController::class, 'store'])->name('admin.apps.store');
+        Route::get('/{index}/edit', [App\Http\Controllers\Admin\AppsController::class, 'edit'])->name('admin.apps.edit');
+        Route::put('/{index}', [App\Http\Controllers\Admin\AppsController::class, 'update'])->name('admin.apps.update');
+        Route::delete('/{index}', [App\Http\Controllers\Admin\AppsController::class, 'destroy'])->name('admin.apps.destroy');
+        Route::post('/reorder', [App\Http\Controllers\Admin\AppsController::class, 'reorder'])->name('admin.apps.reorder');
+    });
 });
 
 require __DIR__.'/auth.php';

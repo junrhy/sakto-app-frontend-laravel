@@ -94,6 +94,11 @@ RUN { \
 COPY --from=node /app /var/www
 WORKDIR /var/www
 
+# Copy example config files if they don't exist
+RUN if [ ! -f /var/www/config/apps.php ]; then \
+        cp /var/www/config/apps.php.example /var/www/config/apps.php; \
+    fi
+
 # Copy Nginx configuration
 COPY docker/nginx/app.prod.conf /etc/nginx/http.d/default.conf
 

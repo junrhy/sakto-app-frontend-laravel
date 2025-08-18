@@ -313,4 +313,4 @@ return [
         'bgColor' => 'bg-purple-100 dark:bg-purple-900/30',
         'rating' => 4.9
     ]
-]; 
+];

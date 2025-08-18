@@ -16,7 +16,7 @@ export default function Dashboard({ auth }: PageProps) {
         <div className="p-6 text-gray-900 dark:text-gray-100">
           <h3 className="text-lg font-medium mb-4">Welcome to the Admin Dashboard</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg shadow border border-blue-100 dark:border-blue-800">
               <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Subscriptions</h4>
               <p className="text-blue-600 dark:text-blue-400">Manage user subscriptions and plans</p>
@@ -39,6 +39,19 @@ export default function Dashboard({ auth }: PageProps) {
                   className="inline-flex items-center px-4 py-2 bg-green-600 dark:bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 dark:hover:bg-green-600 focus:bg-green-700 dark:focus:bg-green-600 active:bg-green-900 dark:active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
                 >
                   Manage Users
+                </a>
+              </div>
+            </div>
+            
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-lg shadow border border-orange-100 dark:border-orange-800">
+              <h4 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">Apps</h4>
+              <p className="text-orange-600 dark:text-orange-400">Manage application modules and features</p>
+              <div className="mt-4">
+                <a 
+                  href={route('admin.apps.index')} 
+                  className="inline-flex items-center px-4 py-2 bg-orange-600 dark:bg-orange-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-700 dark:hover:bg-orange-600 focus:bg-orange-700 dark:focus:bg-orange-600 active:bg-orange-900 dark:active:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150"
+                >
+                  Manage Apps
                 </a>
               </div>
             </div>
