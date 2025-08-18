@@ -48,11 +48,11 @@ export default function FuelUpdateDialog({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Update Fuel Level</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-gray-100">Update Fuel Level</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Liters Added</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Liters Added</label>
                         <Input
                             type="number"
                             value={formData.litersAdded}
@@ -66,7 +66,7 @@ export default function FuelUpdateDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Cost</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Cost</label>
                         <Input
                             type="number"
                             value={formData.cost}
@@ -80,7 +80,7 @@ export default function FuelUpdateDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Location</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
                         <Input
                             value={formData.location}
                             onChange={(e) => setFormData({

@@ -34,12 +34,12 @@ export type Shipment = {
 
 export type CargoItem = {
     id: string;
-    shipmentId: string;
+    shipment_id: string;
     name: string;
     quantity: number;
     unit: 'kg' | 'pieces' | 'pallets' | 'boxes';
     description?: string;
-    specialHandling?: string;
+    special_handling?: string;
     status: 'Loaded' | 'In Transit' | 'Delivered' | 'Damaged';
     temperature?: number;
     humidity?: number;

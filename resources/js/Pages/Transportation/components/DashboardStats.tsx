@@ -9,10 +9,10 @@ export default function DashboardStats() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Loading...</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">-</div>
+                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">-</div>
                     </CardContent>
                 </Card>
             </div>
@@ -24,10 +24,10 @@ export default function DashboardStats() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-red-500">Error</CardTitle>
+                        <CardTitle className="text-sm font-medium text-red-500 dark:text-red-400">Error</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-sm text-red-500">{error}</div>
+                        <div className="text-sm text-red-500 dark:text-red-400">{error}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -35,37 +35,29 @@ export default function DashboardStats() {
     }
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Active Shipments</CardTitle>
+                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Shipments</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.activeShipments}</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.activeShipments}</div>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Available Trucks</CardTitle>
+                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Available Trucks</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.availableTrucks}</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.availableTrucks}</div>
                 </CardContent>
             </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Delayed Shipments</CardTitle>
+                    <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Delayed Shipments</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.delayedShipments}</div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.delayedShipments}</div>
                 </CardContent>
             </Card>
         </div>

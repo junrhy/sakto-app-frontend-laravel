@@ -138,10 +138,10 @@ export default function FleetManagement() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Fleet Management</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Fleet Management</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4">Loading fleet data...</div>
+                    <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading fleet data...</div>
                 </CardContent>
             </Card>
         );
@@ -151,10 +151,10 @@ export default function FleetManagement() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Fleet Management</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Fleet Management</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4 text-red-500">Error: {error}</div>
+                    <div className="text-center py-4 text-red-500 dark:text-red-400">Error: {error}</div>
                 </CardContent>
             </Card>
         );
@@ -163,7 +163,7 @@ export default function FleetManagement() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Fleet Management</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Fleet Management</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
@@ -185,7 +185,7 @@ export default function FleetManagement() {
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Add New Truck</DialogTitle>
+                                    <DialogTitle className="text-gray-900 dark:text-gray-100">Add New Truck</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={handleAddTruck} className="space-y-4">
                                     <Input
@@ -213,7 +213,7 @@ export default function FleetManagement() {
                     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Edit Truck</DialogTitle>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">Edit Truck</DialogTitle>
                             </DialogHeader>
                             <form onSubmit={(e) => {
                                 e.preventDefault();
@@ -272,12 +272,12 @@ export default function FleetManagement() {
                                                 {truck.driver || 'Unassigned'}
                                             </span>
                                             {truck.driver_contact && (
-                                                <span className="text-xs text-muted-foreground">
+                                                <span className="text-xs text-muted-foreground dark:text-gray-400">
                                                     📞 {truck.driver_contact}
                                                 </span>
                                             )}
                                             {truck.status === 'In Transit' && (
-                                                <span className="text-xs text-muted-foreground">
+                                                <span className="text-xs text-muted-foreground dark:text-gray-400">
                                                     On delivery
                                                 </span>
                                             )}
@@ -292,9 +292,9 @@ export default function FleetManagement() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                                             <div 
-                                                className="bg-blue-600 h-2.5 rounded-full"
+                                                className="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full"
                                                 style={{ width: `${parseFloat(truck.fuel_level)}%` }}
                                             ></div>
                                         </div>
@@ -338,7 +338,7 @@ export default function FleetManagement() {
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-2xl">
                                                     <DialogHeader>
-                                                        <DialogTitle>Fuel History - {truck.plate_number}</DialogTitle>
+                                                        <DialogTitle className="text-gray-900 dark:text-gray-100">Fuel History - {truck.plate_number}</DialogTitle>
                                                     </DialogHeader>
                                                     <FuelHistory truckId={truck.id} />
                                                 </DialogContent>

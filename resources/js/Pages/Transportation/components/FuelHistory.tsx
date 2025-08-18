@@ -44,18 +44,18 @@ export default function FuelHistory({ truckId }: FuelHistoryProps) {
     const truckFuelHistory = fuelHistory
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    if (loading) {
-        return (
-            <div className="space-y-4">
-                <h3 className="font-medium">Fuel History</h3>
-                <div className="text-center py-4">Loading fuel history...</div>
-            </div>
-        );
-    }
+            if (loading) {
+            return (
+                <div className="space-y-4">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">Fuel History</h3>
+                    <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading fuel history...</div>
+                </div>
+            );
+        }
 
     return (
         <div className="space-y-4">
-            <h3 className="font-medium">Fuel History</h3>
+            <h3 className="font-medium text-gray-900 dark:text-gray-100">Fuel History</h3>
             <div className="space-y-3">
                 {truckFuelHistory.map((update) => (
                     <div key={update.id} className="flex items-start space-x-4 border-l-2 border-green-500 pl-4">
@@ -64,24 +64,24 @@ export default function FuelHistory({ truckId }: FuelHistoryProps) {
                                 <span className="font-medium">
                                     {parseFloat(update.liters_added).toFixed(2)} L added
                                 </span>
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-muted-foreground dark:text-gray-400">
                                     {format(new Date(update.timestamp), 'MMM dd, yyyy HH:mm')}
                                 </span>
                             </div>
-                            <p className="mt-1 text-sm">
+                            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                                 Level: {parseFloat(update.previous_level).toFixed(1)}% → {parseFloat(update.new_level).toFixed(1)}%
                             </p>
-                            <p className="mt-1 text-sm">
+                            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
                                 Cost: ${parseFloat(update.cost).toFixed(2)} | Location: {update.location}
                             </p>
-                            <p className="mt-1 text-xs text-muted-foreground">
+                            <p className="mt-1 text-xs text-muted-foreground dark:text-gray-400">
                                 Updated by: {update.updated_by}
                             </p>
                         </div>
                     </div>
                 ))}
                 {truckFuelHistory.length === 0 && (
-                    <p className="text-sm text-muted-foreground">No fuel history available.</p>
+                    <p className="text-sm text-muted-foreground dark:text-gray-400">No fuel history available.</p>
                 )}
             </div>
         </div>

@@ -5,9 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import { CargoItem, CargoFormData } from "../types";
-import { useCargoMonitoring } from "../hooks";
+import { useCargoMonitoring, useShipmentTracking } from "../hooks";
 
 export default function CargoMonitoring() {
     const {
@@ -20,6 +21,8 @@ export default function CargoMonitoring() {
         deleteCargoItem,
         getCargoByShipment
     } = useCargoMonitoring();
+
+    const { shipments } = useShipmentTracking();
 
     const [cargoSearch, setCargoSearch] = useState('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -49,7 +52,7 @@ export default function CargoMonitoring() {
         return (
             (cargo.name && cargo.name.toLowerCase().includes(searchTerm)) ||
             (cargo.description && cargo.description.toLowerCase().includes(searchTerm)) ||
-            (cargo.specialHandling && cargo.specialHandling.toLowerCase().includes(searchTerm))
+            (cargo.special_handling && cargo.special_handling.toLowerCase().includes(searchTerm))
         );
     });
 
@@ -83,7 +86,7 @@ export default function CargoMonitoring() {
             quantity: cargo.quantity.toString(),
             unit: cargo.unit,
             description: cargo.description || '',
-            specialHandling: cargo.specialHandling || '',
+            specialHandling: cargo.special_handling || '',
             temperature: cargo.temperature?.toString() || '',
             humidity: cargo.humidity?.toString() || ''
         });
@@ -95,7 +98,7 @@ export default function CargoMonitoring() {
             const cargo = cargoItems.find(c => c.id === cargoId);
             if (cargo) {
                 await updateCargoItem(cargoId, {
-                    shipmentId: cargo.shipmentId,
+                    shipmentId: cargo.shipment_id,
                     name: editingCargo.name,
                     quantity: editingCargo.quantity,
                     unit: editingCargo.unit,
@@ -134,10 +137,10 @@ export default function CargoMonitoring() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Cargo Monitoring</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Cargo Monitoring</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4">Loading cargo data...</div>
+                    <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading cargo data...</div>
                 </CardContent>
             </Card>
         );
@@ -147,10 +150,10 @@ export default function CargoMonitoring() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Cargo Monitoring</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Cargo Monitoring</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4 text-red-500">Error: {error}</div>
+                    <div className="text-center py-4 text-red-500 dark:text-red-400">Error: {error}</div>
                 </CardContent>
             </Card>
         );
@@ -160,7 +163,7 @@ export default function CargoMonitoring() {
         <Card>
             <CardHeader>
                 <div className="flex justify-between items-center">
-                    <CardTitle>Cargo Monitoring</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Cargo Monitoring</CardTitle>
                     <Button onClick={() => setIsEditDialogOpen(true)}>
                         <PlusIcon className="mr-2 h-4 w-4" />
                         Add Cargo
@@ -195,7 +198,7 @@ export default function CargoMonitoring() {
                                     <div>
                                         <div className="font-medium">{item.name}</div>
                                         {item.description && (
-                                            <div className="text-sm text-muted-foreground">{item.description}</div>
+                                            <div className="text-sm text-muted-foreground dark:text-gray-400">{item.description}</div>
                                         )}
                                     </div>
                                 </TableCell>
@@ -239,7 +242,7 @@ export default function CargoMonitoring() {
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">
                             {editingCargoId ? 'Edit Cargo Item' : 'Add New Cargo Item'}
                         </DialogTitle>
                     </DialogHeader>
@@ -253,12 +256,30 @@ export default function CargoMonitoring() {
                     }}>
                         <div className="grid gap-4 py-4">
                             {!editingCargoId && (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Input 
-                                        placeholder="Shipment ID" 
-                                        value={selectedShipmentId} 
-                                        onChange={(e) => setSelectedShipmentId(e.target.value)} 
-                                    />
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipment</label>
+                                    <Select
+                                        value={selectedShipmentId || ""}
+                                        onValueChange={(value) => setSelectedShipmentId(value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a shipment">
+                                                {selectedShipmentId && shipments.find(shipment => shipment.id === selectedShipmentId) && 
+                                                    `#${shipments.find(shipment => shipment.id === selectedShipmentId)?.id} - ${shipments.find(shipment => shipment.id === selectedShipmentId)?.origin} → ${shipments.find(shipment => shipment.id === selectedShipmentId)?.destination}`
+                                                }
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {shipments.map((shipment) => (
+                                                <SelectItem key={shipment.id} value={shipment.id.toString()}>
+                                                    #{shipment.id} - {shipment.origin} → {shipment.destination} ({shipment.status})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {shipments.length === 0 && (
+                                        <p className="text-sm text-muted-foreground dark:text-gray-400">No shipments available</p>
+                                    )}
                                 </div>
                             )}
                             <div className="grid grid-cols-4 items-center gap-4">
@@ -279,14 +300,23 @@ export default function CargoMonitoring() {
                                         setNewCargo({ ...newCargo, quantity: e.target.value })
                                     } 
                                 />
-                                <Input 
-                                    placeholder="Unit" 
-                                    value={editingCargoId ? editingCargo.unit : newCargo.unit} 
-                                    onChange={(e) => editingCargoId ? 
-                                        setEditingCargo({ ...editingCargo, unit: e.target.value as CargoItem['unit'] }) :
-                                        setNewCargo({ ...newCargo, unit: e.target.value as CargoItem['unit'] })
-                                    } 
-                                />
+                                <Select
+                                    value={(editingCargoId ? editingCargo.unit : newCargo.unit) || ""}
+                                    onValueChange={(value) => editingCargoId ? 
+                                        setEditingCargo({ ...editingCargo, unit: value as CargoItem['unit'] }) :
+                                        setNewCargo({ ...newCargo, unit: value as CargoItem['unit'] })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="kg">kg</SelectItem>
+                                        <SelectItem value="pieces">pieces</SelectItem>
+                                        <SelectItem value="pallets">pallets</SelectItem>
+                                        <SelectItem value="boxes">boxes</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <Input 
                                 placeholder="Description" 

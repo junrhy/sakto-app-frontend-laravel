@@ -189,10 +189,10 @@ export default function ShipmentTracking() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Shipment Tracking</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Shipment Tracking</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4">Loading shipment data...</div>
+                    <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading shipment data...</div>
                 </CardContent>
             </Card>
         );
@@ -202,10 +202,10 @@ export default function ShipmentTracking() {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Shipment Tracking</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-gray-100">Shipment Tracking</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center py-4 text-red-500">Error: {error}</div>
+                    <div className="text-center py-4 text-red-500 dark:text-red-400">Error: {error}</div>
                 </CardContent>
             </Card>
         );
@@ -214,7 +214,7 @@ export default function ShipmentTracking() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Shipment Tracking</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Shipment Tracking</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="flex justify-between items-center mb-4">
@@ -235,11 +235,11 @@ export default function ShipmentTracking() {
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Add New Shipment</DialogTitle>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">Add New Shipment</DialogTitle>
                             </DialogHeader>
                             <form onSubmit={handleAddShipment} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Truck</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Truck</label>
                                     <Select
                                         value={newShipment.truckId || ""}
                                         onValueChange={(value) => handleTruckSelection(value, false)}
@@ -260,18 +260,18 @@ export default function ShipmentTracking() {
                                         </SelectContent>
                                     </Select>
                                     {availableTrucks.length === 0 && (
-                                        <p className="text-sm text-muted-foreground">No available trucks</p>
+                                        <p className="text-sm text-muted-foreground dark:text-gray-400">No available trucks</p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Driver</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Driver</label>
                                     <Input
                                         placeholder="Driver"
                                         value={newShipment.driver}
                                         onChange={(e) => setNewShipment({ ...newShipment, driver: e.target.value })}
                                     />
                                     {newShipment.truckId && availableTrucks.find(truck => truck.id.toString() === newShipment.truckId)?.driver && (
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-xs text-muted-foreground dark:text-gray-400">
                                             Auto-populated from selected truck
                                         </p>
                                     )}
@@ -288,7 +288,7 @@ export default function ShipmentTracking() {
                                     onChange={(e) => setNewShipment({ ...newShipment, destination: e.target.value })}
                                 />
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Departure Date</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Departure Date</label>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
@@ -296,7 +296,7 @@ export default function ShipmentTracking() {
                                                 className="w-full justify-start text-left font-normal"
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {newShipment.departureDate ? format(new Date(newShipment.departureDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                                {newShipment.departureDate ? format(new Date(newShipment.departureDate), "PPP") : <span className="text-muted-foreground dark:text-gray-400">Pick a date</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
@@ -313,7 +313,7 @@ export default function ShipmentTracking() {
                                     </Popover>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Arrival Date</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Arrival Date</label>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <Button
@@ -321,7 +321,7 @@ export default function ShipmentTracking() {
                                                 className="w-full justify-start text-left font-normal"
                                             >
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {newShipment.arrivalDate ? format(new Date(newShipment.arrivalDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                                {newShipment.arrivalDate ? format(new Date(newShipment.arrivalDate), "PPP") : <span className="text-muted-foreground dark:text-gray-400">Pick a date</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
@@ -353,7 +353,7 @@ export default function ShipmentTracking() {
                                     onChange={(e) => setNewShipment({ ...newShipment, customerContact: e.target.value })}
                                 />
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Priority</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority</label>
                                     <Select
                                         value={newShipment.priority || ""}
                                         onValueChange={(value) => setNewShipment({ ...newShipment, priority: value as "Low" | "Medium" | "High" })}
@@ -448,14 +448,14 @@ export default function ShipmentTracking() {
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Edit Shipment</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">Edit Shipment</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         saveEditedShipment(editingShipmentId);
                     }} className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Truck</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Truck</label>
                             <Select
                                 value={editingShipment.truckId || ""}
                                 onValueChange={(value) => handleTruckSelection(value, true)}
@@ -477,14 +477,14 @@ export default function ShipmentTracking() {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Driver</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Driver</label>
                             <Input
                                 placeholder="Driver"
                                 value={editingShipment.driver}
                                 onChange={(e) => setEditingShipment({ ...editingShipment, driver: e.target.value })}
                             />
                             {editingShipment.truckId && trucks.find(truck => truck.id === editingShipment.truckId)?.driver && (
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground dark:text-gray-400">
                                     Auto-populated from selected truck
                                 </p>
                             )}
@@ -500,7 +500,7 @@ export default function ShipmentTracking() {
                             onChange={(e) => setEditingShipment({ ...editingShipment, destination: e.target.value })}
                         />
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Departure Date</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Departure Date</label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -508,7 +508,7 @@ export default function ShipmentTracking() {
                                         className="w-full justify-start text-left font-normal"
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {editingShipment.departureDate ? format(new Date(editingShipment.departureDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                        {editingShipment.departureDate ? format(new Date(editingShipment.departureDate), "PPP") : <span className="text-muted-foreground dark:text-gray-400">Pick a date</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
@@ -525,7 +525,7 @@ export default function ShipmentTracking() {
                             </Popover>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Arrival Date</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Arrival Date</label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
@@ -533,7 +533,7 @@ export default function ShipmentTracking() {
                                         className="w-full justify-start text-left font-normal"
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {editingShipment.arrivalDate ? format(new Date(editingShipment.arrivalDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                        {editingShipment.arrivalDate ? format(new Date(editingShipment.arrivalDate), "PPP") : <span className="text-muted-foreground dark:text-gray-400">Pick a date</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
@@ -565,7 +565,7 @@ export default function ShipmentTracking() {
                             onChange={(e) => setEditingShipment({ ...editingShipment, customerContact: e.target.value })}
                         />
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Priority</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority</label>
                             <Select
                                 value={editingShipment.priority || ""}
                                 onValueChange={(value) => setEditingShipment({ ...editingShipment, priority: value as "Low" | "Medium" | "High" })}
@@ -595,7 +595,7 @@ export default function ShipmentTracking() {
             <Dialog open={isTrackingHistoryDialogOpen} onOpenChange={setIsTrackingHistoryDialogOpen}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Shipment Tracking History</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">Shipment Tracking History</DialogTitle>
                     </DialogHeader>
                     <ShipmentTrackingHistory shipmentId={viewingShipmentId} />
                 </DialogContent>

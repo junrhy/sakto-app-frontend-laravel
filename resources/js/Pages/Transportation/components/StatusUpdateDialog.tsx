@@ -49,11 +49,11 @@ export default function StatusUpdateDialog({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Update Shipment Status</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-gray-100">Update Shipment Status</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Status</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                         <Select
                             value={formData.status}
                             onValueChange={(value) => setFormData({
@@ -74,7 +74,7 @@ export default function StatusUpdateDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Current Location</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Location</label>
                         <Input
                             value={formData.location}
                             onChange={(e) => setFormData({
@@ -87,7 +87,7 @@ export default function StatusUpdateDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Notes</label>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
                         <Input
                             value={formData.notes}
                             onChange={(e) => setFormData({
