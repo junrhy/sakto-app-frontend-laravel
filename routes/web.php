@@ -663,6 +663,47 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         // Reports
         Route::post('/report', [HealthInsuranceController::class, 'generateReport'])->name('health-insurance.report');
     });
+
+    // Transportation (subscription required)
+    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
+    
+    // Transportation Fleet Routes
+    Route::prefix('transportation/fleet')->group(function () {
+        Route::get('/list', [TransportationController::class, 'getFleet'])->name('transportation.fleet.list');
+        Route::get('/stats', [TransportationController::class, 'getFleetStats'])->name('transportation.fleet.stats');
+        Route::post('/', [TransportationController::class, 'storeFleet'])->name('transportation.fleet.store');
+        Route::get('/{id}', [TransportationController::class, 'showFleet'])->name('transportation.fleet.show');
+        Route::put('/{id}', [TransportationController::class, 'updateFleet'])->name('transportation.fleet.update');
+        Route::delete('/{id}', [TransportationController::class, 'destroyFleet'])->name('transportation.fleet.destroy');
+        Route::post('/{id}/fuel', [TransportationController::class, 'updateFuel'])->name('transportation.fleet.fuel');
+        Route::post('/{id}/maintenance', [TransportationController::class, 'scheduleMaintenance'])->name('transportation.fleet.maintenance');
+        Route::get('/{id}/fuel-history', [TransportationController::class, 'getFuelHistory'])->name('transportation.fleet.fuel-history');
+        Route::get('/{id}/maintenance-history', [TransportationController::class, 'getMaintenanceHistory'])->name('transportation.fleet.maintenance-history');
+    });
+
+    // Transportation Shipment Routes
+    Route::prefix('transportation/shipments')->group(function () {
+        Route::get('/list', [TransportationController::class, 'getShipments'])->name('transportation.shipments.list');
+        Route::get('/stats', [TransportationController::class, 'getShipmentStats'])->name('transportation.shipments.stats');
+        Route::post('/', [TransportationController::class, 'storeShipment'])->name('transportation.shipments.store');
+        Route::get('/{id}', [TransportationController::class, 'showShipment'])->name('transportation.shipments.show');
+        Route::put('/{id}', [TransportationController::class, 'updateShipment'])->name('transportation.shipments.update');
+        Route::delete('/{id}', [TransportationController::class, 'destroyShipment'])->name('transportation.shipments.destroy');
+        Route::post('/{id}/status', [TransportationController::class, 'updateShipmentStatus'])->name('transportation.shipments.status');
+        Route::get('/{id}/tracking-history', [TransportationController::class, 'getTrackingHistory'])->name('transportation.shipments.tracking-history');
+    });
+
+    // Transportation Cargo Routes
+    Route::prefix('transportation/cargo')->group(function () {
+        Route::get('/list', [TransportationController::class, 'getCargo'])->name('transportation.cargo.list');
+        Route::get('/stats', [TransportationController::class, 'getCargoStats'])->name('transportation.cargo.stats');
+        Route::post('/', [TransportationController::class, 'storeCargo'])->name('transportation.cargo.store');
+        Route::get('/{id}', [TransportationController::class, 'showCargo'])->name('transportation.cargo.show');
+        Route::put('/{id}', [TransportationController::class, 'updateCargo'])->name('transportation.cargo.update');
+        Route::delete('/{id}', [TransportationController::class, 'destroyCargo'])->name('transportation.cargo.destroy');
+        Route::post('/{id}/status', [TransportationController::class, 'updateCargoStatus'])->name('transportation.cargo.status');
+        Route::get('/shipment/{shipmentId}', [TransportationController::class, 'getCargoByShipment'])->name('transportation.cargo.by-shipment');
+    });
 });
 
 // Routes that require subscription
@@ -849,10 +890,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.ac
         Route::post('/{id}/payment', [RentalPropertyController::class, 'recordPayment']);
         Route::get('/{id}/payment-history', [RentalPropertyController::class, 'getPaymentHistory']);
     });
-    
-    // Transportation (subscription required)
-    Route::get('/transportation', [TransportationController::class, 'index'])->name('transportation');
-    
+
     // Bill Payments (subscription required)
     Route::prefix('bill-payments')->group(function () {
         Route::get('/', [BillPaymentController::class, 'index'])->name('bill-payments');
