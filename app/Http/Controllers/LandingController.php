@@ -44,15 +44,6 @@ class LandingController extends Controller
             ]);
         }
 
-        if (str_contains($request->getHost(), 'logistics') || str_contains($request->getPathInfo(), 'logistics')) {
-            return Inertia::render('Landing/Logistics/Index', [
-                'canLogin' => Route::has('login'),
-                'canRegister' => Route::has('register'),
-                'laravelVersion' => Application::VERSION,
-                'phpVersion' => PHP_VERSION,
-            ]);
-        }
-
         if (str_contains($request->getHost(), 'travel') || str_contains($request->getPathInfo(), 'travel')) {
             return Inertia::render('Landing/Travel/Index', [
                 'canLogin' => Route::has('login'),
@@ -93,16 +84,6 @@ class LandingController extends Controller
     public function jobs()
     {
         return Inertia::render('Landing/Jobs/Index', [
-            'canLogin' => Route::has('login'),
-            'canRegister' => Route::has('register'),
-            'laravelVersion' => Application::VERSION,
-            'phpVersion' => PHP_VERSION,
-        ]);
-    }
-
-    public function logistics()
-    {
-        return Inertia::render('Landing/Logistics/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,

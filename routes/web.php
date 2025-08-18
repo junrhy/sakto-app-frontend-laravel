@@ -36,6 +36,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\HealthInsuranceController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LogisticsController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\ProductOrderController;
 use App\Http\Controllers\ProductVariantController;
@@ -253,7 +254,14 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/m/{identifier}', [CommunityController::class, 'member'])->name('member.short');
     Route::post('/community/send-signup-link', [CommunityController::class, 'sendSignUpLink'])->name('api.send-signup-link');
-    Route::get('/logistics', [LandingController::class, 'logistics'])->name('logistics');
+    Route::get('/logistics', [LogisticsController::class, 'index'])->name('logistics');
+    
+    // Logistics API Routes (public)
+    Route::prefix('logistics')->group(function () {
+        Route::get('/trucks/list', [LogisticsController::class, 'getTrucks'])->name('logistics.trucks.list');
+        Route::get('/user/search', [LogisticsController::class, 'searchUser'])->name('logistics.users.search');
+    });
+    
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
     Route::get('/landing/travel', [LandingController::class, 'travel'])->name('travel.landing');
 

@@ -18,7 +18,7 @@ export default function Transportation() {
         >
             <Head title="Transportation" />
 
-            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 {/* Dashboard Stats */}
                 <DashboardStats />
 

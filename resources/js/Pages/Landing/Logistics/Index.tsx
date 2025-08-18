@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface PageProps {
     auth: {
@@ -11,9 +12,40 @@ interface PageProps {
     };
 }
 
+interface Truck {
+    id: number;
+    client_identifier: string;
+    plate_number: string;
+    model: string;
+    capacity: number;
+    status: string;
+    last_maintenance: string | null;
+    fuel_level: string;
+    mileage: number;
+    driver: string;
+    driver_contact: string;
+    created_at: string;
+    updated_at: string;
+    shipments: any[];
+    fuel_updates: any[];
+    maintenance_records: any[];
+}
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    identifier: string;
+}
+
 export default function Logistics({ auth }: PageProps) {
     const [isMobile, setIsMobile] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [trucks, setTrucks] = useState<Truck[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [missingClientId, setMissingClientId] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -24,290 +56,363 @@ export default function Logistics({ auth }: PageProps) {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const featuredTrucks = [
-        {
-            id: 1,
-            name: '10-Wheeler Truck',
-            location: 'Manila',
-            price: '₱15,000/day',
-            image: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            rating: 4.8,
-            reviews: 124,
-            available: true
-        },
-        {
-            id: 2,
-            name: '6-Wheeler Truck',
-            location: 'Cebu',
-            price: '₱12,000/day',
-            image: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            rating: 4.6,
-            reviews: 89,
-            available: true
-        },
-        {
-            id: 3,
-            name: 'Wing Van Truck',
-            location: 'Davao',
-            price: '₱18,000/day',
-            image: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            rating: 4.9,
-            reviews: 156,
-            available: true
-        },
-        {
-            id: 4,
-            name: 'Refrigerated Truck',
-            location: 'Quezon City',
-            price: '₱20,000/day',
-            image: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-            rating: 4.7,
-            reviews: 92,
-            available: true
+    useEffect(() => {
+        // Check if client_identifier is provided in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const clientIdentifier = urlParams.get('client_identifier');
+        
+        if (!clientIdentifier) {
+            setMissingClientId(true);
+            setLoading(false);
+            return;
         }
-    ];
 
-    return (
-        <>
-            <Head title="Truck Booking - Find & Book Trucks" />
-            <div className="min-h-screen bg-gray-50">
-                {/* Navigation */}
-                <nav className="bg-white shadow-sm sticky top-0 z-50">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
-                            <div className="flex">
-                                <div className="flex-shrink-0 flex items-center">
-                                    <ApplicationLogo className="block h-9 w-auto" />
-                                </div>
+        const fetchUserAndTrucks = async () => {
+            try {
+                setLoading(true);
+                
+                // Fetch user information
+                const userResponse = await axios.get(`/logistics/user/search?client_identifier=${clientIdentifier}`);
+                if (userResponse.data.success && userResponse.data.data) {
+                    setUser(userResponse.data.data);
+                }
+                
+                // Fetch trucks
+                const trucksResponse = await axios.get(`/logistics/trucks/list?client_identifier=${clientIdentifier}`);
+                
+                // Check if response has data property
+                if (trucksResponse.data && Array.isArray(trucksResponse.data)) {
+                    // Direct array response
+                    const transformedTrucks = trucksResponse.data.map((truck: any) => ({
+                        id: truck.id,
+                        client_identifier: truck.client_identifier,
+                        plate_number: truck.plate_number,
+                        model: truck.model,
+                        capacity: truck.capacity,
+                        status: truck.status,
+                        last_maintenance: truck.last_maintenance,
+                        fuel_level: truck.fuel_level,
+                        mileage: truck.mileage,
+                        driver: truck.driver,
+                        driver_contact: truck.driver_contact,
+                        created_at: truck.created_at,
+                        updated_at: truck.updated_at,
+                        shipments: truck.shipments || [],
+                        fuel_updates: truck.fuel_updates || [],
+                        maintenance_records: truck.maintenance_records || []
+                    }));
+                    setTrucks(transformedTrucks);
+                } else if (trucksResponse.data.success && trucksResponse.data.data) {
+                    // Success wrapper response
+                    const transformedTrucks = trucksResponse.data.data.map((truck: any) => ({
+                        id: truck.id,
+                        client_identifier: truck.client_identifier,
+                        plate_number: truck.plate_number,
+                        model: truck.model,
+                        capacity: truck.capacity,
+                        status: truck.status,
+                        last_maintenance: truck.last_maintenance,
+                        fuel_level: truck.fuel_level,
+                        mileage: truck.mileage,
+                        driver: truck.driver,
+                        driver_contact: truck.driver_contact,
+                        created_at: truck.created_at,
+                        updated_at: truck.updated_at,
+                        shipments: truck.shipments || [],
+                        fuel_updates: truck.fuel_updates || [],
+                        maintenance_records: truck.maintenance_records || []
+                    }));
+                    setTrucks(transformedTrucks);
+                } else {
+                    setError('Unexpected response structure from server');
+                    setTrucks([]);
+                }
+            } catch (err: any) {
+                console.error('Failed to fetch data:', err);
+                setError(`Failed to load data: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+                setTrucks([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserAndTrucks();
+    }, []);
+
+    const formatPrice = (price: number) => {
+        return `₱${price.toLocaleString()}/day`;
+    };
+
+    // Show message if client_identifier is missing
+    if (missingClientId) {
+        return (
+            <>
+                <Head title="Truck Booking - Missing Client Identifier" />
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                    <div className="max-w-md mx-auto text-center">
+                        <div className="bg-white rounded-lg shadow-lg p-8">
+                            <div className="text-red-500 mb-4">
+                                <svg className="h-16 w-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
                             </div>
-                            <div className="flex items-center space-x-4">
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                    >
-                                        Dashboard
-                                    </Link>
-                                ) : (
-                                    <>
-                                        <Link
-                                            href={route('login', { project: 'logistics' })}
-                                            className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                        >
-                                            Log in
-                                        </Link>
-                                        <Link
-                                            href={route('register', { project: 'logistics' })}
-                                            className="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                                        >
-                                            Register
-                                        </Link>
-                                    </>
-                                )}
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                                Missing Client Identifier
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                The <code className="bg-gray-100 px-2 py-1 rounded">client_identifier</code> parameter is required in the URL.
+                            </p>
+                            <p className="text-sm text-gray-500 mb-6">
+                                Please ensure the URL includes: <br />
+                                <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                    ?client_identifier=your_client_id
+                                </code>
+                            </p>
+                            <div className="space-y-3">
+                                <p className="text-sm text-gray-600">
+                                    Example URLs:
+                                </p>
+                                <div className="text-left">
+                                    <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                                        /logistics?client_identifier=company123
+                                    </p>
+                                    <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded mt-1">
+                                        /logistics?client_identifier=logistics_company
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </nav>
+                </div>
+            </>
+        );
+    }
 
-                {/* Hero Section with Search */}
-                <div className="relative bg-indigo-700">
-                    <div className="absolute inset-0">
-                        <img
-                            className="w-full h-full object-cover"
-                            src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                            alt="Trucking fleet"
-                        />
-                        <div className="absolute inset-0 bg-indigo-700 mix-blend-multiply" />
-                    </div>
-                    <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                            Find the Perfect Truck for Your Cargo
-                        </h1>
-                        <p className="mt-6 text-xl text-indigo-100 max-w-3xl">
-                            Book reliable trucks instantly. From small deliveries to large shipments, we've got you covered.
-                        </p>
-                        <div className="mt-10 max-w-xl">
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <div className="flex-1">
+    return (
+        <>
+            <Head title="Truck Fleet - Available Trucks" />
+            <div className="min-h-screen bg-gray-50">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                            <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-6 w-6 lg:h-8 lg:w-8 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </div>
+                                    <h1 className="text-2xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+                                        {user ? `${user.name}` : 'Available Trucks'}
+                                    </h1>
+                                </div>
+                                <div className="ml-9 lg:ml-11">
+                                    <p className="text-sm lg:text-lg text-gray-700 font-medium">
+                                        Find and Book Reliable Trucks
+                                    </p>
+                                    <p className="text-xs lg:text-sm text-gray-600 mt-1 hidden lg:block">
+                                        Browse our fleet of verified trucks for your shipping needs
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex-shrink-0 w-full lg:w-auto">
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
                                     <input
                                         type="text"
-                                        placeholder="Search trucks by location or type..."
-                                        className="w-full px-4 py-3 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        placeholder="Search trucks..."
+                                        className="w-full lg:w-80 pl-10 pr-4 py-2 lg:py-3 border border-gray-300 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500 text-sm font-medium shadow-sm"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                                <button
-                                    className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12 lg:py-20">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-8 w-8 lg:h-12 lg:w-12 border-b-2 border-gray-600 mx-auto"></div>
+                                <p className="mt-3 lg:mt-4 text-sm lg:text-base text-gray-600">Loading trucks...</p>
+                            </div>
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-12 lg:py-20">
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-6 lg:p-8 max-w-2xl mx-auto">
+                                <div className="flex items-center justify-center mb-4">
+                                    <svg className="h-8 w-8 lg:h-12 lg:w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-base lg:text-lg font-medium text-red-800 mb-2">Failed to Load Trucks</h3>
+                                <p className="text-sm lg:text-base text-red-700 mb-4">{error}</p>
+                                <button 
+                                    onClick={() => window.location.reload()} 
+                                    className="inline-flex items-center px-3 py-2 lg:px-4 lg:py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                                 >
-                                    Search
+                                    Try Again
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Featured Listings */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="text-center">
-                        <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-                            Featured Trucks
-                        </h2>
-                        <p className="mt-4 text-lg text-gray-500">
-                            Browse our selection of verified and reliable trucks
-                        </p>
-                    </div>
-
-                    <div className="mt-12 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                        {featuredTrucks.map((truck) => (
-                            <div key={truck.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                                <div className="relative">
-                                    <img
-                                        className="w-full h-48 object-cover"
-                                        src={truck.image}
-                                        alt={truck.name}
-                                    />
-                                    {truck.available && (
-                                        <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">
-                                            Available
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-gray-900">{truck.name}</h3>
-                                            <p className="text-sm text-gray-500">{truck.location}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-lg font-bold text-indigo-600">{truck.price}</p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 flex items-center justify-between">
+                    ) : (
+                        <>
+                            {/* Stats - Hidden on mobile to focus on trucks */}
+                            <div className="mb-6 lg:mb-8 hidden lg:block">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div className="bg-white rounded-lg shadow p-6">
                                         <div className="flex items-center">
-                                            <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                            </svg>
-                                            <span className="ml-1 text-sm text-gray-600">{truck.rating}</span>
-                                            <span className="ml-1 text-sm text-gray-500">({truck.reviews} reviews)</span>
+                                            <div className="flex-shrink-0">
+                                                <svg className="h-8 w-8 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                                </svg>
+                                            </div>
+                                            <div className="ml-4">
+                                                <p className="text-sm font-medium text-gray-500">Total Trucks</p>
+                                                <p className="text-2xl font-semibold text-gray-900">{trucks.length}</p>
+                                            </div>
                                         </div>
-                                        <Link
-                                            href={route('register', { project: 'logistics' })}
-                                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                                        >
-                                            Book Now
-                                        </Link>
+                                    </div>
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0">
+                                                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <div className="ml-4">
+                                                <p className="text-sm font-medium text-gray-500">Available</p>
+                                                <p className="text-2xl font-semibold text-gray-900">{trucks.filter(t => t.status === 'Available').length}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0">
+                                                <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                            </div>
+                                            <div className="ml-4">
+                                                <p className="text-sm font-medium text-gray-500">In Transit</p>
+                                                <p className="text-2xl font-semibold text-gray-900">{trucks.filter(t => t.status === 'In Transit').length}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0">
+                                                <svg className="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <div className="ml-4">
+                                                <p className="text-sm font-medium text-gray-500">Maintenance</p>
+                                                <p className="text-2xl font-semibold text-gray-900">{trucks.filter(t => t.status === 'Maintenance').length}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
 
-                    <div className="mt-12 text-center">
-                        <Link
-                            href={route('register', { project: 'logistics' })}
-                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                        >
-                            View All Trucks
-                        </Link>
-                    </div>
-                </div>
-
-                {/* How It Works */}
-                <div className="bg-gray-50 py-12">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center">
-                            <h2 className="text-3xl font-extrabold text-gray-900">
-                                How It Works
-                            </h2>
-                            <p className="mt-4 text-lg text-gray-500">
-                                Book a truck in three simple steps
-                            </p>
-                        </div>
-
-                        <div className="mt-12 grid gap-8 grid-cols-1 sm:grid-cols-3">
-                            <div className="text-center">
-                                <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mx-auto">
-                                    <span className="text-xl font-bold">1</span>
+                            {/* Mobile Stats Summary */}
+                            <div className="mb-4 lg:hidden">
+                                <div className="bg-white rounded-lg shadow p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-4">
+                                            <span className="text-sm text-gray-600">Total: <span className="font-semibold text-gray-900">{trucks.length}</span></span>
+                                            <span className="text-sm text-gray-600">Available: <span className="font-semibold text-green-600">{trucks.filter(t => t.status === 'Available').length}</span></span>
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                            In Transit: <span className="font-semibold text-blue-600">{trucks.filter(t => t.status === 'In Transit').length}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h3 className="mt-4 text-lg font-medium text-gray-900">Search</h3>
-                                <p className="mt-2 text-base text-gray-500">
-                                    Find the perfect truck for your needs
-                                </p>
                             </div>
-                            <div className="text-center">
-                                <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mx-auto">
-                                    <span className="text-xl font-bold">2</span>
-                                </div>
-                                <h3 className="mt-4 text-lg font-medium text-gray-900">Book</h3>
-                                <p className="mt-2 text-base text-gray-500">
-                                    Select your dates and confirm booking
-                                </p>
-                            </div>
-                            <div className="text-center">
-                                <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white mx-auto">
-                                    <span className="text-xl font-bold">3</span>
-                                </div>
-                                <h3 className="mt-4 text-lg font-medium text-gray-900">Ship</h3>
-                                <p className="mt-2 text-base text-gray-500">
-                                    Track your shipment in real-time
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                {/* CTA Section */}
-                <div className="bg-indigo-700">
-                    <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
-                        <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-                            <span className="block">Ready to ship?</span>
-                            <span className="block">Book your truck now.</span>
-                        </h2>
-                        <p className="mt-4 text-lg leading-6 text-indigo-200">
-                            Join thousands of customers who trust our platform for their shipping needs.
-                        </p>
-                        <div className="mt-8 flex justify-center">
-                            <Link
-                                href={route('register', { project: 'logistics' })}
-                                className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50"
-                            >
-                                Get Started
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                            {/* Trucks Grid */}
+                            <div className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {trucks.map((truck) => (
+                                    <div key={truck.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100">
+                                        <div className="relative">
+                                            <img
+                                                className="w-full h-32 lg:h-40 object-cover rounded-t-lg"
+                                                src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                                                alt={truck.model}
+                                            />
+                                            <div className="absolute top-2 right-2">
+                                                {truck.status === 'Available' && (
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Available
+                                                    </span>
+                                                )}
+                                                {truck.status === 'In Transit' && (
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        In Transit
+                                                    </span>
+                                                )}
+                                                {truck.status === 'Maintenance' && (
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                        Maintenance
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="p-3 lg:p-4">
+                                            <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-2">{truck.model}</h3>
+                                            <div className="space-y-1 lg:space-y-2 text-xs lg:text-sm">
+                                                <div className="flex items-center">
+                                                    <svg className="h-3 w-3 lg:h-4 lg:w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
+                                                    <span className="text-gray-600">Plate: {truck.plate_number}</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <svg className="h-3 w-3 lg:h-4 lg:w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                    </svg>
+                                                    <span className="text-gray-600">Capacity: {truck.capacity} tons</span>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <svg className="h-3 w-3 lg:h-4 lg:w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                    <span className="text-gray-600">Driver: {truck.driver}</span>
+                                                </div>
+                                                {truck.fuel_level && (
+                                                    <div className="flex items-center">
+                                                        <svg className="h-3 w-3 lg:h-4 lg:w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                        </svg>
+                                                        <span className="text-gray-600">Fuel: {truck.fuel_level}%</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
 
-                {/* Footer */}
-                <footer className="bg-white">
-                    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
-                        <div className="flex justify-center space-x-6 md:order-2">
-                            <a href="#" className="text-gray-400 hover:text-gray-500">
-                                <span className="sr-only">Facebook</span>
-                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                                </svg>
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-gray-500">
-                                <span className="sr-only">Instagram</span>
-                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.09 1.064.077 1.791.232 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.233.636.388 1.363.465 2.427.077 1.067.09 1.407.09 4.123v.08c0 2.643-.012 2.987-.09 4.043-.077 1.064-.232 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.233-1.363.388-2.427.465-1.067.077-1.407.09-4.123.09h-.08c-2.643 0-2.987-.012-4.043-.09-1.064-.077-1.791-.232-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.233-.636-.388-1.363-.465-2.427-.077-1.022-.087-1.379-.087-4.123v-.08c0-2.643.012-2.987.09-4.043.077-1.064.232-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.233 1.363-.388 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                                </svg>
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-gray-500">
-                                <span className="sr-only">Twitter</span>
-                                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                                </svg>
-                            </a>
-                        </div>
-                        <div className="mt-8 md:mt-0 md:order-1">
-                            <p className="text-center text-base text-gray-400">
-                                &copy; 2024 Truck Booking Platform. All rights reserved.
-                            </p>
-                        </div>
-                    </div>
-                </footer>
+                            {trucks.length === 0 && !loading && !error && (
+                                <div className="text-center py-12 lg:py-20">
+                                    <svg className="mx-auto h-8 w-8 lg:h-12 lg:w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <h3 className="mt-2 text-sm lg:text-base font-medium text-gray-900">No trucks found</h3>
+                                    <p className="mt-1 text-xs lg:text-sm text-gray-500">No trucks are currently available.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </>
     );
