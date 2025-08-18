@@ -183,7 +183,7 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
       <Head title="Subscription Management" />
 
       <div className="py-12">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           {/* Subscription Plans Section */}
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
             <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -201,21 +201,23 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Project</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Credits</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Slug</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Project</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Credits</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Active Users</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {plans.map((plan) => (
                       <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="ml-4">
+                            <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{plan.name}</div>
                               {plan.badge_text && (
                                 <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
@@ -225,21 +227,36 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                            {plan.slug}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">
                             {plan.project ? plan.project.name : 'No Project'}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">₱ {plan.price?.toLocaleString()}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">{plan.duration_in_days} days</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">{plan.credits_per_month} credits/month</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 dark:text-gray-100">
+                            {plan.active_users_count || 0} users
+                            {(plan.active_users_count || 0) > 0 && (
+                              <span className="ml-1 text-xs text-orange-600 dark:text-orange-400">
+                                (active)
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             plan.is_active 
                               ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
@@ -253,7 +270,7 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button
                               onClick={() => openEditModal(plan)}
@@ -263,16 +280,31 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                             </button>
                             <button
                               onClick={() => togglePlanStatus(plan)}
-                              className={`${plan.is_active 
-                                ? 'text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300' 
-                                : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
+                              disabled={plan.is_active && (plan.active_users_count || 0) > 0}
+                              className={`${
+                                plan.is_active && (plan.active_users_count || 0) > 0
+                                  ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                  : plan.is_active 
+                                    ? 'text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300' 
+                                    : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300'
                               } transition-colors`}
+                              title={plan.is_active && (plan.active_users_count || 0) > 0 
+                                ? `Cannot deactivate plan with ${plan.active_users_count} active users` 
+                                : undefined}
                             >
                               {plan.is_active ? 'Deactivate' : 'Activate'}
                             </button>
                             <button
                               onClick={() => openDeleteModal(plan)}
-                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
+                              disabled={(plan.active_users_count || 0) > 0}
+                              className={`${
+                                (plan.active_users_count || 0) > 0
+                                  ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                  : 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'
+                              } transition-colors`}
+                              title={(plan.active_users_count || 0) > 0 
+                                ? `Cannot delete plan with ${plan.active_users_count} active users` 
+                                : undefined}
                             >
                               Delete
                             </button>
@@ -295,24 +327,25 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Plan</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Date</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Date</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Plan</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start Date</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End Date</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Auto Renew</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {subscriptions.data.map((subscription) => (
                       <tr key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">{subscription.user_name}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">{subscription.plan.name}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             subscription.status === 'active' 
                               ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 
@@ -323,13 +356,22 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                             {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">{new Date(subscription.start_date).toLocaleDateString()}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 dark:text-gray-100">{new Date(subscription.end_date).toLocaleDateString()}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            subscription.auto_renew 
+                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                          }`}>
+                            {subscription.auto_renew ? 'Yes' : 'No'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                           <Link
                             href={route('admin.subscriptions.view', subscription.id)}
                             className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
@@ -690,6 +732,17 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
             Are you sure you want to delete this subscription plan? This action cannot be undone.
           </p>
           
+          {currentPlan && (currentPlan.active_users_count || 0) > 0 && (
+            <div className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded">
+              <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
+                ⚠️ Warning: This plan has {currentPlan.active_users_count} active users
+              </p>
+              <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                You cannot delete a plan that has active subscriptions. Please wait for all subscriptions to expire or cancel them first.
+              </p>
+            </div>
+          )}
+          
           {currentPlan && (
             <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600">
               <p className="font-medium text-gray-900 dark:text-gray-100">{currentPlan.name}</p>
@@ -701,7 +754,10 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
             <SecondaryButton onClick={() => setShowDeleteModal(false)} className="mr-2">
               Cancel
             </SecondaryButton>
-            <DangerButton type="submit" disabled={deleteForm.processing}>
+            <DangerButton 
+              type="submit" 
+              disabled={deleteForm.processing || (currentPlan?.active_users_count || 0) > 0}
+            >
               Delete Plan
             </DangerButton>
           </div>

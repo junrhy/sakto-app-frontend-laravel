@@ -192,7 +192,7 @@ export default function Logistics({ auth }: PageProps) {
                                             <span className="ml-1 text-sm text-gray-500">({truck.reviews} reviews)</span>
                                         </div>
                                         <Link
-                                            href={route('register', { project: 'trial' })}
+                                            href={route('register', { project: 'logistics' })}
                                             className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                         >
                                             Book Now
@@ -205,7 +205,7 @@ export default function Logistics({ auth }: PageProps) {
 
                     <div className="mt-12 text-center">
                         <Link
-                            href={route('register', { project: 'trial' })}
+                            href={route('register', { project: 'logistics' })}
                             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                         >
                             View All Trucks
@@ -269,7 +269,7 @@ export default function Logistics({ auth }: PageProps) {
                         </p>
                         <div className="mt-8 flex justify-center">
                             <Link
-                                href={route('register', { project: 'trial' })}
+                                href={route('register', { project: 'logistics' })}
                                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50"
                             >
                                 Get Started

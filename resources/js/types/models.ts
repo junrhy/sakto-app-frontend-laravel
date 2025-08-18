@@ -16,6 +16,7 @@ export interface SubscriptionPlan {
     name: string;
     identifier: string;
   };
+  active_users_count?: number;
   created_at: string;
   updated_at: string;
 }

@@ -20,6 +20,15 @@ class SubscriptionAdminController extends Controller
     public function index()
     {
         $plans = SubscriptionPlan::with('project')->orderBy('price')->get();
+        
+        // Add active users count for each plan
+        $plans->each(function ($plan) {
+            $plan->active_users_count = UserSubscription::where('subscription_plan_id', $plan->id)
+                ->where('status', 'active')
+                ->where('end_date', '>', now())
+                ->count();
+        });
+        
         $projects = Project::orderBy('name')->get();
         $subscriptions = UserSubscription::with('plan')
             ->select('user_subscriptions.*')
@@ -99,11 +108,15 @@ class SubscriptionAdminController extends Controller
     {
         $plan = SubscriptionPlan::findOrFail($id);
         
-        // Check if there are any subscriptions using this plan
-        $subscriptionsCount = UserSubscription::where('subscription_plan_id', $id)->count();
+        // Check if there are any active subscriptions using this plan
+        $activeUsersCount = UserSubscription::where('subscription_plan_id', $id)
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->count();
         
-        if ($subscriptionsCount > 0) {
-            return redirect()->route('admin.subscriptions.index')->with('error', 'Cannot delete plan that has active subscriptions');
+        if ($activeUsersCount > 0) {
+            return redirect()->route('admin.subscriptions.index')
+                ->with('error', "Cannot delete plan that has {$activeUsersCount} active users. Please wait for all subscriptions to expire or cancel them first.");
         }
         
         $plan->delete();
@@ -117,6 +130,20 @@ class SubscriptionAdminController extends Controller
     public function togglePlanStatus($id)
     {
         $plan = SubscriptionPlan::findOrFail($id);
+        
+        // If trying to deactivate, check if there are active users
+        if ($plan->is_active) {
+            $activeUsersCount = UserSubscription::where('subscription_plan_id', $id)
+                ->where('status', 'active')
+                ->where('end_date', '>', now())
+                ->count();
+            
+            if ($activeUsersCount > 0) {
+                return redirect()->route('admin.subscriptions.index')
+                    ->with('error', "Cannot deactivate plan that has {$activeUsersCount} active users. Please wait for all subscriptions to expire or cancel them first.");
+            }
+        }
+        
         $plan->is_active = !$plan->is_active;
         $plan->save();
         
