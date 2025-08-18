@@ -2,44 +2,45 @@ import { useState } from 'react';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
-import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { MapIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Calendar } from "@/Components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
+import { CalendarIcon, PlusIcon, Pencil2Icon, TrashIcon, ClockIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
-import { Shipment, ShipmentFormData, StatusUpdateFormData, TrackingUpdate, Truck } from "../types";
-import ShipmentTrackingHistory from "./ShipmentTrackingHistory";
+import { Shipment, ShipmentFormData, StatusUpdateFormData } from "../types";
+import { useShipmentTracking, useFleetManagement } from "../hooks";
 import StatusUpdateDialog from "./StatusUpdateDialog";
+import ShipmentTrackingHistory from "./ShipmentTrackingHistory";
 
-interface ShipmentTrackingProps {
-    shipments: Shipment[];
-    trucks: Truck[];
-    trackingHistory: TrackingUpdate[];
-    onAddShipment: (shipment: ShipmentFormData) => void;
-    onEditShipment: (shipment: Shipment) => void;
-    onDeleteShipment: (shipmentId: string) => void;
-    onUpdateShipmentStatus: (shipmentId: string, updateData: StatusUpdateFormData) => void;
-    onAddTrackingUpdate: (shipmentId: string, update: Omit<TrackingUpdate, 'id'>) => void;
-}
+export default function ShipmentTracking() {
+    const {
+        shipments,
+        trackingHistory,
+        loading,
+        error,
+        addShipment,
+        editShipment,
+        deleteShipment,
+        updateShipmentStatus,
+        getTrackingHistory
+    } = useShipmentTracking();
 
-export default function ShipmentTracking({
-    shipments,
-    trucks,
-    trackingHistory,
-    onAddShipment,
-    onEditShipment,
-    onDeleteShipment,
-    onUpdateShipmentStatus,
-    onAddTrackingUpdate
-}: ShipmentTrackingProps) {
+    const { trucks } = useFleetManagement();
+
+    // Filter available trucks only
+    const availableTrucks = trucks.filter(truck => truck.status === 'Available');
+
     const [shipmentSearch, setShipmentSearch] = useState('');
-    const [isNewShipmentDialogOpen, setIsNewShipmentDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isStatusUpdateDialogOpen, setIsStatusUpdateDialogOpen] = useState(false);
-    const [updatingShipmentId, setUpdatingShipmentId] = useState<string>('');
-    const [newShipment, setNewShipment] = useState<ShipmentFormData>({
+    const [isTrackingHistoryDialogOpen, setIsTrackingHistoryDialogOpen] = useState(false);
+    const [viewingShipmentId, setViewingShipmentId] = useState<string>('');
+    const [editingShipment, setEditingShipment] = useState<ShipmentFormData>({
         truckId: '',
+        driver: '',
         destination: '',
         origin: '',
         departureDate: '',
@@ -47,67 +48,168 @@ export default function ShipmentTracking({
         cargo: '',
         weight: '',
         customerContact: '',
-        priority: 'Medium',
-        driver: ''
+        priority: 'Medium'
     });
-    const [statusUpdateForm, setStatusUpdateForm] = useState<StatusUpdateFormData>({
-        status: 'In Transit',
-        location: '',
-        notes: ''
+    const [editingShipmentId, setEditingShipmentId] = useState<string>('');
+    const [updatingShipmentStatusId, setUpdatingShipmentStatusId] = useState<string>('');
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+    
+    const [newShipment, setNewShipment] = useState<ShipmentFormData>({
+        truckId: '',
+        driver: '',
+        destination: '',
+        origin: '',
+        departureDate: today,
+        arrivalDate: today,
+        cargo: '',
+        weight: '',
+        customerContact: '',
+        priority: 'Medium'
     });
 
     const filteredShipments = shipments.filter(shipment => {
         const searchTerm = shipmentSearch.toLowerCase();
-        const truck = trucks.find(t => t.id === shipment.truckId);
         return (
-            shipment.id.toLowerCase().includes(searchTerm) ||
-            shipment.destination.toLowerCase().includes(searchTerm) ||
-            shipment.origin.toLowerCase().includes(searchTerm) ||
-            shipment.driver.toLowerCase().includes(searchTerm) ||
-            (truck && truck.plateNumber.toLowerCase().includes(searchTerm))
+            (shipment.driver && shipment.driver.toLowerCase().includes(searchTerm)) ||
+            (shipment.destination && shipment.destination.toLowerCase().includes(searchTerm)) ||
+            (shipment.origin && shipment.origin.toLowerCase().includes(searchTerm)) ||
+            (shipment.cargo && shipment.cargo.toLowerCase().includes(searchTerm))
         );
     });
 
-    const handleAddShipment = (e: React.FormEvent) => {
+    const handleAddShipment = async (e: React.FormEvent) => {
         e.preventDefault();
-        onAddShipment(newShipment);
-        setNewShipment({
-            truckId: '',
-            destination: '',
-            origin: '',
-            departureDate: '',
-            arrivalDate: '',
-            cargo: '',
-            weight: '',
-            customerContact: '',
-            priority: 'Medium',
-            driver: ''
-        });
-        setIsNewShipmentDialogOpen(false);
+        try {
+            await addShipment(newShipment);
+            setNewShipment({
+                truckId: '',
+                driver: '',
+                destination: '',
+                origin: '',
+                departureDate: today,
+                arrivalDate: today,
+                cargo: '',
+                weight: '',
+                customerContact: '',
+                priority: 'Medium'
+            });
+        } catch (error) {
+            console.error('Failed to add shipment:', error);
+        }
     };
 
-    const openStatusUpdateDialog = (shipmentId: string, currentStatus: Shipment['status']) => {
-        setUpdatingShipmentId(shipmentId);
-        setStatusUpdateForm({
-            status: currentStatus,
-            location: '',
-            notes: ''
+    const handleEditShipment = (shipment: Shipment) => {
+        setEditingShipmentId(shipment.id);
+        setEditingShipment({
+            truckId: shipment.truck_id || '',
+            driver: shipment.driver || '',
+            destination: shipment.destination || '',
+            origin: shipment.origin || '',
+            departureDate: shipment.departure_date || '',
+            arrivalDate: shipment.arrival_date || '',
+            cargo: shipment.cargo || '',
+            weight: (shipment.weight || 0).toString(),
+            customerContact: shipment.customer_contact || '',
+            priority: shipment.priority || 'Medium'
         });
+        setIsEditDialogOpen(true);
+    };
+
+    const saveEditedShipment = async (shipmentId: string) => {
+        try {
+            const shipment = shipments.find(s => s.id === shipmentId);
+            if (shipment) {
+                await editShipment({
+                    id: shipment.id,
+                    truck_id: editingShipment.truckId,
+                    driver: editingShipment.driver,
+                    destination: editingShipment.destination,
+                    origin: editingShipment.origin,
+                    departure_date: editingShipment.departureDate,
+                    arrival_date: editingShipment.arrivalDate,
+                    cargo: editingShipment.cargo,
+                    weight: parseFloat(editingShipment.weight) || 0,
+                    customer_contact: editingShipment.customerContact,
+                    priority: editingShipment.priority,
+                    status: shipment.status,
+                    current_location: shipment.current_location,
+                    estimated_delay: shipment.estimated_delay
+                });
+            }
+            setIsEditDialogOpen(false);
+        } catch (error) {
+            console.error('Failed to edit shipment:', error);
+        }
+    };
+
+    const openStatusUpdateDialog = (shipmentId: string) => {
+        setUpdatingShipmentStatusId(shipmentId);
         setIsStatusUpdateDialogOpen(true);
     };
 
-    const handleStatusUpdate = (updateData: StatusUpdateFormData) => {
-        onUpdateShipmentStatus(updatingShipmentId, updateData);
-        onAddTrackingUpdate(updatingShipmentId, {
-            shipmentId: updatingShipmentId,
-            status: updateData.status,
-            location: updateData.location,
-            timestamp: new Date().toISOString(),
-            updatedBy: 'User',
-            notes: updateData.notes
-        });
-        setIsStatusUpdateDialogOpen(false);
+    const openTrackingHistoryDialog = (shipmentId: string) => {
+        setViewingShipmentId(shipmentId);
+        setIsTrackingHistoryDialogOpen(true);
     };
+
+
+
+    const handleDeleteShipment = async (shipmentId: string) => {
+        if (confirm('Are you sure you want to delete this shipment?')) {
+            try {
+                await deleteShipment(shipmentId);
+            } catch (error) {
+                console.error('Failed to delete shipment:', error);
+            }
+        }
+    };
+
+    // Function to handle truck selection and populate driver details
+    const handleTruckSelection = (truckId: string, isEditForm: boolean = false) => {
+        const selectedTruck = trucks.find(truck => truck.id.toString() === truckId);
+        const driverName = selectedTruck?.driver || '';
+        
+        if (isEditForm) {
+            setEditingShipment(prev => ({
+                ...prev,
+                truckId: truckId,
+                driver: driverName
+            }));
+        } else {
+            setNewShipment(prev => ({
+                ...prev,
+                truckId: truckId,
+                driver: driverName
+            }));
+        }
+    };
+
+    if (loading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Shipment Tracking</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-4">Loading shipment data...</div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (error) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Shipment Tracking</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-4 text-red-500">Error: {error}</div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
@@ -115,86 +217,149 @@ export default function ShipmentTracking({
                 <CardTitle>Shipment Tracking</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div className="flex-1 max-w-sm">
-                            <Input
-                                placeholder="Search shipments..."
-                                value={shipmentSearch}
-                                onChange={(e) => setShipmentSearch(e.target.value)}
-                                className="max-w-sm"
-                            />
-                        </div>
-                        <Dialog open={isNewShipmentDialogOpen} onOpenChange={setIsNewShipmentDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button>
-                                    <PlusIcon className="mr-2 h-4 w-4" />
-                                    New Shipment
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Add New Shipment</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleAddShipment} className="space-y-4">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <Input
+                            placeholder="Search shipments..."
+                            value={shipmentSearch}
+                            onChange={(e) => setShipmentSearch(e.target.value)}
+                            className="max-w-sm"
+                        />
+                    </div>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <PlusIcon className="mr-2 h-4 w-4" />
+                                New Shipment
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add New Shipment</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleAddShipment} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Truck</label>
                                     <Select
-                                        value={newShipment.truckId}
-                                        onValueChange={(value) => setNewShipment({ ...newShipment, truckId: value })}
+                                        value={newShipment.truckId || ""}
+                                        onValueChange={(value) => handleTruckSelection(value, false)}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select Truck" />
+                                            <SelectValue placeholder="Select a truck">
+                                                {newShipment.truckId && availableTrucks.find(truck => truck.id === newShipment.truckId) && 
+                                                    `${availableTrucks.find(truck => truck.id === newShipment.truckId)?.plate_number} - ${availableTrucks.find(truck => truck.id === newShipment.truckId)?.model}`
+                                                }
+                                            </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {trucks.map((truck) => (
-                                                <SelectItem key={truck.id} value={truck.id}>
-                                                    {truck.plateNumber} - {truck.model}
+                                            {availableTrucks.map((truck) => (
+                                                <SelectItem key={truck.id} value={truck.id.toString()}>
+                                                    {truck.plate_number} - {truck.model} ({truck.driver || 'No Driver'})
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {availableTrucks.length === 0 && (
+                                        <p className="text-sm text-muted-foreground">No available trucks</p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Driver</label>
                                     <Input
-                                        placeholder="Origin"
-                                        value={newShipment.origin}
-                                        onChange={(e) => setNewShipment({ ...newShipment, origin: e.target.value })}
+                                        placeholder="Driver"
+                                        value={newShipment.driver}
+                                        onChange={(e) => setNewShipment({ ...newShipment, driver: e.target.value })}
                                     />
-                                    <Input
-                                        placeholder="Destination"
-                                        value={newShipment.destination}
-                                        onChange={(e) => setNewShipment({ ...newShipment, destination: e.target.value })}
-                                    />
-                                    <Input
-                                        type="date"
-                                        placeholder="Departure Date"
-                                        value={newShipment.departureDate}
-                                        onChange={(e) => setNewShipment({ ...newShipment, departureDate: e.target.value })}
-                                    />
-                                    <Input
-                                        type="date"
-                                        placeholder="Arrival Date"
-                                        value={newShipment.arrivalDate}
-                                        onChange={(e) => setNewShipment({ ...newShipment, arrivalDate: e.target.value })}
-                                    />
-                                    <Input
-                                        placeholder="Cargo"
-                                        value={newShipment.cargo}
-                                        onChange={(e) => setNewShipment({ ...newShipment, cargo: e.target.value })}
-                                    />
-                                    <Input
-                                        placeholder="Weight (tons)" 
-                                        value={newShipment.weight}
-                                        onChange={(e) => setNewShipment({ ...newShipment, weight: e.target.value })}
-                                    />
-                                    <Input
-                                        placeholder="Customer Contact"
-                                        value={newShipment.customerContact}
-                                        onChange={(e) => setNewShipment({ ...newShipment, customerContact: e.target.value })}
-                                    />
+                                    {newShipment.truckId && availableTrucks.find(truck => truck.id.toString() === newShipment.truckId)?.driver && (
+                                        <p className="text-xs text-muted-foreground">
+                                            Auto-populated from selected truck
+                                        </p>
+                                    )}
+
+                                </div>
+                                <Input
+                                    placeholder="Origin"
+                                    value={newShipment.origin}
+                                    onChange={(e) => setNewShipment({ ...newShipment, origin: e.target.value })}
+                                />
+                                <Input
+                                    placeholder="Destination"
+                                    value={newShipment.destination}
+                                    onChange={(e) => setNewShipment({ ...newShipment, destination: e.target.value })}
+                                />
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Departure Date</label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {newShipment.departureDate ? format(new Date(newShipment.departureDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={newShipment.departureDate ? new Date(newShipment.departureDate) : undefined}
+                                                onSelect={(date) => setNewShipment({ 
+                                                    ...newShipment, 
+                                                    departureDate: date ? date.toISOString().split('T')[0] : today 
+                                                })}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Arrival Date</label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start text-left font-normal"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {newShipment.arrivalDate ? format(new Date(newShipment.arrivalDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={newShipment.arrivalDate ? new Date(newShipment.arrivalDate) : undefined}
+                                                onSelect={(date) => setNewShipment({ 
+                                                    ...newShipment, 
+                                                    arrivalDate: date ? date.toISOString().split('T')[0] : today 
+                                                })}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <Input
+                                    placeholder="Cargo"
+                                    value={newShipment.cargo}
+                                    onChange={(e) => setNewShipment({ ...newShipment, cargo: e.target.value })}
+                                />
+                                <Input
+                                    placeholder="Weight (tons)" 
+                                    value={newShipment.weight}
+                                    onChange={(e) => setNewShipment({ ...newShipment, weight: e.target.value })}
+                                />
+                                <Input
+                                    placeholder="Customer Contact"
+                                    value={newShipment.customerContact}
+                                    onChange={(e) => setNewShipment({ ...newShipment, customerContact: e.target.value })}
+                                />
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Priority</label>
                                     <Select
-                                        value={newShipment.priority}
-                                        onValueChange={(value) => setNewShipment({ ...newShipment, priority: value as Shipment['priority'] })}
+                                        value={newShipment.priority || ""}
+                                        onValueChange={(value) => setNewShipment({ ...newShipment, priority: value as "Low" | "Medium" | "High" })}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select priority" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Low">Low</SelectItem>
@@ -202,181 +367,239 @@ export default function ShipmentTracking({
                                             <SelectItem value="High">High</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <Select
-                                        value={newShipment.driver}
-                                        onValueChange={(value) => setNewShipment({ ...newShipment, driver: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select Driver" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Jane Doe">Jane Doe</SelectItem>
-                                            <SelectItem value="John Doe">John Doe</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <Button type="submit">Add Shipment</Button>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-                    
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>ID</TableHead>
-                                <TableHead>Truck Details</TableHead>
-                                <TableHead>Driver</TableHead>
-                                <TableHead>Route</TableHead>
-                                <TableHead>Dates</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Priority</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredShipments.map((shipment) => (
-                                <TableRow key={shipment.id}>
-                                    <TableCell>{shipment.id}</TableCell>
-                                    <TableCell>
-                                        {(() => {
-                                            const truck = trucks.find(t => t.id === shipment.truckId);
-                                            return truck ? (
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">{truck.plateNumber}</span>
-                                                    <span className="text-sm text-muted-foreground">{truck.model}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="text-muted-foreground">No truck assigned</span>
-                                            );
-                                        })()}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">
-                                                {shipment.driver || 'Unassigned'}
-                                            </span>
-                                            {(() => {
-                                                const truck = trucks.find(t => t.id === shipment.truckId);
-                                                return truck?.driverContact && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        📞 {truck.driverContact}
-                                                    </span>
-                                                );
-                                            })()}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <MapIcon className="h-4 w-4" />
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-medium">
-                                                    {shipment.origin} → {shipment.destination}
-                                                </span>
-                                                {shipment.currentLocation && (
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Current: {shipment.currentLocation}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm">
-                                                {format(new Date(shipment.departureDate), 'MMM dd')} - 
-                                                {format(new Date(shipment.arrivalDate), 'MMM dd')}
-                                            </span>
-                                            {shipment.estimatedDelay && shipment.estimatedDelay > 0 && (
-                                                <span className="text-xs text-red-500">
-                                                    Delayed: {shipment.estimatedDelay}h
-                                                </span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            shipment.status === 'Delivered' ? 'default' :
-                                            shipment.status === 'In Transit' ? 'secondary' :
-                                            shipment.status === 'Delayed' ? 'destructive' :
-                                            'outline'
-                                        }>
-                                            {shipment.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={
-                                            shipment.priority === 'High' ? 'destructive' :
-                                            shipment.priority === 'Medium' ? 'secondary' :
-                                            'default'
-                                        }>
-                                            {shipment.priority}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => onEditShipment(shipment)}
-                                            >
-                                                <Pencil2Icon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => onDeleteShipment(shipment.id)}
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => openStatusUpdateDialog(shipment.id, shipment.status)}
-                                            >
-                                                Update Status
-                                            </Button>
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm">
-                                                        Details
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-2xl">
-                                                    <DialogHeader>
-                                                        <DialogTitle>Shipment Details</DialogTitle>
-                                                    </DialogHeader>
-                                                    <div className="grid gap-4">
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <h3 className="font-medium">Cargo Information</h3>
-                                                                <p className="text-sm">Type: {shipment.cargo}</p>
-                                                                <p className="text-sm">Weight: {shipment.weight} tons</p>
-                                                            </div>
-                                                            <div>
-                                                                <h3 className="font-medium">Contact Information</h3>
-                                                                <p className="text-sm">Customer: {shipment.customerContact}</p>
-                                                            </div>
-                                                        </div>
-                                                        <ShipmentTrackingHistory shipmentId={shipment.id} trackingHistory={trackingHistory} />
-                                                    </div>
-                                                </DialogContent>
-                                            </Dialog>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                                </div>
+                                <Button type="submit">Add Shipment</Button>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
+                
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Driver</TableHead>
+                            <TableHead>Route</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Priority</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredShipments.map((shipment) => (
+                            <TableRow key={shipment.id}>
+                                <TableCell>{shipment.id}</TableCell>
+                                <TableCell>{shipment.driver}</TableCell>
+                                <TableCell>
+                                    {shipment.origin} → {shipment.destination}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={
+                                        shipment.status === 'Delivered' ? 'default' :
+                                        shipment.status === 'In Transit' ? 'secondary' :
+                                        shipment.status === 'Delayed' ? 'destructive' :
+                                        'outline'
+                                    }>
+                                        {shipment.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant="outline">{shipment.priority}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex space-x-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleEditShipment(shipment)}
+                                        >
+                                            <Pencil2Icon className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => openStatusUpdateDialog(shipment.id)}
+                                        >
+                                            Update Status
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => openTrackingHistoryDialog(shipment.id)}
+                                        >
+                                            <ClockIcon className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleDeleteShipment(shipment.id)}
+                                        >
+                                            <TrashIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </CardContent>
+            
+            {/* Edit Shipment Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Shipment</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        saveEditedShipment(editingShipmentId);
+                    }} className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Truck</label>
+                            <Select
+                                value={editingShipment.truckId || ""}
+                                onValueChange={(value) => handleTruckSelection(value, true)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a truck">
+                                        {editingShipment.truckId && trucks.find(truck => truck.id === editingShipment.truckId) && 
+                                            `${trucks.find(truck => truck.id === editingShipment.truckId)?.plate_number} - ${trucks.find(truck => truck.id === editingShipment.truckId)?.model}`
+                                        }
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {trucks.map((truck) => (
+                                        <SelectItem key={truck.id} value={truck.id.toString()}>
+                                            {truck.plate_number} - {truck.model} ({truck.driver || 'No Driver'})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Driver</label>
+                            <Input
+                                placeholder="Driver"
+                                value={editingShipment.driver}
+                                onChange={(e) => setEditingShipment({ ...editingShipment, driver: e.target.value })}
+                            />
+                            {editingShipment.truckId && trucks.find(truck => truck.id === editingShipment.truckId)?.driver && (
+                                <p className="text-xs text-muted-foreground">
+                                    Auto-populated from selected truck
+                                </p>
+                            )}
+                        </div>
+                        <Input
+                            placeholder="Origin"
+                            value={editingShipment.origin}
+                            onChange={(e) => setEditingShipment({ ...editingShipment, origin: e.target.value })}
+                        />
+                        <Input
+                            placeholder="Destination"
+                            value={editingShipment.destination}
+                            onChange={(e) => setEditingShipment({ ...editingShipment, destination: e.target.value })}
+                        />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Departure Date</label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-start text-left font-normal"
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {editingShipment.departureDate ? format(new Date(editingShipment.departureDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={editingShipment.departureDate ? new Date(editingShipment.departureDate) : undefined}
+                                        onSelect={(date) => setEditingShipment({ 
+                                            ...editingShipment, 
+                                            departureDate: date ? date.toISOString().split('T')[0] : today 
+                                        })}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Arrival Date</label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-start text-left font-normal"
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {editingShipment.arrivalDate ? format(new Date(editingShipment.arrivalDate), "PPP") : <span className="text-muted-foreground">Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={editingShipment.arrivalDate ? new Date(editingShipment.arrivalDate) : undefined}
+                                        onSelect={(date) => setEditingShipment({ 
+                                            ...editingShipment, 
+                                            arrivalDate: date ? date.toISOString().split('T')[0] : today 
+                                        })}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                        <Input
+                            placeholder="Cargo"
+                            value={editingShipment.cargo}
+                            onChange={(e) => setEditingShipment({ ...editingShipment, cargo: e.target.value })}
+                        />
+                        <Input
+                            placeholder="Weight (tons)"
+                            value={editingShipment.weight}
+                            onChange={(e) => setEditingShipment({ ...editingShipment, weight: e.target.value })}
+                        />
+                        <Input
+                            placeholder="Customer Contact"
+                            value={editingShipment.customerContact}
+                            onChange={(e) => setEditingShipment({ ...editingShipment, customerContact: e.target.value })}
+                        />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Priority</label>
+                            <Select
+                                value={editingShipment.priority || ""}
+                                onValueChange={(value) => setEditingShipment({ ...editingShipment, priority: value as "Low" | "Medium" | "High" })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Low">Low</SelectItem>
+                                    <SelectItem value="Medium">Medium</SelectItem>
+                                    <SelectItem value="High">High</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button type="submit">Save Changes</Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
             
             <StatusUpdateDialog
                 isOpen={isStatusUpdateDialogOpen}
                 onClose={() => setIsStatusUpdateDialogOpen(false)}
-                onSubmit={handleStatusUpdate}
-                formData={statusUpdateForm}
-                onFormChange={setStatusUpdateForm}
+                shipmentId={updatingShipmentStatusId}
             />
+            
+            {/* Tracking History Dialog */}
+            <Dialog open={isTrackingHistoryDialogOpen} onOpenChange={setIsTrackingHistoryDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Shipment Tracking History</DialogTitle>
+                    </DialogHeader>
+                    <ShipmentTrackingHistory shipmentId={viewingShipmentId} />
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

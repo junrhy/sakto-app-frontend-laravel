@@ -2,42 +2,82 @@ import { useState } from 'react';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { CargoItem, CargoFormData, Shipment, Truck } from "../types";
-import CargoFormDialog from "./CargoFormDialog";
+import { CargoItem, CargoFormData } from "../types";
+import { useCargoMonitoring } from "../hooks";
 
-interface CargoMonitoringProps {
-    cargoItems: CargoItem[];
-    shipments: Shipment[];
-    trucks: Truck[];
-    onAddCargoItem: (shipmentId: string, data: CargoFormData) => void;
-    onUpdateCargoStatus: (cargoId: string, status: CargoItem['status']) => void;
-    onUpdateCargoItem: (cargoName: string, data: CargoFormData) => void;
-    onDeleteCargoItem: (cargoId: string) => void;
-}
+export default function CargoMonitoring() {
+    const {
+        cargoItems,
+        loading,
+        error,
+        addCargoItem,
+        updateCargoStatus,
+        updateCargoItem,
+        deleteCargoItem,
+        getCargoByShipment
+    } = useCargoMonitoring();
 
-export default function CargoMonitoring({
-    cargoItems,
-    shipments,
-    trucks,
-    onAddCargoItem,
-    onUpdateCargoStatus,
-    onUpdateCargoItem,
-    onDeleteCargoItem
-}: CargoMonitoringProps) {
-    const [isCargoFormOpen, setIsCargoFormOpen] = useState(false);
-    const [editingCargo, setEditingCargo] = useState<CargoFormData | null>(null);
     const [cargoSearch, setCargoSearch] = useState('');
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedShipmentId, setSelectedShipmentId] = useState('');
+    const [editingCargo, setEditingCargo] = useState<CargoFormData>({
+        name: '',
+        quantity: '',
+        unit: 'pieces',
+        description: '',
+        specialHandling: '',
+        temperature: '',
+        humidity: ''
+    });
+    const [editingCargoId, setEditingCargoId] = useState<string>('');
+    const [newCargo, setNewCargo] = useState<CargoFormData>({
+        name: '',
+        quantity: '',
+        unit: 'pieces',
+        description: '',
+        specialHandling: '',
+        temperature: '',
+        humidity: ''
+    });
 
-    const handleAddCargo = (data: CargoFormData) => {
-        onAddCargoItem('1', data); // You might want to select a shipment ID here
-        setIsCargoFormOpen(false);
+    const filteredCargoItems = cargoItems.filter(cargo => {
+        const searchTerm = cargoSearch.toLowerCase();
+        return (
+            (cargo.name && cargo.name.toLowerCase().includes(searchTerm)) ||
+            (cargo.description && cargo.description.toLowerCase().includes(searchTerm)) ||
+            (cargo.specialHandling && cargo.specialHandling.toLowerCase().includes(searchTerm))
+        );
+    });
+
+    const handleAddCargoItem = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedShipmentId) {
+            alert('Please select a shipment ID');
+            return;
+        }
+        try {
+            await addCargoItem(selectedShipmentId, newCargo);
+            setNewCargo({
+                name: '',
+                quantity: '',
+                unit: 'pieces',
+                description: '',
+                specialHandling: '',
+                temperature: '',
+                humidity: ''
+            });
+            setSelectedShipmentId('');
+        } catch (error) {
+            console.error('Failed to add cargo item:', error);
+        }
     };
 
-    const handleEditCargo = (cargo: CargoItem) => {
+    const handleEditCargoItem = (cargo: CargoItem) => {
+        setEditingCargoId(cargo.id);
         setEditingCargo({
             name: cargo.name,
             quantity: cargo.quantity.toString(),
@@ -47,198 +87,250 @@ export default function CargoMonitoring({
             temperature: cargo.temperature?.toString() || '',
             humidity: cargo.humidity?.toString() || ''
         });
+        setIsEditDialogOpen(true);
     };
 
-    const handleUpdateCargo = (data: CargoFormData) => {
-        if (!editingCargo) return;
-        onUpdateCargoItem(editingCargo.name, data);
-        setEditingCargo(null);
-    };
-
-    const handleDeleteCargo = (cargoId: string) => {
-        if (confirm('Are you sure you want to delete this cargo item?')) {
-            onDeleteCargoItem(cargoId);
+    const saveEditedCargoItem = async (cargoId: string) => {
+        try {
+            const cargo = cargoItems.find(c => c.id === cargoId);
+            if (cargo) {
+                await updateCargoItem(cargoId, {
+                    shipmentId: cargo.shipmentId,
+                    name: editingCargo.name,
+                    quantity: editingCargo.quantity,
+                    unit: editingCargo.unit,
+                    description: editingCargo.description,
+                    specialHandling: editingCargo.specialHandling,
+                    status: cargo.status,
+                    temperature: editingCargo.temperature,
+                    humidity: editingCargo.humidity
+                });
+            }
+            setIsEditDialogOpen(false);
+        } catch (error) {
+            console.error('Failed to edit cargo item:', error);
         }
     };
 
-    const filteredCargoItems = cargoItems.filter(item => {
-        const searchTerm = cargoSearch.toLowerCase();
+    const handleDeleteCargoItem = async (cargoId: string) => {
+        if (confirm('Are you sure you want to delete this cargo item?')) {
+            try {
+                await deleteCargoItem(cargoId);
+            } catch (error) {
+                console.error('Failed to delete cargo item:', error);
+            }
+        }
+    };
+
+    const handleUpdateCargoStatus = async (cargoId: string, status: CargoItem['status']) => {
+        try {
+            await updateCargoStatus(cargoId, status);
+        } catch (error) {
+            console.error('Failed to update cargo status:', error);
+        }
+    };
+
+    if (loading) {
         return (
-            item.name.toLowerCase().includes(searchTerm) ||
-            item.description?.toLowerCase().includes(searchTerm) ||
-            item.specialHandling?.toLowerCase().includes(searchTerm)
+            <Card>
+                <CardHeader>
+                    <CardTitle>Cargo Monitoring</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-4">Loading cargo data...</div>
+                </CardContent>
+            </Card>
         );
-    });
+    }
+
+    if (error) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Cargo Monitoring</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-4 text-red-500">Error: {error}</div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <CardTitle>Cargo Monitoring</CardTitle>
-                    <Button onClick={() => setIsCargoFormOpen(true)}>
+                    <Button onClick={() => setIsEditDialogOpen(true)}>
                         <PlusIcon className="mr-2 h-4 w-4" />
                         Add Cargo
                     </Button>
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    <div className="flex-1 max-w-sm">
-                        <Input
-                            placeholder="Search cargo..."
-                            value={cargoSearch}
-                            onChange={(e) => setCargoSearch(e.target.value)}
-                            className="max-w-sm"
-                        />
-                    </div>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Shipment</TableHead>
-                                <TableHead>Truck Details</TableHead>
-                                <TableHead>Item</TableHead>
-                                <TableHead>Quantity</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Conditions</TableHead>
-                                <TableHead>Special Handling</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredCargoItems.map((item) => {
-                                const shipment = shipments.find(s => s.id === item.shipmentId);
-                                const truck = shipment ? trucks.find(t => t.id === shipment.truckId) : null;
-                                
-                                return (
-                                    <TableRow key={item.id}>
-                                        <TableCell>
-                                            {shipment ? (
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">
-                                                        {shipment.origin} → {shipment.destination}
-                                                    </span>
-                                                    <span className="text-sm text-muted-foreground">
-                                                        ID: {shipment.id}
-                                                    </span>
-                                                </div>
-                                            ) : 'Unknown Shipment'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {truck ? (
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">
-                                                        {truck.plateNumber}
-                                                    </span>
-                                                    <span className="text-sm text-muted-foreground">
-                                                        {truck.model}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Driver: {truck.driver || 'Unassigned'}
-                                                    </span>
-                                                    {truck.driverContact && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            📞 {truck.driverContact}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            ) : 'No Truck Assigned'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{item.name}</span>
-                                                <span className="text-sm text-muted-foreground">
-                                                    {item.description}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {item.quantity} {item.unit}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={
-                                                item.status === 'Delivered' ? 'default' :
-                                                item.status === 'In Transit' ? 'secondary' :
-                                                item.status === 'Damaged' ? 'destructive' :
-                                                'outline'
-                                            }>
-                                                {item.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col space-y-1">
-                                                {item.temperature && (
-                                                    <span className="text-sm">
-                                                        🌡️ {item.temperature}°C
-                                                    </span>
-                                                )}
-                                                {item.humidity && (
-                                                    <span className="text-sm">
-                                                        💧 {item.humidity}%
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {item.specialHandling && (
-                                                <Badge variant="outline">
-                                                    {item.specialHandling}
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex space-x-2">
-                                                <Select
-                                                    value={item.status}
-                                                    onValueChange={(value) => 
-                                                        onUpdateCargoStatus(item.id, value as CargoItem['status'])
-                                                    }
-                                                >
-                                                    <SelectTrigger className="w-[130px]">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Loaded">Loaded</SelectItem>
-                                                        <SelectItem value="In Transit">In Transit</SelectItem>
-                                                        <SelectItem value="Delivered">Delivered</SelectItem>
-                                                        <SelectItem value="Damaged">Damaged</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleEditCargo(item)}
-                                                >
-                                                    <Pencil2Icon className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteCargo(item.id)}
-                                                >
-                                                    <TrashIcon className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
+                <div className="mb-4">
+                    <Input
+                        placeholder="Search cargo items..."
+                        value={cargoSearch}
+                        onChange={(e) => setCargoSearch(e.target.value)}
+                        className="max-w-sm"
+                    />
                 </div>
+                
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Quantity</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredCargoItems.map((item) => (
+                            <TableRow key={item.id}>
+                                <TableCell>{item.id}</TableCell>
+                                <TableCell>
+                                    <div>
+                                        <div className="font-medium">{item.name}</div>
+                                        {item.description && (
+                                            <div className="text-sm text-muted-foreground">{item.description}</div>
+                                        )}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    {item.quantity} {item.unit}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={
+                                        item.status === 'Delivered' ? 'default' :
+                                        item.status === 'In Transit' ? 'secondary' :
+                                        item.status === 'Damaged' ? 'destructive' :
+                                        'outline'
+                                    }>
+                                        {item.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex space-x-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleEditCargoItem(item)}
+                                        >
+                                            <Pencil2Icon className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleDeleteCargoItem(item.id)}
+                                        >
+                                            <TrashIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </CardContent>
-            <CargoFormDialog
-                isOpen={isCargoFormOpen}
-                onClose={() => setIsCargoFormOpen(false)}
-                onSubmit={handleAddCargo}
-            />
-            {editingCargo && (
-                <CargoFormDialog
-                    isOpen={!!editingCargo}
-                    onClose={() => setEditingCargo(null)}
-                    onSubmit={handleUpdateCargo}
-                    initialData={editingCargo}
-                />
-            )}
+            
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {editingCargoId ? 'Edit Cargo Item' : 'Add New Cargo Item'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (editingCargoId) {
+                            saveEditedCargoItem(editingCargoId);
+                        } else {
+                            handleAddCargoItem(e);
+                        }
+                    }}>
+                        <div className="grid gap-4 py-4">
+                            {!editingCargoId && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Input 
+                                        placeholder="Shipment ID" 
+                                        value={selectedShipmentId} 
+                                        onChange={(e) => setSelectedShipmentId(e.target.value)} 
+                                    />
+                                </div>
+                            )}
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Input 
+                                    placeholder="Name" 
+                                    value={editingCargoId ? editingCargo.name : newCargo.name} 
+                                    onChange={(e) => editingCargoId ? 
+                                        setEditingCargo({ ...editingCargo, name: e.target.value }) :
+                                        setNewCargo({ ...newCargo, name: e.target.value })
+                                    } 
+                                />
+                                <Input 
+                                    placeholder="Quantity" 
+                                    type="number" 
+                                    value={editingCargoId ? editingCargo.quantity : newCargo.quantity} 
+                                    onChange={(e) => editingCargoId ? 
+                                        setEditingCargo({ ...editingCargo, quantity: e.target.value }) :
+                                        setNewCargo({ ...newCargo, quantity: e.target.value })
+                                    } 
+                                />
+                                <Input 
+                                    placeholder="Unit" 
+                                    value={editingCargoId ? editingCargo.unit : newCargo.unit} 
+                                    onChange={(e) => editingCargoId ? 
+                                        setEditingCargo({ ...editingCargo, unit: e.target.value as CargoItem['unit'] }) :
+                                        setNewCargo({ ...newCargo, unit: e.target.value as CargoItem['unit'] })
+                                    } 
+                                />
+                            </div>
+                            <Input 
+                                placeholder="Description" 
+                                value={editingCargoId ? editingCargo.description : newCargo.description} 
+                                onChange={(e) => editingCargoId ? 
+                                    setEditingCargo({ ...editingCargo, description: e.target.value }) :
+                                    setNewCargo({ ...newCargo, description: e.target.value })
+                                } 
+                            />
+                            <Input 
+                                placeholder="Special Handling" 
+                                value={editingCargoId ? editingCargo.specialHandling : newCargo.specialHandling} 
+                                onChange={(e) => editingCargoId ? 
+                                    setEditingCargo({ ...editingCargo, specialHandling: e.target.value }) :
+                                    setNewCargo({ ...newCargo, specialHandling: e.target.value })
+                                } 
+                            />
+                            <div className="grid grid-cols-2 items-center gap-4">
+                                <Input 
+                                    placeholder="Temperature" 
+                                    type="number" 
+                                    value={editingCargoId ? editingCargo.temperature : newCargo.temperature} 
+                                    onChange={(e) => editingCargoId ? 
+                                        setEditingCargo({ ...editingCargo, temperature: e.target.value }) :
+                                        setNewCargo({ ...newCargo, temperature: e.target.value })
+                                    } 
+                                />
+                                <Input 
+                                    placeholder="Humidity" 
+                                    type="number" 
+                                    value={editingCargoId ? editingCargo.humidity : newCargo.humidity} 
+                                    onChange={(e) => editingCargoId ? 
+                                        setEditingCargo({ ...editingCargo, humidity: e.target.value }) :
+                                        setNewCargo({ ...newCargo, humidity: e.target.value })
+                                    } 
+                                />
+                            </div>
+                            <Button type="submit">
+                                {editingCargoId ? 'Save Changes' : 'Add Cargo'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

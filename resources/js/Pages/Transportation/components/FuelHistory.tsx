@@ -1,15 +1,57 @@
 import { format } from "date-fns";
-import { FuelUpdate } from "../types";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface FuelHistoryProps {
     truckId: string;
-    fuelHistory: FuelUpdate[];
 }
 
-export default function FuelHistory({ truckId, fuelHistory }: FuelHistoryProps) {
+interface FuelUpdate {
+    id: string;
+    truck_id: string;
+    timestamp: string;
+    previous_level: string;
+    new_level: string;
+    liters_added: string;
+    cost: string;
+    location: string;
+    updated_by: string;
+}
+
+export default function FuelHistory({ truckId }: FuelHistoryProps) {
+    const [fuelHistory, setFuelHistory] = useState<FuelUpdate[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchFuelHistory = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`/transportation/fleet/${truckId}/fuel-history`);
+                setFuelHistory(response.data || []);
+            } catch (error) {
+                console.error('Error fetching fuel history:', error);
+                setFuelHistory([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (truckId) {
+            fetchFuelHistory();
+        }
+    }, [truckId]);
+
     const truckFuelHistory = fuelHistory
-        .filter(update => update.truckId === truckId)
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    if (loading) {
+        return (
+            <div className="space-y-4">
+                <h3 className="font-medium">Fuel History</h3>
+                <div className="text-center py-4">Loading fuel history...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
@@ -20,20 +62,20 @@ export default function FuelHistory({ truckId, fuelHistory }: FuelHistoryProps) 
                         <div className="flex-1">
                             <div className="flex items-center justify-between">
                                 <span className="font-medium">
-                                    {update.litersAdded.toFixed(2)} L added
+                                    {parseFloat(update.liters_added).toFixed(2)} L added
                                 </span>
                                 <span className="text-sm text-muted-foreground">
                                     {format(new Date(update.timestamp), 'MMM dd, yyyy HH:mm')}
                                 </span>
                             </div>
                             <p className="mt-1 text-sm">
-                                Level: {update.previousLevel.toFixed(1)}% → {update.newLevel.toFixed(1)}%
+                                Level: {parseFloat(update.previous_level).toFixed(1)}% → {parseFloat(update.new_level).toFixed(1)}%
                             </p>
                             <p className="mt-1 text-sm">
-                                Cost: ${update.cost.toFixed(2)} | Location: {update.location}
+                                Cost: ${parseFloat(update.cost).toFixed(2)} | Location: {update.location}
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                                Updated by: {update.updatedBy}
+                                Updated by: {update.updated_by}
                             </p>
                         </div>
                     </div>

@@ -1,16 +1,19 @@
 import { Badge } from "@/Components/ui/badge";
 import { format } from "date-fns";
-import { TrackingUpdate } from "../types";
+import { useShipmentTracking } from "../hooks";
 
 interface ShipmentTrackingHistoryProps {
     shipmentId: string;
-    trackingHistory: TrackingUpdate[];
 }
 
-export default function ShipmentTrackingHistory({ shipmentId, trackingHistory }: ShipmentTrackingHistoryProps) {
-    const shipmentUpdates = trackingHistory
-        .filter(update => update.shipmentId === shipmentId)
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+export default function ShipmentTrackingHistory({ shipmentId }: ShipmentTrackingHistoryProps) {
+    const { shipments } = useShipmentTracking();    
+
+    // Find the shipment and get its tracking updates
+    const shipment = shipments.find(s => s.id === shipmentId);
+    const shipmentUpdates = (shipment?.tracking_updates || []).sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
 
     return (
         <div className="space-y-4">
@@ -36,7 +39,7 @@ export default function ShipmentTrackingHistory({ shipmentId, trackingHistory }:
                             {update.notes && (
                                 <p className="mt-1 text-sm text-muted-foreground">{update.notes}</p>
                             )}
-                            <p className="mt-1 text-xs text-muted-foreground">Updated by: {update.updatedBy}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">Updated by: {update.updated_by}</p>
                         </div>
                     </div>
                 ))}

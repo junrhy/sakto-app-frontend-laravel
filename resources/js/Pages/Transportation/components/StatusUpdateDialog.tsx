@@ -1,31 +1,52 @@
+import { useState, useEffect } from 'react';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { StatusUpdateFormData, Shipment } from "../types";
+import { useShipmentTracking } from "../hooks";
 
 interface StatusUpdateDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: StatusUpdateFormData) => void;
-    formData: StatusUpdateFormData;
-    onFormChange: (data: StatusUpdateFormData) => void;
+    shipmentId: string;
 }
 
 export default function StatusUpdateDialog({
     isOpen,
     onClose,
-    onSubmit,
-    formData,
-    onFormChange
+    shipmentId
 }: StatusUpdateDialogProps) {
-    const handleSubmit = (e: React.FormEvent) => {
+    const { updateShipmentStatus } = useShipmentTracking();
+    const [formData, setFormData] = useState<StatusUpdateFormData>({
+        status: 'In Transit',
+        location: '',
+        notes: ''
+    });
+
+    // Reset form when dialog opens
+    useEffect(() => {
+        if (isOpen) {
+            setFormData({
+                status: 'In Transit',
+                location: '',
+                notes: ''
+            });
+        }
+    }, [isOpen]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(formData);
+        try {
+            await updateShipmentStatus(shipmentId, formData);
+            onClose();
+        } catch (error) {
+            console.error('Failed to update shipment status:', error);
+        }
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Update Shipment Status</DialogTitle>
@@ -35,7 +56,7 @@ export default function StatusUpdateDialog({
                         <label className="text-sm font-medium">Status</label>
                         <Select
                             value={formData.status}
-                            onValueChange={(value) => onFormChange({
+                            onValueChange={(value) => setFormData({
                                 ...formData,
                                 status: value as Shipment['status']
                             })}
@@ -56,11 +77,12 @@ export default function StatusUpdateDialog({
                         <label className="text-sm font-medium">Current Location</label>
                         <Input
                             value={formData.location}
-                            onChange={(e) => onFormChange({
+                            onChange={(e) => setFormData({
                                 ...formData,
                                 location: e.target.value
                             })}
                             placeholder="Enter current location"
+                            required
                         />
                     </div>
 
@@ -68,7 +90,7 @@ export default function StatusUpdateDialog({
                         <label className="text-sm font-medium">Notes</label>
                         <Input
                             value={formData.notes}
-                            onChange={(e) => onFormChange({
+                            onChange={(e) => setFormData({
                                 ...formData,
                                 notes: e.target.value
                             })}

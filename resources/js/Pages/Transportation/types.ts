@@ -1,3 +1,63 @@
+// Core entity types
+export type Truck = {
+    id: string;
+    plate_number: string;
+    model: string;
+    capacity: number;
+    status: 'Available' | 'In Transit' | 'Maintenance';
+    last_maintenance: string | null;
+    fuel_level: string;
+    mileage: number;
+    driver?: string | null;
+    driver_contact?: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type Shipment = {
+    id: string;
+    truck_id: string;
+    driver: string;
+    destination: string;
+    origin: string;
+    departure_date: string;
+    arrival_date: string;
+    status: 'Scheduled' | 'In Transit' | 'Delivered' | 'Delayed';
+    cargo: string;
+    weight: number;
+    current_location?: string;
+    estimated_delay?: number;
+    customer_contact: string;
+    priority: 'Low' | 'Medium' | 'High';
+    tracking_updates?: TrackingUpdate[];
+};
+
+export type CargoItem = {
+    id: string;
+    shipmentId: string;
+    name: string;
+    quantity: number;
+    unit: 'kg' | 'pieces' | 'pallets' | 'boxes';
+    description?: string;
+    specialHandling?: string;
+    status: 'Loaded' | 'In Transit' | 'Delivered' | 'Damaged';
+    temperature?: number;
+    humidity?: number;
+};
+
+// History and update types
+export type FuelUpdate = {
+    id: string;
+    truckId: string;
+    timestamp: string;
+    previousLevel: number;
+    newLevel: number;
+    litersAdded: number;
+    cost: number;
+    location: string;
+    updatedBy: string;
+};
+
 export type MaintenanceRecord = {
     id: string;
     truckId: string;
@@ -7,37 +67,17 @@ export type MaintenanceRecord = {
     cost: number;
 };
 
-export type Truck = {
+export type TrackingUpdate = {
     id: string;
-    plateNumber: string;
-    model: string;
-    capacity: number;
-    status: 'Available' | 'In Transit' | 'Maintenance';
-    lastMaintenance: string;
-    fuelLevel: number;
-    mileage: number;
-    driver?: string;
-    driverContact?: string;
-};
-  
-export type Shipment = {
-    id: string;
-    truckId: string;
-    driver: string;
-    destination: string;
-    origin: string;
-    departureDate: string;
-    arrivalDate: string;
-    status: 'Scheduled' | 'In Transit' | 'Delivered' | 'Delayed';
-    cargo: string;
-    weight: number;
-    currentLocation?: string;
-    estimatedDelay?: number;
-    customerContact: string;
-    priority: 'Low' | 'Medium' | 'High';
-    trackingHistory?: TrackingUpdate[];
+    shipment_id: string;
+    status: Shipment['status'];
+    location: string;
+    timestamp: string;
+    notes?: string;
+    updated_by: string;
 };
 
+// Form data types
 export interface TruckFormData {
     plateNumber: string;
     model: string;
@@ -59,53 +99,6 @@ export interface ShipmentFormData {
     driver: string;
 }
 
-export type TrackingUpdate = {
-    id: string;
-    shipmentId: string;
-    status: Shipment['status'];
-    location: string;
-    timestamp: string;
-    notes?: string;
-    updatedBy: string;
-};
-
-export interface StatusUpdateFormData {
-    status: Shipment['status'];
-    location: string;
-    notes: string;
-}
-
-export type FuelUpdate = {
-    id: string;
-    truckId: string;
-    timestamp: string;
-    previousLevel: number;
-    newLevel: number;
-    litersAdded: number;
-    cost: number;
-    location: string;
-    updatedBy: string;
-};
-
-export interface FuelUpdateFormData {
-    litersAdded: string;
-    cost: string;
-    location: string;
-}
-
-export type CargoItem = {
-    id: string;
-    shipmentId: string;
-    name: string;
-    quantity: number;
-    unit: 'kg' | 'pieces' | 'pallets' | 'boxes';
-    description?: string;
-    specialHandling?: string;
-    status: 'Loaded' | 'In Transit' | 'Delivered' | 'Damaged';
-    temperature?: number;
-    humidity?: number;
-};
-
 export interface CargoFormData {
     name: string;
     quantity: string;
@@ -116,6 +109,19 @@ export interface CargoFormData {
     humidity?: string;
 }
 
+export interface FuelUpdateFormData {
+    litersAdded: string;
+    cost: string;
+    location: string;
+}
+
+export interface StatusUpdateFormData {
+    status: Shipment['status'];
+    location: string;
+    notes: string;
+}
+
+// Dashboard types
 export interface DashboardStats {
     activeShipments: number;
     availableTrucks: number;

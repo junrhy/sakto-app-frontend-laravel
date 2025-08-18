@@ -34,6 +34,7 @@ class TransportationController extends Controller
     public function getFleet(Request $request)
     {
         try {
+            $request->merge(['client_identifier' => auth()->user()->identifier]);
             $response = Http::withToken($this->apiToken)
                 ->get($this->apiUrl . '/transportation/fleet', $request->all());
 
@@ -55,7 +56,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/fleet/stats');
+                ->get($this->apiUrl . '/transportation/fleet/stats', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {
@@ -86,6 +89,8 @@ class TransportationController extends Controller
                 'driver_contact' => 'nullable|string|max:255',
             ]);
 
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/fleet', $validated);
 
@@ -107,7 +112,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/fleet/' . $id);
+                ->get($this->apiUrl . '/transportation/fleet/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
@@ -138,6 +145,8 @@ class TransportationController extends Controller
                 'driver_contact' => 'nullable|string|max:255',
             ]);
 
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
                 ->put($this->apiUrl . '/transportation/fleet/' . $id, $validated);
 
@@ -159,7 +168,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete($this->apiUrl . '/transportation/fleet/' . $id);
+                ->delete($this->apiUrl . '/transportation/fleet/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
@@ -183,6 +194,8 @@ class TransportationController extends Controller
                 'cost' => 'required|numeric|min:0',
                 'location' => 'required|string|max:255',
             ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/fleet/' . $id . '/fuel', $validated);
@@ -210,6 +223,8 @@ class TransportationController extends Controller
                 'cost' => 'required|numeric|min:0',
             ]);
 
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/fleet/' . $id . '/maintenance', $validated);
 
@@ -231,7 +246,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/fleet/' . $id . '/fuel-history');
+                ->get($this->apiUrl . '/transportation/fleet/' . $id . '/fuel-history', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {
@@ -251,7 +268,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/fleet/' . $id . '/maintenance-history');
+                ->get($this->apiUrl . '/transportation/fleet/' . $id . '/maintenance-history', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {
@@ -272,6 +291,7 @@ class TransportationController extends Controller
     public function getShipments(Request $request)
     {
         try {
+            $request->merge(['client_identifier' => auth()->user()->identifier]);
             $response = Http::withToken($this->apiToken)
                 ->get($this->apiUrl . '/transportation/shipments', $request->all());
 
@@ -293,7 +313,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/shipments/stats');
+                ->get($this->apiUrl . '/transportation/shipments/stats', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {
@@ -313,7 +335,7 @@ class TransportationController extends Controller
     {
         try {
             $validated = $request->validate([
-                'truck_id' => 'required|integer|exists:transportation_fleets,id',
+                'truck_id' => 'required|integer',
                 'driver' => 'required|string|max:255',
                 'destination' => 'required|string|max:255',
                 'origin' => 'required|string|max:255',
@@ -327,6 +349,8 @@ class TransportationController extends Controller
                 'customer_contact' => 'required|string|max:255',
                 'priority' => 'required|string|in:Low,Medium,High',
             ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/shipments', $validated);
@@ -349,7 +373,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/shipments/' . $id);
+                ->get($this->apiUrl . '/transportation/shipments/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
@@ -369,7 +395,7 @@ class TransportationController extends Controller
     {
         try {
             $validated = $request->validate([
-                'truck_id' => 'required|integer|exists:transportation_fleets,id',
+                'truck_id' => 'required|integer',
                 'driver' => 'required|string|max:255',
                 'destination' => 'required|string|max:255',
                 'origin' => 'required|string|max:255',
@@ -383,6 +409,8 @@ class TransportationController extends Controller
                 'customer_contact' => 'required|string|max:255',
                 'priority' => 'required|string|in:Low,Medium,High',
             ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
                 ->put($this->apiUrl . '/transportation/shipments/' . $id, $validated);
@@ -405,7 +433,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete($this->apiUrl . '/transportation/shipments/' . $id);
+                ->delete($this->apiUrl . '/transportation/shipments/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
@@ -430,6 +460,8 @@ class TransportationController extends Controller
                 'notes' => 'nullable|string',
             ]);
 
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/shipments/' . $id . '/status', $validated);
 
@@ -451,7 +483,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/shipments/' . $id . '/tracking-history');
+                ->get($this->apiUrl . '/transportation/shipments/' . $id . '/tracking-history', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {
@@ -472,6 +506,7 @@ class TransportationController extends Controller
     public function getCargo(Request $request)
     {
         try {
+            $request->merge(['client_identifier' => auth()->user()->identifier]);
             $response = Http::withToken($this->apiToken)
                 ->get($this->apiUrl . '/transportation/cargo', $request->all());
 
@@ -493,7 +528,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/cargo/stats');
+                ->get($this->apiUrl . '/transportation/cargo/stats', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {
@@ -513,7 +550,7 @@ class TransportationController extends Controller
     {
         try {
             $validated = $request->validate([
-                'shipment_id' => 'required|integer|exists:transportation_shipment_trackings,id',
+                'shipment_id' => 'required|integer',
                 'name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:1',
                 'unit' => 'required|string|in:kg,pieces,pallets,boxes',
@@ -523,6 +560,8 @@ class TransportationController extends Controller
                 'temperature' => 'nullable|numeric|min:-50|max:100',
                 'humidity' => 'nullable|numeric|min:0|max:100',
             ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/cargo', $validated);
@@ -545,7 +584,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/cargo/' . $id);
+                ->get($this->apiUrl . '/transportation/cargo/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
@@ -565,7 +606,7 @@ class TransportationController extends Controller
     {
         try {
             $validated = $request->validate([
-                'shipment_id' => 'required|integer|exists:transportation_shipment_trackings,id',
+                'shipment_id' => 'required|integer',
                 'name' => 'required|string|max:255',
                 'quantity' => 'required|integer|min:1',
                 'unit' => 'required|string|in:kg,pieces,pallets,boxes',
@@ -575,6 +616,8 @@ class TransportationController extends Controller
                 'temperature' => 'nullable|numeric|min:-50|max:100',
                 'humidity' => 'nullable|numeric|min:0|max:100',
             ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
 
             $response = Http::withToken($this->apiToken)
                 ->put($this->apiUrl . '/transportation/cargo/' . $id, $validated);
@@ -597,7 +640,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->delete($this->apiUrl . '/transportation/cargo/' . $id);
+                ->delete($this->apiUrl . '/transportation/cargo/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
@@ -620,6 +665,8 @@ class TransportationController extends Controller
                 'status' => 'required|string|in:Loaded,In Transit,Delivered,Damaged',
             ]);
 
+            $validated['client_identifier'] = auth()->user()->identifier;
+
             $response = Http::withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/cargo/' . $id . '/status', $validated);
 
@@ -641,7 +688,9 @@ class TransportationController extends Controller
     {
         try {
             $response = Http::withToken($this->apiToken)
-                ->get($this->apiUrl . '/transportation/cargo/shipment/' . $shipmentId);
+                ->get($this->apiUrl . '/transportation/cargo/shipment/' . $shipmentId, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
 
             return response()->json($response->json());
         } catch (\Exception $e) {

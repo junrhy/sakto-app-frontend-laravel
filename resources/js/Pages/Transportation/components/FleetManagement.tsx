@@ -6,31 +6,26 @@ import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { Truck, TruckFormData, FuelUpdate, FuelUpdateFormData } from "../types";
-import FuelUpdateDialog from "./FuelUpdateDialog";
-import FuelHistory from "./FuelHistory";
+import { Truck, TruckFormData, FuelUpdateFormData } from "../types";
+import { useFleetManagement } from "../hooks";
+import { FuelUpdateDialog, FuelHistory } from "./index";
 
-interface FleetManagementProps {
-    trucks: Truck[];
-    fuelHistory: FuelUpdate[];
-    onAddTruck: (truck: { plateNumber: string; model: string; capacity: string }) => void;
-    onEditTruck: (truck: Truck) => void;
-    onDeleteTruck: (truckId: string) => void;
-    onScheduleMaintenance: (truckId: string) => void;
-    onUpdateFuelLevel: (truckId: string, updateData: FuelUpdateFormData) => void;
-    onAddFuelUpdate: (fuelUpdate: FuelUpdate) => void;
-}
+export default function FleetManagement() {
+    const {
+        trucks,
+        fuelHistory,
+        maintenanceRecords,
+        loading,
+        error,
+        addTruck,
+        editTruck,
+        deleteTruck,
+        scheduleMaintenance,
+        updateFuelLevel,
+        getFuelHistory,
+        getMaintenanceHistory
+    } = useFleetManagement();
 
-export default function FleetManagement({
-    trucks,
-    fuelHistory,
-    onAddTruck,
-    onEditTruck,
-    onDeleteTruck,
-    onScheduleMaintenance,
-    onUpdateFuelLevel,
-    onAddFuelUpdate
-}: FleetManagementProps) {
     const [truckSearch, setTruckSearch] = useState('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isFuelUpdateDialogOpen, setIsFuelUpdateDialogOpen] = useState(false);
@@ -47,44 +42,55 @@ export default function FleetManagement({
     const filteredTrucks = trucks.filter(truck => {
         const searchTerm = truckSearch.toLowerCase();
         return (
-            truck.plateNumber.toLowerCase().includes(searchTerm) ||
-            truck.model.toLowerCase().includes(searchTerm) ||
+            (truck.plate_number && truck.plate_number.toLowerCase().includes(searchTerm)) ||
+            (truck.model && truck.model.toLowerCase().includes(searchTerm)) ||
             (truck.driver && truck.driver.toLowerCase().includes(searchTerm))
         );
     });
 
-    const handleAddTruck = (e: React.FormEvent) => {
+    const handleAddTruck = async (e: React.FormEvent) => {
         e.preventDefault();
-        onAddTruck(newTruck);
-        setNewTruck({ plateNumber: '', model: '', capacity: '' });
+        try {
+            await addTruck(newTruck);
+            setNewTruck({ plateNumber: '', model: '', capacity: '' });
+        } catch (error) {
+            console.error('Failed to add truck:', error);
+        }
     };
 
     const handleEditTruck = (truck: Truck) => {
         setEditingTruckId(truck.id);
         setEditingTruck({
-            plateNumber: truck.plateNumber,
+            plateNumber: truck.plate_number,
             model: truck.model,
             capacity: truck.capacity.toString(),
-            driver: truck.driver,
-            driverContact: truck.driverContact
+            driver: truck.driver || '',
+            driverContact: truck.driver_contact || ''
         });
         setIsEditDialogOpen(true);
     };
 
-    const saveEditedTruck = (truckId: string) => {
-        onEditTruck({
-            id: truckId,
-            plateNumber: editingTruck.plateNumber,
-            model: editingTruck.model,
-            capacity: parseInt(editingTruck.capacity),
-            driver: editingTruck.driver,
-            driverContact: editingTruck.driverContact,
-            status: 'Available',
-            lastMaintenance: '',
-            fuelLevel: 0,
-            mileage: 0
-        });
-        setIsEditDialogOpen(false);
+    const saveEditedTruck = async (truckId: string) => {
+        try {
+            const currentTruck = trucks.find(t => t.id === truckId);
+            if (currentTruck) {
+                await editTruck({
+                    ...currentTruck,
+                    plate_number: editingTruck.plateNumber,
+                    model: editingTruck.model,
+                    capacity: parseInt(editingTruck.capacity),
+                    driver: editingTruck.driver,
+                    driver_contact: editingTruck.driverContact,
+                    status: 'Available',
+                    last_maintenance: '',
+                    fuel_level: '0',
+                    mileage: 0
+                });
+            }
+            setIsEditDialogOpen(false);
+        } catch (error) {
+            console.error('Failed to edit truck:', error);
+        }
     };
 
     const openFuelUpdateDialog = (truckId: string) => {
@@ -92,31 +98,67 @@ export default function FleetManagement({
         setIsFuelUpdateDialogOpen(true);
     };
 
-    const handleFuelUpdate = (truckId: string, updateData: FuelUpdateFormData) => {
-        onUpdateFuelLevel(truckId, updateData);
-        
-        const truck = trucks.find(t => t.id === truckId);
-        if (truck) {
-            const litersAdded = parseFloat(updateData.litersAdded);
-            const previousLevel = truck.fuelLevel;
-            const newLevel = Math.min(100, previousLevel + (litersAdded / truck.capacity) * 100);
 
-            const fuelUpdate: FuelUpdate = {
-                id: Date.now().toString(),
-                truckId,
-                timestamp: new Date().toISOString(),
-                previousLevel,
-                newLevel,
-                litersAdded,
-                cost: parseFloat(updateData.cost),
-                location: updateData.location,
-                updatedBy: 'User'
-            };
-            onAddFuelUpdate(fuelUpdate);
+
+    const handleScheduleMaintenance = async (truckId: string) => {
+        try {
+            await scheduleMaintenance(truckId);
+        } catch (error) {
+            console.error('Failed to schedule maintenance:', error);
         }
-        
-        setIsFuelUpdateDialogOpen(false);
     };
+
+    const handleDeleteTruck = async (truckId: string) => {
+        if (confirm('Are you sure you want to delete this truck?')) {
+            try {
+                await deleteTruck(truckId);
+            } catch (error) {
+                console.error('Failed to delete truck:', error);
+            }
+        }
+    };
+
+    const handleViewFuelHistory = async (truckId: string) => {
+        try {
+            await getFuelHistory(truckId);
+        } catch (error) {
+            console.error('Failed to fetch fuel history:', error);
+        }
+    };
+
+    const handleViewMaintenanceHistory = async (truckId: string) => {
+        try {
+            await getMaintenanceHistory(truckId);
+        } catch (error) {
+            console.error('Failed to fetch maintenance history:', error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Fleet Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-4">Loading fleet data...</div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (error) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Fleet Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-4 text-red-500">Error: {error}</div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
@@ -222,16 +264,16 @@ export default function FleetManagement({
                         <TableBody>
                             {filteredTrucks.map((truck) => (
                                 <TableRow key={truck.id}>
-                                    <TableCell>{truck.plateNumber}</TableCell>
+                                    <TableCell>{truck.plate_number}</TableCell>
                                     <TableCell>{truck.model}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="font-medium">
                                                 {truck.driver || 'Unassigned'}
                                             </span>
-                                            {truck.driverContact && (
+                                            {truck.driver_contact && (
                                                 <span className="text-xs text-muted-foreground">
-                                                    📞 {truck.driverContact}
+                                                    📞 {truck.driver_contact}
                                                 </span>
                                             )}
                                             {truck.status === 'In Transit' && (
@@ -253,7 +295,7 @@ export default function FleetManagement({
                                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                                             <div 
                                                 className="bg-blue-600 h-2.5 rounded-full"
-                                                style={{ width: `${truck.fuelLevel}%` }}
+                                                style={{ width: `${parseFloat(truck.fuel_level)}%` }}
                                             ></div>
                                         </div>
                                     </TableCell>
@@ -269,14 +311,14 @@ export default function FleetManagement({
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => onDeleteTruck(truck.id)}
+                                                onClick={() => handleDeleteTruck(truck.id)}
                                             >
                                                 <TrashIcon className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => onScheduleMaintenance(truck.id)}
+                                                onClick={() => handleScheduleMaintenance(truck.id)}
                                                 disabled={truck.status !== 'Available'}
                                             >
                                                 Schedule Maintenance
@@ -296,9 +338,9 @@ export default function FleetManagement({
                                                 </DialogTrigger>
                                                 <DialogContent className="max-w-2xl">
                                                     <DialogHeader>
-                                                        <DialogTitle>Fuel History - {truck.plateNumber}</DialogTitle>
+                                                        <DialogTitle>Fuel History - {truck.plate_number}</DialogTitle>
                                                     </DialogHeader>
-                                                    <FuelHistory truckId={truck.id} fuelHistory={fuelHistory} />
+                                                    <FuelHistory truckId={truck.id} />
                                                 </DialogContent>
                                             </Dialog>
                                         </div>
@@ -310,12 +352,11 @@ export default function FleetManagement({
                 </div>
             </CardContent>
             
-            <FuelUpdateDialog
-                isOpen={isFuelUpdateDialogOpen}
-                onClose={() => setIsFuelUpdateDialogOpen(false)}
-                onUpdate={handleFuelUpdate}
-                truckId={updatingTruckFuelId}
-            />
+                                    <FuelUpdateDialog
+                            isOpen={isFuelUpdateDialogOpen}
+                            onClose={() => setIsFuelUpdateDialogOpen(false)}
+                            truckId={updatingTruckFuelId}
+                        />
         </Card>
     );
 }

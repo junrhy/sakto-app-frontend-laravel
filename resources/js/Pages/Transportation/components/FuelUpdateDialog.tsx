@@ -3,20 +3,20 @@ import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
 import { FuelUpdateFormData } from "../types";
+import { useFleetManagement } from "../hooks";
 
 interface FuelUpdateDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onUpdate: (truckId: string, data: FuelUpdateFormData) => void;
     truckId: string;
 }
 
 export default function FuelUpdateDialog({
     isOpen,
     onClose,
-    onUpdate,
     truckId
 }: FuelUpdateDialogProps) {
+    const { updateFuelLevel } = useFleetManagement();
     const [formData, setFormData] = useState<FuelUpdateFormData>({
         litersAdded: '',
         cost: '',
@@ -34,9 +34,14 @@ export default function FuelUpdateDialog({
         }
     }, [isOpen, truckId]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        onUpdate(truckId, formData);
+        try {
+            await updateFuelLevel(truckId, formData);
+            onClose();
+        } catch (error) {
+            console.error('Failed to update fuel level:', error);
+        }
     };
 
     return (
@@ -56,6 +61,7 @@ export default function FuelUpdateDialog({
                                 litersAdded: e.target.value
                             })}
                             placeholder="Enter liters added"
+                            required
                         />
                     </div>
 
@@ -69,6 +75,7 @@ export default function FuelUpdateDialog({
                                 cost: e.target.value
                             })}
                             placeholder="Enter fuel cost"
+                            required
                         />
                     </div>
 
@@ -81,6 +88,7 @@ export default function FuelUpdateDialog({
                                 location: e.target.value
                             })}
                             placeholder="Enter fueling location"
+                            required
                         />
                     </div>
 
