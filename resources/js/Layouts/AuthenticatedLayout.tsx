@@ -62,7 +62,7 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
             case 'community':
                 return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700';
             case 'logistics':
-                return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
+                return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-900 dark:via-rose-800 dark:to-rose-700';
             case 'medical':
                 return 'from-red-600 via-red-500 to-red-400 dark:from-red-900 dark:via-red-800 dark:to-red-700';
             case 'enterprise':

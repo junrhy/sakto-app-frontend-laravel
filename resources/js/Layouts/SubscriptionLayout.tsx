@@ -47,61 +47,114 @@ export default function SubscriptionLayout({ children, header, user, auth: propA
     return (
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
-                {/* Mobile Navigation */}
+                {/* Mobile Navigation Overlay */}
                 <div
                     className={
-                        (showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full') +
-                        ' fixed inset-y-0 left-0 w-64 transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-blue-900 to-blue-800 shadow-lg z-[60] overflow-y-auto'
+                        (showingNavigationDropdown ? 'opacity-100 visible' : 'opacity-0 invisible') +
+                        ' fixed inset-0 bg-black/50 backdrop-blur-sm transition-all duration-300 ease-in-out sm:hidden z-[60]'
                     }
+                    onClick={() => setShowingNavigationDropdown(false)}
                 >
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink href={route('home')} className="text-white/90 hover:text-white hover:bg-white/10">
-                            <Home className="w-4 h-4 mr-2" />
-                            Back to Home
-                        </ResponsiveNavLink>
-
-                        <div className="border-t border-white/10">
-                            <div className="px-4 py-2">
-                                <div className="font-medium text-base text-white/90 flex items-center">
-                                    <Crown className="w-4 h-4 mr-2" />
-                                    Subscription
-                                </div>
-                                <ResponsiveNavLink href={route('subscriptions.index')} className="text-white/80 hover:text-white hover:bg-white/10">
-                                    Premium Plans
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={`${route('subscriptions.index')}?tab=history`} className="text-white/80 hover:text-white hover:bg-white/10">
-                                    <History className="w-4 h-4 mr-2" />
-                                    Subscription History
-                                </ResponsiveNavLink>
+                    <div 
+                        className="absolute inset-0 bg-gradient-to-b from-blue-900 to-blue-800 flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-white/10">
+                            <div className="flex items-center">
+                                <ApplicationLogo className="block h-8 w-auto fill-current text-white" />
+                                <span className="ml-3 text-xl font-bold text-white">Menu</span>
                             </div>
+                            <button
+                                onClick={() => setShowingNavigationDropdown(false)}
+                                className="p-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
 
-                        <div className="border-t border-white/10">
-                            <div className="px-4 py-2">
-                                <div className="font-medium text-base text-white/90">Account</div>
-                                <ResponsiveNavLink href={route('profile.edit')} className="text-white/80 hover:text-white hover:bg-white/10">
-                                    Profile
-                                </ResponsiveNavLink>
+                        {/* Navigation Content */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="space-y-6 p-6">
+                                {/* Home Section */}
+                                <div>
+                                    <ResponsiveNavLink 
+                                        href={route('home')} 
+                                        className="flex items-center text-lg text-white/90 hover:text-white hover:bg-white/10 p-4 rounded-lg transition-colors"
+                                    >
+                                        <Home className="w-5 h-5 mr-3" />
+                                        Back to Home
+                                    </ResponsiveNavLink>
+                                </div>
+
+                                {/* Subscription Section */}
+                                <div className="border-t border-white/10 pt-6">
+                                    <div className="mb-4">
+                                        <div className="font-medium text-lg text-white/90 flex items-center px-4">
+                                            <Crown className="w-5 h-5 mr-3" />
+                                            Subscription
+                                        </div>
+                                    </div>
+                                    <ResponsiveNavLink 
+                                        href={route('subscriptions.index')} 
+                                        className="flex items-center text-lg text-white/80 hover:text-white hover:bg-white/10 p-4 rounded-lg transition-colors"
+                                    >
+                                        <SparklesIcon className="w-5 h-5 mr-3" />
+                                        Premium Plans
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink 
+                                        href={`${route('subscriptions.index')}?tab=history`} 
+                                        className="flex items-center text-lg text-white/80 hover:text-white hover:bg-white/10 p-4 rounded-lg transition-colors"
+                                    >
+                                        <History className="w-5 h-5 mr-3" />
+                                        Subscription History
+                                    </ResponsiveNavLink>
+                                </div>
+
+                                {/* Account Section */}
+                                <div className="border-t border-white/10 pt-6">
+                                    <div className="mb-4">
+                                        <div className="font-medium text-lg text-white/90 px-4">Account</div>
+                                    </div>
+                                    <ResponsiveNavLink 
+                                        href={route('profile.edit')} 
+                                        className="flex items-center text-lg text-white/80 hover:text-white hover:bg-white/10 p-4 rounded-lg transition-colors"
+                                    >
+                                        Profile
+                                    </ResponsiveNavLink>
+                                    <ResponsiveNavLink 
+                                        href={route('logout')} 
+                                        method="post" 
+                                        as="button"
+                                        className="flex items-center text-lg text-white/80 hover:text-white hover:bg-white/10 p-4 rounded-lg transition-colors w-full text-left"
+                                    >
+                                        Logout
+                                    </ResponsiveNavLink>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Desktop Navigation */}
-                <div className="hidden sm:flex sm:items-center sm:justify-between bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 shadow-sm">
+                {/* Navigation Header */}
+                <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 dark:bg-gray-900/80 shadow-sm">
                     <div className="container mx-auto px-4 py-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <div className="shrink-0 flex items-center">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-900 dark:text-white" />
+                                    <Link href={route('home')} className="hover:opacity-80 transition-opacity">
+                                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-900 dark:text-white" />
+                                    </Link>
                                 </div>
                                 <div className="ml-2">
                                     <span className="text-xl font-bold text-gray-900 dark:text-white">{authUser.name}</span>
                                 </div>
                             </div>
 
+                            {/* Desktop Navigation */}
                             <div className="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
-
                                 {/* User Dropdown */}
                                 <div className="ml-3 relative">
                                     <Dropdown>
@@ -124,6 +177,9 @@ export default function SubscriptionLayout({ children, header, user, auth: propA
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content align="right" width="48">
+                                            <Dropdown.Link href={route('home')}>
+                                                Home
+                                            </Dropdown.Link>
                                             <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
                                             <Dropdown.Link 
                                                 href={route('logout')} 
@@ -137,31 +193,31 @@ export default function SubscriptionLayout({ children, header, user, auth: propA
                                     </Dropdown>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Mobile menu button */}
-                        <div className="-mr-2 flex items-center sm:hidden">
-                            <button
-                                onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                className="inline-flex items-center justify-center p-2 rounded-md text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-blue-900 transition duration-150 ease-in-out"
-                            >
-                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
+                            {/* Mobile menu button */}
+                            <div className="flex items-center sm:hidden">
+                                <button
+                                    onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-900 dark:text-white hover:text-blue-900 hover:bg-white/10 focus:outline-none focus:bg-white/10 focus:text-blue-900 transition duration-150 ease-in-out"
+                                >
+                                    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                        <path
+                                            className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M4 6h16M4 12h16M4 18h16"
+                                        />
+                                        <path
+                                            className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -177,14 +233,6 @@ export default function SubscriptionLayout({ children, header, user, auth: propA
 
                 {/* Page Content */}
                 <main>{children}</main>
-
-                {/* Mobile Navigation Overlay */}
-                {showingNavigationDropdown && (
-                    <div
-                        className="fixed inset-0 z-50 sm:hidden"
-                        onClick={() => setShowingNavigationDropdown(false)}
-                    />
-                )}
             </div>
         </ThemeProvider>
     );
