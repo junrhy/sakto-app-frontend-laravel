@@ -4,7 +4,9 @@ import {
     DashboardStats, 
     ShipmentTracking, 
     FleetManagement, 
-    CargoMonitoring 
+    CargoMonitoring,
+    BookingManagement,
+    PricingManagement
 } from './components';
 
 export default function Transportation() {
@@ -23,6 +25,16 @@ export default function Transportation() {
                 <DashboardStats />
 
                 <div className="grid grid-cols-1 gap-6 mt-6">
+                    {/* Pricing Management Section */}
+                    <div className="space-y-6">
+                        <PricingManagement />
+                    </div>
+
+                    {/* Booking Management Section */}
+                    <div className="space-y-6">
+                        <BookingManagement />
+                    </div>
+
                     {/* Shipment Tracking Section */}
                     <div className="space-y-6">
                         <ShipmentTracking />

@@ -261,6 +261,15 @@ Route::group(['middleware' => ['web']], function () {
     Route::prefix('logistics')->group(function () {
         Route::get('/trucks/list', [LogisticsController::class, 'getTrucks'])->name('logistics.trucks.list');
         Route::get('/user/search', [LogisticsController::class, 'searchUser'])->name('logistics.users.search');
+        
+            // Public Booking Routes (no authentication required)
+    Route::get('/bookings/list', [LogisticsController::class, 'getBookings'])->name('logistics.bookings.list');
+    Route::get('/bookings/stats', [LogisticsController::class, 'getBookingStats'])->name('logistics.bookings.stats');
+    Route::post('/bookings/store', [LogisticsController::class, 'storeBooking'])->name('logistics.bookings.store');
+    Route::get('/bookings/reference', [LogisticsController::class, 'getBookingByReference'])->name('logistics.bookings.reference');
+    
+    // Public Booking Tracking Route (no authentication required)
+    Route::get('/{identifier}/track', [LogisticsController::class, 'trackBooking'])->name('logistics.track');
     });
     
     Route::get('/medical', [LandingController::class, 'medical'])->name('medical');
@@ -712,6 +721,28 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::delete('/{id}', [TransportationController::class, 'destroyCargo'])->name('transportation.cargo.destroy');
         Route::post('/{id}/status', [TransportationController::class, 'updateCargoStatus'])->name('transportation.cargo.status');
         Route::get('/shipment/{shipmentId}', [TransportationController::class, 'getCargoByShipment'])->name('transportation.cargo.by-shipment');
+    });
+
+    // Transportation Booking Routes
+    Route::prefix('transportation/bookings')->group(function () {
+        Route::get('/list', [TransportationController::class, 'getBookings'])->name('transportation.bookings.list');
+        Route::get('/stats', [TransportationController::class, 'getBookingStats'])->name('transportation.bookings.stats');
+        Route::post('/', [TransportationController::class, 'storeBooking'])->name('transportation.bookings.store');
+        Route::get('/reference', [TransportationController::class, 'getBookingByReference'])->name('transportation.bookings.reference');
+        Route::get('/{id}', [TransportationController::class, 'showBooking'])->name('transportation.bookings.show');
+        Route::put('/{id}', [TransportationController::class, 'updateBooking'])->name('transportation.bookings.update');
+        Route::delete('/{id}', [TransportationController::class, 'destroyBooking'])->name('transportation.bookings.destroy');
+    });
+
+    // Transportation Pricing Configuration Routes
+    Route::prefix('transportation/pricing-configs')->group(function () {
+        Route::get('/list', [TransportationController::class, 'getPricingConfigs'])->name('transportation.pricing-configs.list');
+        Route::post('/', [TransportationController::class, 'storePricingConfig'])->name('transportation.pricing-configs.store');
+        Route::get('/default', [TransportationController::class, 'getDefaultPricingConfig'])->name('transportation.pricing-configs.default');
+        Route::get('/preview', [TransportationController::class, 'calculatePricingPreview'])->name('transportation.pricing-configs.preview');
+        Route::get('/{id}', [TransportationController::class, 'showPricingConfig'])->name('transportation.pricing-configs.show');
+        Route::put('/{id}', [TransportationController::class, 'updatePricingConfig'])->name('transportation.pricing-configs.update');
+        Route::delete('/{id}', [TransportationController::class, 'destroyPricingConfig'])->name('transportation.pricing-configs.destroy');
     });
 });
 

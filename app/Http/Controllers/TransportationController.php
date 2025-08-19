@@ -702,4 +702,396 @@ class TransportationController extends Controller
             ], 500);
         }
     }
+
+    // ==================== BOOKING MANAGEMENT ====================
+
+    /**
+     * Get all bookings with filtering and pagination.
+     */
+    public function getBookings(Request $request)
+    {
+        try {
+            $request->merge(['client_identifier' => auth()->user()->identifier]);
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/bookings', $request->all());
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch bookings', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch bookings',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get booking dashboard statistics.
+     */
+    public function getBookingStats()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/bookings/stats', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch booking stats', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch booking statistics',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a new booking.
+     */
+    public function storeBooking(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'truck_id' => 'required|integer',
+                'customer_name' => 'required|string|max:255',
+                'customer_email' => 'required|email|max:255',
+                'customer_phone' => 'required|string|max:255',
+                'customer_company' => 'nullable|string|max:255',
+                'pickup_location' => 'required|string|max:1000',
+                'delivery_location' => 'required|string|max:1000',
+                'pickup_date' => 'required|date|after_or_equal:today',
+                'pickup_time' => 'required|date_format:H:i',
+                'delivery_date' => 'required|date|after_or_equal:pickup_date',
+                'delivery_time' => 'required|date_format:H:i',
+                'cargo_description' => 'required|string|max:1000',
+                'cargo_weight' => 'required|numeric|min:0.01',
+                'cargo_unit' => 'required|string|in:kg,tons,pieces,pallets,boxes,liters',
+                'special_requirements' => 'nullable|string|max:1000',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/transportation/bookings', $validated);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to create booking', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create booking',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a specific booking.
+     */
+    public function showBooking($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/bookings/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch booking', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch booking',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update a booking.
+     */
+    public function updateBooking(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|string|in:Pending,Confirmed,In Progress,Completed,Cancelled',
+                'notes' => 'nullable|string|max:1000',
+                'estimated_cost' => 'nullable|numeric|min:0',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->put($this->apiUrl . '/transportation/bookings/' . $id, $validated);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to update booking', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update booking',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a booking.
+     */
+    public function destroyBooking($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete($this->apiUrl . '/transportation/bookings/' . $id, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to delete booking', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete booking',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a specific booking by reference (for authenticated users).
+     */
+    public function getBookingByReference(Request $request)
+    {
+        try {
+            $request->validate([
+                'booking_reference' => 'required|string',
+                'client_identifier' => 'required|string'
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/bookings/reference', [
+                    'client_identifier' => $request->client_identifier,
+                    'booking_reference' => $request->booking_reference
+                ]);
+            
+            $data = $response->json();
+            
+            return response()->json($data, $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch booking by reference', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch booking',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ==================== PRICING MANAGEMENT ====================
+
+    /**
+     * Get all pricing configurations for the authenticated user.
+     */
+    public function getPricingConfigs(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/pricing-configs', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch pricing configs', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch pricing configurations',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a specific pricing configuration.
+     */
+    public function showPricingConfig($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/pricing-configs/' . $id);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch pricing config', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch pricing configuration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a new pricing configuration.
+     */
+    public function storePricingConfig(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'config_name' => 'required|string|max:255',
+                'config_type' => 'required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'base_rates' => 'nullable|array',
+                'distance_rates' => 'nullable|array',
+                'weight_rates' => 'nullable|array',
+                'special_handling_rates' => 'nullable|array',
+                'surcharges' => 'nullable|array',
+                'peak_hours' => 'nullable|array',
+                'holidays' => 'nullable|array',
+                'additional_costs' => 'nullable|array',
+                'overtime_hours' => 'nullable|array',
+                'currency' => 'nullable|string|max:10',
+                'currency_symbol' => 'nullable|string|max:10',
+                'decimal_places' => 'nullable|integer|min:0|max:4',
+                'is_active' => 'nullable|boolean',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/transportation/pricing-configs', $validated);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to create pricing config', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create pricing configuration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update a pricing configuration.
+     */
+    public function updatePricingConfig(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'config_name' => 'sometimes|required|string|max:255',
+                'config_type' => 'sometimes|required|string|max:255',
+                'description' => 'nullable|string|max:1000',
+                'base_rates' => 'nullable|array',
+                'distance_rates' => 'nullable|array',
+                'weight_rates' => 'nullable|array',
+                'special_handling_rates' => 'nullable|array',
+                'surcharges' => 'nullable|array',
+                'peak_hours' => 'nullable|array',
+                'holidays' => 'nullable|array',
+                'additional_costs' => 'nullable|array',
+                'overtime_hours' => 'nullable|array',
+                'currency' => 'nullable|string|max:10',
+                'currency_symbol' => 'nullable|string|max:10',
+                'decimal_places' => 'nullable|integer|min:0|max:4',
+                'is_active' => 'nullable|boolean',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->put($this->apiUrl . '/transportation/pricing-configs/' . $id, $validated);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to update pricing config', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update pricing configuration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a pricing configuration.
+     */
+    public function destroyPricingConfig($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete($this->apiUrl . '/transportation/pricing-configs/' . $id);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to delete pricing config', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete pricing configuration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get default pricing configuration.
+     */
+    public function getDefaultPricingConfig(Request $request)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/pricing-configs/default', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch default pricing config', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch default pricing configuration',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Calculate pricing preview.
+     */
+    public function calculatePricingPreview(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'config_id' => 'nullable|integer|exists:transportation_pricing_configs,id',
+                'truck_id' => 'required|integer|exists:transportation_fleets,id',
+                'pickup_date' => 'required|date|after_or_equal:today',
+                'pickup_time' => 'required|date_format:H:i',
+                'delivery_date' => 'required|date|after_or_equal:pickup_date',
+                'delivery_time' => 'required|date_format:H:i',
+                'cargo_weight' => 'required|numeric|min:0.01',
+                'cargo_unit' => 'required|string',
+                'distance_km' => 'nullable|numeric|min:0',
+                'route_type' => 'nullable|string',
+                'requires_refrigeration' => 'nullable|boolean',
+                'requires_special_equipment' => 'nullable|boolean',
+                'requires_escort' => 'nullable|boolean',
+                'is_urgent_delivery' => 'nullable|boolean',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/pricing-configs/preview', $validated);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to calculate pricing preview', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to calculate pricing preview',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

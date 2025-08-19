@@ -32,6 +32,49 @@ interface Truck {
     maintenance_records: any[];
 }
 
+interface BookingForm {
+    truck_id: number;
+    customer_name: string;
+    customer_email: string;
+    customer_phone: string;
+    customer_company: string;
+    pickup_location: string;
+    delivery_location: string;
+    pickup_date: string;
+    pickup_time: string;
+    delivery_date: string;
+    delivery_time: string;
+    cargo_description: string;
+    cargo_weight: number;
+    cargo_unit: string;
+    special_requirements: string;
+}
+
+interface Booking {
+    id: number;
+    booking_reference: string;
+    customer_name: string;
+    customer_email: string;
+    customer_phone: string;
+    customer_company: string;
+    pickup_location: string;
+    delivery_location: string;
+    pickup_date: string;
+    pickup_time: string;
+    delivery_date: string;
+    delivery_time: string;
+    cargo_description: string;
+    cargo_weight: number;
+    cargo_unit: string;
+    special_requirements: string;
+    estimated_cost: number;
+    status: string;
+    notes: string;
+    created_at: string;
+    updated_at: string;
+    truck: Truck;
+}
+
 interface User {
     id: number;
     name: string;
@@ -47,6 +90,30 @@ export default function Logistics({ auth, identifier }: PageProps) {
     const [error, setError] = useState<string | null>(null);
     const [missingClientId, setMissingClientId] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+    
+    // Booking states
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
+    const [bookingForm, setBookingForm] = useState<BookingForm>({
+        truck_id: 0,
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        customer_company: '',
+        pickup_location: '',
+        delivery_location: '',
+        pickup_date: '',
+        pickup_time: '',
+        delivery_date: '',
+        delivery_time: '',
+        cargo_description: '',
+        cargo_weight: 0,
+        cargo_unit: 'kg',
+        special_requirements: '',
+    });
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [bookingReference, setBookingReference] = useState('');
 
     useEffect(() => {
         const checkMobile = () => {
@@ -141,6 +208,64 @@ export default function Logistics({ auth, identifier }: PageProps) {
         return `₱${price.toLocaleString()}/day`;
     };
 
+    const handleBookTruck = (truck: Truck) => {
+        setSelectedTruck(truck);
+        setBookingForm({
+            ...bookingForm,
+            truck_id: truck.id,
+        });
+        setShowBookingModal(true);
+        setBookingSuccess(false);
+        setBookingReference('');
+    };
+
+    const handleBookingSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setBookingLoading(true);
+        
+        try {
+            const response = await axios.post('/logistics/bookings/store', {
+                ...bookingForm,
+                client_identifier: identifier,
+            });
+            
+            if (response.data.success) {
+                setBookingSuccess(true);
+                setBookingReference(response.data.booking_reference);
+                // Reset form
+                setBookingForm({
+                    truck_id: 0,
+                    customer_name: '',
+                    customer_email: '',
+                    customer_phone: '',
+                    customer_company: '',
+                    pickup_location: '',
+                    delivery_location: '',
+                    pickup_date: '',
+                    pickup_time: '',
+                    delivery_date: '',
+                    delivery_time: '',
+                    cargo_description: '',
+                    cargo_weight: 0,
+                    cargo_unit: 'kg',
+                    special_requirements: '',
+                });
+            }
+        } catch (err: any) {
+            console.error('Failed to create booking:', err);
+            alert(`Failed to create booking: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
+    const closeBookingModal = () => {
+        setShowBookingModal(false);
+        setSelectedTruck(null);
+        setBookingSuccess(false);
+        setBookingReference('');
+    };
+
     // Show message if client_identifier is missing
     if (missingClientId) {
         return (
@@ -215,19 +340,38 @@ export default function Logistics({ auth, identifier }: PageProps) {
                                 </div>
                             </div>
                             <div className="flex-shrink-0 w-full lg:w-auto">
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    {/* Navigation Menu */}
+                                    <div className="flex items-center space-x-4">
+                                        <Link
+                                            href={`/logistics/${identifier}`}
+                                            className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                                        >
+                                            Book Trucks
+                                        </Link>
+                                        <Link
+                                            href={`/logistics/${identifier}/track`}
+                                            className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                                        >
+                                            Track Booking
+                                        </Link>
                                     </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Search trucks..."
-                                        className="w-full lg:w-80 pl-10 pr-4 py-2 lg:py-3 border border-gray-300 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500 text-sm font-medium shadow-sm"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                    />
+                                    
+                                    {/* Search Input */}
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Search trucks..."
+                                            className="w-full lg:w-80 pl-10 pr-4 py-2 lg:py-3 border border-gray-300 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 placeholder-gray-500 text-sm font-medium shadow-sm"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -394,6 +538,18 @@ export default function Logistics({ auth, identifier }: PageProps) {
                                                     </div>
                                                 )}
                                             </div>
+                                            
+                                            {/* Book Now Button */}
+                                            {truck.status === 'Available' && (
+                                                <div className="mt-3 lg:mt-4 pt-3 lg:pt-4 border-t border-gray-100">
+                                                    <button
+                                                        onClick={() => handleBookTruck(truck)}
+                                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors duration-200"
+                                                    >
+                                                        Book Now
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -412,6 +568,272 @@ export default function Logistics({ auth, identifier }: PageProps) {
                     )}
                 </div>
             </div>
+
+            {/* Booking Modal */}
+            {showBookingModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900">
+                                    {bookingSuccess ? 'Booking Successful!' : 'Book Truck'}
+                                </h2>
+                                <button
+                                    onClick={closeBookingModal}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {bookingSuccess ? (
+                                <div className="text-center">
+                                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                                        <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">Booking Confirmed!</h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Your booking has been successfully created. Please save your booking reference number.
+                                    </p>
+                                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                                        <p className="text-sm text-gray-600 mb-1">Booking Reference:</p>
+                                        <p className="text-lg font-bold text-gray-900">{bookingReference}</p>
+                                    </div>
+                                    <button
+                                        onClick={closeBookingModal}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleBookingSubmit}>
+                                    {selectedTruck && (
+                                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                            <h3 className="font-medium text-gray-900 mb-2">Selected Truck</h3>
+                                            <p className="text-sm text-gray-600">
+                                                {selectedTruck.model} - {selectedTruck.plate_number} (Capacity: {selectedTruck.capacity} tons)
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Customer Name *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={bookingForm.customer_name}
+                                                onChange={(e) => setBookingForm({...bookingForm, customer_name: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Email *
+                                            </label>
+                                            <input
+                                                type="email"
+                                                required
+                                                value={bookingForm.customer_email}
+                                                onChange={(e) => setBookingForm({...bookingForm, customer_email: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Phone *
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                required
+                                                value={bookingForm.customer_phone}
+                                                onChange={(e) => setBookingForm({...bookingForm, customer_phone: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Company
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={bookingForm.customer_company}
+                                                onChange={(e) => setBookingForm({...bookingForm, customer_company: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Pickup Location *
+                                            </label>
+                                            <textarea
+                                                required
+                                                value={bookingForm.pickup_location}
+                                                onChange={(e) => setBookingForm({...bookingForm, pickup_location: e.target.value})}
+                                                rows={3}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Delivery Location *
+                                            </label>
+                                            <textarea
+                                                required
+                                                value={bookingForm.delivery_location}
+                                                onChange={(e) => setBookingForm({...bookingForm, delivery_location: e.target.value})}
+                                                rows={3}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Pickup Date *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                required
+                                                min={new Date().toISOString().split('T')[0]}
+                                                value={bookingForm.pickup_date}
+                                                onChange={(e) => setBookingForm({...bookingForm, pickup_date: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Pickup Time *
+                                            </label>
+                                            <input
+                                                type="time"
+                                                required
+                                                value={bookingForm.pickup_time}
+                                                onChange={(e) => setBookingForm({...bookingForm, pickup_time: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Delivery Date *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                required
+                                                min={bookingForm.pickup_date || new Date().toISOString().split('T')[0]}
+                                                value={bookingForm.delivery_date}
+                                                onChange={(e) => setBookingForm({...bookingForm, delivery_date: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Delivery Time *
+                                            </label>
+                                            <input
+                                                type="time"
+                                                required
+                                                value={bookingForm.delivery_time}
+                                                onChange={(e) => setBookingForm({...bookingForm, delivery_time: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Cargo Description *
+                                            </label>
+                                            <textarea
+                                                required
+                                                value={bookingForm.cargo_description}
+                                                onChange={(e) => setBookingForm({...bookingForm, cargo_description: e.target.value})}
+                                                rows={3}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Special Requirements
+                                            </label>
+                                            <textarea
+                                                value={bookingForm.special_requirements}
+                                                onChange={(e) => setBookingForm({...bookingForm, special_requirements: e.target.value})}
+                                                rows={3}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Cargo Weight *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                required
+                                                min="0.01"
+                                                step="0.01"
+                                                value={bookingForm.cargo_weight}
+                                                onChange={(e) => setBookingForm({...bookingForm, cargo_weight: parseFloat(e.target.value) || 0})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Cargo Unit *
+                                            </label>
+                                            <select
+                                                required
+                                                value={bookingForm.cargo_unit}
+                                                onChange={(e) => setBookingForm({...bookingForm, cargo_unit: e.target.value})}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            >
+                                                <option value="kg">Kilograms (kg)</option>
+                                                <option value="tons">Tons</option>
+                                                <option value="pieces">Pieces</option>
+                                                <option value="pallets">Pallets</option>
+                                                <option value="boxes">Boxes</option>
+                                                <option value="liters">Liters</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end space-x-3">
+                                        <button
+                                            type="button"
+                                            onClick={closeBookingModal}
+                                            className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={bookingLoading}
+                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {bookingLoading ? 'Creating Booking...' : 'Create Booking'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
