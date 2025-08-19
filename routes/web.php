@@ -255,6 +255,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/m/{identifier}', [CommunityController::class, 'member'])->name('member.short');
     Route::post('/community/send-signup-link', [CommunityController::class, 'sendSignUpLink'])->name('api.send-signup-link');
     Route::get('/logistics', [LogisticsController::class, 'index'])->name('logistics');
+    Route::get('/logistics/{identifier}', [LogisticsController::class, 'show'])->name('logistics.show');
     
     // Logistics API Routes (public)
     Route::prefix('logistics')->group(function () {

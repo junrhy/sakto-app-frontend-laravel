@@ -36,6 +36,24 @@ class LogisticsController extends Controller
         ]);
     }
 
+    /**
+     * Display the logistics show page with truck fleet.
+     *
+     * @param Request $request
+     * @param string $identifier
+     * @return \Inertia\Response
+     */
+    public function show(Request $request, $identifier)
+    {
+        return Inertia::render('Landing/Logistics/Show', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'laravelVersion' => Application::VERSION,
+            'phpVersion' => PHP_VERSION,
+            'identifier' => $identifier,
+        ]);
+    }
+
     // ==================== TRUCK MANAGEMENT (READ-ONLY) ====================
 
     /**
