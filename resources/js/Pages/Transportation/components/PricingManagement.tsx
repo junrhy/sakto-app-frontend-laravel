@@ -11,7 +11,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Textarea } from '@/Components/ui/textarea';
 import { Switch } from '@/Components/ui/switch';
-import { Trash2, Edit, Plus, Calculator, Eye, Settings } from 'lucide-react';
+import { Trash2, Edit, Plus, Calculator, Eye, Settings, Search, Filter, DollarSign, TrendingUp, Activity, Users } from 'lucide-react';
 
 interface PricingConfig {
     id: number;
@@ -93,6 +93,8 @@ const PricingManagement: React.FC = () => {
     const [showPreviewDialog, setShowPreviewDialog] = useState(false);
     const [pricingPreview, setPricingPreview] = useState<PricingPreview | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     // Form state for creating/editing configs
     const [configForm, setConfigForm] = useState({
@@ -257,51 +259,95 @@ const PricingManagement: React.FC = () => {
     };
 
     const formatCurrency = (amount: number) => {
-        return `₱${amount.toLocaleString()}`;
+        return `₱${amount.toLocaleString('en-US')}`;
     };
 
     const formatPercentage = (value: number) => {
         return `${(value * 100).toFixed(1)}%`;
     };
 
+    // Filter configs based on search and status
+    const filteredConfigs = configs.filter(config => {
+        const matchesSearch = 
+            config.config_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            config.config_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            config.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesStatus = statusFilter === 'all' || 
+            (statusFilter === 'active' && config.is_active) ||
+            (statusFilter === 'inactive' && !config.is_active);
+
+        return matchesSearch && matchesStatus;
+    });
+
+    // Calculate stats
+    const stats = {
+        total_configs: configs.length,
+        active_configs: configs.filter(config => config.is_active).length,
+        inactive_configs: configs.filter(config => !config.is_active).length,
+        custom_configs: configs.filter(config => config.config_type === 'custom').length,
+        premium_configs: configs.filter(config => config.config_type === 'premium').length,
+        economy_configs: configs.filter(config => config.config_type === 'economy').length
+    };
+
     if (loading) {
         return (
-            <Card>
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <span className="ml-2">Loading pricing configurations...</span>
+            <div className="bg-white dark:bg-gray-800">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                            <Settings className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Pricing Management</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Manage transportation pricing configurations</p>
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+                <div className="p-6">
+                    <div className="flex items-center justify-center py-12">
+                        <div className="flex items-center space-x-3">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                            <span className="text-gray-600 dark:text-gray-400">Loading pricing configurations...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-800">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                            <Settings className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        </div>
                         <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <Settings className="h-5 w-5" />
-                                Pricing Management
-                            </CardTitle>
-                            <CardDescription>
-                                Manage transportation pricing configurations and calculate pricing previews
-                            </CardDescription>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Pricing Management</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Manage transportation pricing configurations and calculate pricing previews</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {filteredConfigs.length} configurations
                         </div>
                         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                             <DialogTrigger asChild>
-                                <Button>
+                                <Button className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm">
                                     <Plus className="h-4 w-4 mr-2" />
                                     New Configuration
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                                 <DialogHeader>
-                                    <DialogTitle>Create Pricing Configuration</DialogTitle>
-                                    <DialogDescription>
+                                    <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                        <Settings className="w-5 h-5 text-orange-600" />
+                                        Create Pricing Configuration
+                                    </DialogTitle>
+                                    <DialogDescription className="text-gray-600 dark:text-gray-400">
                                         Set up a new pricing configuration with custom rates and surcharges.
                                     </DialogDescription>
                                 </DialogHeader>
@@ -555,49 +601,152 @@ const PricingManagement: React.FC = () => {
                                     </TabsContent>
                                 </Tabs>
                                 
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                                <DialogFooter className="gap-2">
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => setShowCreateDialog(false)}
+                                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
                                         Cancel
                                     </Button>
-                                    <Button onClick={handleCreateConfig}>
+                                    <Button 
+                                        onClick={handleCreateConfig}
+                                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                                    >
                                         Create Configuration
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        <Table>
-                            <TableHeader>
+                </div>
+            </div>
+            
+            <div className="p-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <DollarSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.total_configs}</div>
+                                <div className="text-sm text-blue-600 dark:text-blue-400">Total Configs</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                <Activity className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active_configs}</div>
+                                <div className="text-sm text-green-600 dark:text-green-400">Active</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                                <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.premium_configs}</div>
+                                <div className="text-sm text-purple-600 dark:text-purple-400">Premium</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                                <Users className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            <div>
+                                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.custom_configs}</div>
+                                <div className="text-sm text-orange-600 dark:text-orange-400">Custom</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Search and Filters */}
+                <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                    <div className="flex-1">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
+                            <Input
+                                placeholder="Search configurations..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-10 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
+                    <div className="w-full md:w-48">
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <Table>
+                        <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
+                            <TableRow className="border-gray-200 dark:border-gray-700">
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Name</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Type</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Base Rate (Medium)</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Distance Rate (Local)</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredConfigs.length === 0 ? (
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Base Rate (Medium)</TableHead>
-                                    <TableHead>Distance Rate (Local)</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Actions</TableHead>
+                                    <TableCell colSpan={6} className="text-center py-8">
+                                        <div className="flex flex-col items-center space-y-2">
+                                            <Settings className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                                            <span className="text-gray-500 dark:text-gray-400">No pricing configurations found</span>
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {configs.map((config) => (
-                                    <TableRow key={config.id}>
-                                        <TableCell className="font-medium">{config.config_name}</TableCell>
+                            ) : (
+                                filteredConfigs.map((config) => (
+                                    <TableRow key={config.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                        <TableCell className="font-medium text-gray-900 dark:text-gray-100">{config.config_name}</TableCell>
                                         <TableCell>
-                                            <Badge variant={config.config_type === 'default' ? 'default' : 'secondary'}>
+                                            <Badge 
+                                                variant={config.config_type === 'premium' ? 'default' : config.config_type === 'economy' ? 'secondary' : 'outline'}
+                                                className={config.config_type === 'premium' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' : 
+                                                         config.config_type === 'economy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                                                         'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'}
+                                            >
                                                 {config.config_type}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{formatCurrency(config.base_rates.medium)}</TableCell>
-                                        <TableCell>₱{config.distance_rates.local}/km</TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">{formatCurrency(config.base_rates.medium)}</TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">₱{config.distance_rates.local.toLocaleString('en-US')}/km</TableCell>
                                         <TableCell>
-                                            <Badge variant={config.is_active ? 'default' : 'destructive'}>
+                                            <Badge 
+                                                variant={config.is_active ? 'default' : 'destructive'}
+                                                className={config.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}
+                                            >
                                                 {config.is_active ? 'Active' : 'Inactive'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1">
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -605,6 +754,8 @@ const PricingManagement: React.FC = () => {
                                                         setSelectedConfig(config);
                                                         setShowPreviewDialog(true);
                                                     }}
+                                                    className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                                    title="Calculate Pricing"
                                                 >
                                                     <Calculator className="h-4 w-4" />
                                                 </Button>
@@ -616,6 +767,8 @@ const PricingManagement: React.FC = () => {
                                                         populateFormFromConfig(config);
                                                         setShowEditDialog(true);
                                                     }}
+                                                    className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                                    title="Edit Configuration"
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </Button>
@@ -624,7 +777,8 @@ const PricingManagement: React.FC = () => {
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => handleDeleteConfig(config.id)}
-                                                        className="text-red-600 hover:text-red-700"
+                                                        className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        title="Delete Configuration"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -632,19 +786,22 @@ const PricingManagement: React.FC = () => {
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
 
             {/* Edit Dialog - Similar structure to Create Dialog */}
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
-                        <DialogTitle>Edit Pricing Configuration</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <Settings className="w-5 h-5 text-orange-600" />
+                            Edit Pricing Configuration
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600 dark:text-gray-400">
                             Update the pricing configuration settings.
                         </DialogDescription>
                     </DialogHeader>
@@ -898,11 +1055,18 @@ const PricingManagement: React.FC = () => {
                         </TabsContent>
                     </Tabs>
                     
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    <DialogFooter className="gap-2">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowEditDialog(false)}
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
                             Cancel
                         </Button>
-                        <Button onClick={handleUpdateConfig}>
+                        <Button 
+                            onClick={handleUpdateConfig}
+                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                        >
                             Update Configuration
                         </Button>
                     </DialogFooter>
@@ -911,10 +1075,13 @@ const PricingManagement: React.FC = () => {
 
             {/* Pricing Preview Dialog */}
             <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
-                        <DialogTitle>Pricing Calculator</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <Calculator className="w-5 h-5 text-orange-600" />
+                            Pricing Calculator
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600 dark:text-gray-400">
                             Calculate pricing preview using {selectedConfig?.config_name}
                         </DialogDescription>
                     </DialogHeader>
@@ -955,37 +1122,43 @@ const PricingManagement: React.FC = () => {
                             </div>
                         </div>
                         
-                        <Button onClick={handleCalculatePreview} disabled={previewLoading} className="w-full">
+                        <Button 
+                            onClick={handleCalculatePreview} 
+                            disabled={previewLoading} 
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white disabled:bg-gray-400 disabled:hover:bg-gray-400"
+                        >
                             {previewLoading ? 'Calculating...' : 'Calculate Pricing'}
                         </Button>
                         
                         {pricingPreview && (
-                            <Card>
+                            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-700">
                                 <CardHeader>
-                                    <CardTitle>Pricing Breakdown</CardTitle>
+                                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                        <DollarSign className="w-5 h-5 text-green-600" />
+                                        Pricing Breakdown
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between">
-                                            <span>Base Rate:</span>
-                                            <span>{formatCurrency(pricingPreview.base_rate)}</span>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                            <span className="text-gray-600 dark:text-gray-400">Base Rate:</span>
+                                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(pricingPreview.base_rate)}</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span>Distance Rate:</span>
-                                            <span>{formatCurrency(pricingPreview.distance_rate)}</span>
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                            <span className="text-gray-600 dark:text-gray-400">Distance Rate:</span>
+                                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(pricingPreview.distance_rate)}</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span>Weight Rate:</span>
-                                            <span>{formatCurrency(pricingPreview.weight_rate)}</span>
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                            <span className="text-gray-600 dark:text-gray-400">Weight Rate:</span>
+                                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(pricingPreview.weight_rate)}</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span>Fuel Surcharge:</span>
-                                            <span>{formatCurrency(pricingPreview.fuel_surcharge)}</span>
+                                        <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700">
+                                            <span className="text-gray-600 dark:text-gray-400">Fuel Surcharge:</span>
+                                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(pricingPreview.fuel_surcharge)}</span>
                                         </div>
-                                        <hr />
-                                        <div className="flex justify-between font-bold">
-                                            <span>Total Estimated Cost:</span>
-                                            <span>{formatCurrency(pricingPreview.estimated_cost)}</span>
+                                        <div className="flex justify-between items-center py-3 bg-green-100 dark:bg-green-900/30 rounded-lg px-4 mt-4">
+                                            <span className="text-lg font-semibold text-green-800 dark:text-green-200">Total Estimated Cost:</span>
+                                            <span className="text-2xl font-bold text-green-800 dark:text-green-200">{formatCurrency(pricingPreview.estimated_cost)}</span>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -994,7 +1167,11 @@ const PricingManagement: React.FC = () => {
                     </div>
                     
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setShowPreviewDialog(false)}
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
                             Close
                         </Button>
                     </DialogFooter>
