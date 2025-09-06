@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Calendar as CalendarComponent } from '@/Components/ui/calendar';
 import PaymentDialog from './PaymentDialog';
+import BookingCalendar from './BookingCalendar';
 import { 
     Calendar, 
     Clock, 
@@ -34,7 +35,9 @@ import {
     CreditCard,
     DollarSign,
     Plus,
-    FileText
+    FileText,
+    CalendarDays,
+    List
 } from 'lucide-react';
 
 interface Booking {
@@ -97,6 +100,7 @@ export default function BookingManagement() {
     const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('Pending');
+    const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
     const [trucks, setTrucks] = useState<any[]>([]);
     const [pickupCalendarOpen, setPickupCalendarOpen] = useState(false);
     const [deliveryCalendarOpen, setDeliveryCalendarOpen] = useState(false);
@@ -364,6 +368,13 @@ export default function BookingManagement() {
         return matchesSearch && matchesStatus;
     });
 
+    const getBookingsForDate = (date: Date) => {
+        const dateString = date.toISOString().split('T')[0];
+        return filteredBookings.filter(booking => 
+            booking.pickup_date === dateString || booking.delivery_date === dateString
+        );
+    };
+
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
         
@@ -491,8 +502,8 @@ export default function BookingManagement() {
                         </div>
                     )}
 
-                    {/* Filters */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    {/* Filters and View Toggle */}
+                    <div className="flex flex-col lg:flex-row gap-4 mb-6">
                         <div className="flex-1">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
@@ -504,25 +515,47 @@ export default function BookingManagement() {
                                 />
                             </div>
                         </div>
-                        <div className="w-full md:w-48">
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Filter by status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="Pending">Pending</SelectItem>
-                                    <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                    <SelectItem value="In Progress">In Progress</SelectItem>
-                                    <SelectItem value="Completed">Completed</SelectItem>
-                                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="flex gap-2">
+                            <div className="w-full md:w-48">
+                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Filter by status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        <SelectItem value="Pending">Pending</SelectItem>
+                                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                                        <SelectItem value="In Progress">In Progress</SelectItem>
+                                        <SelectItem value="Completed">Completed</SelectItem>
+                                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                <Button
+                                    variant={viewMode === 'table' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('table')}
+                                    className={`px-3 py-2 ${viewMode === 'table' ? 'bg-orange-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                >
+                                    <List className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('calendar')}
+                                    className={`px-3 py-2 ${viewMode === 'calendar' ? 'bg-orange-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                >
+                                    <CalendarDays className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Bookings Table */}
-                    <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {/* Bookings View */}
+                    {viewMode === 'table' ? (
+                        /* Table View */
+                        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                         <Table>
                             <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
                                 <TableRow className="border-gray-200 dark:border-gray-700">
@@ -676,7 +709,53 @@ export default function BookingManagement() {
                                 )}
                             </TableBody>
                         </Table>
-                    </div>
+                        </div>
+                    ) : (
+                        /* Calendar View */
+                        <div className="space-y-6">
+                            <BookingCalendar 
+                                bookings={filteredBookings}
+                                onDateClick={(date, bookings) => {
+                                    // Handle date click - could show a popup or navigate to details
+                                    console.log('Date clicked:', date, bookings);
+                                }}
+                            />
+                            
+                            {/* Booking Summary */}
+                            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                    <CalendarDays className="w-5 h-5 text-orange-600" />
+                                    Booking Summary
+                                </h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                                            {filteredBookings.filter(b => b.status === 'Pending').length}
+                                        </div>
+                                        <div className="text-gray-600 dark:text-gray-400 font-medium">Pending</div>
+                                    </div>
+                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                                            {filteredBookings.filter(b => b.status === 'Confirmed').length}
+                                        </div>
+                                        <div className="text-gray-600 dark:text-gray-400 font-medium">Confirmed</div>
+                                    </div>
+                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                                            {filteredBookings.filter(b => b.status === 'In Progress').length}
+                                        </div>
+                                        <div className="text-gray-600 dark:text-gray-400 font-medium">In Progress</div>
+                                    </div>
+                                    <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
+                                            {filteredBookings.filter(b => b.status === 'Completed').length}
+                                        </div>
+                                        <div className="text-gray-600 dark:text-gray-400 font-medium">Completed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
             </div>
 
             {/* Booking Details Dialog */}
