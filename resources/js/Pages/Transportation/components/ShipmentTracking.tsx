@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/Components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { CalendarIcon, PlusIcon, Pencil2Icon, TrashIcon, ClockIcon, Cross2Icon } from "@radix-ui/react-icons";
+import { PackageIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Shipment, ShipmentFormData, StatusUpdateFormData, Helper } from "../types";
 import { useShipmentTracking, useFleetManagement } from "../hooks";
@@ -247,23 +248,38 @@ export default function ShipmentTracking() {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-gray-100">Shipment Tracking</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-between items-center mb-4">
-                    <div>
+        <div className="bg-white dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                            <PackageIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Shipment Tracking</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Monitor and manage all shipments</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {filteredShipments.length} shipments
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex-1 max-w-md">
                         <Input
                             placeholder="Search shipments, trucks, drivers, helpers..."
                             value={shipmentSearch}
                             onChange={(e) => setShipmentSearch(e.target.value)}
-                            className="max-w-sm"
+                            className="w-full bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
                                 <PlusIcon className="mr-2 h-4 w-4" />
                                 New Shipment
                             </Button>
@@ -453,23 +469,24 @@ export default function ShipmentTracking() {
                     </Dialog>
                 </div>
                 
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Truck</TableHead>
-                            <TableHead>Driver</TableHead>
-                            <TableHead>Helpers</TableHead>
-                            <TableHead>Route</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredShipments.map((shipment) => (
-                            <TableRow key={shipment.id}>
-                                <TableCell>{shipment.id}</TableCell>
+                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <Table>
+                        <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
+                            <TableRow className="border-gray-200 dark:border-gray-700">
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">ID</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Truck</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Driver</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Helpers</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Route</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Priority</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredShipments.map((shipment) => (
+                                <TableRow key={shipment.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                    <TableCell className="font-medium text-gray-900 dark:text-gray-100">{shipment.id}</TableCell>
                                 <TableCell>
                                     {shipment.truck ? (
                                         <div className="text-sm">
@@ -511,43 +528,48 @@ export default function ShipmentTracking() {
                                 <TableCell>
                                     <Badge variant="outline">{shipment.priority}</Badge>
                                 </TableCell>
-                                <TableCell>
-                                    <div className="flex space-x-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleEditShipment(shipment)}
-                                        >
-                                            <Pencil2Icon className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => openStatusUpdateDialog(shipment.id)}
-                                        >
-                                            Update Status
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => openTrackingHistoryDialog(shipment.id)}
-                                        >
-                                            <ClockIcon className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDeleteShipment(shipment.id)}
-                                        >
-                                            <TrashIcon className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
+                                    <TableCell>
+                                        <div className="flex space-x-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleEditShipment(shipment)}
+                                                className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                            >
+                                                <Pencil2Icon className="h-3 w-3" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => openStatusUpdateDialog(shipment.id)}
+                                                className="h-8 px-2 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
+                                            >
+                                                Update
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => openTrackingHistoryDialog(shipment.id)}
+                                                className="h-8 w-8 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                            >
+                                                <ClockIcon className="h-3 w-3" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDeleteShipment(shipment.id)}
+                                                className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                            >
+                                                <TrashIcon className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
             
             {/* Edit Shipment Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -749,6 +771,6 @@ export default function ShipmentTracking() {
                     <ShipmentTrackingHistory shipmentId={viewingShipmentId} />
                 </DialogContent>
             </Dialog>
-        </Card>
+        </div>
     );
 }

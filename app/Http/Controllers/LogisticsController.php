@@ -276,7 +276,19 @@ class LogisticsController extends Controller
             
             $data = $response->json();
             
-            return response()->json($data, $response->status());
+            // Check if the response is successful
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $data
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch booking from API',
+                    'error' => $data['message'] ?? 'Unknown error'
+                ], $response->status());
+            }
         } catch (\Exception $e) {
             Log::error('Failed to fetch booking by reference', ['error' => $e->getMessage()]);
             return response()->json([

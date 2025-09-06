@@ -19,7 +19,7 @@ interface BookingDetails {
     customer_name: string;
     customer_email: string;
     customer_phone: string;
-    customer_company: string;
+    customer_company: string | null;
     pickup_location: string;
     delivery_location: string;
     pickup_date: string;
@@ -27,12 +27,12 @@ interface BookingDetails {
     delivery_date: string;
     delivery_time: string;
     cargo_description: string;
-    cargo_weight: number;
+    cargo_weight: number | string;
     cargo_unit: string;
-    special_requirements: string;
-    estimated_cost: number;
+    special_requirements: string | null;
+    estimated_cost: number | string;
     status: string;
-    notes: string;
+    notes: string | null;
     created_at: string;
     updated_at: string;
     truck?: {
@@ -44,18 +44,18 @@ interface BookingDetails {
         driver_contact: string;
     };
     pricing_breakdown?: {
-        base_rate: number;
-        distance_rate: number;
-        weight_rate: number;
-        special_handling_rate: number;
-        fuel_surcharge: number;
-        peak_hour_surcharge: number;
-        weekend_surcharge: number;
-        holiday_surcharge: number;
-        driver_overtime_rate: number;
-        insurance_cost: number;
-        toll_fees: number;
-        parking_fees: number;
+        base_rate: number | string;
+        distance_rate: number | string;
+        weight_rate: number | string;
+        special_handling_rate: number | string;
+        fuel_surcharge: number | string;
+        peak_hour_surcharge: number | string;
+        weekend_surcharge: number | string;
+        holiday_surcharge: number | string;
+        driver_overtime_rate: number | string;
+        insurance_cost: number | string;
+        toll_fees: number | string;
+        parking_fees: number | string;
         config_used: string;
         config_version: string;
     };
@@ -119,8 +119,15 @@ const TrackBooking: React.FC<PageProps> = ({ identifier }) => {
         );
     };
 
-    const formatCurrency = (amount: number) => {
-        return `₱${amount.toLocaleString()}`;
+    const formatCurrency = (amount: number | string | null | undefined) => {
+        if (amount === null || amount === undefined || amount === '') {
+            return '₱0';
+        }
+        const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+        if (isNaN(numericAmount)) {
+            return '₱0';
+        }
+        return `₱${numericAmount.toLocaleString()}`;
     };
 
     const formatDate = (dateString: string) => {
@@ -414,7 +421,11 @@ const TrackBooking: React.FC<PageProps> = ({ identifier }) => {
                                                     </div>
                                                     <div className="flex justify-between">
                                                         <span>Additional Costs:</span>
-                                                        <span>{formatCurrency(booking.pricing_breakdown.insurance_cost + booking.pricing_breakdown.toll_fees + booking.pricing_breakdown.parking_fees)}</span>
+                                                        <span>{formatCurrency(
+                                                            (typeof booking.pricing_breakdown.insurance_cost === 'string' ? parseFloat(booking.pricing_breakdown.insurance_cost) : booking.pricing_breakdown.insurance_cost || 0) +
+                                                            (typeof booking.pricing_breakdown.toll_fees === 'string' ? parseFloat(booking.pricing_breakdown.toll_fees) : booking.pricing_breakdown.toll_fees || 0) +
+                                                            (typeof booking.pricing_breakdown.parking_fees === 'string' ? parseFloat(booking.pricing_breakdown.parking_fees) : booking.pricing_breakdown.parking_fees || 0)
+                                                        )}</span>
                                                     </div>
                                                 </div>
                                             </div>

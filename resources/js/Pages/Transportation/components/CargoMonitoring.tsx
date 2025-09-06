@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import { PackageIcon } from "lucide-react";
 import { CargoItem, CargoFormData } from "../types";
 import { useCargoMonitoring, useShipmentTracking, useFleetManagement } from "../hooks";
 
@@ -161,23 +162,36 @@ export default function CargoMonitoring() {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex justify-between items-center">
-                    <CardTitle className="text-gray-900 dark:text-gray-100">Cargo Monitoring</CardTitle>
-                    <Button onClick={() => setIsEditDialogOpen(true)}>
-                        <PlusIcon className="mr-2 h-4 w-4" />
-                        Add Cargo
-                    </Button>
+        <div className="bg-white dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                            <PackageIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Cargo Monitoring</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Track and manage cargo items</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {filteredCargoItems.length} items
+                        </div>
+                        <Button onClick={() => setIsEditDialogOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm">
+                            <PlusIcon className="mr-2 h-4 w-4" />
+                            Add Cargo
+                        </Button>
+                    </div>
                 </div>
-            </CardHeader>
-            <CardContent>
-                <div className="mb-4">
+            </div>
+            <div className="p-6">
+                <div className="mb-6">
                     <Input
                         placeholder="Search cargo items..."
                         value={cargoSearch}
                         onChange={(e) => setCargoSearch(e.target.value)}
-                        className="max-w-sm"
+                        className="max-w-md bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                 </div>
                 
@@ -283,7 +297,7 @@ export default function CargoMonitoring() {
                         })}
                     </TableBody>
                 </Table>
-            </CardContent>
+            </div>
             
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent>
@@ -407,6 +421,6 @@ export default function CargoMonitoring() {
                     </form>
                 </DialogContent>
             </Dialog>
-        </Card>
+        </div>
     );
 }

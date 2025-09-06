@@ -6,7 +6,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/Components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
@@ -29,10 +29,12 @@ import {
     CheckCircle,
     XCircle,
     AlertCircle,
+    AlertTriangle,
     Truck,
     CreditCard,
     DollarSign,
-    Plus
+    Plus,
+    FileText
 } from 'lucide-react';
 
 interface Booking {
@@ -91,8 +93,10 @@ export default function BookingManagement() {
     const [showUpdateDialog, setShowUpdateDialog] = useState(false);
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     const [showAddBookingDialog, setShowAddBookingDialog] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('Pending');
     const [trucks, setTrucks] = useState<any[]>([]);
     const [pickupCalendarOpen, setPickupCalendarOpen] = useState(false);
     const [deliveryCalendarOpen, setDeliveryCalendarOpen] = useState(false);
@@ -196,13 +200,28 @@ export default function BookingManagement() {
         }
     };
 
-    const handleDeleteBooking = async (bookingId: number) => {
-        if (!confirm('Are you sure you want to delete this booking?')) return;
+    const handleDeleteBooking = (booking: Booking) => {
+        setBookingToDelete(booking);
+        setShowDeleteDialog(true);
+    };
+
+    const confirmDeleteBooking = async () => {
+        if (!bookingToDelete) return;
+
+        // Only allow deletion of pending bookings
+        if (bookingToDelete.status !== 'Pending') {
+            alert('Only pending bookings can be deleted.');
+            setShowDeleteDialog(false);
+            setBookingToDelete(null);
+            return;
+        }
 
         try {
-            await axios.delete(`/transportation/bookings/${bookingId}`);
+            await axios.delete(`/transportation/bookings/${bookingToDelete.id}`);
             fetchBookings();
             fetchStats();
+            setShowDeleteDialog(false);
+            setBookingToDelete(null);
         } catch (error) {
             console.error('Failed to delete booking:', error);
         }
@@ -346,11 +365,37 @@ export default function BookingManagement() {
     });
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString();
+        if (!dateString) return '';
+        
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
     const formatTime = (timeString: string) => {
-        return timeString;
+        if (!timeString) return '';
+        
+        // Handle different time formats
+        let time;
+        if (timeString.includes(':')) {
+            // If it's already in HH:MM format
+            const [hours, minutes] = timeString.split(':');
+            time = new Date();
+            time.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        } else {
+            // If it's a full datetime string
+            time = new Date(timeString);
+        }
+        
+        return time.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
     };
 
     const formatCurrency = (amount: number) => {
@@ -397,42 +442,51 @@ export default function BookingManagement() {
     };
 
     return (
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5" />
-                            Booking Management
-                        </CardTitle>
+        <div className="bg-white dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                            <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Booking Management</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Manage transportation bookings and reservations</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {filteredBookings.length} bookings
+                        </div>
                         <Button 
                             onClick={() => setShowAddBookingDialog(true)}
-                            className="flex items-center gap-2"
+                            className="bg-orange-600 hover:bg-orange-700 text-white shadow-sm"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-4 h-4 mr-2" />
                             Add Booking
                         </Button>
                     </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+            </div>
+            <div className="p-6">
                     {/* Stats Cards */}
                     {stats && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <div className="text-2xl font-bold text-blue-600">{stats.total_bookings}</div>
-                                <div className="text-sm text-blue-600">Total Bookings</div>
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.total_bookings}</div>
+                                <div className="text-sm text-blue-600 dark:text-blue-400">Total Bookings</div>
                             </div>
-                            <div className="bg-yellow-50 p-4 rounded-lg">
-                                <div className="text-2xl font-bold text-yellow-600">{stats.pending_bookings}</div>
-                                <div className="text-sm text-yellow-600">Pending</div>
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending_bookings}</div>
+                                <div className="text-sm text-yellow-600 dark:text-yellow-400">Pending</div>
                             </div>
-                            <div className="bg-green-50 p-4 rounded-lg">
-                                <div className="text-2xl font-bold text-green-600">{stats.completed_bookings}</div>
-                                <div className="text-sm text-green-600">Completed</div>
+                            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed_bookings}</div>
+                                <div className="text-sm text-green-600 dark:text-green-400">Completed</div>
                             </div>
-                            <div className="bg-purple-50 p-4 rounded-lg">
-                                <div className="text-2xl font-bold text-purple-600">{stats.today_bookings}</div>
-                                <div className="text-sm text-purple-600">Today</div>
+                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.today_bookings}</div>
+                                <div className="text-sm text-purple-600 dark:text-purple-400">Today</div>
                             </div>
                         </div>
                     )}
@@ -441,12 +495,12 @@ export default function BookingManagement() {
                     <div className="flex flex-col md:flex-row gap-4 mb-6">
                         <div className="flex-1">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
                                 <Input
                                     placeholder="Search bookings..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
+                                    className="pl-10 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -468,20 +522,20 @@ export default function BookingManagement() {
                     </div>
 
                     {/* Bookings Table */}
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                         <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Reference</TableHead>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Truck</TableHead>
-                                    <TableHead>Pickup</TableHead>
-                                    <TableHead>Delivery</TableHead>
-                                    <TableHead>Cargo</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Payment</TableHead>
-                                    <TableHead>Cost</TableHead>
-                                    <TableHead>Actions</TableHead>
+                            <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
+                                <TableRow className="border-gray-200 dark:border-gray-700">
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Reference</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Customer</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Truck</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Pickup</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Delivery</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Cargo</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Payment</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Cost</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -499,41 +553,41 @@ export default function BookingManagement() {
                                     </TableRow>
                                 ) : (
                                     filteredBookings.map((booking) => (
-                                        <TableRow key={booking.id}>
-                                            <TableCell className="font-mono text-sm">
+                                        <TableRow key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                            <TableCell className="font-mono text-sm text-gray-900 dark:text-gray-100">
                                                 {booking.booking_reference}
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="font-medium">{booking.customer_name}</div>
-                                                    <div className="text-sm text-gray-500">{booking.customer_email}</div>
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">{booking.customer_name}</div>
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400">{booking.customer_email}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
-                                                    <Truck className="w-4 h-4 text-gray-400" />
+                                                    <Truck className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                                     <div>
-                                                        <div className="font-medium">{booking.truck.model}</div>
-                                                        <div className="text-sm text-gray-500">{booking.truck.plate_number}</div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">{booking.truck.model}</div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{booking.truck.plate_number}</div>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="text-sm">{formatDate(booking.pickup_date)}</div>
-                                                    <div className="text-xs text-gray-500">{formatTime(booking.pickup_time)}</div>
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100">{formatDate(booking.pickup_date)}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatTime(booking.pickup_time)}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="text-sm">{formatDate(booking.delivery_date)}</div>
-                                                    <div className="text-xs text-gray-500">{formatTime(booking.delivery_time)}</div>
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100">{formatDate(booking.delivery_date)}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatTime(booking.delivery_time)}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div>
-                                                    <div className="text-sm">{booking.cargo_description}</div>
-                                                    <div className="text-xs text-gray-500">
+                                                    <div className="text-sm text-gray-900 dark:text-gray-100">{booking.cargo_description}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                                         {booking.cargo_weight} {booking.cargo_unit}
                                                     </div>
                                                 </div>
@@ -553,18 +607,18 @@ export default function BookingManagement() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="space-y-1">
-                                                    <div className="font-medium">
+                                                    <div className="font-medium text-gray-900 dark:text-gray-100">
                                                         {booking.estimated_cost ? formatCurrency(booking.estimated_cost) : 'TBD'}
                                                     </div>
                                                     {booking.paid_amount && (
-                                                        <div className="text-sm text-green-600">
+                                                        <div className="text-sm text-green-600 dark:text-green-400">
                                                             Paid: {formatCurrency(booking.paid_amount)}
                                                         </div>
                                                     )}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-1">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -572,6 +626,7 @@ export default function BookingManagement() {
                                                             setSelectedBooking(booking);
                                                             setShowDetailsDialog(true);
                                                         }}
+                                                        className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </Button>
@@ -587,6 +642,7 @@ export default function BookingManagement() {
                                                             });
                                                             setShowUpdateDialog(true);
                                                         }}
+                                                        className="h-8 w-8 p-0 hover:bg-green-50 dark:hover:bg-green-900/20"
                                                     >
                                                         <Edit className="w-4 h-4" />
                                                     </Button>
@@ -598,18 +654,21 @@ export default function BookingManagement() {
                                                                 setSelectedBooking(booking);
                                                                 setShowPaymentDialog(true);
                                                             }}
-                                                            className="text-green-600 hover:text-green-700"
+                                                            className="h-8 w-8 p-0 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                                                         >
                                                             <CreditCard className="w-4 h-4" />
                                                         </Button>
                                                     )}
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteBooking(booking.id)}
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                    {booking.status === 'Pending' && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteBooking(booking)}
+                                                            className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -618,135 +677,220 @@ export default function BookingManagement() {
                             </TableBody>
                         </Table>
                     </div>
-                </CardContent>
-            </Card>
+            </div>
 
             {/* Booking Details Dialog */}
             <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Booking Details</DialogTitle>
+                <DialogContent className="max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
+                        <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-orange-600" />
+                            Booking Details
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-600 dark:text-gray-400">
+                            Complete information for booking {selectedBooking?.booking_reference}
+                        </DialogDescription>
                     </DialogHeader>
                     {selectedBooking && (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Booking Reference</Label>
-                                    <div className="font-mono text-lg">{selectedBooking.booking_reference}</div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Status</Label>
-                                    <div>{getStatusBadge(selectedBooking.status)}</div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Customer Name</Label>
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-4 h-4 text-gray-400" />
-                                        {selectedBooking.customer_name}
+                        <div className="flex-1 overflow-y-auto space-y-8 pr-2">
+                            {/* Header Section */}
+                            <div className="bg-gray-50 dark:bg-gray-900/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Booking Reference</Label>
+                                        <div className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-gray-200 dark:border-gray-600">
+                                            {selectedBooking.booking_reference}
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Email</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Mail className="w-4 h-4 text-gray-400" />
-                                        {selectedBooking.customer_email}
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Phone className="w-4 h-4 text-gray-400" />
-                                        {selectedBooking.customer_phone}
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Company</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Building className="w-4 h-4 text-gray-400" />
-                                        {selectedBooking.customer_company || 'N/A'}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Pickup Location</Label>
-                                    <div className="flex items-start gap-2">
-                                        <MapPin className="w-4 h-4 text-gray-400 mt-1" />
-                                        <div>{selectedBooking.pickup_location}</div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Delivery Location</Label>
-                                    <div className="flex items-start gap-2">
-                                        <MapPin className="w-4 h-4 text-gray-400 mt-1" />
-                                        <div>{selectedBooking.delivery_location}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Pickup Date & Time</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        {formatDate(selectedBooking.pickup_date)} at {formatTime(selectedBooking.pickup_time)}
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Delivery Date & Time</Label>
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        {formatDate(selectedBooking.delivery_date)} at {formatTime(selectedBooking.delivery_time)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label className="text-sm font-medium text-gray-500">Cargo Details</Label>
-                                <div className="flex items-start gap-2">
-                                    <Package className="w-4 h-4 text-gray-400 mt-1" />
-                                    <div>
-                                        <div>{selectedBooking.cargo_description}</div>
-                                        <div className="text-sm text-gray-500">
-                                            Weight: {selectedBooking.cargo_weight} {selectedBooking.cargo_unit}
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</Label>
+                                        <div className="flex items-center">
+                                            {getStatusBadge(selectedBooking.status)}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Customer Information */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <User className="w-5 h-5 text-blue-600" />
+                                    Customer Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Full Name</Label>
+                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_name}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Email Address</Label>
+                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_email}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Phone Number</Label>
+                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_phone}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Company</Label>
+                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <Building className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.customer_company || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Location Information */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <MapPin className="w-5 h-5 text-green-600" />
+                                    Location Details
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Pickup Location</Label>
+                                        <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.pickup_location}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Delivery Location</Label>
+                                        <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.delivery_location}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Schedule Information */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <Calendar className="w-5 h-5 text-purple-600" />
+                                    Schedule Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Pickup Date & Time</Label>
+                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {formatDate(selectedBooking.pickup_date)} at {formatTime(selectedBooking.pickup_time)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Delivery Date & Time</Label>
+                                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                            <span className="text-gray-900 dark:text-gray-100">
+                                                {formatDate(selectedBooking.delivery_date)} at {formatTime(selectedBooking.delivery_time)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Cargo Information */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <Package className="w-5 h-5 text-indigo-600" />
+                                    Cargo Details
+                                </h3>
+                                <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-start gap-3">
+                                        <Package className="w-5 h-5 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                        <div className="space-y-2">
+                                            <div className="text-gray-900 dark:text-gray-100 font-medium">
+                                                {selectedBooking.cargo_description}
+                                            </div>
+                                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                Weight: <span className="font-semibold">{selectedBooking.cargo_weight} {selectedBooking.cargo_unit}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Special Requirements */}
                             {selectedBooking.special_requirements && (
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Special Requirements</Label>
-                                    <div>{selectedBooking.special_requirements}</div>
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5 text-yellow-600" />
+                                        Special Requirements
+                                    </h3>
+                                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                                        <div className="flex items-start gap-3">
+                                            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-1 flex-shrink-0" />
+                                            <span className="text-yellow-800 dark:text-yellow-200">{selectedBooking.special_requirements}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Estimated Cost</Label>
-                                    <div className="text-lg font-semibold">
-                                        {selectedBooking.estimated_cost ? formatCurrency(selectedBooking.estimated_cost) : 'TBD'}
+                            {/* Cost and Vehicle Information */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                                    Cost & Vehicle Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Estimated Cost</Label>
+                                        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                            <div className="flex items-center gap-3">
+                                                <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                                <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+                                                    {selectedBooking.estimated_cost ? formatCurrency(selectedBooking.estimated_cost) : 'TBD'}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Truck Details</Label>
-                                    <div>
-                                        <div>{selectedBooking.truck.model}</div>
-                                        <div className="text-sm text-gray-500">
-                                            {selectedBooking.truck.plate_number} • Driver: {selectedBooking.truck.driver}
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Assigned Vehicle</Label>
+                                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                            <div className="flex items-start gap-3">
+                                                <Truck className="w-5 h-5 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                                <div className="space-y-1">
+                                                    <div className="text-gray-900 dark:text-gray-100 font-medium">
+                                                        {selectedBooking.truck.model}
+                                                    </div>
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Plate: {selectedBooking.truck.plate_number}
+                                                    </div>
+                                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                        Driver: {selectedBooking.truck.driver}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Notes */}
                             {selectedBooking.notes && (
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-500">Notes</Label>
-                                    <div>{selectedBooking.notes}</div>
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                        <FileText className="w-5 h-5 text-gray-600" />
+                                        Additional Notes
+                                    </h3>
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-start gap-3">
+                                            <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400 mt-1 flex-shrink-0" />
+                                            <span className="text-gray-900 dark:text-gray-100">{selectedBooking.notes}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -756,53 +900,70 @@ export default function BookingManagement() {
 
             {/* Update Booking Dialog */}
             <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
-                <DialogContent>
+                <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
-                        <DialogTitle>Update Booking</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-gray-100">Update Booking</DialogTitle>
+                        <DialogDescription className="text-gray-600 dark:text-gray-400">
+                            Update the status and details for booking {selectedBooking?.booking_reference}
+                        </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div>
-                            <Label htmlFor="status">Status</Label>
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="status" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Status
+                            </Label>
                             <Select value={updateForm.status} onValueChange={(value) => setUpdateForm({...updateForm, status: value})}>
-                                <SelectTrigger>
+                                <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Pending">Pending</SelectItem>
-                                    <SelectItem value="Confirmed">Confirmed</SelectItem>
-                                    <SelectItem value="In Progress">In Progress</SelectItem>
-                                    <SelectItem value="Completed">Completed</SelectItem>
-                                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                                    <SelectItem value="Pending" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Pending</SelectItem>
+                                    <SelectItem value="Confirmed" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Confirmed</SelectItem>
+                                    <SelectItem value="In Progress" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">In Progress</SelectItem>
+                                    <SelectItem value="Completed" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Completed</SelectItem>
+                                    <SelectItem value="Cancelled" className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700">Cancelled</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div>
-                            <Label htmlFor="estimated_cost">Estimated Cost</Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="estimated_cost" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Estimated Cost
+                            </Label>
                             <Input
                                 type="number"
                                 value={updateForm.estimated_cost}
                                 onChange={(e) => setUpdateForm({...updateForm, estimated_cost: parseFloat(e.target.value) || 0})}
                                 placeholder="Enter estimated cost"
+                                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             />
                         </div>
-                        <div>
-                            <Label htmlFor="notes">Notes</Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="notes" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Notes
+                            </Label>
                             <textarea
                                 value={updateForm.notes}
                                 onChange={(e) => setUpdateForm({...updateForm, notes: e.target.value})}
-                                className="w-full p-2 border border-gray-300 rounded-md"
+                                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                                 rows={3}
                                 placeholder="Add notes..."
                             />
                         </div>
-                        <div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setShowUpdateDialog(false)}>
+                        <DialogFooter className="gap-2">
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setShowUpdateDialog(false)}
+                                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
                                 Cancel
                             </Button>
-                            <Button onClick={handleUpdateBooking}>
+                            <Button 
+                                onClick={handleUpdateBooking}
+                                className="bg-orange-600 hover:bg-orange-700 text-white"
+                            >
                                 Update Booking
                             </Button>
-                        </div>
+                        </DialogFooter>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -1047,6 +1208,90 @@ export default function BookingManagement() {
                             </Button>
                         </div>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-gray-900 dark:text-gray-100">Delete Booking</DialogTitle>
+                                <DialogDescription className="text-gray-600 dark:text-gray-400">
+                                    This action cannot be undone.
+                                </DialogDescription>
+                            </div>
+                        </div>
+                    </DialogHeader>
+                    
+                    <div className="py-4">
+                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Reference:</span>
+                                    <span className="text-sm font-mono text-gray-900 dark:text-gray-100">{bookingToDelete?.booking_reference}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Customer:</span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">{bookingToDelete?.customer_name}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">{bookingToDelete?.status}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Pickup Date:</span>
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">{bookingToDelete?.pickup_date}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {bookingToDelete?.status === 'Pending' ? (
+                            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <div className="flex items-start space-x-2">
+                                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                                    <div className="text-sm text-red-800 dark:text-red-200">
+                                        <p className="font-medium">Warning: This will permanently delete the booking and all associated data.</p>
+                                        <p className="mt-1">This action cannot be undone.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                <div className="flex items-start space-x-2">
+                                    <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                                    <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                                        <p className="font-medium">Cannot Delete: Only pending bookings can be deleted.</p>
+                                        <p className="mt-1">This booking has status: <span className="font-semibold">{bookingToDelete?.status}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <DialogFooter className="gap-2">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => {
+                                setShowDeleteDialog(false);
+                                setBookingToDelete(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            variant="destructive" 
+                            onClick={confirmDeleteBooking}
+                            disabled={bookingToDelete?.status !== 'Pending'}
+                            className="bg-red-600 hover:bg-red-700 text-white disabled:bg-gray-400 disabled:hover:bg-gray-400"
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Booking
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

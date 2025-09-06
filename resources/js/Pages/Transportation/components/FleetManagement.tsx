@@ -6,6 +6,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import { TruckIcon } from "lucide-react";
 import { Truck, TruckFormData, FuelUpdateFormData } from "../types";
 import { useFleetManagement } from "../hooks";
 import { FuelUpdateDialog, FuelHistory } from "./index";
@@ -161,24 +162,39 @@ export default function FleetManagement() {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-gray-100">Fleet Management</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div className="bg-white dark:bg-gray-800">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <TruckIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Fleet Management</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Manage your vehicle fleet and maintenance</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {filteredTrucks.length} trucks
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="p-6">
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div className="flex-1 max-w-sm">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex-1 max-w-md">
                             <Input
                                 placeholder="Search trucks..."
                                 value={truckSearch}
                                 onChange={(e) => setTruckSearch(e.target.value)}
-                                className="max-w-sm"
+                                className="w-full bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
                         </div>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button>
+                                <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
                                     <PlusIcon className="mr-2 h-4 w-4" />
                                     Add New Truck
                                 </Button>
@@ -250,22 +266,23 @@ export default function FleetManagement() {
                         </DialogContent>
                     </Dialog>
 
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Plate Number</TableHead>
-                                <TableHead>Model</TableHead>
-                                <TableHead>Driver</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Fuel Level</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredTrucks.map((truck) => (
-                                <TableRow key={truck.id}>
-                                    <TableCell>{truck.plate_number}</TableCell>
-                                    <TableCell>{truck.model}</TableCell>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <Table>
+                            <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
+                                <TableRow className="border-gray-200 dark:border-gray-700">
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Plate Number</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Model</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Driver</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Fuel Level</TableHead>
+                                    <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {filteredTrucks.map((truck) => (
+                                    <TableRow key={truck.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                                        <TableCell className="font-medium text-gray-900 dark:text-gray-100">{truck.plate_number}</TableCell>
+                                        <TableCell className="text-gray-900 dark:text-gray-100">{truck.model}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="font-medium">
@@ -299,64 +316,69 @@ export default function FleetManagement() {
                                             ></div>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <div className="flex space-x-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleEditTruck(truck)}
-                                            >
-                                                <Pencil2Icon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteTruck(truck.id)}
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleScheduleMaintenance(truck.id)}
-                                                disabled={truck.status !== 'Available'}
-                                            >
-                                                Schedule Maintenance
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => openFuelUpdateDialog(truck.id)}
-                                            >
-                                                Update Fuel
-                                            </Button>
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm">
-                                                        Fuel History
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-2xl">
-                                                    <DialogHeader>
-                                                        <DialogTitle className="text-gray-900 dark:text-gray-100">Fuel History - {truck.plate_number}</DialogTitle>
-                                                    </DialogHeader>
-                                                    <FuelHistory truckId={truck.id} />
-                                                </DialogContent>
-                                            </Dialog>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                                        <TableCell>
+                                            <div className="flex flex-wrap gap-1">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleEditTruck(truck)}
+                                                    className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                                >
+                                                    <Pencil2Icon className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteTruck(truck.id)}
+                                                    className="h-8 w-8 p-0 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                >
+                                                    <TrashIcon className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleScheduleMaintenance(truck.id)}
+                                                    disabled={truck.status !== 'Available'}
+                                                    className="h-8 px-2 text-xs hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                                                >
+                                                    Maintenance
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => openFuelUpdateDialog(truck.id)}
+                                                    className="h-8 px-2 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
+                                                >
+                                                    Fuel
+                                                </Button>
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="outline" size="sm" className="h-8 px-2 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20">
+                                                            History
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="max-w-2xl">
+                                                        <DialogHeader>
+                                                            <DialogTitle className="text-gray-900 dark:text-gray-100">Fuel History - {truck.plate_number}</DialogTitle>
+                                                        </DialogHeader>
+                                                        <FuelHistory truckId={truck.id} />
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
-            </CardContent>
+            </div>
             
-                                    <FuelUpdateDialog
-                            isOpen={isFuelUpdateDialogOpen}
-                            onClose={() => setIsFuelUpdateDialogOpen(false)}
-                            truckId={updatingTruckFuelId}
-                        />
-        </Card>
+            <FuelUpdateDialog
+                isOpen={isFuelUpdateDialogOpen}
+                onClose={() => setIsFuelUpdateDialogOpen(false)}
+                truckId={updatingTruckFuelId}
+            />
+        </div>
     );
 }
