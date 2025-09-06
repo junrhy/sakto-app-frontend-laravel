@@ -8,9 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Calendar } from "@/Components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
-import { CalendarIcon, PlusIcon, Pencil2Icon, TrashIcon, ClockIcon } from "@radix-ui/react-icons";
+import { CalendarIcon, PlusIcon, Pencil2Icon, TrashIcon, ClockIcon, Cross2Icon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
-import { Shipment, ShipmentFormData, StatusUpdateFormData } from "../types";
+import { Shipment, ShipmentFormData, StatusUpdateFormData, Helper } from "../types";
 import { useShipmentTracking, useFleetManagement } from "../hooks";
 import StatusUpdateDialog from "./StatusUpdateDialog";
 import ShipmentTrackingHistory from "./ShipmentTrackingHistory";
@@ -41,6 +41,7 @@ export default function ShipmentTracking() {
     const [editingShipment, setEditingShipment] = useState<ShipmentFormData>({
         truckId: '',
         driver: '',
+        helpers: [],
         destination: '',
         origin: '',
         departureDate: '',
@@ -58,6 +59,7 @@ export default function ShipmentTracking() {
     const [newShipment, setNewShipment] = useState<ShipmentFormData>({
         truckId: '',
         driver: '',
+        helpers: [],
         destination: '',
         origin: '',
         departureDate: today,
@@ -72,19 +74,33 @@ export default function ShipmentTracking() {
         const searchTerm = shipmentSearch.toLowerCase();
         return (
             (shipment.driver && shipment.driver.toLowerCase().includes(searchTerm)) ||
+            (shipment.helpers && shipment.helpers.some(helper => 
+                helper.name.toLowerCase().includes(searchTerm) || 
+                helper.role.toLowerCase().includes(searchTerm)
+            )) ||
             (shipment.destination && shipment.destination.toLowerCase().includes(searchTerm)) ||
             (shipment.origin && shipment.origin.toLowerCase().includes(searchTerm)) ||
-            (shipment.cargo && shipment.cargo.toLowerCase().includes(searchTerm))
+            (shipment.cargo && shipment.cargo.toLowerCase().includes(searchTerm)) ||
+            (shipment.truck && shipment.truck.plate_number && shipment.truck.plate_number.toLowerCase().includes(searchTerm)) ||
+            (shipment.truck && shipment.truck.model && shipment.truck.model.toLowerCase().includes(searchTerm))
         );
     });
 
     const handleAddShipment = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await addShipment(newShipment);
+            // Filter out empty helpers (helpers without names)
+            const filteredHelpers = (newShipment.helpers || []).filter(helper => helper.name.trim() !== '');
+            const shipmentData = {
+                ...newShipment,
+                helpers: filteredHelpers
+            };
+            console.log('Submitting shipment with helpers:', shipmentData.helpers);
+            await addShipment(shipmentData);
             setNewShipment({
                 truckId: '',
                 driver: '',
+                helpers: [],
                 destination: '',
                 origin: '',
                 departureDate: today,
@@ -104,6 +120,7 @@ export default function ShipmentTracking() {
         setEditingShipment({
             truckId: shipment.truck_id || '',
             driver: shipment.driver || '',
+            helpers: shipment.helpers || [],
             destination: shipment.destination || '',
             origin: shipment.origin || '',
             departureDate: shipment.departure_date || '',
@@ -120,10 +137,13 @@ export default function ShipmentTracking() {
         try {
             const shipment = shipments.find(s => s.id === shipmentId);
             if (shipment) {
+                // Filter out empty helpers (helpers without names)
+                const filteredHelpers = (editingShipment.helpers || []).filter(helper => helper.name.trim() !== '');
                 await editShipment({
                     id: shipment.id,
                     truck_id: editingShipment.truckId,
                     driver: editingShipment.driver,
+                    helpers: filteredHelpers,
                     destination: editingShipment.destination,
                     origin: editingShipment.origin,
                     departure_date: editingShipment.departureDate,
@@ -151,6 +171,21 @@ export default function ShipmentTracking() {
     const openTrackingHistoryDialog = (shipmentId: string) => {
         setViewingShipmentId(shipmentId);
         setIsTrackingHistoryDialogOpen(true);
+    };
+
+    // Helper management functions
+    const addHelper = (helpers: Helper[], setHelpers: (helpers: Helper[]) => void) => {
+        setHelpers([...helpers, { name: '', role: '' }]);
+    };
+
+    const removeHelper = (helpers: Helper[], setHelpers: (helpers: Helper[]) => void, index: number) => {
+        setHelpers(helpers.filter((_, i) => i !== index));
+    };
+
+    const updateHelper = (helpers: Helper[], setHelpers: (helpers: Helper[]) => void, index: number, field: 'name' | 'role', value: string) => {
+        const updatedHelpers = [...helpers];
+        updatedHelpers[index] = { ...updatedHelpers[index], [field]: value };
+        setHelpers(updatedHelpers);
     };
 
 
@@ -220,7 +255,7 @@ export default function ShipmentTracking() {
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <Input
-                            placeholder="Search shipments..."
+                            placeholder="Search shipments, trucks, drivers, helpers..."
                             value={shipmentSearch}
                             onChange={(e) => setShipmentSearch(e.target.value)}
                             className="max-w-sm"
@@ -233,7 +268,7 @@ export default function ShipmentTracking() {
                                 New Shipment
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle className="text-gray-900 dark:text-gray-100">Add New Shipment</DialogTitle>
                             </DialogHeader>
@@ -277,6 +312,50 @@ export default function ShipmentTracking() {
                                     )}
 
                                 </div>
+                                
+                                {/* Helpers Section */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Helpers</label>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => addHelper(newShipment.helpers || [], (helpers) => setNewShipment({ ...newShipment, helpers }))}
+                                        >
+                                            <PlusIcon className="h-4 w-4 mr-1" />
+                                            Add Helper
+                                        </Button>
+                                    </div>
+                                    {newShipment.helpers && newShipment.helpers.map((helper, index) => (
+                                        <div key={index} className="flex gap-2 items-center">
+                                            <Input
+                                                placeholder="Helper name"
+                                                value={helper.name}
+                                                onChange={(e) => updateHelper(newShipment.helpers || [], (helpers) => setNewShipment({ ...newShipment, helpers }), index, 'name', e.target.value)}
+                                                className="flex-1"
+                                            />
+                                            <Input
+                                                placeholder="Role"
+                                                value={helper.role}
+                                                onChange={(e) => updateHelper(newShipment.helpers || [], (helpers) => setNewShipment({ ...newShipment, helpers }), index, 'role', e.target.value)}
+                                                className="flex-1"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => removeHelper(newShipment.helpers || [], (helpers) => setNewShipment({ ...newShipment, helpers }), index)}
+                                            >
+                                                <Cross2Icon className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    {(!newShipment.helpers || newShipment.helpers.length === 0) && (
+                                        <p className="text-sm text-muted-foreground dark:text-gray-400">No helpers added</p>
+                                    )}
+                                </div>
+                                
                                 <Input
                                     placeholder="Origin"
                                     value={newShipment.origin}
@@ -378,7 +457,9 @@ export default function ShipmentTracking() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>ID</TableHead>
+                            <TableHead>Truck</TableHead>
                             <TableHead>Driver</TableHead>
+                            <TableHead>Helpers</TableHead>
                             <TableHead>Route</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Priority</TableHead>
@@ -389,7 +470,31 @@ export default function ShipmentTracking() {
                         {filteredShipments.map((shipment) => (
                             <TableRow key={shipment.id}>
                                 <TableCell>{shipment.id}</TableCell>
+                                <TableCell>
+                                    {shipment.truck ? (
+                                        <div className="text-sm">
+                                            <div className="font-medium">{shipment.truck.plate_number}</div>
+                                            <div className="text-muted-foreground dark:text-gray-400">{shipment.truck.model}</div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground dark:text-gray-400">No truck assigned</span>
+                                    )}
+                                </TableCell>
                                 <TableCell>{shipment.driver}</TableCell>
+                                <TableCell>
+                                    {shipment.helpers && shipment.helpers.length > 0 ? (
+                                        <div className="space-y-1">
+                                            {shipment.helpers.map((helper, index) => (
+                                                <div key={index} className="text-sm">
+                                                    <div className="font-medium">{helper.name}</div>
+                                                    <div className="text-muted-foreground dark:text-gray-400 text-xs">{helper.role}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground dark:text-gray-400">No helpers</span>
+                                    )}
+                                </TableCell>
                                 <TableCell>
                                     {shipment.origin} → {shipment.destination}
                                 </TableCell>
@@ -446,7 +551,7 @@ export default function ShipmentTracking() {
             
             {/* Edit Shipment Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-gray-900 dark:text-gray-100">Edit Shipment</DialogTitle>
                     </DialogHeader>
@@ -489,6 +594,50 @@ export default function ShipmentTracking() {
                                 </p>
                             )}
                         </div>
+                        
+                        {/* Helpers Section */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Helpers</label>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addHelper(editingShipment.helpers || [], (helpers) => setEditingShipment({ ...editingShipment, helpers }))}
+                                >
+                                    <PlusIcon className="h-4 w-4 mr-1" />
+                                    Add Helper
+                                </Button>
+                            </div>
+                            {editingShipment.helpers && editingShipment.helpers.map((helper, index) => (
+                                <div key={index} className="flex gap-2 items-center">
+                                    <Input
+                                        placeholder="Helper name"
+                                        value={helper.name}
+                                        onChange={(e) => updateHelper(editingShipment.helpers || [], (helpers) => setEditingShipment({ ...editingShipment, helpers }), index, 'name', e.target.value)}
+                                        className="flex-1"
+                                    />
+                                    <Input
+                                        placeholder="Role"
+                                        value={helper.role}
+                                        onChange={(e) => updateHelper(editingShipment.helpers || [], (helpers) => setEditingShipment({ ...editingShipment, helpers }), index, 'role', e.target.value)}
+                                        className="flex-1"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => removeHelper(editingShipment.helpers || [], (helpers) => setEditingShipment({ ...editingShipment, helpers }), index)}
+                                    >
+                                        <Cross2Icon className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                            {(!editingShipment.helpers || editingShipment.helpers.length === 0) && (
+                                <p className="text-sm text-muted-foreground dark:text-gray-400">No helpers added</p>
+                            )}
+                        </div>
+                        
                         <Input
                             placeholder="Origin"
                             value={editingShipment.origin}

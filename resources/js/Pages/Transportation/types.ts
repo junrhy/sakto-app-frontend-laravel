@@ -14,10 +14,16 @@ export type Truck = {
     updated_at: string;
 };
 
+export type Helper = {
+    name: string;
+    role: string;
+};
+
 export type Shipment = {
     id: string;
     truck_id: string;
     driver: string;
+    helpers?: Helper[];
     destination: string;
     origin: string;
     departure_date: string;
@@ -30,6 +36,7 @@ export type Shipment = {
     customer_contact: string;
     priority: 'Low' | 'Medium' | 'High';
     tracking_updates?: TrackingUpdate[];
+    truck?: Truck;
 };
 
 export type CargoItem = {
@@ -97,6 +104,7 @@ export interface ShipmentFormData {
     customerContact: string;
     priority: 'Low' | 'Medium' | 'High';
     driver: string;
+    helpers?: Helper[];
 }
 
 export interface CargoFormData {

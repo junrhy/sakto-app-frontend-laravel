@@ -337,6 +337,9 @@ class TransportationController extends Controller
             $validated = $request->validate([
                 'truck_id' => 'required|integer',
                 'driver' => 'required|string|max:255',
+                'helpers' => 'nullable|array',
+                'helpers.*.name' => 'required_with:helpers|string|max:255',
+                'helpers.*.role' => 'required_with:helpers|string|max:255',
                 'destination' => 'required|string|max:255',
                 'origin' => 'required|string|max:255',
                 'departure_date' => 'required|date',
@@ -397,6 +400,9 @@ class TransportationController extends Controller
             $validated = $request->validate([
                 'truck_id' => 'required|integer',
                 'driver' => 'required|string|max:255',
+                'helpers' => 'nullable|array',
+                'helpers.*.name' => 'required_with:helpers|string|max:255',
+                'helpers.*.role' => 'required_with:helpers|string|max:255',
                 'destination' => 'required|string|max:255',
                 'origin' => 'required|string|max:255',
                 'departure_date' => 'required|date',

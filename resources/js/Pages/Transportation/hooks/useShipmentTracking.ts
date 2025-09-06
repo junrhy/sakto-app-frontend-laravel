@@ -24,6 +24,7 @@ export const useShipmentTracking = () => {
     const addShipment = async (shipmentData: {
         truckId: string;
         driver: string;
+        helpers?: Array<{name: string; role: string}>;
         destination: string;
         origin: string;
         departureDate: string;
@@ -37,6 +38,7 @@ export const useShipmentTracking = () => {
             const response = await axios.post('/transportation/shipments', {
                 truck_id: shipmentData.truckId,
                 driver: shipmentData.driver,
+                helpers: shipmentData.helpers || [],
                 destination: shipmentData.destination,
                 origin: shipmentData.origin,
                 departure_date: shipmentData.departureDate,
@@ -63,6 +65,7 @@ export const useShipmentTracking = () => {
             const response = await axios.put(`/transportation/shipments/${shipment.id}`, {
                 truck_id: shipment.truck_id,
                 driver: shipment.driver,
+                helpers: shipment.helpers || [],
                 destination: shipment.destination,
                 origin: shipment.origin,
                 departure_date: shipment.departure_date,

@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import { CargoItem, CargoFormData } from "../types";
-import { useCargoMonitoring, useShipmentTracking } from "../hooks";
+import { useCargoMonitoring, useShipmentTracking, useFleetManagement } from "../hooks";
 
 export default function CargoMonitoring() {
     const {
@@ -23,6 +23,7 @@ export default function CargoMonitoring() {
     } = useCargoMonitoring();
 
     const { shipments } = useShipmentTracking();
+    const { trucks } = useFleetManagement();
 
     const [cargoSearch, setCargoSearch] = useState('');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -185,56 +186,101 @@ export default function CargoMonitoring() {
                         <TableRow>
                             <TableHead>ID</TableHead>
                             <TableHead>Name</TableHead>
+                            <TableHead>Shipment</TableHead>
+                            <TableHead>Truck</TableHead>
+                            <TableHead>Driver</TableHead>
                             <TableHead>Quantity</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredCargoItems.map((item) => (
-                            <TableRow key={item.id}>
-                                <TableCell>{item.id}</TableCell>
-                                <TableCell>
-                                    <div>
-                                        <div className="font-medium">{item.name}</div>
-                                        {item.description && (
-                                            <div className="text-sm text-muted-foreground dark:text-gray-400">{item.description}</div>
+                        {filteredCargoItems.map((item) => {
+                            const shipment = shipments.find(s => s.id === item.shipment_id);
+                            const truck = shipment ? trucks.find(t => t.id === shipment.truck_id) : null;
+                            return (
+                                <TableRow key={item.id}>
+                                    <TableCell>{item.id}</TableCell>
+                                    <TableCell>
+                                        <div>
+                                            <div className="font-medium">{item.name}</div>
+                                            {item.description && (
+                                                <div className="text-sm text-muted-foreground dark:text-gray-400">{item.description}</div>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {shipment ? (
+                                            <div>
+                                                <div className="font-medium">#{shipment.id}</div>
+                                                <div className="text-sm text-muted-foreground dark:text-gray-400">
+                                                    {shipment.origin} → {shipment.destination}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground dark:text-gray-400">Unknown</span>
                                         )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    {item.quantity} {item.unit}
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant={
-                                        item.status === 'Delivered' ? 'default' :
-                                        item.status === 'In Transit' ? 'secondary' :
-                                        item.status === 'Damaged' ? 'destructive' :
-                                        'outline'
-                                    }>
-                                        {item.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex space-x-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleEditCargoItem(item)}
-                                        >
-                                            <Pencil2Icon className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDeleteCargoItem(item.id)}
-                                        >
-                                            <TrashIcon className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                    </TableCell>
+                                    <TableCell>
+                                        {truck ? (
+                                            <div>
+                                                <div className="font-medium">{truck.plate_number}</div>
+                                                <div className="text-sm text-muted-foreground dark:text-gray-400">
+                                                    {truck.model}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground dark:text-gray-400">Unknown</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {shipment ? (
+                                            <div>
+                                                <div className="font-medium">{shipment.driver}</div>
+                                                {truck?.driver_contact && (
+                                                    <div className="text-sm text-muted-foreground dark:text-gray-400">
+                                                        {truck.driver_contact}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground dark:text-gray-400">Unknown</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
+                                        {item.quantity} {item.unit}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={
+                                            item.status === 'Delivered' ? 'default' :
+                                            item.status === 'In Transit' ? 'secondary' :
+                                            item.status === 'Damaged' ? 'destructive' :
+                                            'outline'
+                                        }>
+                                            {item.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex space-x-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleEditCargoItem(item)}
+                                            >
+                                                <Pencil2Icon className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDeleteCargoItem(item.id)}
+                                            >
+                                                <TrashIcon className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </CardContent>

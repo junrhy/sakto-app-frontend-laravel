@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import PaymentDialog from './PaymentDialog';
 import { 
     Calendar, 
     Clock, 
@@ -26,7 +27,9 @@ import {
     CheckCircle,
     XCircle,
     AlertCircle,
-    Truck
+    Truck,
+    CreditCard,
+    DollarSign
 } from 'lucide-react';
 
 interface Booking {
@@ -49,6 +52,12 @@ interface Booking {
     estimated_cost: number;
     status: string;
     notes: string;
+    payment_status: string;
+    payment_method?: string;
+    payment_reference?: string;
+    paid_amount?: number;
+    payment_date?: string;
+    payment_notes?: string;
     created_at: string;
     updated_at: string;
     truck: {
@@ -77,6 +86,7 @@ export default function BookingManagement() {
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [showDetailsDialog, setShowDetailsDialog] = useState(false);
     const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [updateForm, setUpdateForm] = useState({
@@ -152,6 +162,25 @@ export default function BookingManagement() {
             <Badge className={config.color}>
                 <Icon className="w-3 h-3 mr-1" />
                 {status}
+            </Badge>
+        );
+    };
+
+    const getPaymentStatusBadge = (status: string) => {
+        const statusConfig = {
+            'pending': { color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
+            'paid': { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+            'failed': { color: 'bg-red-100 text-red-800', icon: XCircle },
+            'refunded': { color: 'bg-gray-100 text-gray-800', icon: AlertCircle },
+        };
+
+        const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['pending'];
+        const Icon = config.icon;
+
+        return (
+            <Badge className={config.color}>
+                <Icon className="w-3 h-3 mr-1" />
+                {status.charAt(0).toUpperCase() + status.slice(1)}
             </Badge>
         );
     };
@@ -258,6 +287,7 @@ export default function BookingManagement() {
                                     <TableHead>Delivery</TableHead>
                                     <TableHead>Cargo</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Payment</TableHead>
                                     <TableHead>Cost</TableHead>
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
@@ -265,13 +295,13 @@ export default function BookingManagement() {
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={9} className="text-center py-8">
+                                        <TableCell colSpan={10} className="text-center py-8">
                                             Loading bookings...
                                         </TableCell>
                                     </TableRow>
                                 ) : filteredBookings.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={9} className="text-center py-8">
+                                        <TableCell colSpan={10} className="text-center py-8">
                                             No bookings found
                                         </TableCell>
                                     </TableRow>
@@ -320,7 +350,26 @@ export default function BookingManagement() {
                                                 {getStatusBadge(booking.status)}
                                             </TableCell>
                                             <TableCell>
-                                                {booking.estimated_cost ? formatCurrency(booking.estimated_cost) : 'TBD'}
+                                                <div className="space-y-1">
+                                                    {getPaymentStatusBadge(booking.payment_status)}
+                                                    {booking.payment_method && (
+                                                        <div className="text-xs text-gray-500">
+                                                            {booking.payment_method.replace('_', ' ').toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="space-y-1">
+                                                    <div className="font-medium">
+                                                        {booking.estimated_cost ? formatCurrency(booking.estimated_cost) : 'TBD'}
+                                                    </div>
+                                                    {booking.paid_amount && (
+                                                        <div className="text-sm text-green-600">
+                                                            Paid: {formatCurrency(booking.paid_amount)}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex gap-2">
@@ -349,6 +398,19 @@ export default function BookingManagement() {
                                                     >
                                                         <Edit className="w-4 h-4" />
                                                     </Button>
+                                                    {booking.payment_status !== 'paid' && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setSelectedBooking(booking);
+                                                                setShowPaymentDialog(true);
+                                                            }}
+                                                            className="text-green-600 hover:text-green-700"
+                                                        >
+                                                            <CreditCard className="w-4 h-4" />
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
@@ -552,6 +614,17 @@ export default function BookingManagement() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Payment Dialog */}
+            <PaymentDialog
+                isOpen={showPaymentDialog}
+                onClose={() => setShowPaymentDialog(false)}
+                booking={selectedBooking}
+                onPaymentSuccess={() => {
+                    fetchBookings();
+                    fetchStats();
+                }}
+            />
         </div>
     );
 }

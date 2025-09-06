@@ -8,4 +8,5 @@ export { default as FuelHistory } from './FuelHistory';
 export { default as CargoMonitoring } from './CargoMonitoring';
 export { default as BookingManagement } from './BookingManagement';
 export { default as PricingManagement } from './PricingManagement';
+export { default as PaymentDialog } from './PaymentDialog';
 
