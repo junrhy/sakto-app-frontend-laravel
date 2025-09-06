@@ -732,6 +732,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::get('/{id}', [TransportationController::class, 'showBooking'])->name('transportation.bookings.show');
         Route::put('/{id}', [TransportationController::class, 'updateBooking'])->name('transportation.bookings.update');
         Route::delete('/{id}', [TransportationController::class, 'destroyBooking'])->name('transportation.bookings.destroy');
+        Route::post('/{id}/payment', [TransportationController::class, 'processPayment'])->name('transportation.bookings.payment');
     });
 
     // Transportation Pricing Configuration Routes

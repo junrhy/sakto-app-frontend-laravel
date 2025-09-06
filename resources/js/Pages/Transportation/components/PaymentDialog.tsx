@@ -85,15 +85,26 @@ export default function PaymentDialog({ isOpen, onClose, booking, onPaymentSucce
             return;
         }
 
+        // Validate amount
+        const amountToPay = paidAmount || booking.estimated_cost;
+        if (amountToPay <= 0) {
+            setError('Please enter a valid payment amount');
+            return;
+        }
+
+        if (amountToPay > 999999999.99) {
+            setError('Payment amount is too large. Maximum allowed is ₱999,999,999.99');
+            return;
+        }
+
         setIsProcessing(true);
         setError('');
 
         try {
-            const response = await axios.post(`/api/transportation/bookings/${booking.id}/payment`, {
-                client_identifier: 'default', // This should come from your app context
+            const response = await axios.post(`/transportation/bookings/${booking.id}/payment`, {
                 payment_method: paymentMethod,
                 payment_reference: paymentReference || undefined,
-                paid_amount: paidAmount || booking.estimated_cost,
+                paid_amount: amountToPay,
                 payment_notes: paymentNotes || undefined,
             });
 
@@ -110,7 +121,15 @@ export default function PaymentDialog({ isOpen, onClose, booking, onPaymentSucce
             }
         } catch (error: any) {
             console.error('Payment error:', error);
-            setError(error.response?.data?.message || 'An error occurred while processing payment');
+            
+            // Handle validation errors
+            if (error.response?.data?.errors) {
+                const errors = error.response.data.errors;
+                const errorMessages = Object.values(errors).flat();
+                setError(`Validation error: ${errorMessages.join(', ')}`);
+            } else {
+                setError(error.response?.data?.message || 'An error occurred while processing payment');
+            }
         } finally {
             setIsProcessing(false);
         }

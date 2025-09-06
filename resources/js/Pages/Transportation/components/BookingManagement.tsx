@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Calendar as CalendarComponent } from '@/Components/ui/calendar';
 import PaymentDialog from './PaymentDialog';
 import { 
     Calendar, 
@@ -29,7 +31,8 @@ import {
     AlertCircle,
     Truck,
     CreditCard,
-    DollarSign
+    DollarSign,
+    Plus
 } from 'lucide-react';
 
 interface Booking {
@@ -87,26 +90,58 @@ export default function BookingManagement() {
     const [showDetailsDialog, setShowDetailsDialog] = useState(false);
     const [showUpdateDialog, setShowUpdateDialog] = useState(false);
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+    const [showAddBookingDialog, setShowAddBookingDialog] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [trucks, setTrucks] = useState<any[]>([]);
+    const [pickupCalendarOpen, setPickupCalendarOpen] = useState(false);
+    const [deliveryCalendarOpen, setDeliveryCalendarOpen] = useState(false);
     const [updateForm, setUpdateForm] = useState({
         status: '',
         notes: '',
         estimated_cost: 0
     });
+    const [addBookingForm, setAddBookingForm] = useState({
+        truck_id: '',
+        customer_name: '',
+        customer_email: '',
+        customer_phone: '',
+        customer_company: '',
+        pickup_location: '',
+        delivery_location: '',
+        pickup_date: '',
+        pickup_time: '',
+        delivery_date: '',
+        delivery_time: '',
+        cargo_description: '',
+        cargo_weight: '',
+        cargo_unit: 'kg',
+        special_requirements: ''
+    });
 
     useEffect(() => {
         fetchBookings();
         fetchStats();
+        fetchTrucks();
     }, []);
 
     const fetchBookings = async () => {
         try {
             setLoading(true);
             const response = await axios.get('/transportation/bookings/list');
-            setBookings(response.data);
+            
+            // Handle different response structures
+            if (Array.isArray(response.data)) {
+                setBookings(response.data);
+            } else if (response.data && Array.isArray(response.data.data)) {
+                setBookings(response.data.data);
+            } else {
+                console.error('Unexpected response structure:', response.data);
+                setBookings([]);
+            }
         } catch (error) {
             console.error('Failed to fetch bookings:', error);
+            setBookings([]);
         } finally {
             setLoading(false);
         }
@@ -115,9 +150,36 @@ export default function BookingManagement() {
     const fetchStats = async () => {
         try {
             const response = await axios.get('/transportation/bookings/stats');
-            setStats(response.data);
+            
+            // Handle different response structures
+            if (response.data && typeof response.data === 'object') {
+                setStats(response.data);
+            } else {
+                console.error('Unexpected stats response structure:', response.data);
+                setStats(null);
+            }
         } catch (error) {
             console.error('Failed to fetch stats:', error);
+            setStats(null);
+        }
+    };
+
+    const fetchTrucks = async () => {
+        try {
+            const response = await axios.get('/transportation/fleet/list');
+            
+            // Handle different response structures
+            if (Array.isArray(response.data)) {
+                setTrucks(response.data);
+            } else if (response.data && Array.isArray(response.data.data)) {
+                setTrucks(response.data.data);
+            } else {
+                console.error('Unexpected trucks response structure:', response.data);
+                setTrucks([]);
+            }
+        } catch (error) {
+            console.error('Failed to fetch trucks:', error);
+            setTrucks([]);
         }
     };
 
@@ -143,6 +205,91 @@ export default function BookingManagement() {
             fetchStats();
         } catch (error) {
             console.error('Failed to delete booking:', error);
+        }
+    };
+
+    const handleAddBooking = async () => {
+        // Validate required fields
+        const requiredFields = [
+            'truck_id', 'customer_name', 'customer_email', 'customer_phone',
+            'pickup_location', 'delivery_location', 'pickup_date', 'pickup_time',
+            'delivery_date', 'delivery_time', 'cargo_description', 'cargo_weight'
+        ];
+
+        const missingFields = requiredFields.filter(field => !addBookingForm[field as keyof typeof addBookingForm]);
+        
+        if (missingFields.length > 0) {
+            alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+            return;
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(addBookingForm.customer_email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        // Validate weight is a positive number
+        const weight = parseFloat(addBookingForm.cargo_weight);
+        if (isNaN(weight) || weight <= 0) {
+            alert('Please enter a valid weight greater than 0');
+            return;
+        }
+
+        // Validate delivery date is after pickup date
+        if (new Date(addBookingForm.delivery_date) < new Date(addBookingForm.pickup_date)) {
+            alert('Delivery date must be after pickup date');
+            return;
+        }
+
+        try {
+            const formData = {
+                ...addBookingForm,
+                truck_id: parseInt(addBookingForm.truck_id),
+                cargo_weight: weight
+            };
+
+            await axios.post('/transportation/bookings', formData);
+            setShowAddBookingDialog(false);
+            setAddBookingForm({
+                truck_id: '',
+                customer_name: '',
+                customer_email: '',
+                customer_phone: '',
+                customer_company: '',
+                pickup_location: '',
+                delivery_location: '',
+                pickup_date: '',
+                pickup_time: '',
+                delivery_date: '',
+                delivery_time: '',
+                cargo_description: '',
+                cargo_weight: '',
+                cargo_unit: 'kg',
+                special_requirements: ''
+            });
+            fetchBookings();
+            fetchStats();
+        } catch (error: any) {
+            console.error('Failed to create booking:', error);
+            
+            let errorMessage = 'Failed to create booking. Please try again.';
+            
+            if (error.response) {
+                const responseData = error.response.data;
+                if (responseData.message) {
+                    errorMessage = responseData.message;
+                }
+                if (responseData.errors) {
+                    const validationErrors = Object.values(responseData.errors).flat();
+                    errorMessage = `Validation errors: ${validationErrors.join(', ')}`;
+                }
+            } else if (error.request) {
+                errorMessage = 'Unable to connect to the server. Please check your connection.';
+            }
+            
+            alert(errorMessage);
         }
     };
 
@@ -185,7 +332,7 @@ export default function BookingManagement() {
         );
     };
 
-    const filteredBookings = bookings.filter(booking => {
+    const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(booking => {
         const matchesSearch = 
             booking.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             booking.customer_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -213,14 +360,59 @@ export default function BookingManagement() {
         }).format(amount);
     };
 
+    const formatDateForDisplay = (dateString: string) => {
+        if (!dateString) return '';
+        // Create date in local timezone to avoid timezone issues
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const handlePickupDateSelect = (date: Date | undefined) => {
+        if (date) {
+            // Use local timezone to avoid date shifting
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            setAddBookingForm({...addBookingForm, pickup_date: formattedDate});
+            setPickupCalendarOpen(false);
+        }
+    };
+
+    const handleDeliveryDateSelect = (date: Date | undefined) => {
+        if (date) {
+            // Use local timezone to avoid date shifting
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            setAddBookingForm({...addBookingForm, delivery_date: formattedDate});
+            setDeliveryCalendarOpen(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5" />
-                        Booking Management
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2">
+                            <Calendar className="w-5 h-5" />
+                            Booking Management
+                        </CardTitle>
+                        <Button 
+                            onClick={() => setShowAddBookingDialog(true)}
+                            className="flex items-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add Booking
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {/* Stats Cards */}
@@ -625,6 +817,238 @@ export default function BookingManagement() {
                     fetchStats();
                 }}
             />
+
+            {/* Add Booking Dialog */}
+            <Dialog open={showAddBookingDialog} onOpenChange={setShowAddBookingDialog}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Add New Booking</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6">
+                        {/* Customer Information */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Customer Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="customer_name">Customer Name *</Label>
+                                    <Input
+                                        id="customer_name"
+                                        value={addBookingForm.customer_name}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_name: e.target.value})}
+                                        placeholder="Enter customer name"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer_email">Email *</Label>
+                                    <Input
+                                        id="customer_email"
+                                        type="email"
+                                        value={addBookingForm.customer_email}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_email: e.target.value})}
+                                        placeholder="Enter email address"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer_phone">Phone *</Label>
+                                    <Input
+                                        id="customer_phone"
+                                        value={addBookingForm.customer_phone}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_phone: e.target.value})}
+                                        placeholder="Enter phone number"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="customer_company">Company</Label>
+                                    <Input
+                                        id="customer_company"
+                                        value={addBookingForm.customer_company}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, customer_company: e.target.value})}
+                                        placeholder="Enter company name"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Location Information */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Location Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="pickup_location">Pickup Location *</Label>
+                                    <Input
+                                        id="pickup_location"
+                                        value={addBookingForm.pickup_location}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, pickup_location: e.target.value})}
+                                        placeholder="Enter pickup address"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="delivery_location">Delivery Location *</Label>
+                                    <Input
+                                        id="delivery_location"
+                                        value={addBookingForm.delivery_location}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, delivery_location: e.target.value})}
+                                        placeholder="Enter delivery address"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Schedule Information */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Schedule Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="pickup_date">Pickup Date *</Label>
+                                    <Popover open={pickupCalendarOpen} onOpenChange={setPickupCalendarOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start text-left font-normal"
+                                            >
+                                                <Calendar className="mr-2 h-4 w-4" />
+                                                {addBookingForm.pickup_date ? formatDateForDisplay(addBookingForm.pickup_date) : "Select pickup date"}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <CalendarComponent
+                                                mode="single"
+                                                selected={addBookingForm.pickup_date ? new Date(addBookingForm.pickup_date + 'T00:00:00') : undefined}
+                                                onSelect={handlePickupDateSelect}
+                                                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div>
+                                    <Label htmlFor="pickup_time">Pickup Time *</Label>
+                                    <Input
+                                        id="pickup_time"
+                                        type="time"
+                                        value={addBookingForm.pickup_time}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, pickup_time: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="delivery_date">Delivery Date *</Label>
+                                    <Popover open={deliveryCalendarOpen} onOpenChange={setDeliveryCalendarOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start text-left font-normal"
+                                            >
+                                                <Calendar className="mr-2 h-4 w-4" />
+                                                {addBookingForm.delivery_date ? formatDateForDisplay(addBookingForm.delivery_date) : "Select delivery date"}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <CalendarComponent
+                                                mode="single"
+                                                selected={addBookingForm.delivery_date ? new Date(addBookingForm.delivery_date + 'T00:00:00') : undefined}
+                                                onSelect={handleDeliveryDateSelect}
+                                                disabled={(date) => {
+                                                    const today = new Date(new Date().setHours(0, 0, 0, 0));
+                                                    const pickupDate = addBookingForm.pickup_date ? new Date(addBookingForm.pickup_date + 'T00:00:00') : today;
+                                                    return date < pickupDate;
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div>
+                                    <Label htmlFor="delivery_time">Delivery Time *</Label>
+                                    <Input
+                                        id="delivery_time"
+                                        type="time"
+                                        value={addBookingForm.delivery_time}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, delivery_time: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Cargo Information */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Cargo Information</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="cargo_description">Cargo Description *</Label>
+                                    <Input
+                                        id="cargo_description"
+                                        value={addBookingForm.cargo_description}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, cargo_description: e.target.value})}
+                                        placeholder="Describe the cargo"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="truck_id">Truck *</Label>
+                                    <Select value={addBookingForm.truck_id} onValueChange={(value) => setAddBookingForm({...addBookingForm, truck_id: value})}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a truck" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {trucks.map((truck) => (
+                                                <SelectItem key={truck.id} value={truck.id.toString()}>
+                                                    {truck.model} - {truck.plate_number} (Capacity: {truck.capacity}kg)
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label htmlFor="cargo_weight">Weight *</Label>
+                                    <Input
+                                        id="cargo_weight"
+                                        type="number"
+                                        step="0.01"
+                                        value={addBookingForm.cargo_weight}
+                                        onChange={(e) => setAddBookingForm({...addBookingForm, cargo_weight: e.target.value})}
+                                        placeholder="Enter weight"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="cargo_unit">Unit *</Label>
+                                    <Select value={addBookingForm.cargo_unit} onValueChange={(value) => setAddBookingForm({...addBookingForm, cargo_unit: value})}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                                            <SelectItem value="tons">Tons</SelectItem>
+                                            <SelectItem value="pieces">Pieces</SelectItem>
+                                            <SelectItem value="pallets">Pallets</SelectItem>
+                                            <SelectItem value="boxes">Boxes</SelectItem>
+                                            <SelectItem value="liters">Liters</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div>
+                                <Label htmlFor="special_requirements">Special Requirements</Label>
+                                <textarea
+                                    id="special_requirements"
+                                    value={addBookingForm.special_requirements}
+                                    onChange={(e) => setAddBookingForm({...addBookingForm, special_requirements: e.target.value})}
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                    rows={3}
+                                    placeholder="Any special handling requirements..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setShowAddBookingDialog(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleAddBooking}>
+                                Create Booking
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -760,6 +760,19 @@ class TransportationController extends Controller
     public function storeBooking(Request $request)
     {
         try {
+            // Check if API configuration is available
+            if (empty($this->apiUrl) || empty($this->apiToken)) {
+                Log::error('API configuration missing', [
+                    'api_url' => $this->apiUrl,
+                    'api_token_set' => !empty($this->apiToken)
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'API configuration is missing. Please check your environment variables.',
+                    'error' => 'API_URL or API_TOKEN not configured'
+                ], 500);
+            }
+
             $validated = $request->validate([
                 'truck_id' => 'required|integer',
                 'customer_name' => 'required|string|max:255',
@@ -780,12 +793,37 @@ class TransportationController extends Controller
 
             $validated['client_identifier'] = auth()->user()->identifier;
 
-            $response = Http::withToken($this->apiToken)
+            Log::info('Attempting to create booking', [
+                'api_url' => $this->apiUrl . '/transportation/bookings',
+                'data' => $validated
+            ]);
+
+            // Transportation booking endpoints require authentication
+            $response = Http::timeout(30)
+                ->withToken($this->apiToken)
                 ->post($this->apiUrl . '/transportation/bookings', $validated);
 
+            if ($response->failed()) {
+                Log::error('API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'headers' => $response->headers()
+                ]);
+            }
+
             return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed for booking creation', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
-            Log::error('Failed to create booking', ['error' => $e->getMessage()]);
+            Log::error('Failed to create booking', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create booking',
@@ -891,6 +929,71 @@ class TransportationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch booking',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Process payment for a booking.
+     */
+    public function processPayment(Request $request, $id)
+    {
+        // Simple debug log to confirm method is being called
+        Log::info('=== PROCESS PAYMENT METHOD CALLED ===', [
+            'booking_id' => $id,
+            'request_data' => $request->all(),
+            'user_id' => auth()->id(),
+            'user_identifier' => auth()->user()->identifier ?? 'NO_IDENTIFIER'
+        ]);
+        
+        try {
+            // Log the incoming request for debugging
+            Log::info('Payment processing request', [
+                'booking_id' => $id,
+                'request_data' => $request->all(),
+                'user_identifier' => auth()->user()->identifier
+            ]);
+
+            $validated = $request->validate([
+                'payment_method' => 'required|string|in:cash,card,bank_transfer,digital_wallet',
+                'payment_reference' => 'nullable|string|max:255',
+                'paid_amount' => 'required|numeric|min:0.01|max:999999999.99',
+                'payment_notes' => 'nullable|string|max:1000',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            Log::info('Validated payment data', ['validated_data' => $validated]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/transportation/bookings/' . $id . '/payment', $validated);
+
+            Log::info('Backend API response', [
+                'status' => $response->status(),
+                'response' => $response->json()
+            ]);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed for payment processing', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Failed to process payment', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process payment',
                 'error' => $e->getMessage(),
             ], 500);
         }
