@@ -5,11 +5,12 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from '@/Components/ui/button';
 import { CreditCardIcon, SparklesIcon, AlertCircle } from 'lucide-react';
 import { PageProps, User, Project } from '@/types/index';
 import { parseEnabledModules } from '@/lib/utils';
+import { getApps, type App } from '@/data/apps';
 
 interface DashboardType {
     id: number;
@@ -113,6 +114,9 @@ const requiresSubscription = (appParam: string | null, auth: any): boolean => {
 export default function Authenticated({ children, header, user, auth: propAuth }: Props) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [credits, setCredits] = useState<number>(0);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+    const [apps, setApps] = useState<App[]>([]);
+    const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
     const { url } = usePage();
     const pageProps = usePage<{ auth: { user: any; project: any; modules: string[]; selectedTeamMember?: any } }>().props;
@@ -139,7 +143,21 @@ export default function Authenticated({ children, header, user, auth: propAuth }
             }
         };
 
+        const fetchApps = async () => {
+            try {
+                setIsLoadingApps(true);
+                const appData = await getApps();
+                setApps(appData);
+            } catch (error) {
+                console.error('Failed to fetch apps:', error);
+                setApps([]);
+            } finally {
+                setIsLoadingApps(false);
+            }
+        };
+
         fetchCredits();
+        fetchApps();
     }, [authUser.identifier]);
 
     const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
@@ -169,21 +187,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const hasBillPaymentsAccess = (enabledModules.includes('bill-payments') && (appParam === 'bill-payments' || url.includes('bill-payments'))) ?? false;
     const hasCoursesAccess = (enabledModules.includes('courses') && (appParam === 'courses' || url.includes('courses'))) ?? false;
 
-    const [hideNav, setHideNav] = useState(() => {
-        // Get stored preference from localStorage, default to false
-        return localStorage.getItem('hideNav') === 'true';
-    });
-
-    useEffect(() => {
-        localStorage.setItem('hideNav', hideNav.toString());
-    }, [hideNav]);
 
     return (
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
                 {/* Subscription Notification Banner */}
                 {requiresSubscription(appParam, auth) && (
-                    <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-purple-600 dark:to-indigo-600 z-50 text-center text-white text-sm py-2">
+                    <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-purple-600 dark:to-indigo-600 z-[55] text-center text-white text-sm py-2">
                         <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
                             <span className="font-medium">This feature requires a subscription plan for premium access!</span>
                             <Button 
@@ -202,7 +212,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                 <div
                     className={
                         (showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full') +
-                        ' fixed inset-y-0 left-0 w-full transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg z-[60] overflow-y-auto'
+                        ' fixed inset-y-0 left-0 w-full transform transition-transform duration-300 ease-in-out sm:hidden bg-gradient-to-b from-gray-900 to-gray-800 shadow-lg z-[70] overflow-y-auto'
                     }
                 >
                     {/* Close Button */}
@@ -565,13 +575,15 @@ export default function Authenticated({ children, header, user, auth: propAuth }
 
                 {showingNavigationDropdown && (
                     <div 
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[55] sm:hidden"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[65] sm:hidden"
                         onClick={() => setShowingNavigationDropdown(false)}
                     />
                 )}
 
-                <nav className={`border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
-                    <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                <nav className={`border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
+                    sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-[268px]'
+                }`}>
+                    <div className="px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
                                 {/* Mobile Menu Button */}
@@ -612,20 +624,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     </button>
                                 </div>
 
-                                <div className="flex shrink-0 items-center">
-                                    <Link href="/home" className="transition-transform hover:scale-105">
-                                        <div className="flex items-center">
-                                            <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-white" />
-                                            <div className="ml-2">
-                                                <span className="text-xl font-black text-gray-800 dark:text-white">
-                                                    {authUser.name}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </div>
 
-                                <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+
+                                <div className="hidden space-x-8 sm:-my-px sm:flex">
                                     <NavLink
                                         href={route('home')}
                                         active={route().current('home')}
@@ -1433,61 +1434,211 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 </div>
                             </div>
 
-                            {/* Right side dropdown with user menu and logout */}
-                            <div className="hidden sm:flex items-center space-x-4">
-                                {/* User dropdown */}
-                                <div className="relative">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <button className="flex items-center space-x-2 text-gray-800 dark:text-white/90 hover:text-white transition-colors duration-200 focus:outline-none">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="hidden sm:block text-sm font-medium">
-                                                        {auth.selectedTeamMember?.full_name || authUser.name}
-                                                    </span>
-                                                    <svg
-                                                        className="h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </div>
-                                            </button>
-                                        </Dropdown.Trigger>
-
-                                        <Dropdown.Content align="right" contentClasses="w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
-                                            <Dropdown.Link href={route('profile.edit')} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                                                Profile
-                                            </Dropdown.Link>
-                                            
-                                            <Dropdown.Link href="/help" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                                                Help
-                                            </Dropdown.Link>
-                                            
-                                            <div className="border-t border-gray-200 dark:border-gray-700">
-                                                <Dropdown.Link 
-                                                    href={route('logout')} 
-                                                    method="post" 
-                                                    as="button"
-                                                    className="w-full text-left text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20"
-                                                >
-                                                    Logout
-                                                </Dropdown.Link>
-                                            </div>
-                                        </Dropdown.Content>
-                                    </Dropdown>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </nav>
 
-                <div className="relative bg-white dark:bg-gray-800 min-h-screen">
+                {/* Sidebar */}
+                <div className={`fixed left-0 top-0 h-screen z-30 transition-all duration-300 ease-in-out ${
+                    sidebarCollapsed ? 'w-16' : 'w-64'
+                } bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 shadow-lg hidden lg:block flex flex-col`}>
+                    {/* Sidebar Toggle Button - Positioned on the border */}
+                    <button
+                        onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                        className={`absolute top-4 z-[70] w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center text-gray-700 dark:text-white/80 transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-1 ${
+                            sidebarCollapsed ? 'right-[-10px]' : 'right-[-10px]'
+                        }`}
+                    >
+                        {sidebarCollapsed ? (
+                            <ChevronRight className="h-3 w-3" />
+                        ) : (
+                            <ChevronLeft className="h-3 w-3" />
+                        )}
+                    </button>
+
+                    {/* Sidebar Navbar */}
+                    <div className="h-16 border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-700 flex items-center px-3 flex-shrink-0">
+                        {sidebarCollapsed ? (
+                            <div className="flex items-center justify-center w-full">
+                                <ApplicationLogo className="block h-8 w-auto fill-current text-gray-800 dark:text-white" />
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center w-full min-w-0">
+                                <span className="text-lg font-bold text-gray-800 dark:text-white truncate block">
+                                    {authUser.name}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Sidebar Content - Flex layout to push user menu to bottom */}
+                    <div className="flex flex-col flex-1 min-h-0">
+                        {/* Apps Section - Scrollable */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="p-4 pb-8">
+                                {!sidebarCollapsed && (
+                                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                                        Apps
+                                    </h3>
+                                )}
+                                <div className="space-y-1">
+                                    {isLoadingApps ? (
+                                        <div className="flex items-center justify-center py-8">
+                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600 dark:border-gray-300"></div>
+                                        </div>
+                                    ) : (
+                                        (() => {
+                                            const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
+                                            const filteredApps = apps.filter(app => {
+                                                // Convert app title to match module name format (lowercase and hyphenated)
+                                                const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
+                                                
+                                                // Only show apps that are in enabledModules
+                                                if (!enabledModules.includes(normalizedAppTitle)) {
+                                                    return false;
+                                                }
+                                                
+                                                // Show app if it's marked as visible
+                                                if (app.visible) {
+                                                    return true;
+                                                }
+                                                
+                                                // Show all enabled apps regardless of visibility (since all apps are currently set to visible: false)
+                                                return true;
+                                            });
+                                            
+                                            // If no apps are shown due to filtering, show all visible apps as fallback
+                                            const appsToShow = filteredApps.length > 0 ? filteredApps : apps.filter(app => app.visible);
+                                            
+                                            // If still no apps, show all apps for debugging
+                                            const finalAppsToShow = appsToShow.length > 0 ? appsToShow : apps;
+                                            
+                                            if (finalAppsToShow.length === 0) {
+                                                return (
+                                                    <div className="text-center py-4">
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">No apps available</p>
+                                                    </div>
+                                                );
+                                            }
+                                            
+                                            return finalAppsToShow.sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
+                                                <Link
+                                                    key={app.title}
+                                                    href={app.route}
+                                                    className={`flex items-center transition-colors duration-200 ${
+                                                        sidebarCollapsed ? 'justify-center px-2 py-1.5' : 'px-2 py-1.5'
+                                                    }`}
+                                                    title={sidebarCollapsed ? app.title : undefined}
+                                                >
+                                                    <div className={`flex-shrink-0 flex items-center justify-center ${
+                                                        sidebarCollapsed ? 'w-10 h-10' : 'w-8 h-8 mr-3'
+                                                    }`}>
+                                                        <div className={`text-gray-600 dark:text-gray-300 ${
+                                                            sidebarCollapsed ? 'text-xl' : 'text-lg'
+                                                        }`}>
+                                                            {app.icon}
+                                                        </div>
+                                                    </div>
+                                                    {!sidebarCollapsed && (
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                                                                {app.title}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </Link>
+                                            ));
+                                        })()
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* User Menu at Bottom - Always stays at bottom */}
+                        <div className="border-t border-gray-200 dark:border-gray-600 px-4 pt-2 pb-1 flex-shrink-0">
+                            {!sidebarCollapsed && (
+                                <div className="space-y-1">
+                                    {/* User Name */}
+                                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                                        {auth.selectedTeamMember?.full_name || authUser.name}
+                                    </h3>
+                                    <Link
+                                        href={route('profile.edit')}
+                                        className="flex items-center px-2 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                    >
+                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        Profile
+                                    </Link>
+                                    
+                                    <Link
+                                        href="/help"
+                                        className="flex items-center px-2 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                    >
+                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Help
+                                    </Link>
+                                    
+                                    <Link
+                                        href={route('logout')}
+                                        method="post"
+                                        as="button"
+                                        className="flex items-center w-full px-2 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors duration-200 rounded-md"
+                                    >
+                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        Logout
+                                    </Link>
+                                </div>
+                            )}
+                            
+                            {sidebarCollapsed && (
+                                <div className="flex flex-col items-center space-y-1">
+                                    <Link
+                                        href={route('profile.edit')}
+                                        className="p-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                        title="Profile"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </Link>
+                                    
+                                    <Link
+                                        href="/help"
+                                        className="p-1.5 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 rounded-md"
+                                        title="Help"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </Link>
+                                    
+                                    <Link
+                                        href={route('logout')}
+                                        method="post"
+                                        as="button"
+                                        className="p-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors duration-200 rounded-md"
+                                        title="Logout"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main content with sidebar offset */}
+                <div className={`relative bg-white dark:bg-gray-800 min-h-screen transition-all duration-300 ease-in-out pt-16 ${
+                    sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+                }`}>
                     {header && (
                         <header className="bg-white/80 shadow-sm backdrop-blur-lg dark:bg-gray-800/80">
                             <div className="px-4 py-6 sm:px-6 lg:px-8">
@@ -1503,17 +1654,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     </main>
                 </div>
 
-                <button
-                    onClick={() => setHideNav(!hideNav)}
-                    className="hidden sm:block fixed top-2 right-2 z-50 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-full shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/80 transition-colors duration-200"
-                    aria-label="Toggle navigation"
-                >
-                    {hideNav ? (
-                        <ChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    ) : (
-                        <ChevronUp className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    )}
-                </button>
             </div>
         </ThemeProvider>
     );
