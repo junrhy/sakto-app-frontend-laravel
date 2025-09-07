@@ -20,6 +20,14 @@ import {
     RxFile,
     RxStar,
     RxCross1,
+    RxActivityLog,
+    RxPause,
+    RxLockClosed,
+    RxBookmark,
+    RxTarget,
+    RxCardStack,
+    RxClipboard,
+    RxGroup,
 } from 'react-icons/rx';
 
 export interface App {
@@ -84,11 +92,11 @@ const iconMap: Record<AppTitle, JSX.Element> = {
     'Content Creator': <RxPencil1 />,
     'Digital Products': <RxMobile />,
     'Pages': <RxFile />,
-    'Healthcare': <RxHeart />,
+    'Healthcare': <RxActivityLog />,
     'Mortuary': <RxCross1 />,
-    'Bill Payments': <RxIdCard />,
-    'Billers': <RxIdCard />,
-    'Courses': <RxPencil1 />
+    'Bill Payments': <RxCardStack />,
+    'Billers': <RxClipboard />,
+    'Courses': <RxTarget />
 };
 
 // Map of app titles to their respective background colors
