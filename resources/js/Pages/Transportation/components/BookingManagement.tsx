@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { Calendar as CalendarComponent } from '@/Components/ui/calendar';
 import PaymentDialog from './PaymentDialog';
 import BookingCalendar from './BookingCalendar';
+import { Booking, Truck as TruckType } from '../types';
 import { 
     Calendar, 
     Clock, 
@@ -40,42 +41,6 @@ import {
     List
 } from 'lucide-react';
 
-interface Booking {
-    id: number;
-    booking_reference: string;
-    customer_name: string;
-    customer_email: string;
-    customer_phone: string;
-    customer_company: string;
-    pickup_location: string;
-    delivery_location: string;
-    pickup_date: string;
-    pickup_time: string;
-    delivery_date: string;
-    delivery_time: string;
-    cargo_description: string;
-    cargo_weight: number;
-    cargo_unit: string;
-    special_requirements: string;
-    estimated_cost: number;
-    status: string;
-    notes: string;
-    payment_status: string;
-    payment_method?: string;
-    payment_reference?: string;
-    paid_amount?: number;
-    payment_date?: string;
-    payment_notes?: string;
-    created_at: string;
-    updated_at: string;
-    truck: {
-        id: number;
-        plate_number: string;
-        model: string;
-        capacity: number;
-        driver: string;
-    };
-}
 
 interface BookingStats {
     total_bookings: number;

@@ -4,19 +4,50 @@ export type Truck = {
     plate_number: string;
     model: string;
     capacity: number;
-    status: 'Available' | 'In Transit' | 'Maintenance';
-    last_maintenance: string | null;
-    fuel_level: string;
-    mileage: number;
-    driver?: string | null;
-    driver_contact?: string | null;
-    created_at: string;
-    updated_at: string;
+    status: string;
+    driver?: string;
+    driver_contact?: string;
+    last_maintenance?: string | null;
+    fuel_level?: string;
+    mileage?: number;
+    created_at?: string;
+    updated_at?: string;
 };
 
 export type Helper = {
     name: string;
     role: string;
+};
+
+export type Booking = {
+    id: number;
+    booking_reference: string;
+    customer_name: string;
+    customer_email: string;
+    customer_phone: string;
+    customer_company: string;
+    pickup_location: string;
+    delivery_location: string;
+    pickup_date: string;
+    pickup_time: string;
+    delivery_date: string;
+    delivery_time: string;
+    cargo_description: string;
+    cargo_weight: number;
+    cargo_unit: string;
+    special_requirements: string;
+    estimated_cost: number;
+    status: string;
+    notes: string;
+    payment_status: string;
+    payment_method?: string;
+    payment_reference?: string;
+    paid_amount?: number;
+    payment_date?: string;
+    payment_notes?: string;
+    created_at: string;
+    updated_at: string;
+    truck: Truck;
 };
 
 export type Shipment = {

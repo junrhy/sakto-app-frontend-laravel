@@ -7,32 +7,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import { Booking, Truck } from '../types';
 
-interface Truck {
-    id: number;
-    plate_number: string;
-    model: string;
-    capacity: number;
-    status: string;
-    driver: string;
-    driver_contact: string;
-}
-
-interface Booking {
-    id: number;
-    booking_reference: string;
-    customer_name: string;
-    customer_company?: string;
-    customer_phone?: string;
-    pickup_date: string;
-    delivery_date: string;
-    pickup_time?: string;
-    delivery_time?: string;
-    pickup_location?: string;
-    delivery_location?: string;
-    status: string;
-    truck?: Truck;
-}
 
 interface BookingCalendarProps {
     bookings: Booking[];
