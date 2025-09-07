@@ -64,11 +64,19 @@ export default function BookingManagement() {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [bookingToDelete, setBookingToDelete] = useState<Booking | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('Pending');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [dateRangeFilter, setDateRangeFilter] = useState(() => {
+        const today = new Date();
+        return {
+            startDate: today.toISOString().split('T')[0],
+            endDate: today.toISOString().split('T')[0]
+        };
+    });
     const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
     const [trucks, setTrucks] = useState<any[]>([]);
     const [pickupCalendarOpen, setPickupCalendarOpen] = useState(false);
     const [deliveryCalendarOpen, setDeliveryCalendarOpen] = useState(false);
+    const [dateRangePickerOpen, setDateRangePickerOpen] = useState(false);
     const [updateForm, setUpdateForm] = useState({
         status: '',
         notes: '',
@@ -330,7 +338,11 @@ export default function BookingManagement() {
 
         const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
+        const matchesDateRange = dateRangeFilter.startDate === '' || dateRangeFilter.endDate === '' || 
+            (booking.pickup_date >= dateRangeFilter.startDate && booking.pickup_date <= dateRangeFilter.endDate) ||
+            (booking.delivery_date >= dateRangeFilter.startDate && booking.delivery_date <= dateRangeFilter.endDate);
+
+        return matchesSearch && matchesStatus && matchesDateRange;
     });
 
     const getBookingsForDate = (date: Date) => {
@@ -393,6 +405,18 @@ export default function BookingManagement() {
         });
     };
 
+    const formatDateForButton = (dateString: string) => {
+        if (!dateString) return '';
+        // Create date in local timezone to avoid timezone issues
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: '2-digit'
+        });
+    };
+
     const handlePickupDateSelect = (date: Date | undefined) => {
         if (date) {
             // Use local timezone to avoid date shifting
@@ -416,6 +440,7 @@ export default function BookingManagement() {
             setDeliveryCalendarOpen(false);
         }
     };
+
 
     return (
         <div className="bg-white dark:bg-gray-800">
@@ -496,6 +521,87 @@ export default function BookingManagement() {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            {viewMode === 'table' && (
+                                <div className="w-full md:w-80">
+                                    <Popover open={dateRangePickerOpen} onOpenChange={setDateRangePickerOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start text-left font-normal bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 min-w-0"
+                                            >
+                                                <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                                                <span className="truncate">
+                                                    {dateRangeFilter.startDate && dateRangeFilter.endDate ? (
+                                                        dateRangeFilter.startDate === dateRangeFilter.endDate ? (
+                                                            formatDateForButton(dateRangeFilter.startDate)
+                                                        ) : (
+                                                            `${formatDateForButton(dateRangeFilter.startDate)} - ${formatDateForButton(dateRangeFilter.endDate)}`
+                                                        )
+                                                    ) : (
+                                                        "Select date range"
+                                                    )}
+                                                </span>
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <div className="p-3">
+                                                <div className="text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                                                    Select Date Range
+                                                </div>
+                                                <CalendarComponent
+                                                    mode="range"
+                                                    selected={{
+                                                        from: dateRangeFilter.startDate ? new Date(dateRangeFilter.startDate + 'T00:00:00') : undefined,
+                                                        to: dateRangeFilter.endDate ? new Date(dateRangeFilter.endDate + 'T00:00:00') : undefined
+                                                    }}
+                                                    onSelect={(range) => {
+                                                        if (range?.from) {
+                                                            const year = range.from.getFullYear();
+                                                            const month = String(range.from.getMonth() + 1).padStart(2, '0');
+                                                            const day = String(range.from.getDate()).padStart(2, '0');
+                                                            const startDate = `${year}-${month}-${day}`;
+                                                            
+                                                            if (range?.to) {
+                                                                const yearTo = range.to.getFullYear();
+                                                                const monthTo = String(range.to.getMonth() + 1).padStart(2, '0');
+                                                                const dayTo = String(range.to.getDate()).padStart(2, '0');
+                                                                const endDate = `${yearTo}-${monthTo}-${dayTo}`;
+                                                                setDateRangeFilter({startDate, endDate});
+                                                            } else {
+                                                                setDateRangeFilter({startDate, endDate: startDate});
+                                                            }
+                                                        }
+                                                    }}
+                                                    initialFocus
+                                                    className="rounded-md border-0"
+                                                    numberOfMonths={1}
+                                                />
+                                                {dateRangeFilter.startDate && dateRangeFilter.endDate && (
+                                                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                                        <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                                            Selected Range:
+                                                        </div>
+                                                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                                                            {formatDateForDisplay(dateRangeFilter.startDate)} - {formatDateForDisplay(dateRangeFilter.endDate)}
+                                                        </div>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="mt-2 w-full"
+                                                            onClick={() => {
+                                                                setDateRangeFilter({startDate: '', endDate: ''});
+                                                                setDateRangePickerOpen(false);
+                                                            }}
+                                                        >
+                                                            Clear Range
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            )}
                             <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                                 <Button
                                     variant={viewMode === 'table' ? 'default' : 'ghost'}

@@ -119,7 +119,7 @@ const requiresSubscription = (appParam: string | null, auth: any): boolean => {
     
     // If plan has unlimited access, return false (no subscription required)
     if (hasUnlimitedAccess) return false;
-    
+
     // For non-unlimited plans, check if the app is included in the plan's features
     const planFeatures = userSubscription.plan?.features || [];
     const hasFeature = planFeatures.includes(appParam);

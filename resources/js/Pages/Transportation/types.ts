@@ -81,6 +81,8 @@ export type CargoItem = {
     status: 'Loaded' | 'In Transit' | 'Delivered' | 'Damaged';
     temperature?: number;
     humidity?: number;
+    created_at?: string;
+    updated_at?: string;
 };
 
 // History and update types

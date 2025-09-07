@@ -15,8 +15,7 @@ import {
     TruckIcon, 
     PackageIcon, 
     CalendarIcon, 
-    SettingsIcon, 
-    DollarSignIcon 
+    CreditCardIcon
 } from 'lucide-react';
 
 export default function Transportation() {
@@ -59,7 +58,7 @@ export default function Transportation() {
                                 className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-gray-200 dark:data-[state=active]:border-gray-700"
                             >
                                 <BarChart3Icon className="mr-2 h-4 w-4" />
-                                Dashboard
+                                Overview
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="shipments" 
@@ -93,7 +92,7 @@ export default function Transportation() {
                                 value="pricing" 
                                 className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-gray-200 dark:data-[state=active]:border-gray-700"
                             >
-                                <DollarSignIcon className="mr-2 h-4 w-4" />
+                                <CreditCardIcon className="mr-2 h-4 w-4" />
                                 Pricing
                             </TabsTrigger>
                         </TabsList>
