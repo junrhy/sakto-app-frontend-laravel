@@ -54,26 +54,8 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
         return 'from-orange-600 via-orange-500 to-orange-400 dark:from-orange-900 dark:via-orange-800 dark:to-orange-700';
     }
 
-    // Then check project-based colors
-    if (projectIdentifier) {
-        switch (projectIdentifier.toLowerCase()) {
-            case 'trial':
-                return 'from-green-600 via-green-500 to-green-400 dark:from-green-900 dark:via-green-800 dark:to-green-700';
-            case 'community':
-                return 'from-blue-600 via-blue-500 to-blue-400 dark:from-blue-900 dark:via-blue-800 dark:to-blue-700';
-            case 'logistics':
-                return 'from-rose-600 via-rose-500 to-rose-400 dark:from-rose-900 dark:via-rose-800 dark:to-rose-700';
-            case 'medical':
-                return 'from-red-600 via-red-500 to-red-400 dark:from-red-900 dark:via-red-800 dark:to-red-700';
-            case 'enterprise':
-                return 'from-indigo-600 via-indigo-500 to-indigo-400 dark:from-indigo-900 dark:via-indigo-800 dark:to-indigo-700';
-            default:
-                return 'from-rose-600 via-rose-500 to-rose-400 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700';
-        }
-    }
-    
-    // Default fallback
-    return 'from-rose-600 via-rose-500 to-rose-400 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700';
+    // Simple white on gray border colors for all projects
+    return 'from-white to-gray-100 border-gray-200 dark:from-gray-800 dark:to-gray-700 dark:border-gray-600';
 };
 
 const requiresSubscription = (appParam: string | null, auth: any): boolean => {
@@ -227,7 +209,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     <div className="flex justify-end p-4">
                         <button
                             onClick={() => setShowingNavigationDropdown(false)}
-                            className="text-white/80 hover:text-white transition-colors duration-200 focus:outline-none"
+                            className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 focus:outline-none"
                         >
                             <svg
                                 className="h-6 w-6"
@@ -246,18 +228,18 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     </div>
                     
                     <div className="space-y-1 pb-3 px-4">
-                        <ResponsiveNavLink href={route('home')} active={route().current('home')} className="text-white/90 hover:text-white hover:bg-white/10">
+                        <ResponsiveNavLink href={route('home')} active={route().current('home')} className="text-gray-800 dark:text-white/90 hover:text-white hover:bg-white/10">
                             Home
                         </ResponsiveNavLink>
 
                         {hasDashboardAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Dashboard</div>
-                                    <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Dashboard</div>
+                                    <ResponsiveNavLink href={`/dashboard?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         My Dashboard
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/dashboards?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/dashboards?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Dashboard Gallery
                                     </ResponsiveNavLink>
                                 </div>
@@ -265,16 +247,16 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasRetailAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Retail</div>
-                                    <ResponsiveNavLink href={`/pos-retail?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Retail</div>
+                                    <ResponsiveNavLink href={`/pos-retail?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         POS
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/inventory?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/inventory?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Inventory
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/retail-sale?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/retail-sale?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Sales
                                     </ResponsiveNavLink>
                                 </div>
@@ -282,10 +264,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasFnbAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">F & B</div>
-                                    <ResponsiveNavLink href={`/pos-restaurant?app=${appParam}&tab=tables`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">F & B</div>
+                                    <ResponsiveNavLink href={`/pos-restaurant?app=${appParam}&tab=tables`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Restaurant
                                     </ResponsiveNavLink>
                                 </div>
@@ -293,16 +275,16 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {(hasWarehousingAccess || hasTransportationAccess) && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Distribution</div>
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Distribution</div>
                                     {hasWarehousingAccess && (
-                                        <ResponsiveNavLink href={`/warehousing?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        <ResponsiveNavLink href={`/warehousing?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                             Warehousing
                                         </ResponsiveNavLink>
                                     )}
                                     {hasTransportationAccess && (
-                                        <ResponsiveNavLink href={`/transportation?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        <ResponsiveNavLink href={`/transportation?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                             Transportation
                                         </ResponsiveNavLink>
                                     )}
@@ -311,16 +293,16 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {(hasRentalItemAccess || hasRentalPropertyAccess) && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Rental</div>
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Rental</div>
                                     {hasRentalItemAccess && (
-                                        <ResponsiveNavLink href={`/rental-item?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        <ResponsiveNavLink href={`/rental-item?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                             Rental Items
                                         </ResponsiveNavLink>
                                     )}
                                     {hasRentalPropertyAccess && (
-                                        <ResponsiveNavLink href={`/rental-property?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                        <ResponsiveNavLink href={`/rental-property?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                             Rental Properties
                                         </ResponsiveNavLink>
                                     )}
@@ -329,10 +311,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasClinicalAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Medical</div>
-                                    <ResponsiveNavLink href={`/clinic?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Medical</div>
+                                    <ResponsiveNavLink href={`/clinic?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Clinic
                                     </ResponsiveNavLink>
                                 </div>
@@ -340,10 +322,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasLendingAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Finance</div>
-                                    <ResponsiveNavLink href={`/loan?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Finance</div>
+                                    <ResponsiveNavLink href={`/loan?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Loans
                                     </ResponsiveNavLink>
                                 </div>
@@ -351,10 +333,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasPayrollAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">HR</div>
-                                    <ResponsiveNavLink href={`/payroll?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">HR</div>
+                                    <ResponsiveNavLink href={`/payroll?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Payroll
                                     </ResponsiveNavLink>
                                 </div>
@@ -362,13 +344,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasTravelAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Travel</div>
-                                    <ResponsiveNavLink href={`/travel?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Travel</div>
+                                    <ResponsiveNavLink href={`/travel?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Bookings
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/flight-search?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/flight-search?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Flights
                                     </ResponsiveNavLink>
                                 </div>
@@ -376,13 +358,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasSmsAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">SMS</div>
-                                    <ResponsiveNavLink href={`/sms-twilio?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">SMS</div>
+                                    <ResponsiveNavLink href={`/sms-twilio?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Twilio SMS
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/sms-semaphore?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/sms-semaphore?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Semaphore SMS
                                     </ResponsiveNavLink>
                                 </div>
@@ -390,13 +372,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasEmailAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Communication</div>
-                                    <ResponsiveNavLink href={`/email?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Communication</div>
+                                    <ResponsiveNavLink href={`/email?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Email
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/email/templates?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/email/templates?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Email Templates
                                     </ResponsiveNavLink>
                                 </div>
@@ -404,10 +386,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasContactsAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Directory</div>
-                                    <ResponsiveNavLink href={`/contacts?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Directory</div>
+                                    <ResponsiveNavLink href={`/contacts?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Contacts
                                     </ResponsiveNavLink>
                                 </div>
@@ -415,13 +397,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasGenealogyAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Genealogy</div>
-                                    <ResponsiveNavLink href={`/genealogy?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Genealogy</div>
+                                    <ResponsiveNavLink href={`/genealogy?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Genealogy
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/genealogy/edit-requests?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/genealogy/edit-requests?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Edit Requests
                                     </ResponsiveNavLink>
                                 </div>
@@ -429,13 +411,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasEventsAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Events</div>
-                                    <ResponsiveNavLink href={`/events?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Events</div>
+                                    <ResponsiveNavLink href={`/events?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Manage Events
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Kiosk Terminal
                                     </ResponsiveNavLink>
                                 </div>
@@ -443,10 +425,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasChallengesAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Challenges</div>
-                                    <ResponsiveNavLink href={`/challenges?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Challenges</div>
+                                    <ResponsiveNavLink href={`/challenges?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Challenges
                                     </ResponsiveNavLink>
                                 </div>
@@ -454,10 +436,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasContentCreatorAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Content Creator</div>
-                                    <ResponsiveNavLink href={`/content-creator?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Content Creator</div>
+                                    <ResponsiveNavLink href={`/content-creator?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Content Creator
                                     </ResponsiveNavLink>
                                 </div>
@@ -465,10 +447,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasProductsAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Products</div>
-                                    <ResponsiveNavLink href={`/products?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Products</div>
+                                    <ResponsiveNavLink href={`/products?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Products
                                     </ResponsiveNavLink>
                                 </div>
@@ -476,10 +458,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasPagesAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Pages</div>
-                                    <ResponsiveNavLink href={`/pages?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Pages</div>
+                                    <ResponsiveNavLink href={`/pages?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Pages
                                     </ResponsiveNavLink>
                                 </div>
@@ -487,13 +469,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasHealthcareAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Healthcare</div>
-                                    <ResponsiveNavLink href={`/health-insurance?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Healthcare</div>
+                                    <ResponsiveNavLink href={`/health-insurance?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Members
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Kiosk Terminal
                                     </ResponsiveNavLink>
                                 </div>
@@ -501,13 +483,13 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasMortuaryAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Mortuary</div>
-                                    <ResponsiveNavLink href={`/mortuary?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Mortuary</div>
+                                    <ResponsiveNavLink href={`/mortuary?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Members
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={`/kiosk/community?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Kiosk Terminal
                                     </ResponsiveNavLink>
                                 </div>
@@ -515,10 +497,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasBillersAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Billers</div>
-                                    <ResponsiveNavLink href={`/billers?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Billers</div>
+                                    <ResponsiveNavLink href={`/billers?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Billers
                                     </ResponsiveNavLink>
                                 </div>
@@ -526,10 +508,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasBillPaymentsAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Bill Payments</div>
-                                    <ResponsiveNavLink href={`/bill-payments?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Bill Payments</div>
+                                    <ResponsiveNavLink href={`/bill-payments?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Bill Payments
                                     </ResponsiveNavLink>
                                 </div>
@@ -537,10 +519,10 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {hasCoursesAccess && (
-                            <div className="border-t border-white/10">
+                            <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
-                                    <div className="font-medium text-base text-white/90">Courses</div>
-                                    <ResponsiveNavLink href={`/courses?app=${appParam}`} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <div className="font-medium text-base text-gray-800 dark:text-white/90">Courses</div>
+                                    <ResponsiveNavLink href={`/courses?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Course Management
                                     </ResponsiveNavLink>
                                 </div>
@@ -548,21 +530,21 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                         )}
 
                         {/* Mobile User Section */}
-                        <div className="border-t border-white/10 mt-auto">
+                        <div className="border-t border-gray-200 dark:border-white/10 mt-auto">
                             <div className="px-4 py-3">
                                 <div className="flex items-center space-x-3 mb-3">
                                     <div className="flex-1">
-                                        <div className="text-white/90 font-medium text-base">
+                                        <div className="text-gray-800 dark:text-white/90 font-medium text-base">
                                             {auth.selectedTeamMember?.full_name || authUser.name}
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-1">
-                                    <ResponsiveNavLink href={route('profile.edit')} className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href={route('profile.edit')} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Profile
                                     </ResponsiveNavLink>
-                                    <ResponsiveNavLink href="/help" className="text-white/80 hover:text-white hover:bg-white/10">
+                                    <ResponsiveNavLink href="/help" className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                         Help
                                     </ResponsiveNavLink>
                                     <div className="border-t border-white/20 pt-1">
@@ -588,7 +570,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     />
                 )}
 
-                <nav className={`border-b border-gray-100 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
+                <nav className={`border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} sticky top-0 z-40 transition-transform duration-300 ${hideNav ? '-translate-y-full sm:block' : 'translate-y-0'}`}>
                     <div className="mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
@@ -596,7 +578,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 <div className="flex items-center sm:hidden mr-2">
                                     <button
                                         onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                        className="inline-flex items-center justify-center rounded-md p-2 text-white/80 transition duration-150 ease-in-out hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none"
+                                        className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 dark:text-white/80 transition duration-150 ease-in-out hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white focus:bg-gray-100 dark:focus:bg-white/10 focus:text-gray-900 dark:focus:text-white focus:outline-none"
                                     >
                                         <svg
                                             className="h-6 w-6"
@@ -633,9 +615,9 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 <div className="flex shrink-0 items-center">
                                     <Link href="/home" className="transition-transform hover:scale-105">
                                         <div className="flex items-center">
-                                            <ApplicationLogo className="block h-9 w-auto fill-current text-white" />
+                                            <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-white" />
                                             <div className="ml-2">
-                                                <span className="text-xl font-black text-white">
+                                                <span className="text-xl font-black text-gray-800 dark:text-white">
                                                     {authUser.name}
                                                 </span>
                                             </div>
@@ -647,7 +629,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     <NavLink
                                         href={route('home')}
                                         active={route().current('home')}
-                                        className="transition-all duration-200 text-white/90 hover:text-white"
+                                        className="transition-all duration-200 text-gray-700 dark:text-gray-800 dark:text-white/90 hover:text-gray-900 dark:hover:text-white"
                                     >
                                         Home
                                     </NavLink>
@@ -659,7 +641,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Dashboards</span>
                                                             <svg
@@ -706,7 +688,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Retail</span>
                                                             <svg
@@ -746,7 +728,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">F & B</span>
                                                             <svg
@@ -783,7 +765,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Distribution</span>
                                                             <svg
@@ -824,7 +806,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Rental</span>
                                                             <svg
@@ -875,7 +857,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Clinic</span>
                                                             <svg
@@ -909,7 +891,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Loans</span>
                                                             <svg
@@ -946,7 +928,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Payroll</span>
                                                             <svg
@@ -980,7 +962,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Travel</span>
                                                             <svg
@@ -1017,7 +999,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">SMS</span>
                                                             <svg
@@ -1051,7 +1033,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Email</span>
                                                             <svg
@@ -1088,7 +1070,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Contacts</span>
                                                             <svg
@@ -1122,7 +1104,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Genealogy</span>
                                                             <svg
@@ -1174,7 +1156,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Events</span>
                                                             <svg
@@ -1211,7 +1193,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Challenges</span>
                                                             <svg
@@ -1245,7 +1227,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Content Creator</span>
                                                             <svg
@@ -1279,7 +1261,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Products</span>
                                                             <svg
@@ -1313,7 +1295,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Pages</span>
                                                             <svg
@@ -1347,7 +1329,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Healthcare</span>
                                                             <svg
@@ -1384,7 +1366,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Mortuary</span>
                                                             <svg
@@ -1421,7 +1403,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                     <span className="inline-flex rounded-md">
                                                         <button
                                                             type="button"
-                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white/90 transition-all duration-200 ease-in-out hover:text-white focus:outline-none"
+                                                            className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-700 dark:text-gray-800 dark:text-white/90 transition-all duration-200 ease-in-out hover:text-gray-900 dark:hover:text-white focus:outline-none"
                                                         >
                                                             <span className="mt-[1px]">Courses</span>
                                                             <svg
@@ -1457,7 +1439,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                 <div className="relative">
                                     <Dropdown>
                                         <Dropdown.Trigger>
-                                            <button className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors duration-200 focus:outline-none">
+                                            <button className="flex items-center space-x-2 text-gray-800 dark:text-white/90 hover:text-white transition-colors duration-200 focus:outline-none">
                                                 <div className="flex items-center space-x-2">
                                                     <span className="hidden sm:block text-sm font-medium">
                                                         {auth.selectedTeamMember?.full_name || authUser.name}
