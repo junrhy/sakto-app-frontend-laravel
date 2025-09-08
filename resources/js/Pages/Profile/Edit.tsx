@@ -387,10 +387,10 @@ export default function Edit({
                                         <CardContent>
                                             <div className="space-y-8">
                                                 {/* Profile Header */}
-                                                <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                                <div className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                                                     <Avatar className="h-20 w-20 ring-4 ring-white dark:ring-gray-800 shadow-lg">
                                                         <AvatarImage src={auth.selectedTeamMember?.profile_picture} />
-                                                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 text-xl font-bold">
+                                                        <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xl font-bold">
                                                             {getInitials(auth.selectedTeamMember?.full_name?.split(' ')[0] || '', auth.selectedTeamMember?.full_name?.split(' ')[1] || '')}
                                                         </AvatarFallback>
                                                     </Avatar>
@@ -402,7 +402,7 @@ export default function Edit({
                                                             {auth.selectedTeamMember?.email}
                                                         </p>
                                                         <div className="flex items-center gap-3">
-                                                            <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-3 py-1">
+                                                            <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 px-3 py-1">
                                                                 Active
                                                             </Badge>
                                                             {auth.selectedTeamMember?.roles?.map((role) => (
@@ -417,15 +417,15 @@ export default function Edit({
                                                 {/* Information Grid */}
                                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                                     {/* Contact Information Card */}
-                                                    <Card className="bg-blue-50/50 dark:bg-blue-900/10 border-0 shadow-sm">
+                                                    <Card className="bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm">
                                                         <CardHeader className="pb-3">
                                                             <CardTitle className="flex items-center gap-2 text-lg">
-                                                                <UserIcon className="w-5 h-5 text-blue-600" />
+                                                                <UserIcon className="w-5 h-5 text-gray-600" />
                                                                 Contact Information
                                                             </CardTitle>
                                                         </CardHeader>
                                                         <CardContent className="space-y-3">
-                                                            <div className="flex items-center justify-between py-2 border-b border-blue-100 dark:border-blue-800/30">
+                                                            <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                                                                 <span className="text-gray-600 dark:text-gray-400 font-medium">Email</span>
                                                                 <span className="text-gray-900 dark:text-white font-semibold">
                                                                     {auth.selectedTeamMember?.email || 'Not provided'}
@@ -441,23 +441,23 @@ export default function Edit({
                                                     </Card>
 
                                                     {/* Account Status Card */}
-                                                    <Card className="bg-green-50/50 dark:bg-green-900/10 border-0 shadow-sm">
+                                                    <Card className="bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm">
                                                         <CardHeader className="pb-3">
                                                             <CardTitle className="flex items-center gap-2 text-lg">
-                                                                <Settings className="w-5 h-5 text-green-600" />
+                                                                <Settings className="w-5 h-5 text-gray-600" />
                                                                 Account Status
                                                             </CardTitle>
                                                         </CardHeader>
                                                         <CardContent className="space-y-3">
-                                                            <div className="flex items-center justify-between py-2 border-b border-green-100 dark:border-green-800/30">
+                                                            <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                                                                 <span className="text-gray-600 dark:text-gray-400 font-medium">Status</span>
-                                                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                                <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                                                     Active
                                                                 </Badge>
                                                             </div>
-                                                            <div className="flex items-center justify-between py-2 border-b border-green-100 dark:border-green-800/30">
+                                                            <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                                                                 <span className="text-gray-600 dark:text-gray-400 font-medium">Email Verified</span>
-                                                                <span className={`font-semibold ${auth.selectedTeamMember?.email_verified ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                                <span className={`font-semibold ${auth.selectedTeamMember?.email_verified ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>
                                                                     {auth.selectedTeamMember?.email_verified ? '✓ Verified' : '✗ Not Verified'}
                                                                 </span>
                                                             </div>
@@ -471,10 +471,10 @@ export default function Edit({
                                                     </Card>
 
                                                     {/* Roles & Permissions Card */}
-                                                    <Card className="bg-purple-50/50 dark:bg-purple-900/10 border-0 shadow-sm">
+                                                    <Card className="bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm">
                                                         <CardHeader className="pb-3">
                                                             <CardTitle className="flex items-center gap-2 text-lg">
-                                                                <Shield className="w-5 h-5 text-purple-600" />
+                                                                <Shield className="w-5 h-5 text-gray-600" />
                                                                 Roles & Permissions
                                                             </CardTitle>
                                                         </CardHeader>
@@ -484,7 +484,7 @@ export default function Edit({
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {auth.selectedTeamMember?.roles?.length ? (
                                                                         auth.selectedTeamMember.roles.map((role) => (
-                                                                            <Badge key={role} variant="default" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                                            <Badge key={role} variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                                                                 {role}
                                                                             </Badge>
                                                                         ))
@@ -516,15 +516,15 @@ export default function Edit({
                                                     </Card>
 
                                                     {/* Preferences Card */}
-                                                    <Card className="bg-orange-50/50 dark:bg-orange-900/10 border-0 shadow-sm">
+                                                    <Card className="bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm">
                                                         <CardHeader className="pb-3">
                                                             <CardTitle className="flex items-center gap-2 text-lg">
-                                                                <Globe className="w-5 h-5 text-orange-600" />
+                                                                <Globe className="w-5 h-5 text-gray-600" />
                                                                 Preferences
                                                             </CardTitle>
                                                         </CardHeader>
                                                         <CardContent className="space-y-3">
-                                                            <div className="flex items-center justify-between py-2 border-b border-orange-100 dark:border-orange-800/30">
+                                                            <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
                                                                 <span className="text-gray-600 dark:text-gray-400 font-medium">Timezone</span>
                                                                 <span className="text-gray-900 dark:text-white font-semibold">
                                                                     {auth.selectedTeamMember?.timezone || 'Default'}
@@ -542,7 +542,7 @@ export default function Edit({
 
                                                 {/* Notes Section */}
                                                 {auth.selectedTeamMember?.notes && (
-                                                    <Card className="bg-yellow-50/50 dark:bg-yellow-900/10 border-0 shadow-sm">
+                                                    <Card className="bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm">
                                                         <CardHeader className="pb-3">
                                                             <CardTitle className="flex items-center gap-2 text-lg">
                                                                 <span className="text-xl">📝</span>
@@ -550,7 +550,7 @@ export default function Edit({
                                                             </CardTitle>
                                                         </CardHeader>
                                                         <CardContent>
-                                                            <div className="p-4 bg-yellow-100/50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200/50 dark:border-yellow-800/30">
+                                                            <div className="p-4 bg-gray-100/50 dark:bg-gray-700/50 rounded-lg border border-gray-200/50 dark:border-gray-600/30">
                                                                 <p className="text-gray-700 dark:text-gray-300">
                                                                     {auth.selectedTeamMember.notes}
                                                                 </p>
@@ -560,23 +560,23 @@ export default function Edit({
                                                 )}
 
                                                 {/* Password Update Section */}
-                                                <Card className="bg-red-50/50 dark:bg-red-900/10 border-0 shadow-sm">
+                                                <Card className="bg-gray-50/50 dark:bg-gray-800/50 border-0 shadow-sm">
                                                     <CardHeader className="pb-3">
                                                         <CardTitle className="flex items-center gap-2 text-lg">
-                                                            <Shield className="w-5 h-5 text-red-600" />
+                                                            <Shield className="w-5 h-5 text-gray-600" />
                                                             Security Settings
                                                         </CardTitle>
                                                     </CardHeader>
                                                     <CardContent>
-                                                        <div className="p-4 bg-red-100/50 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/30 rounded-lg">
-                                                            <p className="text-red-800 dark:text-red-200 mb-3 font-medium">
+                                                        <div className="p-4 bg-gray-100/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/30 rounded-lg">
+                                                            <p className="text-gray-700 dark:text-gray-300 mb-3 font-medium">
                                                                 Update your team member password to maintain account security.
                                                             </p>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
                                                                 onClick={() => window.location.href = route('team-member.password')}
-                                                                className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-600 dark:text-red-300 dark:hover:bg-red-900/30"
+                                                                className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700/50"
                                                             >
                                                                 <Shield className="w-4 h-4 mr-2" />
                                                                 Update Team Member Password
@@ -591,10 +591,10 @@ export default function Edit({
 
                                 {/* All Team Members */}
                                 {(isAdministrator || !hasTeamMembers) && (
-                                    <Card className="bg-indigo-50/50 dark:bg-indigo-900/10 border-0 shadow-sm">
+                                    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm">
                                         <CardHeader className="pb-4">
                                             <CardTitle className="flex items-center gap-2 text-lg">
-                                                <Users className="w-5 h-5 text-indigo-600" />
+                                                <Users className="w-5 h-5 text-gray-600" />
                                                 All Team Members ({auth.teamMembers?.length || 0})
                                             </CardTitle>
                                             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -604,11 +604,11 @@ export default function Edit({
                                         <CardContent>
                                             <div className="space-y-4">
                                                 {auth.teamMembers?.map((member) => (
-                                                    <div key={member.identifier} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-indigo-100 dark:border-indigo-800/30 shadow-sm hover:shadow-md transition-shadow duration-200">
+                                                    <div key={member.identifier} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
                                                         <div className="flex items-center gap-4">
-                                                            <Avatar className="h-12 w-12 ring-2 ring-indigo-100 dark:ring-indigo-800/30">
+                                                            <Avatar className="h-12 w-12 ring-2 ring-gray-200 dark:ring-gray-700">
                                                                 <AvatarImage src={member.profile_picture} />
-                                                                <AvatarFallback className="bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 font-semibold">
+                                                                <AvatarFallback className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold">
                                                                     {getInitials(member.first_name, member.last_name)}
                                                                 </AvatarFallback>
                                                             </Avatar>
@@ -621,7 +621,7 @@ export default function Edit({
                                                                 </p>
                                                                 <div className="flex items-center gap-2">
                                                                     {member.roles?.map((role) => (
-                                                                        <Badge key={role} variant="default" className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs px-2 py-1">
+                                                                        <Badge key={role} variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs px-2 py-1">
                                                                             {role}
                                                                         </Badge>
                                                                     ))}
@@ -634,7 +634,7 @@ export default function Edit({
                                                                 variant="outline"
                                                                 size="sm"
                                                                 onClick={() => window.location.href = route('teams.show', { identifier: member.identifier })}
-                                                                className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                                                                className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700/50"
                                                             >
                                                                 View Details
                                                             </Button>
@@ -650,7 +650,7 @@ export default function Edit({
                                                         <p className="text-gray-600 dark:text-gray-400 mb-6">Get started by adding your first team member to collaborate together.</p>
                                                         <Button
                                                             variant="default"
-                                                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                            className="bg-gray-600 hover:bg-gray-700 text-white"
                                                             onClick={() => window.location.href = route('teams.create')}
                                                         >
                                                             <UserPlus className="w-4 h-4 mr-2" />
@@ -668,7 +668,7 @@ export default function Edit({
                                         <Button
                                             variant="outline"
                                             onClick={() => window.location.href = route('teams.index')}
-                                            className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/30"
+                                            className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700/50"
                                         >
                                             <Settings className="w-4 h-4 mr-2" />
                                             Manage Team Settings

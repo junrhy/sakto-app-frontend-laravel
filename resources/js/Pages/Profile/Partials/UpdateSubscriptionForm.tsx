@@ -118,11 +118,11 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
 
     const getStatusBadge = (status: string) => {
         const statusConfig = {
-            active: { variant: 'default', className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-            cancelled: { variant: 'secondary', className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-            expired: { variant: 'secondary', className: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' },
-            pending: { variant: 'secondary', className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-            failed: { variant: 'secondary', className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }
+            active: { variant: 'secondary', className: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
+            cancelled: { variant: 'secondary', className: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' },
+            expired: { variant: 'secondary', className: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' },
+            pending: { variant: 'secondary', className: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' },
+            failed: { variant: 'secondary', className: 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400' }
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.expired;
@@ -211,65 +211,65 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
 
             {/* Current Subscription */}
             {subscription ? (
-                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+                <Card className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                             <SparklesIcon className="w-5 h-5" />
                             Active Subscription
                         </CardTitle>
-                        <CardDescription className="text-blue-700 dark:text-blue-300">
+                        <CardDescription className="text-gray-600 dark:text-gray-400">
                             You currently have an active subscription
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">Plan</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Plan</Label>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-blue-900 dark:text-blue-100">
+                                    <span className="font-semibold text-gray-900 dark:text-white">
                                         {subscription.plan.name}
                                     </span>
                                     {subscription.plan.badge_text && (
-                                        <Badge variant="default" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        <Badge variant="secondary" className="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                                             {subscription.plan.badge_text}
                                         </Badge>
                                     )}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">Status</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</Label>
                                 <div>{getStatusBadge(subscription.status)}</div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">Start Date</Label>
-                                <div className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</Label>
+                                <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                                     <CalendarIcon className="w-4 h-4" />
                                     {formatDate(subscription.start_date)}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">End Date</Label>
-                                <div className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">End Date</Label>
+                                <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                                     <CalendarIcon className="w-4 h-4" />
                                     {formatDate(subscription.end_date)}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">Amount Paid</Label>
-                                <div className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid</Label>
+                                <div className="flex items-center gap-2 text-gray-900 dark:text-white">
                                     <CreditCardIcon className="w-4 h-4" />
                                     {formatCurrency(subscription.amount_paid)}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">Auto Renew</Label>
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto Renew</Label>
                                 <div className="flex items-center gap-2">
                                     {subscription.auto_renew ? (
-                                        <CheckIcon className="w-4 h-4 text-green-600" />
+                                        <CheckIcon className="w-4 h-4 text-gray-600" />
                                     ) : (
-                                        <XMarkIcon className="w-4 h-4 text-red-600" />
+                                        <XMarkIcon className="w-4 h-4 text-gray-500" />
                                     )}
-                                    <span className={subscription.auto_renew ? 'text-green-600' : 'text-red-600'}>
+                                    <span className={subscription.auto_renew ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}>
                                         {subscription.auto_renew ? 'Enabled' : 'Disabled'}
                                     </span>
                                 </div>
@@ -294,20 +294,20 @@ export default function UpdateSubscriptionForm({ className = '', hideHeader = fa
                     </CardContent>
                 </Card>
             ) : (
-                <Card className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-orange-200 dark:border-orange-800">
+                <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
+                        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                             <SparklesIcon className="w-5 h-5" />
                             No Active Subscription
                         </CardTitle>
-                        <CardDescription className="text-orange-700 dark:text-orange-300">
+                        <CardDescription className="text-gray-600 dark:text-gray-400">
                             You don't have an active subscription. Upgrade to unlock unlimited access to all features.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button
                             onClick={handleUpgradeSubscription}
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            className="bg-gray-600 hover:bg-gray-700 text-white"
                         >
                             <SparklesIcon className="w-4 h-4 mr-2" />
                             View Subscription Plans
