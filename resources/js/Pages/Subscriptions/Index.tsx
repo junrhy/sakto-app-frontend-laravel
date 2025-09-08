@@ -435,36 +435,40 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 key={plan.id} 
                                                 className={`overflow-hidden transition-all ${
                                                     activeSubscription?.plan.id === plan.id
-                                                        ? 'ring-2 ring-green-500 dark:ring-green-400 bg-green-50 dark:bg-green-900/10'
+                                                        ? 'ring-2 ring-gray-300 dark:ring-gray-500 bg-gray-50 dark:bg-gray-900/10'
                                                         : selectedPlan?.id === plan.id 
-                                                            ? 'ring-2 ring-blue-500 dark:ring-blue-400' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
-                                                            : 'hover:shadow-md'
+                                                            ? (plan.is_popular && activeSubscription?.plan.id !== plan.id
+                                                                ? 'ring-2 ring-blue-300 dark:ring-blue-600' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
+                                                                : 'ring-2 ring-gray-400 dark:ring-gray-500' + (highlightedApp ? ' shadow-lg shadow-gray-200 dark:shadow-gray-900/30' : ''))
+                                                            : plan.is_popular && activeSubscription?.plan.id !== plan.id
+                                                                ? 'ring-1 ring-blue-200 dark:ring-blue-800 hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-blue-900/20'
+                                                                : 'hover:shadow-md'
                                                 }`}
                                             >
                                                 {activeSubscription?.plan.id === plan.id && (
-                                                    <div className="bg-green-500 dark:bg-emerald-600 text-white text-center py-1 text-sm font-medium">
+                                                    <div className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-center py-1 text-sm font-medium">
                                                         Current Subscription
                                                     </div>
                                                 )}
                                                 {plan.is_popular && activeSubscription?.plan.id !== plan.id && (
-                                                    <div className="bg-blue-500 text-white text-center py-1 text-sm font-medium">
+                                                    <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-center py-1 text-sm font-medium">
                                                         Most Popular
                                                     </div>
                                                 )}
                                                 {plan.badge_text && !plan.is_popular && activeSubscription?.plan.id !== plan.id && (
-                                                    <div className="bg-green-500 dark:bg-emerald-600 text-white text-center py-1 text-sm font-medium">
+                                                    <div className="bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 text-center py-1 text-sm font-medium">
                                                         {plan.badge_text}
                                                     </div>
                                                 )}
                                                 {!plan.badge_text && !plan.is_popular && hasUnlimitedAccess(plan) && activeSubscription?.plan.id !== plan.id && (
-                                                    <div className="bg-purple-500 text-white text-center py-1 text-sm font-medium">
+                                                    <div className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center py-1 text-sm font-medium">
                                                         Unlimited Access
                                                     </div>
                                                 )}
                                                 <CardHeader>
                                                     <CardTitle className="flex justify-between items-center">
                                                         <span>{plan.name}</span>
-                                                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                                        <span className="text-2xl font-bold text-gray-600 dark:text-gray-300">
                                                             ₱{Number(plan.price).toFixed(2)}
                                                         </span>
                                                     </CardTitle>
@@ -474,12 +478,12 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             {billingPeriod === 'annually' ? 'Annual subscription' : `${Math.floor(plan.duration_in_days / 30)} month subscription`}
                                                             {billingPeriod === 'annually' && (
-                                                                <span className="ml-2 text-green-600 dark:text-emerald-300 font-medium">
+                                                                <span className="ml-2 text-gray-500 dark:text-gray-500 font-medium">
                                                                     Save up to 20%
                                                                 </span>
                                                             )}
                                                         </p>
-                                                        <p className="text-lg font-semibold mt-1 text-green-600 dark:text-emerald-300">
+                                                        <p className="text-lg font-semibold mt-1 text-gray-600 dark:text-gray-400">
                                                             {hasUnlimitedAccess(plan) ? 'Access to Premium apps' : 'Access to Free apps'}
                                                         </p>
                                                     </div>
@@ -487,7 +491,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     <div className="space-y-2">
                                                         {plan.features && plan.features.map((feature, index) => (
                                                             <div key={index} className="flex items-start">
-                                                                <CheckIcon className="h-5 w-5 text-green-500 dark:text-emerald-400 mr-2 flex-shrink-0 mt-0.5" />
+                                                                <CheckIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
                                                                 <span className="text-sm text-gray-700 dark:text-gray-200">{feature}</span>
                                                             </div>
                                                         ))}
@@ -495,14 +499,18 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 </CardContent>
                                                 <CardFooter>
                                                     <Button 
-                                                        className="w-full" 
+                                                        className={`w-full ${selectedPlan?.id === plan.id 
+                                                            ? (plan.is_popular && activeSubscription?.plan.id !== plan.id
+                                                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/40 border-blue-300 dark:border-blue-600'
+                                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600')
+                                                            : ''}`}
                                                         onClick={() => handlePlanSelect(plan)}
-                                                        variant={selectedPlan?.id === plan.id ? "default" : "outline"}
+                                                        variant={selectedPlan?.id === plan.id ? "outline" : "outline"}
                                                         disabled={activeSubscription?.plan.id === plan.id}
                                                         title={activeSubscription?.plan.id === plan.id ? "You are already subscribed to this plan" : ""}
                                                     >
                                                         {activeSubscription?.plan.id === plan.id 
-                                                            ? 'Current Plan' 
+                                                            ? '✓ You\'re subscribed' 
                                                             : selectedPlan?.id === plan.id 
                                                                 ? 'Selected' 
                                                                 : 'Select Plan'}
