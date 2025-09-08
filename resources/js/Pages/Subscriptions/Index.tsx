@@ -6,7 +6,7 @@ import { PageProps } from '@/types';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { SparklesIcon, ArrowRightIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { SparklesIcon, ArrowRightIcon, CheckIcon, XMarkIcon, StarIcon, BanknotesIcon, CreditCardIcon } from '@heroicons/react/24/solid';
 import { toast } from 'sonner';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -400,7 +400,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                         </TabsList>
 
                         <TabsContent value="plans" className="mt-6">
-                            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                            <div className="bg-gray-50 dark:bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg p-6">
                                 {/* Billing Period Toggle */}
                                 <div className="mb-6">
                                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
@@ -435,14 +435,14 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 key={plan.id} 
                                                 className={`overflow-hidden transition-all ${
                                                     activeSubscription?.plan.id === plan.id
-                                                        ? 'ring-2 ring-gray-300 dark:ring-gray-500 bg-gray-50 dark:bg-gray-900/10'
+                                                        ? 'ring-2 ring-gray-300 dark:ring-gray-500 bg-green-50 dark:bg-green-900/20'
                                                         : selectedPlan?.id === plan.id 
                                                             ? (plan.is_popular && activeSubscription?.plan.id !== plan.id
-                                                                ? 'ring-2 ring-blue-300 dark:ring-blue-600' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
-                                                                : 'ring-2 ring-gray-400 dark:ring-gray-500' + (highlightedApp ? ' shadow-lg shadow-gray-200 dark:shadow-gray-900/30' : ''))
+                                                                ? 'ring-2 ring-blue-300 dark:ring-blue-600 bg-gray-50 dark:bg-gray-800/30' + (highlightedApp ? ' shadow-lg shadow-blue-200 dark:shadow-blue-900/30' : '')
+                                                                : 'ring-2 ring-gray-600 dark:ring-gray-400 bg-gray-50 dark:bg-gray-800/30' + (highlightedApp ? ' shadow-lg shadow-gray-200 dark:shadow-gray-900/30' : ''))
                                                             : plan.is_popular && activeSubscription?.plan.id !== plan.id
-                                                                ? 'ring-1 ring-blue-200 dark:ring-blue-800 hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-blue-900/20'
-                                                                : 'hover:shadow-md'
+                                                                ? 'ring-1 ring-blue-200 dark:ring-blue-800 bg-gray-50 dark:bg-gray-800/30 hover:shadow-lg hover:shadow-blue-100 dark:hover:shadow-blue-900/20'
+                                                                : 'ring-1 ring-gray-300 dark:ring-gray-600 bg-gray-50 dark:bg-gray-800/30 hover:shadow-md'
                                                 }`}
                                             >
                                                 {activeSubscription?.plan.id === plan.id && (
@@ -451,8 +451,9 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                     </div>
                                                 )}
                                                 {plan.is_popular && activeSubscription?.plan.id !== plan.id && (
-                                                    <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-center py-1 text-sm font-medium">
-                                                        Most Popular
+                                                    <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-center py-1 text-sm font-medium flex items-center justify-center space-x-1">
+                                                        <StarIcon className="h-4 w-4 text-yellow-500 fill-current" />
+                                                        <span>Most Popular</span>
                                                     </div>
                                                 )}
                                                 {plan.badge_text && !plan.is_popular && activeSubscription?.plan.id !== plan.id && (
@@ -483,9 +484,12 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                 </span>
                                                             )}
                                                         </p>
-                                                        <p className="text-lg font-semibold mt-1 text-gray-600 dark:text-gray-400">
-                                                            {hasUnlimitedAccess(plan) ? 'Access to Premium apps' : 'Access to Free apps'}
-                                                        </p>
+                                                        <div className="flex items-start mt-3 -mb-2">
+                                                            <CheckIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
+                                                            <span className="text-sm text-gray-700 dark:text-gray-200">
+                                                                {hasUnlimitedAccess(plan) ? `Unlimited access to ${plan.name.toLowerCase()} features` : `Limited access to ${plan.name.toLowerCase()} features`}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     
                                                     <div className="space-y-2">
@@ -503,7 +507,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                             ? (plan.is_popular && activeSubscription?.plan.id !== plan.id
                                                                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800/40 border-blue-300 dark:border-blue-600'
                                                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600')
-                                                            : ''}`}
+                                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'}`}
                                                         onClick={() => handlePlanSelect(plan)}
                                                         variant={selectedPlan?.id === plan.id ? "outline" : "outline"}
                                                         disabled={activeSubscription?.plan.id === plan.id}
@@ -659,6 +663,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     onChange={(e) => setPaymentMethod(e.target.value)}
                                                                     className="h-4 w-4 text-green-600" 
                                                                 />
+                                                                <BanknotesIcon className="h-5 w-5 text-green-600" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">Cash Payment</span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">Pay in cash at our office</span>
@@ -682,6 +687,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                             : 'text-gray-400'
                                                                     }`} 
                                                                 />
+                                                                <SparklesIcon className={`h-5 w-5 ${credits >= (selectedPlan?.price || 0) ? 'text-blue-600' : 'text-gray-400'}`} />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">Pay with Credits</span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">
@@ -699,6 +705,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     disabled
                                                                     className="h-4 w-4 text-gray-400" 
                                                                 />
+                                                                <CreditCardIcon className="h-5 w-5 text-gray-400" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">Credit/Debit Card via Maya</span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">Coming soon</span>
@@ -712,6 +719,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                     disabled
                                                                     className="h-4 w-4 text-gray-400" 
                                                                 />
+                                                                <CreditCardIcon className="h-5 w-5 text-gray-400" />
                                                                 <div>
                                                                     <span className="block font-medium text-gray-900 dark:text-gray-100">Credit/Debit Card via Stripe</span>
                                                                     <span className="block text-sm text-gray-500 dark:text-gray-400">Coming soon</span>
@@ -722,29 +730,33 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                 </div>
                                             </div>
                                             
-                                            <div className="flex justify-end">
-                                                {networkError && (
-                                                    <div className="mr-auto p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm">
-                                                        <p>There was a problem connecting to the payment gateway. Please try again.</p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    {networkError && (
+                                                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm">
+                                                            <p>There was a problem connecting to the payment gateway. Please try again.</p>
+                                                            <Button 
+                                                                variant="outline" 
+                                                                size="sm" 
+                                                                className="mt-2 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                onClick={handleSubmit}
+                                                            >
+                                                                Retry
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex justify-end pr-4">
+                                                    {canEdit && (
                                                         <Button 
-                                                            variant="outline" 
-                                                            size="sm" 
-                                                            className="mt-2 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                            onClick={handleSubmit}
+                                                            type="submit" 
+                                                            disabled={isSubmitting || !selectedPlan}
+                                                            className="min-w-[150px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 border-0"
                                                         >
-                                                            Retry
+                                                            {isSubmitting ? 'Processing...' : 'Subscribe Now'}
                                                         </Button>
-                                                    </div>
-                                                )}
-                                                {canEdit && (
-                                                    <Button 
-                                                        type="submit" 
-                                                        disabled={isSubmitting || !selectedPlan}
-                                                        className="min-w-[150px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 border-0"
-                                                    >
-                                                        {isSubmitting ? 'Processing...' : 'Subscribe Now'}
-                                                    </Button>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
@@ -753,26 +765,18 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                         </TabsContent>
 
                         <TabsContent value="history" className="mt-6">
-                            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Subscription History</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                            Track all your subscription activities and payment history
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <div className="text-right">
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Subscriptions</p>
-                                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{subscriptionHistory.length}</p>
-                                        </div>
-                                    </div>
+                            <div className="bg-white dark:bg-gray-900 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                                <div className="mb-6">
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Subscription History</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Track all your subscription activities and payment history
+                                    </p>
                                 </div>
                                 
                                 {subscriptionHistory.length > 0 ? (
                                     <div className="space-y-4">
                                         {subscriptionHistory.map((subscription) => (
-                                            <Card key={subscription.id} className="overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200">
+                                            <Card key={subscription.id} className="overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:shadow-lg transition-all duration-200">
                                                 <CardHeader className="pb-3">
                                                     <div className="flex items-start justify-between">
                                                         <div className="flex-1">
@@ -798,7 +802,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                         : subscription.status === 'pending'
                                                                         ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-800'
                                                                         : subscription.status === 'failed'
-                                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300 border-red-200 dark:border-red-800'
+                                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300 border-red-200 dark:border-red-800 border'
                                                                         : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300 border-gray-200 dark:border-gray-800'
                                                                 }`}
                                                             >
@@ -863,7 +867,7 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                                                                 <Button 
                                                                     variant="outline" 
                                                                     size="sm"
-                                                                    className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                    className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
                                                                     onClick={() => openCancelDialog(subscription.identifier)}
                                                                 >
                                                                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
