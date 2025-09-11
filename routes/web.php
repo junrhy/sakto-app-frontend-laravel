@@ -689,14 +689,18 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::prefix('transportation/fleet')->group(function () {
         Route::get('/list', [TransportationController::class, 'getFleet'])->name('transportation.fleet.list');
         Route::get('/stats', [TransportationController::class, 'getFleetStats'])->name('transportation.fleet.stats');
+        Route::get('/locations', [TransportationController::class, 'getTrucksWithLocations'])->name('transportation.fleet.locations');
+        Route::get('/real-time-locations', [TransportationController::class, 'getRealTimeLocations'])->name('transportation.fleet.real-time-locations');
         Route::post('/', [TransportationController::class, 'storeFleet'])->name('transportation.fleet.store');
         Route::get('/{id}', [TransportationController::class, 'showFleet'])->name('transportation.fleet.show');
         Route::put('/{id}', [TransportationController::class, 'updateFleet'])->name('transportation.fleet.update');
         Route::delete('/{id}', [TransportationController::class, 'destroyFleet'])->name('transportation.fleet.destroy');
         Route::post('/{id}/fuel', [TransportationController::class, 'updateFuel'])->name('transportation.fleet.fuel');
         Route::post('/{id}/maintenance', [TransportationController::class, 'scheduleMaintenance'])->name('transportation.fleet.maintenance');
+        Route::post('/{id}/location', [TransportationController::class, 'updateTruckLocation'])->name('transportation.fleet.location');
         Route::get('/{id}/fuel-history', [TransportationController::class, 'getFuelHistory'])->name('transportation.fleet.fuel-history');
         Route::get('/{id}/maintenance-history', [TransportationController::class, 'getMaintenanceHistory'])->name('transportation.fleet.maintenance-history');
+        Route::get('/{id}/location-history', [TransportationController::class, 'getTruckLocationHistory'])->name('transportation.fleet.location-history');
     });
 
     // Transportation Shipment Routes

@@ -8,14 +8,16 @@ import {
     FleetManagement, 
     CargoMonitoring,
     BookingManagement,
-    PricingManagement
+    PricingManagement,
+    OpenStreetMapTruckLocation
 } from './components';
 import { 
     BarChart3Icon, 
     TruckIcon, 
     PackageIcon, 
     CalendarIcon, 
-    CreditCardIcon
+    CreditCardIcon,
+    MapIcon
 } from 'lucide-react';
 
 export default function Transportation() {
@@ -75,6 +77,13 @@ export default function Transportation() {
                                 Fleet
                             </TabsTrigger>
                             <TabsTrigger 
+                                value="tracking" 
+                                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-gray-200 dark:data-[state=active]:border-gray-700"
+                            >
+                                <MapIcon className="mr-2 h-4 w-4" />
+                                Live Tracking
+                            </TabsTrigger>
+                            <TabsTrigger 
                                 value="cargo" 
                                 className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-gray-200 dark:data-[state=active]:border-gray-700"
                             >
@@ -126,6 +135,11 @@ export default function Transportation() {
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <FleetManagement />
                         </div>
+                    </TabsContent>
+
+                    {/* Live Tracking Tab */}
+                    <TabsContent value="tracking" className="space-y-6">
+                        <OpenStreetMapTruckLocation />
                     </TabsContent>
 
                     {/* Cargo Tab */}

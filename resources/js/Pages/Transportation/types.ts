@@ -10,6 +10,13 @@ export type Truck = {
     last_maintenance?: string | null;
     fuel_level?: string;
     mileage?: number;
+    // GPS Location fields
+    current_latitude?: number;
+    current_longitude?: number;
+    last_location_update?: string;
+    current_address?: string;
+    speed?: number;
+    heading?: number;
     created_at?: string;
     updated_at?: string;
 };

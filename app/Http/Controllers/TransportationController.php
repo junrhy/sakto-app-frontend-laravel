@@ -283,6 +283,102 @@ class TransportationController extends Controller
         }
     }
 
+    /**
+     * Update GPS location for a truck.
+     */
+    public function updateTruckLocation(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'address' => 'nullable|string|max:500',
+                'speed' => 'nullable|numeric|min:0|max:300', // km/h
+                'heading' => 'nullable|numeric|min:0|max:360', // degrees
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/transportation/fleet/' . $id . '/location', $validated);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to update truck location', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update truck location',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get trucks with GPS locations for map display.
+     */
+    public function getTrucksWithLocations()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/fleet/locations', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch trucks with locations', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch trucks with locations',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get real-time truck locations for live tracking.
+     */
+    public function getRealTimeLocations()
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/fleet/real-time-locations', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch real-time locations', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch real-time truck locations',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get truck location history.
+     */
+    public function getTruckLocationHistory($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/fleet/' . $id . '/location-history', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch truck location history', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch truck location history',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     // ==================== SHIPMENT TRACKING ====================
 
     /**

@@ -9,4 +9,7 @@ export { default as CargoMonitoring } from './CargoMonitoring';
 export { default as BookingManagement } from './BookingManagement';
 export { default as PricingManagement } from './PricingManagement';
 export { default as PaymentDialog } from './PaymentDialog';
+export { default as GoogleMapsTruckLocation } from './GoogleMapsTruckLocation';
+export { default as SimpleTruckLocation } from './SimpleTruckLocation';
+export { default as OpenStreetMapTruckLocation } from './OpenStreetMapTruckLocation';
 
