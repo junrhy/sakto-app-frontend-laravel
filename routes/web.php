@@ -411,6 +411,13 @@ Route::prefix('public/contacts/{contactId}/wallet')->group(function () {
     Route::get('/available-contacts', [ContactsController::class, 'getPublicAvailableContacts'])->name('public.contacts.wallet.available-contacts');
 });
 
+// Driver Location Update Routes
+Route::prefix('driver')->group(function () {
+    Route::get('/trucks', [TransportationController::class, 'getDriverTrucks'])->name('driver.trucks.list');
+    Route::post('/trucks/{id}/location', [TransportationController::class, 'updateDriverTruckLocation'])->name('driver.trucks.location.update');
+    Route::get('/{identifier}/location-update', [TransportationController::class, 'getDriverTruckLocation'])->name('driver.location.update');
+});
+
 // Debug route to test authentication (remove in production)
 Route::get('/debug-auth', function () {
     return response()->json([

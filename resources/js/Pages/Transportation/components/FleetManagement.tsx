@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
@@ -6,12 +7,14 @@ import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/Components/ui/dialog";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { TruckIcon, MapPinIcon } from "lucide-react";
+import { TruckIcon, MapPinIcon, ShareIcon, CopyIcon } from "lucide-react";
 import { Truck, TruckFormData, FuelUpdateFormData } from "../types";
 import { useFleetManagement } from "../hooks";
 import { FuelUpdateDialog, FuelHistory } from "./index";
 
 export default function FleetManagement() {
+    const { auth } = usePage().props as any;
+    const identifier = auth?.user?.identifier;
     const {
         trucks,
         fuelHistory,
@@ -314,6 +317,43 @@ export default function FleetManagement() {
                         <div className="text-sm text-gray-600 dark:text-gray-400">
                             {filteredTrucks.length} trucks
                         </div>
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <ShareIcon className="h-4 w-4 mr-2" />
+                                    Driver URL
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Driver Location Update URL</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        Share this URL with your drivers so they can update their truck locations:
+                                    </p>
+                                    <div className="flex items-center space-x-2">
+                                        <Input
+                                            value={`${window.location.origin}/driver/${identifier}/location-update`}
+                                            readOnly
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`${window.location.origin}/driver/${identifier}/location-update`);
+                                            }}
+                                        >
+                                            <CopyIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        <strong>Note:</strong> This URL is public and allows drivers to update truck locations without logging in.
+                                    </div>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
             </div>

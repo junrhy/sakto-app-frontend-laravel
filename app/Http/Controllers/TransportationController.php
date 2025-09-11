@@ -1299,4 +1299,67 @@ class TransportationController extends Controller
             ], 500);
         }
     }
+
+    // ==================== DRIVER LOCATION UPDATE ====================
+
+    /**
+     * Display the driver location update page.
+     */
+    public function getDriverTruckLocation($identifier)
+    {
+        return Inertia::render('Transportation/DriverLocationUpdate', [
+            'identifier' => $identifier
+        ]);
+    }
+
+    /**
+     * Get trucks available for driver location updates.
+     */
+    public function getDriverTrucks(Request $request)
+    {
+        try {
+            $request->merge(['client_identifier' => $request->client_identifier ?? auth()->user()->identifier]);
+            
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/driver/trucks', $request->all());
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch driver trucks', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch trucks for driver location update',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update truck location from driver interface.
+     */
+    public function updateDriverTruckLocation(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'address' => 'nullable|string|max:500',
+                'speed' => 'nullable|numeric|min:0|max:300', // km/h
+                'heading' => 'nullable|numeric|min:0|max:360', // degrees
+                'client_identifier' => 'required|string',
+            ]);
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/driver/trucks/' . $id . '/location', $validated);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            Log::error('Failed to update driver truck location', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update truck location',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
