@@ -99,7 +99,8 @@ export default function Help({ auth }: Props) {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch credits:', error);
+                // Silently ignore credit fetch errors
+                setCredits(0);
             }
         };
 

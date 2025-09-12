@@ -152,7 +152,8 @@ export default function Apps() {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch credits:', error);
+                // Silently ignore credit fetch errors
+                setCredits(0);
             }
         };
 
@@ -437,7 +438,7 @@ export default function Apps() {
                                         <div>
                                             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
                                                 <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Available</span>
-                                                Enabled Apps
+                                                {auth.project.identifier.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Apps
                                                 <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium px-2 py-0.5 rounded-full">
                                                     {groupedApps.paidApps.length}
                                                 </span>
@@ -459,11 +460,6 @@ export default function Apps() {
                                                                 <div className="flex-1">
                                                                     <div className="flex items-center gap-2">
                                                                         <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                        {!isAppIncludedInCurrentPlan(app) && app.includedInPlans && app.includedInPlans.length > 0 && (
-                                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
-                                                                                Available on {app.includedInPlans[0].replace('-plan', '').replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                                            </Badge>
-                                                                        )}
                                                                     </div>
                                                                     <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
                                                                         {app.description}

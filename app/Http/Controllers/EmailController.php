@@ -21,11 +21,7 @@ class EmailController extends Controller
 
     public function index()
     {
-        return Inertia::render('Email/Index', [
-            'auth' => [
-                'user' => auth()->user()
-            ]
-        ]);
+        return Inertia::render('Email/Index');
     }
 
     public function send(Request $request)
@@ -131,10 +127,7 @@ class EmailController extends Controller
                 ]
             ];
             return Inertia::render('Email/Settings', [
-                'settings' => $dummySettings,
-                'auth' => [
-                    'user' => auth()->user()
-                ]
+                'settings' => $dummySettings
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to load settings');

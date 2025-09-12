@@ -87,8 +87,17 @@ class CreditsController extends Controller
             ->get("{$this->apiUrl}/credits/{$clientIdentifier}/balance");
 
         if (!$response->successful()) {
+            // If credit record not found (404), return 0 credits instead of error
+            if ($response->status() === 404) {
+                return response()->json([
+                    'available_credit' => 0,
+                    'pending_credit' => 0,
+                    'total_credit' => 0
+                ]);
+            }
+            
             return response()->json([
-                'error' => $response->json()['message']
+                'error' => $response->json()['message'] ?? 'Failed to fetch credit balance'
             ], $response->status());
         }
 

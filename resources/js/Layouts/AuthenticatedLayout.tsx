@@ -139,7 +139,8 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch credits:', error);
+                // Silently ignore credit fetch errors
+                setCredits(0);
             }
         };
 
@@ -559,7 +560,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     </ResponsiveNavLink>
                                     <div className="border-t border-white/20 pt-1">
                                         <ResponsiveNavLink 
-                                            href={route('logout')} 
+                                            href={route('logout', { project: auth.project?.identifier })} 
                                             method="post" 
                                             as="button"
                                             className="w-full text-left text-red-400 hover:text-red-300 hover:bg-red-500/20"
@@ -1501,7 +1502,6 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 
                                                 // Show subscription apps if user has an active subscription that includes this app
                                                 const userSubscription = auth?.user?.subscription;
-                                                console.log(userSubscription);
                                                 if (app.pricingType === 'subscription' && userSubscription && userSubscription.plan?.slug && app.includedInPlans?.includes(userSubscription.plan.slug)) {
                                                     return true;
                                                 }
@@ -1587,7 +1587,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     </Link>
                                     
                                     <Link
-                                        href={route('logout')}
+                                        href={route('logout', { project: auth.project?.identifier })} 
                                         method="post"
                                         as="button"
                                         className="flex items-center w-full px-2 py-1.5 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors duration-200 rounded-md"
@@ -1624,7 +1624,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                     </Link>
                                     
                                     <Link
-                                        href={route('logout')}
+                                        href={route('logout', { project: auth.project?.identifier })} 
                                         method="post"
                                         as="button"
                                         className="p-1.5 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors duration-200 rounded-md"

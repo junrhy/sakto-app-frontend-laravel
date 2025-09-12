@@ -80,7 +80,8 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch credits:', error);
+                // Silently ignore credit fetch errors
+                setCredits(0);
             }
         };
 

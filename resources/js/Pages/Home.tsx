@@ -64,8 +64,6 @@ export default function Home({ auth }: Props) {
     const [apps, setApps] = useState<App[]>([]);
     const [isLoadingApps, setIsLoadingApps] = useState<boolean>(true);
 
-    console.log(auth);
-
     useEffect(() => {
         const fetchApps = async () => {
             try {
@@ -89,7 +87,8 @@ export default function Home({ auth }: Props) {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch credits:', error);
+                // Silently ignore credit fetch errors
+                setCredits(0);
             }
         };
 

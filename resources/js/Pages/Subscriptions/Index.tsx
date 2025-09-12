@@ -148,7 +148,8 @@ export default function Index({ auth, plans, activeSubscription, paymentMethods,
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch credits:', error);
+                // Silently ignore credit fetch errors
+                setCredits(0);
             }
         };
 

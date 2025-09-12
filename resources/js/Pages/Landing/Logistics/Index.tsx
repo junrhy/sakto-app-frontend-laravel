@@ -207,7 +207,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                             <svg className="h-4 w-4 text-slate-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                             </svg>
-                                            <span className="text-slate-600">Basic GPS tracking</span>
+                                            <span className="text-slate-600">GPS tracking</span>
                                         </li>
                                         <li className="flex items-center text-sm">
                                             <svg className="h-4 w-4 text-slate-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -264,13 +264,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                             <svg className="h-4 w-4 text-emerald-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                             </svg>
-                                            <span className="text-slate-600">Advanced GPS tracking</span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg className="h-4 w-4 text-emerald-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="text-slate-600">Route optimization</span>
+                                            <span className="text-slate-600">GPS tracking</span>
                                         </li>
                                         <li className="flex items-center text-sm">
                                             <svg className="h-4 w-4 text-emerald-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -328,13 +322,7 @@ export default function LogisticsIndex({ auth }: PageProps) {
                                             <svg className="h-4 w-4 text-blue-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                             </svg>
-                                            <span className="text-slate-600">Real-time GPS tracking</span>
-                                        </li>
-                                        <li className="flex items-center text-sm">
-                                            <svg className="h-4 w-4 text-blue-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                            </svg>
-                                            <span className="text-slate-600">AI-powered route optimization</span>
+                                            <span className="text-slate-600">GPS tracking</span>
                                         </li>
                                         <li className="flex items-center text-sm">
                                             <svg className="h-4 w-4 text-blue-500 flex-shrink-0 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -355,22 +343,6 @@ export default function LogisticsIndex({ auth }: PageProps) {
                             <h3 className="text-2xl font-bold text-slate-900 mb-8 text-center">Frequently Asked Questions</h3>
                             <div className="w-full">
                                 <dl className="space-y-6">
-                                <div className="bg-white rounded-lg p-6 border border-slate-200">
-                                    <dt className="text-lg font-medium text-slate-900 mb-2">
-                                        How accurate is the GPS tracking?
-                                    </dt>
-                                    <dd className="text-slate-600">
-                                        Our GPS tracking provides accuracy within 3-5 meters in most conditions. We use advanced GPS technology combined with cellular triangulation for maximum precision.
-                                    </dd>
-                                </div>
-                                <div className="bg-white rounded-lg p-6 border border-slate-200">
-                                    <dt className="text-lg font-medium text-slate-900 mb-2">
-                                        Can I integrate with my existing systems?
-                                    </dt>
-                                    <dd className="text-slate-600">
-                                        Yes, our platform offers API integrations and can connect with most ERP, TMS, and accounting systems. Enterprise plans include custom integration support.
-                                    </dd>
-                                </div>
                                 <div className="bg-white rounded-lg p-6 border border-slate-200">
                                     <dt className="text-lg font-medium text-slate-900 mb-2">
                                         What happens if I exceed my vehicle limit?
