@@ -90,6 +90,43 @@ export type CargoItem = {
     humidity?: number;
     created_at?: string;
     updated_at?: string;
+    // Unloading related fields
+    total_unloaded_quantity?: number;
+    remaining_quantity?: number;
+    is_fully_unloaded?: boolean;
+    is_partially_unloaded?: boolean;
+    unloadings?: CargoUnloading[];
+};
+
+// Cargo unloading types
+export type CargoUnloading = {
+    id: string;
+    cargo_item_id: string;
+    quantity_unloaded: number;
+    unload_location: string;
+    notes?: string;
+    unloaded_at: string;
+    unloaded_by?: string;
+    created_at?: string;
+    updated_at?: string;
+};
+
+export type CargoUnloadingFormData = {
+    quantity_unloaded: string;
+    unload_location: string;
+    notes: string;
+    unloaded_at: string;
+    unloaded_by: string;
+};
+
+export type CargoUnloadingSummary = {
+    total_quantity: number;
+    total_unloaded: number;
+    remaining_quantity: number;
+    is_fully_unloaded: boolean;
+    is_partially_unloaded: boolean;
+    unloading_count: number;
+    unloadings: CargoUnloading[];
 };
 
 // History and update types

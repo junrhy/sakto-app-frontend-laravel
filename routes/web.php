@@ -732,6 +732,16 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::delete('/{id}', [TransportationController::class, 'destroyCargo'])->name('transportation.cargo.destroy');
         Route::post('/{id}/status', [TransportationController::class, 'updateCargoStatus'])->name('transportation.cargo.status');
         Route::get('/shipment/{shipmentId}', [TransportationController::class, 'getCargoByShipment'])->name('transportation.cargo.by-shipment');
+        
+        // Cargo Unloading Routes
+        Route::prefix('{cargoItemId}/unloadings')->group(function () {
+            Route::get('/', [TransportationController::class, 'getCargoUnloadings'])->name('transportation.cargo.unloadings.list');
+            Route::post('/', [TransportationController::class, 'storeCargoUnloading'])->name('transportation.cargo.unloadings.store');
+            Route::get('/summary', [TransportationController::class, 'getCargoUnloadingSummary'])->name('transportation.cargo.unloadings.summary');
+            Route::get('/{unloadingId}', [TransportationController::class, 'showCargoUnloading'])->name('transportation.cargo.unloadings.show');
+            Route::put('/{unloadingId}', [TransportationController::class, 'updateCargoUnloading'])->name('transportation.cargo.unloadings.update');
+            Route::delete('/{unloadingId}', [TransportationController::class, 'destroyCargoUnloading'])->name('transportation.cargo.unloadings.destroy');
+        });
     });
 
     // Transportation Booking Routes

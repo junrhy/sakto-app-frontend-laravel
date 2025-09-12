@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/Components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { PlusIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import { PackageIcon, SearchIcon, FilterIcon, XIcon } from "lucide-react";
+import { PackageIcon, SearchIcon, FilterIcon, XIcon, TruckIcon } from "lucide-react";
 import { CargoItem, CargoFormData } from "../types";
 import { useCargoMonitoring, useShipmentTracking, useFleetManagement } from "../hooks";
+import CargoUnloadingDialog from "./CargoUnloadingDialog";
 
 export default function CargoMonitoring() {
     const {
@@ -20,7 +21,8 @@ export default function CargoMonitoring() {
         updateCargoStatus,
         updateCargoItem,
         deleteCargoItem,
-        getCargoByShipment
+        getCargoByShipment,
+        fetchCargoItems
     } = useCargoMonitoring();
 
     const { shipments } = useShipmentTracking();
@@ -54,8 +56,10 @@ export default function CargoMonitoring() {
         temperature: '',
         humidity: ''
     });
+    const [isUnloadingDialogOpen, setIsUnloadingDialogOpen] = useState(false);
+    const [selectedCargoForUnloading, setSelectedCargoForUnloading] = useState<CargoItem | null>(null);
 
-    const filteredCargoItems = cargoItems.filter(cargo => {
+    const filteredCargoItems = (cargoItems || []).filter(cargo => {
         const searchTerm = cargoSearch.toLowerCase();
         const shipment = shipments.find(s => s.id === cargo.shipment_id);
         const truck = shipment ? trucks.find(t => t.id === shipment.truck_id) : null;
@@ -120,7 +124,7 @@ export default function CargoMonitoring() {
 
     const saveEditedCargoItem = async (cargoId: string) => {
         try {
-            const cargo = cargoItems.find(c => c.id === cargoId);
+            const cargo = (cargoItems || []).find(c => c.id === cargoId);
             if (cargo) {
                 await updateCargoItem(cargoId, {
                     shipmentId: cargo.shipment_id,
@@ -163,6 +167,16 @@ export default function CargoMonitoring() {
         } catch (error) {
             console.error('Failed to update cargo status:', error);
         }
+    };
+
+    const handleOpenUnloadingDialog = (cargo: CargoItem) => {
+        setSelectedCargoForUnloading(cargo);
+        setIsUnloadingDialogOpen(true);
+    };
+
+    const handleUnloadingUpdate = () => {
+        // Refresh cargo items to get updated unloading data
+        fetchCargoItems();
     };
 
 
@@ -317,6 +331,8 @@ export default function CargoMonitoring() {
                                 <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Shipment</TableHead>
                                 <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Truck</TableHead>
                                 <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Quantity</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Unloaded</TableHead>
+                                <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Remaining</TableHead>
                                 <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Date Loaded</TableHead>
                                 <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Status</TableHead>
                                 <TableHead className="font-semibold text-gray-900 dark:text-gray-100">Actions</TableHead>
@@ -361,7 +377,27 @@ export default function CargoMonitoring() {
                                         )}
                                     </TableCell>
                                     <TableCell className="text-gray-900 dark:text-gray-100">
-                                        {item.quantity} {item.unit}
+                                        {item.quantity.toLocaleString()} {item.unit}
+                                    </TableCell>
+                                    <TableCell className="text-gray-900 dark:text-gray-100">
+                                        <div className="flex items-center space-x-1">
+                                            <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                                {(item.total_unloaded_quantity || 0).toLocaleString()}
+                                            </span>
+                                            <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                                {item.unit}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-gray-900 dark:text-gray-100">
+                                        <div className="flex items-center space-x-1">
+                                            <span className="text-orange-600 dark:text-orange-400 font-medium">
+                                                {(item.remaining_quantity || item.quantity).toLocaleString()}
+                                            </span>
+                                            <span className="text-gray-500 dark:text-gray-400 text-sm">
+                                                {item.unit}
+                                            </span>
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-gray-900 dark:text-gray-100">
                                         {item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', {
@@ -373,17 +409,42 @@ export default function CargoMonitoring() {
                                         }) : 'N/A'}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={
-                                            item.status === 'Delivered' ? 'default' :
-                                            item.status === 'In Transit' ? 'secondary' :
-                                            item.status === 'Damaged' ? 'destructive' :
-                                            'outline'
-                                        }>
-                                            {item.status}
-                                        </Badge>
+                                        <div className="flex flex-col space-y-1">
+                                            <Badge variant={
+                                                item.status === 'Delivered' ? 'default' :
+                                                item.status === 'In Transit' ? 'secondary' :
+                                                item.status === 'Damaged' ? 'destructive' :
+                                                'outline'
+                                            }>
+                                                {item.status}
+                                            </Badge>
+                                            {item.is_partially_unloaded && (
+                                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800">
+                                                    Partially Delivered
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex gap-1">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleOpenUnloadingDialog(item)}
+                                                disabled={item.status === 'Loaded'}
+                                                className={`h-8 w-8 p-0 ${
+                                                    item.status === 'Loaded'
+                                                        ? 'opacity-50 cursor-not-allowed'
+                                                        : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                                                }`}
+                                                title={
+                                                    item.status === 'Loaded'
+                                                        ? 'Cargo must be in transit to manage unloading'
+                                                        : 'Manage unloading records'
+                                                }
+                                            >
+                                                <TruckIcon className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
@@ -395,8 +456,10 @@ export default function CargoMonitoring() {
                                                         : 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
                                                 }`}
                                                 title={
-                                                    item.status === 'In Transit' || item.status === 'Delivered'
-                                                        ? 'Cannot edit cargo items that are in transit or delivered'
+                                                    item.status === 'In Transit'
+                                                        ? 'Cannot edit cargo items that are in transit'
+                                                        : item.status === 'Delivered'
+                                                        ? 'Cannot edit cargo items that are delivered'
                                                         : 'Edit cargo item'
                                                 }
                                             >
@@ -628,6 +691,19 @@ export default function CargoMonitoring() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Cargo Unloading Dialog */}
+            {selectedCargoForUnloading && (
+                <CargoUnloadingDialog
+                    isOpen={isUnloadingDialogOpen}
+                    onClose={() => {
+                        setIsUnloadingDialogOpen(false);
+                        setSelectedCargoForUnloading(null);
+                    }}
+                    cargoItem={selectedCargoForUnloading}
+                    onUnloadingUpdate={handleUnloadingUpdate}
+                />
+            )}
         </div>
     );
 }

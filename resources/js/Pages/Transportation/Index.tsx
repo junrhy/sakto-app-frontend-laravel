@@ -109,10 +109,10 @@ export default function Transportation() {
 
                     {/* Dashboard Tab */}
                     <TabsContent value="dashboard" className="space-y-6">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-blue-200 dark:border-gray-700">
+                        <div className="bg-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
                             <div className="flex items-center space-x-3 mb-4">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-                                    <BarChart3Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                    <BarChart3Icon className="h-5 w-5 text-gray-400 dark:text-gray-400" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Transportation Overview</h3>

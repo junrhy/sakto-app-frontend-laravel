@@ -11,10 +11,19 @@ export const useCargoMonitoring = () => {
         try {
             setLoading(true);
             const response = await axios.get('/transportation/cargo/list');
-            setCargoItems(response.data || []);
+            // Handle both direct array response and wrapped response
+            const data = response.data;
+            if (Array.isArray(data)) {
+                setCargoItems(data);
+            } else if (data && Array.isArray(data.data)) {
+                setCargoItems(data.data);
+            } else {
+                setCargoItems([]);
+            }
         } catch (error) {
             console.error('Error fetching cargo items:', error);
             setError('Failed to fetch cargo items');
+            setCargoItems([]);
         } finally {
             setLoading(false);
         }
@@ -119,10 +128,21 @@ export const useCargoMonitoring = () => {
     const getCargoByShipment = async (shipmentId: string) => {
         try {
             const response = await axios.get(`/transportation/cargo/shipment/${shipmentId}`);
-            setCargoItems(response.data || []);
-            return response.data;
+            // Handle both direct array response and wrapped response
+            const data = response.data;
+            if (Array.isArray(data)) {
+                setCargoItems(data);
+                return data;
+            } else if (data && Array.isArray(data.data)) {
+                setCargoItems(data.data);
+                return data.data;
+            } else {
+                setCargoItems([]);
+                return [];
+            }
         } catch (error) {
             console.error('Error fetching cargo by shipment:', error);
+            setCargoItems([]);
             throw error;
         }
     };

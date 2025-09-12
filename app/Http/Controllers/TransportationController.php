@@ -805,6 +805,154 @@ class TransportationController extends Controller
         }
     }
 
+    // ==================== CARGO UNLOADING MANAGEMENT ====================
+
+    /**
+     * Get unloading records for a cargo item.
+     */
+    public function getCargoUnloadings(Request $request, $cargoItemId)
+    {
+        try {
+            $request->merge(['client_identifier' => auth()->user()->identifier]);
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/cargo/' . $cargoItemId . '/unloadings', $request->all());
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch cargo unloadings', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch cargo unloadings',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a new unloading record.
+     */
+    public function storeCargoUnloading(Request $request, $cargoItemId)
+    {
+        try {
+            $validated = $request->validate([
+                'quantity_unloaded' => 'required|integer|min:1',
+                'unload_location' => 'required|string|max:255',
+                'notes' => 'nullable|string',
+                'unloaded_at' => 'required|date',
+                'unloaded_by' => 'nullable|string|max:255',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+            $validated['cargo_item_id'] = $cargoItemId;
+
+            $response = Http::withToken($this->apiToken)
+                ->post($this->apiUrl . '/transportation/cargo/' . $cargoItemId . '/unloadings', $validated);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to create cargo unloading', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create cargo unloading',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a specific unloading record.
+     */
+    public function showCargoUnloading($cargoItemId, $unloadingId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/cargo/' . $cargoItemId . '/unloadings/' . $unloadingId, [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch cargo unloading', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch cargo unloading',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update an unloading record.
+     */
+    public function updateCargoUnloading(Request $request, $cargoItemId, $unloadingId)
+    {
+        try {
+            $validated = $request->validate([
+                'quantity_unloaded' => 'required|integer|min:1',
+                'unload_location' => 'required|string|max:255',
+                'notes' => 'nullable|string',
+                'unloaded_at' => 'required|date',
+                'unloaded_by' => 'nullable|string|max:255',
+            ]);
+
+            $validated['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->put($this->apiUrl . '/transportation/cargo/' . $cargoItemId . '/unloadings/' . $unloadingId, $validated);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to update cargo unloading', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update cargo unloading',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete an unloading record.
+     */
+    public function destroyCargoUnloading($cargoItemId, $unloadingId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete($this->apiUrl . '/transportation/cargo/' . $cargoItemId . '/unloadings/' . $unloadingId . '?client_identifier=' . auth()->user()->identifier);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to delete cargo unloading', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete cargo unloading',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get unloading summary for a cargo item.
+     */
+    public function getCargoUnloadingSummary($cargoItemId)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->get($this->apiUrl . '/transportation/cargo/' . $cargoItemId . '/unloadings/summary', [
+                    'client_identifier' => auth()->user()->identifier
+                ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch cargo unloading summary', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch cargo unloading summary',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     // ==================== BOOKING MANAGEMENT ====================
 
     /**
