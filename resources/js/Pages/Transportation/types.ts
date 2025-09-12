@@ -212,4 +212,9 @@ export interface DashboardStats {
     availableTrucks: number;
     delayedShipments: number;
     totalRevenue: number;
+    // Trend data
+    activeShipmentsTrend?: number;
+    availableTrucksTrend?: number;
+    delayedShipmentsTrend?: number;
+    totalRevenueTrend?: number;
 }

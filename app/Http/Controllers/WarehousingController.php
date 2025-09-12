@@ -12,7 +12,7 @@ class WarehousingController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Warehousing');
+        return Inertia::render('Warehousing/Index');
     }
 
     /**

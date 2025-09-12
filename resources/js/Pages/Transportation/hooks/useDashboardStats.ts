@@ -15,21 +15,28 @@ export const useDashboardStats = () => {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const [fleetStatsResponse, shipmentStatsResponse, cargoStatsResponse] = await Promise.all([
+            const [fleetStatsResponse, shipmentStatsResponse, cargoStatsResponse, bookingStatsResponse] = await Promise.all([
                 axios.get('/transportation/fleet/stats'),
                 axios.get('/transportation/shipments/stats'),
-                axios.get('/transportation/cargo/stats')
+                axios.get('/transportation/cargo/stats'),
+                axios.get('/transportation/bookings/stats')
             ]);
 
             const fleetStats = fleetStatsResponse.data || {};
             const shipmentStats = shipmentStatsResponse.data || {};
             const cargoStats = cargoStatsResponse.data || {};
+            const bookingStats = bookingStatsResponse.data || {};
 
             setStats({
                 activeShipments: shipmentStats.in_transit_shipments || 0,
                 availableTrucks: fleetStats.available_trucks || 0,
                 delayedShipments: shipmentStats.delayed_shipments || 0,
-                totalRevenue: 0, // This would need to be calculated from actual shipment data
+                totalRevenue: bookingStats.total_revenue || 0,
+                // Trend data
+                activeShipmentsTrend: shipmentStats.in_transit_shipments_trend || 0,
+                availableTrucksTrend: fleetStats.available_trucks_trend || 0,
+                delayedShipmentsTrend: shipmentStats.delayed_shipments_trend || 0,
+                totalRevenueTrend: bookingStats.total_revenue_trend || 0,
             });
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);

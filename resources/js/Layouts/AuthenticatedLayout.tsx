@@ -289,16 +289,14 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                             <div className="border-t border-gray-200 dark:border-white/10">
                                 <div className="px-4 py-2">
                                     <div className="font-medium text-base text-gray-800 dark:text-white/90">Distribution</div>
-                                    {hasWarehousingAccess && (
+                                    <>
                                         <ResponsiveNavLink href={`/warehousing?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                             Warehousing
                                         </ResponsiveNavLink>
-                                    )}
-                                    {hasTransportationAccess && (
                                         <ResponsiveNavLink href={`/transportation?app=${appParam}`} className="text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                                             Transportation
                                         </ResponsiveNavLink>
-                                    )}
+                                    </>
                                 </div>
                             </div>
                         )}
@@ -787,16 +785,12 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 </Dropdown.Trigger>
 
                                                 <Dropdown.Content>
-                                                    {hasWarehousingAccess && (
                                                         <Dropdown.Link href={`/warehousing?app=${appParam}`}>
                                                             Warehousing
                                                         </Dropdown.Link>
-                                                    )}
-                                                    {hasTransportationAccess && (
                                                         <Dropdown.Link href={`/transportation?app=${appParam}`}>
                                                             Transportation
                                                         </Dropdown.Link>
-                                                    )}
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
