@@ -5,6 +5,17 @@ import { Badge } from '@/Components/ui/badge';
 import axios from 'axios';
 
 // Types
+interface CurrentShipment {
+    id: number;
+    origin: string;
+    destination: string;
+    status: string;
+    cargo?: string;
+    weight?: number;
+    departure_date?: string;
+    arrival_date?: string;
+}
+
 interface TruckLocation {
     id: number;
     plate_number: string;
@@ -23,6 +34,7 @@ interface TruckLocation {
         heading?: number;
     };
     is_online: boolean;
+    current_shipment?: CurrentShipment | null;
 }
 
 interface OpenStreetMapTruckLocationProps {
@@ -293,6 +305,56 @@ export default function OpenStreetMapTruckLocation({ className = '' }: OpenStree
                                 <span style="color: #111827; font-size: 12px; font-weight: 500;">${formatLastUpdate(truck.location.last_update)}</span>
                             </div>
                             
+                            ${truck.current_shipment ? `
+                                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <div style="width: 16px; height: 16px; margin-right: 6px; color: #059669;">📦</div>
+                                        <span style="color: #111827; font-size: 12px; font-weight: 600;">Current Shipment</span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                            <div style="width: 12px; height: 12px; margin-right: 6px; color: #dc2626;">📍</div>
+                                            <span style="color: #6b7280; font-size: 11px; font-weight: 500;">Origin:</span>
+                                        </div>
+                                        <p style="margin: 0 0 8px 18px; color: #111827; font-size: 11px; line-height: 1.4;">${truck.current_shipment.origin}</p>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                            <div style="width: 12px; height: 12px; margin-right: 6px; color: #059669;">🎯</div>
+                                            <span style="color: #6b7280; font-size: 11px; font-weight: 500;">Destination:</span>
+                                        </div>
+                                        <p style="margin: 0 0 8px 18px; color: #111827; font-size: 11px; line-height: 1.4;">${truck.current_shipment.destination}</p>
+                                    </div>
+                                    
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="color: #6b7280; font-size: 11px;">Shipment Status:</span>
+                                        <span style="padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 500; background-color: ${
+                                            truck.current_shipment.status === 'Scheduled' ? '#fef3c7' : 
+                                            truck.current_shipment.status === 'In Transit' ? '#dbeafe' : '#f3f4f6'
+                                        }; color: ${
+                                            truck.current_shipment.status === 'Scheduled' ? '#92400e' : 
+                                            truck.current_shipment.status === 'In Transit' ? '#1e40af' : '#374151'
+                                        };">${truck.current_shipment.status}</span>
+                                    </div>
+                                    
+                                    ${truck.current_shipment.cargo ? `
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="color: #6b7280; font-size: 11px;">Cargo:</span>
+                                            <span style="color: #111827; font-size: 11px; font-weight: 500;">${truck.current_shipment.cargo}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${truck.current_shipment.weight ? `
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="color: #6b7280; font-size: 11px;">Weight:</span>
+                                            <span style="color: #111827; font-size: 11px; font-weight: 500;">${truck.current_shipment.weight} kg</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                            
                             ${truck.location.address ? `
                                 <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
                                     <p style="margin: 0; color: #6b7280; font-size: 11px;">${truck.location.address}</p>
@@ -478,6 +540,41 @@ export default function OpenStreetMapTruckLocation({ className = '' }: OpenStree
                                         <span className="font-medium text-xs">{formatLastUpdate(truck.location.last_update)}</span>
                                     </div>
                                 </div>
+                                
+                                {truck.current_shipment && (
+                                    <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                                        <div className="flex items-center mb-2">
+                                            <span className="mr-2 text-green-600 text-sm">📦</span>
+                                            <span className="text-xs font-medium text-blue-800 dark:text-blue-200">Current Shipment</span>
+                                        </div>
+                                        <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                                            <div className="flex items-start">
+                                                <span className="mr-2 mt-0.5 text-red-500 text-xs">📍</span>
+                                                <div className="flex-1">
+                                                    <span className="text-gray-500 dark:text-gray-400">From:</span>
+                                                    <p className="text-gray-700 dark:text-gray-200 font-medium leading-tight">{truck.current_shipment.origin}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start">
+                                                <span className="mr-2 mt-0.5 text-green-500 text-xs">🎯</span>
+                                                <div className="flex-1">
+                                                    <span className="text-gray-500 dark:text-gray-400">To:</span>
+                                                    <p className="text-gray-700 dark:text-gray-200 font-medium leading-tight">{truck.current_shipment.destination}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between items-center pt-1 border-t border-blue-200 dark:border-blue-700">
+                                                <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                    truck.current_shipment.status === 'Scheduled' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                                                    truck.current_shipment.status === 'In Transit' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
+                                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                                                }`}>
+                                                    {truck.current_shipment.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 
                                 {truck.location.address && (
                                     <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 truncate">
