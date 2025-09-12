@@ -580,8 +580,8 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     />
                 )}
 
-                <nav className={`border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
-                    sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-[268px]'
+                <nav className={`border-b border-gray-200 dark:border-gray-600 bg-gradient-to-r ${getHeaderColorClass(url, authUser.project_identifier)} fixed top-0 left-0 right-0 z-20 transition-all duration-300 ${
+                    sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
                 }`}>
                     <div className="px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
@@ -1445,9 +1445,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                     {/* Sidebar Toggle Button - Positioned on the border */}
                     <button
                         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                        className={`absolute top-4 z-[70] w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center text-gray-700 dark:text-white/80 transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-1 ${
-                            sidebarCollapsed ? 'right-[-10px]' : 'right-[-10px]'
-                        }`}
+                        className={`absolute top-4 z-[70] w-6 h-6 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 shadow-lg flex items-center justify-center text-gray-700 dark:text-white/80 transition-all duration-300 ease-in-out hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 focus:ring-offset-1 right-[-12px]`}
                     >
                         {sidebarCollapsed ? (
                             <ChevronRight className="h-3 w-3" />
@@ -1499,12 +1497,16 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 }
                                                 
                                                 // Show app if it's marked as visible
-                                                if (app.visible) {
+                                                if (app.visible) return true;
+                                                
+                                                // Show subscription apps if user has an active subscription that includes this app
+                                                const userSubscription = auth?.user?.subscription;
+                                                console.log(userSubscription);
+                                                if (app.pricingType === 'subscription' && userSubscription && userSubscription.plan?.slug && app.includedInPlans?.includes(userSubscription.plan.slug)) {
                                                     return true;
                                                 }
                                                 
-                                                // Show all enabled apps regardless of visibility (since all apps are currently set to visible: false)
-                                                return true;
+                                                return false;
                                             });
                                             
                                             // If no apps are shown due to filtering, show all visible apps as fallback

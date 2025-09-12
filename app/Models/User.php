@@ -105,6 +105,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'plan' => $subscription->plan ? [
                 'id' => $subscription->plan->id,
                 'name' => $subscription->plan->name,
+                'slug' => $subscription->plan->slug,
                 'unlimited_access' => $subscription->plan->unlimited_access,
                 'features' => $subscription->plan->features,
             ] : null,
