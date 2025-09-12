@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import { MapPinIcon, ClockIcon, NavigationIcon, Gauge, RefreshCwIcon, CheckCircleIcon, AlertCircleIcon, ArrowLeftIcon } from 'lucide-react';
+import { MapPinIcon, ClockIcon, NavigationIcon, Gauge, RefreshCwIcon, CheckCircleIcon, AlertCircleIcon, ArrowLeftIcon, SmartphoneIcon } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -31,6 +31,38 @@ interface LocationUpdateData {
     heading?: string;
 }
 
+interface SensorData {
+    acceleration: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    rotationRate: {
+        alpha: number;
+        beta: number;
+        gamma: number;
+    };
+    orientation: {
+        alpha: number; // compass heading (0-360)
+        beta: number;  // front-to-back tilt
+        gamma: number; // left-to-right tilt
+    };
+}
+
+interface CalibrationData {
+    isCalibrated: boolean;
+    stationaryAcceleration: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    baselineOrientation: {
+        alpha: number;
+        beta: number;
+        gamma: number;
+    };
+}
+
 export default function DriverLocationUpdate() {
     const { identifier } = usePage().props as any;
     const [trucks, setTrucks] = useState<Truck[]>([]);
@@ -46,6 +78,23 @@ export default function DriverLocationUpdate() {
         speed: '',
         heading: ''
     });
+
+    // Sensor-related state
+    const [sensorData, setSensorData] = useState<SensorData | null>(null);
+    const [calibrationData, setCalibrationData] = useState<CalibrationData>({
+        isCalibrated: false,
+        stationaryAcceleration: { x: 0, y: 0, z: 0 },
+        baselineOrientation: { alpha: 0, beta: 0, gamma: 0 }
+    });
+    const [isSensorActive, setIsSensorActive] = useState(false);
+    const [sensorSupported, setSensorSupported] = useState(false);
+    const [estimatedSpeed, setEstimatedSpeed] = useState<number>(0);
+    const [estimatedHeading, setEstimatedHeading] = useState<number>(0);
+    
+    // Refs for sensor data processing
+    const lastAccelerationRef = useRef<{ x: number; y: number; z: number } | null>(null);
+    const lastTimestampRef = useRef<number | null>(null);
+    const velocityRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 });
 
     // Fetch available trucks
     const fetchTrucks = async () => {
@@ -65,7 +114,270 @@ export default function DriverLocationUpdate() {
 
     useEffect(() => {
         fetchTrucks();
+        checkSensorSupport();
+        
+        // Cleanup sensor listeners on unmount
+        return () => {
+            if (isSensorActive) {
+                window.removeEventListener('devicemotion', handleDeviceMotion, true);
+                window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
+            }
+        };
     }, []);
+
+    // Automatically update location data when sensor readings change
+    useEffect(() => {
+        updateLocationDataWithSensors();
+    }, [estimatedSpeed, estimatedHeading, calibrationData.isCalibrated, isSensorActive]);
+
+    // Auto-submit when all data is available
+    useEffect(() => {
+        const shouldAutoSubmit = 
+            locationData.latitude && 
+            locationData.longitude && 
+            calibrationData.isCalibrated && 
+            isSensorActive && 
+            !updating;
+
+        if (shouldAutoSubmit) {
+            // Initial submission after 2 seconds
+            const initialTimer = setTimeout(() => {
+                updateLocation();
+            }, 2000);
+
+            // Then submit every 30 seconds for continuous updates
+            const intervalTimer = setInterval(() => {
+                if (locationData.latitude && locationData.longitude && !updating) {
+                    updateLocation();
+                }
+            }, 30000); // 30 seconds interval
+
+            return () => {
+                clearTimeout(initialTimer);
+                clearInterval(intervalTimer);
+            };
+        }
+    }, [locationData.latitude, locationData.longitude, calibrationData.isCalibrated, isSensorActive, updating]);
+
+    // Check if device motion and orientation sensors are supported
+    const checkSensorSupport = () => {
+        const motionSupported = 'DeviceMotionEvent' in window;
+        const orientationSupported = 'DeviceOrientationEvent' in window;
+        setSensorSupported(motionSupported && orientationSupported);
+    };
+
+    // Calibrate sensors when vehicle is stationary
+    const calibrateSensors = () => {
+        if (!sensorData) return;
+
+        setCalibrationData({
+            isCalibrated: true,
+            stationaryAcceleration: {
+                x: sensorData.acceleration.x,
+                y: sensorData.acceleration.y,
+                z: sensorData.acceleration.z
+            },
+            baselineOrientation: {
+                alpha: sensorData.orientation.alpha,
+                beta: sensorData.orientation.beta,
+                gamma: sensorData.orientation.gamma
+            }
+        });
+
+        // Reset velocity calculations
+        velocityRef.current = { x: 0, y: 0, z: 0 };
+        lastAccelerationRef.current = null;
+        lastTimestampRef.current = null;
+
+        setMessage({ type: 'success', text: 'Sensors calibrated successfully! Please keep your phone stable during calibration.' });
+    };
+
+    // Calculate speed from accelerometer data
+    const calculateSpeed = (acceleration: { x: number; y: number; z: number }, timestamp: number) => {
+        if (!calibrationData.isCalibrated || !lastAccelerationRef.current || !lastTimestampRef.current) {
+            return 0;
+        }
+
+        const dt = (timestamp - lastTimestampRef.current) / 1000; // Convert to seconds
+        if (dt <= 0) return estimatedSpeed;
+
+        // Remove gravity and calibration bias
+        const calibratedAccel = {
+            x: acceleration.x - calibrationData.stationaryAcceleration.x,
+            y: acceleration.y - calibrationData.stationaryAcceleration.y,
+            z: acceleration.z - calibrationData.stationaryAcceleration.z
+        };
+
+        // Integrate acceleration to get velocity change
+        const deltaV = {
+            x: calibratedAccel.x * dt,
+            y: calibratedAccel.y * dt,
+            z: calibratedAccel.z * dt
+        };
+
+        // Update velocity
+        velocityRef.current.x += deltaV.x;
+        velocityRef.current.y += deltaV.y;
+        velocityRef.current.z += deltaV.z;
+
+        // Calculate speed magnitude (in m/s)
+        const speed = Math.sqrt(
+            velocityRef.current.x ** 2 + 
+            velocityRef.current.y ** 2 + 
+            velocityRef.current.z ** 2
+        );
+
+        // Convert to km/h
+        return speed * 3.6;
+    };
+
+    // Calculate heading from orientation data
+    const calculateHeading = (orientation: { alpha: number; beta: number; gamma: number }) => {
+        if (!calibrationData.isCalibrated) return 0;
+
+        // Use the alpha value (compass heading) and adjust for calibration
+        let heading = orientation.alpha - calibrationData.baselineOrientation.alpha;
+        
+        // Normalize to 0-360 degrees
+        while (heading < 0) heading += 360;
+        while (heading >= 360) heading -= 360;
+
+        return heading;
+    };
+
+    // Handle device motion events
+    const handleDeviceMotion = (event: DeviceMotionEvent) => {
+        if (!event.acceleration || !event.rotationRate) return;
+
+        const timestamp = Date.now();
+        const acceleration = {
+            x: event.acceleration.x || 0,
+            y: event.acceleration.y || 0,
+            z: event.acceleration.z || 0
+        };
+
+        const rotationRate = {
+            alpha: event.rotationRate.alpha || 0,
+            beta: event.rotationRate.beta || 0,
+            gamma: event.rotationRate.gamma || 0
+        };
+
+        // Calculate speed
+        const speed = calculateSpeed(acceleration, timestamp);
+        setEstimatedSpeed(speed);
+
+        // Update sensor data
+        setSensorData(prev => ({
+            acceleration,
+            rotationRate,
+            orientation: prev?.orientation || { alpha: 0, beta: 0, gamma: 0 }
+        }));
+
+        // Update refs for next calculation
+        lastAccelerationRef.current = acceleration;
+        lastTimestampRef.current = timestamp;
+    };
+
+    // Handle device orientation events
+    const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
+        if (event.alpha === null || event.beta === null || event.gamma === null) return;
+
+        const orientation = {
+            alpha: event.alpha,
+            beta: event.beta,
+            gamma: event.gamma
+        };
+
+        // Calculate heading
+        const heading = calculateHeading(orientation);
+        setEstimatedHeading(heading);
+
+        // Update sensor data
+        setSensorData(prev => ({
+            acceleration: prev?.acceleration || { x: 0, y: 0, z: 0 },
+            rotationRate: prev?.rotationRate || { alpha: 0, beta: 0, gamma: 0 },
+            orientation
+        }));
+    };
+
+    // Start sensor monitoring
+    const startSensorMonitoring = () => {
+        if (!sensorSupported) {
+            setMessage({ type: 'error', text: 'Device sensors are not supported on this device.' });
+            return;
+        }
+
+        // Request permission for iOS 13+
+        if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+            (DeviceMotionEvent as any).requestPermission().then((response: string) => {
+                if (response === 'granted') {
+                    setupSensorListeners();
+                } else {
+                    setMessage({ type: 'error', text: 'Permission denied for device motion sensors.' });
+                }
+            });
+        } else {
+            setupSensorListeners();
+        }
+    };
+
+    // Setup sensor event listeners
+    const setupSensorListeners = () => {
+        window.addEventListener('devicemotion', handleDeviceMotion, true);
+        window.addEventListener('deviceorientation', handleDeviceOrientation, true);
+        setIsSensorActive(true);
+        setMessage({ type: 'success', text: 'Sensor monitoring started. Please calibrate when stationary.' });
+    };
+
+    // Stop sensor monitoring
+    const stopSensorMonitoring = () => {
+        window.removeEventListener('devicemotion', handleDeviceMotion, true);
+        window.removeEventListener('deviceorientation', handleDeviceOrientation, true);
+        setIsSensorActive(false);
+        setSensorData(null);
+        setEstimatedSpeed(0);
+        setEstimatedHeading(0);
+        setMessage({ type: 'success', text: 'Sensor monitoring stopped.' });
+    };
+
+    // Automatically update location data with sensor readings
+    const updateLocationDataWithSensors = () => {
+        if (calibrationData.isCalibrated && isSensorActive) {
+            setLocationData(prev => ({
+                ...prev,
+                speed: estimatedSpeed > 0 ? estimatedSpeed.toFixed(1) : prev.speed,
+                heading: estimatedHeading >= 0 ? estimatedHeading.toFixed(0) : prev.heading
+            }));
+        }
+    };
+
+    // Use sensor data in location update (manual trigger)
+    const useSensorData = () => {
+        if (estimatedSpeed > 0) {
+            setLocationData(prev => ({
+                ...prev,
+                speed: estimatedSpeed.toFixed(1)
+            }));
+        }
+        if (estimatedHeading >= 0) {
+            setLocationData(prev => ({
+                ...prev,
+                heading: estimatedHeading.toFixed(0)
+            }));
+        }
+        setMessage({ type: 'success', text: 'Sensor data applied to location update.' });
+    };
+
+    // Start GPS - combines location detection and sensor monitoring
+    const startGPS = () => {
+        // First get current location
+        getCurrentLocation();
+        
+        // Then start sensors if supported
+        if (sensorSupported) {
+            startSensorMonitoring();
+        }
+    };
 
     // Get current location using browser geolocation
     const getCurrentLocation = () => {
@@ -130,12 +442,12 @@ export default function DriverLocationUpdate() {
                     setMessage({ type: 'success', text: 'Location obtained successfully!' });
                 },
                 (error) => {
-                    // If high accuracy fails and this is the first attempt, try with lower accuracy
-                    if (attempt === 1 && options.enableHighAccuracy) {
-                        console.log('High accuracy failed, trying with lower accuracy...');
+                    // If low accuracy fails and this is the first attempt, try with high accuracy
+                    if (attempt === 1 && !options.enableHighAccuracy) {
+                        console.log('Low accuracy failed, trying with high accuracy...');
                         tryGetLocation({
-                            enableHighAccuracy: false,
-                            timeout: 15000,
+                            enableHighAccuracy: true,
+                            timeout: 30000, // 30 seconds for high accuracy
                             maximumAge: 300000
                         }, 2);
                         return;
@@ -150,7 +462,7 @@ export default function DriverLocationUpdate() {
                             errorMessage += 'Location information is unavailable. Please check your GPS/WiFi settings.';
                             break;
                         case error.TIMEOUT:
-                            errorMessage += 'Location request timed out. Please try again.';
+                            errorMessage += 'Location request timed out. This can happen when GPS signal is weak or you\'re indoors. Try moving to an open area or enter coordinates manually.';
                             break;
                         default:
                             errorMessage += 'An unknown error occurred. Please try again or enter coordinates manually.';
@@ -162,10 +474,10 @@ export default function DriverLocationUpdate() {
             );
         };
 
-        // Start with high accuracy
+        // Start with lower accuracy for faster response, then try high accuracy
         tryGetLocation({
-            enableHighAccuracy: true,
-            timeout: 10000,
+            enableHighAccuracy: false,
+            timeout: 20000, // 20 seconds
             maximumAge: 300000 // 5 minutes
         });
     };
@@ -234,6 +546,12 @@ export default function DriverLocationUpdate() {
 
     // Go back to truck selection
     const goBackToTruckSelection = () => {
+        // Stop GPS tracking and reset everything
+        if (isSensorActive) {
+            stopSensorMonitoring();
+        }
+        
+        // Reset all state
         setCurrentStep('truck-selection');
         setSelectedTruck(null);
         setLocationData({
@@ -244,6 +562,22 @@ export default function DriverLocationUpdate() {
             heading: ''
         });
         setMessage(null);
+        
+        // Reset sensor-related state
+        setSensorData(null);
+        setCalibrationData({
+            isCalibrated: false,
+            stationaryAcceleration: { x: 0, y: 0, z: 0 },
+            baselineOrientation: { alpha: 0, beta: 0, gamma: 0 }
+        });
+        setIsSensorActive(false);
+        setEstimatedSpeed(0);
+        setEstimatedHeading(0);
+        
+        // Reset sensor calculation refs
+        lastAccelerationRef.current = null;
+        lastTimestampRef.current = null;
+        velocityRef.current = { x: 0, y: 0, z: 0 };
     };
 
     return (
@@ -260,10 +594,10 @@ export default function DriverLocationUpdate() {
                             </div>
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                            Driver Location Update
+                            Truck Location
                         </h1>
                         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2 px-2">
-                            Update your truck's current location and status
+                            Update your truck's current location
                         </p>
                     </div>
 
@@ -304,6 +638,11 @@ export default function DriverLocationUpdate() {
                                     : (
                                         <div className="text-center">
                                             <div className="font-bold text-3xl sm:text-4xl text-blue-600 dark:text-blue-400">{selectedTruckData?.plate_number}</div>
+                                            {selectedTruckData?.driver && (
+                                                <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+                                                    Driver: <span className="font-medium text-gray-900 dark:text-gray-100">{selectedTruckData.driver}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     )
                                 }
@@ -332,8 +671,13 @@ export default function DriverLocationUpdate() {
                                                                 {truck.plate_number}
                                                             </h4>
                                                             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                                                                {truck.model} • {truck.driver || 'No driver assigned'}
+                                                                {truck.model}
                                                             </p>
+                                                            {truck.driver && (
+                                                                <p className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 truncate font-medium">
+                                                                    Driver: {truck.driver}
+                                                                </p>
+                                                            )}
                                                         </div>
                                                         <Badge variant={truck.status === 'Available' ? 'default' : 'secondary'} className="ml-2 flex-shrink-0 text-xs">
                                                             {truck.status}
@@ -348,109 +692,185 @@ export default function DriverLocationUpdate() {
 
                             {/* Location Update Step */}
                             {currentStep === 'location-update' && (
-                                <div>
-                                    {/* Current Location Button */}
-                                    <div className="mb-4">
-                                        <Button
-                                            onClick={getCurrentLocation}
-                                            variant="outline"
-                                            className="w-full h-11 sm:h-10 text-sm sm:text-base touch-manipulation"
-                                            disabled={updating}
-                                        >
-                                            <MapPinIcon className="h-4 w-4 mr-2" />
-                                            Get Current Location
-                                        </Button>
-                                    </div>
-
-                                    {/* Coordinates */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
-                                        <div>
-                                            <Label htmlFor="latitude" className="text-sm sm:text-base">Latitude</Label>
-                                            <Input
-                                                id="latitude"
-                                                type="number"
-                                                step="any"
-                                                placeholder="e.g., 14.5995"
-                                                value={locationData.latitude}
-                                                onChange={(e) => setLocationData(prev => ({ ...prev, latitude: e.target.value }))}
-                                                disabled={updating}
-                                                className="h-11 sm:h-10 text-sm sm:text-base"
-                                            />
+                                <div className="space-y-6">
+                                    {/* Step 1: Start GPS */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center">
+                                            <div className="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full mr-3">
+                                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">1</span>
+                                            </div>
+                                            <h3 className="font-medium text-gray-900 dark:text-gray-100">Start GPS</h3>
                                         </div>
-                                        <div>
-                                            <Label htmlFor="longitude" className="text-sm sm:text-base">Longitude</Label>
-                                            <Input
-                                                id="longitude"
-                                                type="number"
-                                                step="any"
-                                                placeholder="e.g., 120.9842"
-                                                value={locationData.longitude}
-                                                onChange={(e) => setLocationData(prev => ({ ...prev, longitude: e.target.value }))}
-                                                disabled={updating}
-                                                className="h-11 sm:h-10 text-sm sm:text-base"
-                                            />
+                                        
+                                        <div className="ml-9 space-y-2">
+                                            {!isSensorActive ? (
+                                                <Button
+                                                    onClick={startGPS}
+                                                    variant="outline"
+                                                    className="w-full h-11 sm:h-10 text-sm sm:text-base touch-manipulation"
+                                                    disabled={updating}
+                                                >
+                                                    <MapPinIcon className="h-4 w-4 mr-2" />
+                                                    Start GPS
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    onClick={calibrateSensors}
+                                                    variant="outline"
+                                                    className="w-full h-11 sm:h-10 text-sm sm:text-base touch-manipulation"
+                                                    disabled={updating || !sensorData}
+                                                >
+                                                    <SmartphoneIcon className="h-4 w-4 mr-2" />
+                                                    Calibrate Sensors
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
 
-                                    {/* Address */}
-                                    <div className="mb-4">
-                                        <Label htmlFor="address" className="text-sm sm:text-base">Address (Optional)</Label>
-                                        <Input
-                                            id="address"
-                                            placeholder="Enter address or leave blank for auto-detection"
-                                            value={locationData.address}
-                                            onChange={(e) => setLocationData(prev => ({ ...prev, address: e.target.value }))}
-                                            disabled={updating}
-                                            className="h-11 sm:h-10 text-sm sm:text-base"
-                                        />
+                                    {/* Step 2: Location Details */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center">
+                                            <div className="flex items-center justify-center w-6 h-6 bg-purple-100 dark:bg-purple-900 rounded-full mr-3">
+                                                <span className="text-xs font-bold text-purple-600 dark:text-purple-400">2</span>
+                                            </div>
+                                            <h3 className="font-medium text-gray-900 dark:text-gray-100">Location Details</h3>
+                                        </div>
+                                        
+                                        <div className="ml-9 space-y-4">
+                                            {/* Coordinates */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                                <div>
+                                                    <Label htmlFor="latitude" className="text-sm sm:text-base">Latitude</Label>
+                                                    <Input
+                                                        id="latitude"
+                                                        type="number"
+                                                        step="any"
+                                                        placeholder="e.g., 14.5995"
+                                                        value={locationData.latitude}
+                                                        onChange={(e) => setLocationData(prev => ({ ...prev, latitude: e.target.value }))}
+                                                        disabled={updating}
+                                                        className="h-11 sm:h-10 text-sm sm:text-base"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="longitude" className="text-sm sm:text-base">Longitude</Label>
+                                                    <Input
+                                                        id="longitude"
+                                                        type="number"
+                                                        step="any"
+                                                        placeholder="e.g., 120.9842"
+                                                        value={locationData.longitude}
+                                                        onChange={(e) => setLocationData(prev => ({ ...prev, longitude: e.target.value }))}
+                                                        disabled={updating}
+                                                        className="h-11 sm:h-10 text-sm sm:text-base"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Address */}
+                                            <div>
+                                                <Label htmlFor="address" className="text-sm sm:text-base">Address (Optional)</Label>
+                                                <Input
+                                                    id="address"
+                                                    placeholder="Enter address or leave blank for auto-detection"
+                                                    value={locationData.address}
+                                                    onChange={(e) => setLocationData(prev => ({ ...prev, address: e.target.value }))}
+                                                    disabled={updating}
+                                                    className="h-11 sm:h-10 text-sm sm:text-base"
+                                                />
+                                            </div>
+
+                                            {/* Speed and Heading */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                                <div>
+                                                    <Label htmlFor="speed" className="text-sm sm:text-base flex items-center">
+                                                        Speed (km/h)
+                                                        {calibrationData.isCalibrated && isSensorActive && (
+                                                            <span className="ml-2 text-green-600 dark:text-green-400 text-xs">Auto</span>
+                                                        )}
+                                                    </Label>
+                                                    <Input
+                                                        id="speed"
+                                                        type="number"
+                                                        placeholder="e.g., 60"
+                                                        value={locationData.speed}
+                                                        onChange={(e) => setLocationData(prev => ({ ...prev, speed: e.target.value }))}
+                                                        disabled={updating}
+                                                        className={`h-11 sm:h-10 text-sm sm:text-base ${
+                                                            calibrationData.isCalibrated && isSensorActive 
+                                                                ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20' 
+                                                                : ''
+                                                        }`}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="heading" className="text-sm sm:text-base flex items-center">
+                                                        Heading (degrees)
+                                                        {calibrationData.isCalibrated && isSensorActive && (
+                                                            <span className="ml-2 text-green-600 dark:text-green-400 text-xs">Auto</span>
+                                                        )}
+                                                    </Label>
+                                                    <Input
+                                                        id="heading"
+                                                        type="number"
+                                                        placeholder="e.g., 45"
+                                                        value={locationData.heading}
+                                                        onChange={(e) => setLocationData(prev => ({ ...prev, heading: e.target.value }))}
+                                                        disabled={updating}
+                                                        className={`h-11 sm:h-10 text-sm sm:text-base ${
+                                                            calibrationData.isCalibrated && isSensorActive 
+                                                                ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20' 
+                                                                : ''
+                                                        }`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Speed and Heading */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
-                                        <div>
-                                            <Label htmlFor="speed" className="text-sm sm:text-base">Speed (km/h)</Label>
-                                            <Input
-                                                id="speed"
-                                                type="number"
-                                                placeholder="e.g., 60"
-                                                value={locationData.speed}
-                                                onChange={(e) => setLocationData(prev => ({ ...prev, speed: e.target.value }))}
-                                                disabled={updating}
-                                                className="h-11 sm:h-10 text-sm sm:text-base"
-                                            />
+                                    {/* Step 3: Auto-Submit Status */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center">
+                                            <div className="flex items-center justify-center w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full mr-3">
+                                                <span className="text-xs font-bold text-orange-600 dark:text-orange-400">3</span>
+                                            </div>
+                                            <h3 className="font-medium text-gray-900 dark:text-gray-100">Auto-Submit Status</h3>
                                         </div>
-                                        <div>
-                                            <Label htmlFor="heading" className="text-sm sm:text-base">Heading (degrees)</Label>
-                                            <Input
-                                                id="heading"
-                                                type="number"
-                                                placeholder="e.g., 45"
-                                                value={locationData.heading}
-                                                onChange={(e) => setLocationData(prev => ({ ...prev, heading: e.target.value }))}
-                                                disabled={updating}
-                                                className="h-11 sm:h-10 text-sm sm:text-base"
-                                            />
+                                        
+                                        <div className="ml-9">
+                                            {updating ? (
+                                                <div className="flex items-center justify-center p-4 border rounded-lg bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                                                    <RefreshCwIcon className="h-5 w-5 mr-2 animate-spin text-orange-600 dark:text-orange-400" />
+                                                    <span className="text-sm font-medium text-orange-900 dark:text-orange-100">Submitting location update...</span>
+                                                </div>
+                                            ) : locationData.latitude && locationData.longitude ? (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-center p-4 border rounded-lg bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                                                        <CheckCircleIcon className="h-5 w-5 mr-2 text-green-600 dark:text-green-400" />
+                                                        <span className="text-sm font-medium text-green-900 dark:text-green-100">
+                                                            {calibrationData.isCalibrated && isSensorActive 
+                                                                ? "Auto-submitting every 30 seconds..." 
+                                                                : "Location ready - will auto-submit when sensors are calibrated"
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <Button
+                                                        onClick={updateLocation}
+                                                        className="w-full h-11 sm:h-10 text-sm sm:text-base touch-manipulation font-medium"
+                                                        disabled={updating}
+                                                    >
+                                                        <CheckCircleIcon className="h-4 w-4 mr-2" />
+                                                        Submit Now (Manual)
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-center p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800">
+                                                    <ClockIcon className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-400" />
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Waiting for GPS data...</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
-                                    {/* Update Button */}
-                                    <Button
-                                        onClick={updateLocation}
-                                        className="w-full h-12 sm:h-10 text-sm sm:text-base touch-manipulation font-medium"
-                                        disabled={updating || !locationData.latitude || !locationData.longitude}
-                                    >
-                                        {updating ? (
-                                            <>
-                                                <RefreshCwIcon className="h-4 w-4 mr-2 animate-spin" />
-                                                Updating...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckCircleIcon className="h-4 w-4 mr-2" />
-                                                Update Location
-                                            </>
-                                        )}
-                                    </Button>
                                 </div>
                             )}
                         </CardContent>
