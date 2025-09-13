@@ -34,6 +34,7 @@ class ModuleSeeder extends Seeder
                 'pricing_type' => $app['pricingType'],
                 'included_in_plans' => $app['includedInPlans'],
                 'bg_color' => $app['bgColor'],
+                'icon' => $app['icon'] ?? $this->getSmartIconSuggestion($app['title']),
                 'rating' => $app['rating'],
                 'order' => $index + 1,
                 'is_active' => true
@@ -59,6 +60,129 @@ class ModuleSeeder extends Seeder
     private function generateIdentifier(string $title): string
     {
         return strtolower(str_replace([' ', '&', '-'], ['-', 'and', '-'], $title));
+    }
+
+    /**
+     * Get smart icon suggestion based on app title
+     */
+    private function getSmartIconSuggestion(string $title): string
+    {
+        $lowerTitle = strtolower($title);
+        
+        // Business & Productivity
+        if (strpos($lowerTitle, 'retail') !== false || strpos($lowerTitle, 'store') !== false || strpos($lowerTitle, 'shop') !== false) {
+            return 'RxDashboard';
+        }
+        if (strpos($lowerTitle, 'office') !== false || strpos($lowerTitle, 'business') !== false) {
+            return 'RxHome';
+        }
+        if (strpos($lowerTitle, 'warehouse') !== false || strpos($lowerTitle, 'warehousing') !== false || strpos($lowerTitle, 'inventory') !== false) {
+            return 'RxHome';
+        }
+        
+        // Technology
+        if (strpos($lowerTitle, 'transport') !== false || strpos($lowerTitle, 'delivery') !== false) {
+            return 'RxRocket';
+        }
+        if (strpos($lowerTitle, 'tech') !== false || strpos($lowerTitle, 'software') !== false) {
+            return 'RxMobile';
+        }
+        
+        // Health & Medical
+        if (strpos($lowerTitle, 'clinic') !== false || strpos($lowerTitle, 'medical') !== false || strpos($lowerTitle, 'health') !== false) {
+            return 'RxHeart';
+        }
+        if (strpos($lowerTitle, 'hospital') !== false || strpos($lowerTitle, 'healthcare') !== false) {
+            return 'RxHeart';
+        }
+        
+        // Food & Beverage
+        if (strpos($lowerTitle, 'food') !== false || strpos($lowerTitle, 'restaurant') !== false || strpos($lowerTitle, 'cafe') !== false || strpos($lowerTitle, 'fnb') !== false) {
+            return 'RxFace';
+        }
+        if (strpos($lowerTitle, 'kitchen') !== false || strpos($lowerTitle, 'dining') !== false) {
+            return 'RxFace';
+        }
+        
+        // Finance
+        if (strpos($lowerTitle, 'lending') !== false || strpos($lowerTitle, 'loan') !== false || strpos($lowerTitle, 'finance') !== false) {
+            return 'RxCardStack';
+        }
+        if (strpos($lowerTitle, 'payment') !== false || strpos($lowerTitle, 'billing') !== false || strpos($lowerTitle, 'payroll') !== false) {
+            return 'RxCardStack';
+        }
+        
+        // Real Estate
+        if (strpos($lowerTitle, 'real estate') !== false || strpos($lowerTitle, 'property') !== false) {
+            return 'RxHome';
+        }
+        if (strpos($lowerTitle, 'rental') !== false || strpos($lowerTitle, 'rent') !== false) {
+            return 'RxTokens';
+        }
+        
+        // Education
+        if (strpos($lowerTitle, 'course') !== false || strpos($lowerTitle, 'education') !== false || strpos($lowerTitle, 'learning') !== false) {
+            return 'RxTarget';
+        }
+        if (strpos($lowerTitle, 'school') !== false || strpos($lowerTitle, 'training') !== false) {
+            return 'RxTarget';
+        }
+        
+        // Events
+        if (strpos($lowerTitle, 'event') !== false || strpos($lowerTitle, 'calendar') !== false) {
+            return 'RxCalendar';
+        }
+        if (strpos($lowerTitle, 'appointment') !== false || strpos($lowerTitle, 'meeting') !== false) {
+            return 'RxCalendar';
+        }
+        
+        // Content
+        if (strpos($lowerTitle, 'content') !== false || strpos($lowerTitle, 'creator') !== false || strpos($lowerTitle, 'blog') !== false) {
+            return 'RxPencil1';
+        }
+        if (strpos($lowerTitle, 'media') !== false || strpos($lowerTitle, 'video') !== false) {
+            return 'RxImage';
+        }
+        
+        // Digital
+        if (strpos($lowerTitle, 'digital') !== false || strpos($lowerTitle, 'product') !== false) {
+            return 'RxMobile';
+        }
+        if (strpos($lowerTitle, 'website') !== false || strpos($lowerTitle, 'page') !== false) {
+            return 'RxFile';
+        }
+        
+        // Games
+        if (strpos($lowerTitle, 'game') !== false || strpos($lowerTitle, 'gaming') !== false) {
+            return 'RxStar';
+        }
+        if (strpos($lowerTitle, 'challenge') !== false || strpos($lowerTitle, 'fun') !== false) {
+            return 'RxStar';
+        }
+        
+        // Family
+        if (strpos($lowerTitle, 'family') !== false || strpos($lowerTitle, 'genealogy') !== false) {
+            return 'RxShare1';
+        }
+        
+        // Communication
+        if (strpos($lowerTitle, 'sms') !== false || strpos($lowerTitle, 'message') !== false) {
+            return 'RxChatBubble';
+        }
+        if (strpos($lowerTitle, 'email') !== false || strpos($lowerTitle, 'mail') !== false) {
+            return 'RxEnvelopeClosed';
+        }
+        if (strpos($lowerTitle, 'contact') !== false || strpos($lowerTitle, 'customer') !== false) {
+            return 'RxIdCard';
+        }
+        
+        // Travel
+        if (strpos($lowerTitle, 'travel') !== false) {
+            return 'RxGlobe';
+        }
+        
+        // Default fallback
+        return 'RxDashboard';
     }
 
     /**

@@ -56,6 +56,7 @@ class AppsController extends Controller
                     'pricingType' => $module->pricing_type,
                     'includedInPlans' => $module->included_in_plans,
                     'bgColor' => $module->bg_color,
+                    'icon' => $module->icon,
                     'rating' => $module->rating,
                 ];
             })

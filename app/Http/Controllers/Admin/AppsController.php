@@ -30,6 +30,7 @@ class AppsController extends Controller
                     'pricingType' => $module->pricing_type,
                     'includedInPlans' => $module->included_in_plans,
                     'bgColor' => $module->bg_color,
+                    'icon' => $module->icon,
                     'rating' => $module->rating,
                     'order' => $module->order,
                 ];
@@ -68,6 +69,7 @@ class AppsController extends Controller
             'includedInPlans' => 'array',
             'includedInPlans.*' => 'string',
             'bgColor' => 'required|string',
+            'icon' => 'nullable|string|max:255',
             'rating' => 'required|numeric|min:0|max:5',
         ]);
 
@@ -90,6 +92,7 @@ class AppsController extends Controller
             'pricing_type' => $validated['pricingType'],
             'included_in_plans' => $validated['includedInPlans'] ?? [],
             'bg_color' => $validated['bgColor'],
+            'icon' => $validated['icon'] ?? 'default',
             'rating' => $validated['rating'],
             'order' => $maxOrder + 1,
             'is_active' => true
@@ -125,6 +128,7 @@ class AppsController extends Controller
             'pricingType' => $module->pricing_type,
             'includedInPlans' => $module->included_in_plans,
             'bgColor' => $module->bg_color,
+            'icon' => $module->icon,
             'rating' => $module->rating,
             'order' => $module->order,
         ];
@@ -150,6 +154,7 @@ class AppsController extends Controller
             'includedInPlans' => 'array',
             'includedInPlans.*' => 'string',
             'bgColor' => 'required|string',
+            'icon' => 'nullable|string|max:255',
             'rating' => 'required|numeric|min:0|max:5',
         ]);
 
@@ -176,6 +181,7 @@ class AppsController extends Controller
             'pricing_type' => $validated['pricingType'],
             'included_in_plans' => $validated['includedInPlans'] ?? [],
             'bg_color' => $validated['bgColor'],
+            'icon' => $validated['icon'] ?? $module->icon ?? 'default',
             'rating' => $validated['rating'],
         ]);
         

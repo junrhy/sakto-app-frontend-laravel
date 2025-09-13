@@ -5,36 +5,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { 
-    RxDashboard,
-    RxHome,
-    RxRocket,
-    RxLayers,
-    RxPerson,
-    RxGlobe,
-    RxChatBubble,
-    RxEnvelopeClosed,
-    RxIdCard,
-    RxHeart,
-    RxFace,
-    RxShare1,
-    RxAccessibility,
-    RxTokens,
-    RxCalendar,
-    RxPencil1,
-    RxMobile,
-    RxFile,
-    RxStar,
-    RxCross1,
-    RxActivityLog,
-    RxPause,
-    RxLockClosed,
-    RxBookmark,
-    RxTarget,
-    RxCardStack,
-    RxClipboard,
-    RxGroup,
-} from 'react-icons/rx';
+import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
 // App interface and utility functions
 interface App {
     icon: JSX.Element;
@@ -55,84 +26,10 @@ interface App {
     isActive?: boolean;
 }
 
-// Utility function to get icon for any app title
-const getIconForApp = (title: string): JSX.Element => {
-    const lowerTitle = title.toLowerCase();
-    
-    if (lowerTitle.includes('retail') || lowerTitle.includes('store') || lowerTitle.includes('shop')) {
-        return <RxDashboard />;
-    }
-    if (lowerTitle.includes('food') || lowerTitle.includes('restaurant') || lowerTitle.includes('cafe')) {
-        return <RxFace />;
-    }
-    if (lowerTitle.includes('clinic') || lowerTitle.includes('medical') || lowerTitle.includes('health')) {
-        return <RxHeart />;
-    }
-    if (lowerTitle.includes('lending') || lowerTitle.includes('loan') || lowerTitle.includes('finance')) {
-        return <RxAccessibility />;
-    }
-    if (lowerTitle.includes('rental') || lowerTitle.includes('rent')) {
-        return <RxTokens />;
-    }
-    if (lowerTitle.includes('real estate') || lowerTitle.includes('property')) {
-        return <RxHome />;
-    }
-    if (lowerTitle.includes('transport') || lowerTitle.includes('delivery')) {
-        return <RxRocket />;
-    }
-    if (lowerTitle.includes('warehouse') || lowerTitle.includes('inventory')) {
-        return <RxLayers />;
-    }
-    if (lowerTitle.includes('payroll') || lowerTitle.includes('hr') || lowerTitle.includes('employee')) {
-        return <RxPerson />;
-    }
-    if (lowerTitle.includes('travel') || lowerTitle.includes('booking')) {
-        return <RxGlobe />;
-    }
-    if (lowerTitle.includes('sms') || lowerTitle.includes('message')) {
-        return <RxChatBubble />;
-    }
-    if (lowerTitle.includes('email') || lowerTitle.includes('mail')) {
-        return <RxEnvelopeClosed />;
-    }
-    if (lowerTitle.includes('contact') || lowerTitle.includes('customer')) {
-        return <RxIdCard />;
-    }
-    if (lowerTitle.includes('genealogy') || lowerTitle.includes('family')) {
-        return <RxShare1 />;
-    }
-    if (lowerTitle.includes('event') || lowerTitle.includes('calendar')) {
-        return <RxCalendar />;
-    }
-    if (lowerTitle.includes('challenge') || lowerTitle.includes('game')) {
-        return <RxStar />;
-    }
-    if (lowerTitle.includes('content') || lowerTitle.includes('creator') || lowerTitle.includes('blog')) {
-        return <RxPencil1 />;
-    }
-    if (lowerTitle.includes('digital') || lowerTitle.includes('product')) {
-        return <RxMobile />;
-    }
-    if (lowerTitle.includes('page') || lowerTitle.includes('website')) {
-        return <RxFile />;
-    }
-    if (lowerTitle.includes('healthcare') || lowerTitle.includes('wellness')) {
-        return <RxActivityLog />;
-    }
-    if (lowerTitle.includes('mortuary') || lowerTitle.includes('funeral')) {
-        return <RxCross1 />;
-    }
-    if (lowerTitle.includes('bill') || lowerTitle.includes('payment')) {
-        return <RxCardStack />;
-    }
-    if (lowerTitle.includes('biller') || lowerTitle.includes('utility')) {
-        return <RxClipboard />;
-    }
-    if (lowerTitle.includes('course') || lowerTitle.includes('education') || lowerTitle.includes('learning')) {
-        return <RxTarget />;
-    }
-    
-    return <RxDashboard />;
+// Utility function to get icon for any app
+const getIconForApp = (app: any): JSX.Element => {
+    const IconComponent = getIconByName(app.icon || getSmartIconSuggestion(app.title));
+    return <IconComponent />;
 };
 
 // Utility function to get apps directly from API
@@ -142,7 +39,7 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
         const data = await response.json();
         return (data.apps || []).map((app: any) => ({
             ...app,
-            icon: getIconForApp(app.title)
+            icon: getIconForApp(app)
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);

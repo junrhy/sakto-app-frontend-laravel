@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -11,6 +11,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { ArrowLeftIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Link as InertiaLink } from '@inertiajs/react';
+import { getIconByName, getAllIconNames, getIconsByCategory } from '@/lib/iconLibrary';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 
 interface SubscriptionPlan {
@@ -74,6 +75,7 @@ export default function Create({ subscriptionPlans }: Props) {
         pricingType: 'subscription' as 'free' | 'one-time' | 'subscription',
         includedInPlans: [] as string[],
         bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+        icon: 'default',
         rating: 4.5,
         newCategory: '',
         newPlan: ''
@@ -82,6 +84,8 @@ export default function Create({ subscriptionPlans }: Props) {
     const [showCategoryInput, setShowCategoryInput] = useState(false);
     const [showPlanInput, setShowPlanInput] = useState(false);
     const [activeTab, setActiveTab] = useState('basic');
+    const [iconSearchQuery, setIconSearchQuery] = useState('');
+    const [selectedIconCategory, setSelectedIconCategory] = useState<string>('All');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -111,6 +115,19 @@ export default function Create({ subscriptionPlans }: Props) {
     const removePlan = (plan: string) => {
         setData('includedInPlans', data.includedInPlans.filter(p => p !== plan));
     };
+
+    // Icon selection helpers
+    const iconCategories = getIconsByCategory();
+    const allIconNames = getAllIconNames();
+    
+    const filteredIcons = allIconNames.filter(iconName => {
+        const matchesSearch = iconName.toLowerCase().includes(iconSearchQuery.toLowerCase());
+        const matchesCategory = selectedIconCategory === 'All' || 
+            Object.entries(iconCategories).some(([category, icons]) => 
+                category === selectedIconCategory && icons.includes(iconName)
+            );
+        return matchesSearch && matchesCategory;
+    });
 
     const addPredefinedCategory = (category: string) => {
         if (!data.categories.includes(category)) {
@@ -510,6 +527,95 @@ export default function Create({ subscriptionPlans }: Props) {
                                                 className="mt-2 border border-gray-300 dark:border-gray-600"
                                             />
                                             {errors.bgColor && <p className="text-red-500 text-sm mt-1">{errors.bgColor}</p>}
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Icon</Label>
+                                            
+                                            {/* Icon Search and Category Filter */}
+                                            <div className="space-y-3">
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        value={iconSearchQuery}
+                                                        onChange={e => setIconSearchQuery(e.target.value)}
+                                                        placeholder="Search icons..."
+                                                        className="flex-1 border border-gray-300 dark:border-gray-600"
+                                                    />
+                                                    <Select value={selectedIconCategory} onValueChange={setSelectedIconCategory}>
+                                                        <SelectTrigger className="w-60 border border-gray-300 dark:border-gray-600">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="max-h-60 overflow-y-auto">
+                                                            <SelectItem value="All">All Categories</SelectItem>
+                                                            {Object.keys(iconCategories).map(category => (
+                                                                <SelectItem key={category} value={category}>
+                                                                    {category}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+
+                                                {/* Selected Icon Preview */}
+                                                {data.icon && (
+                                                    <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-600">
+                                                            {React.createElement(getIconByName(data.icon), { 
+                                                                className: "w-5 h-5 text-gray-600 dark:text-gray-300" 
+                                                            })}
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Selected: {data.icon}
+                                                        </span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => setData('icon', 'default')}
+                                                            className="ml-auto text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                                        >
+                                                            <XMarkIcon className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+
+                                                {/* Icon Grid */}
+                                                <div className="grid grid-cols-6 gap-2 max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                                                    {filteredIcons.length > 0 ? (
+                                                        filteredIcons.map(iconName => (
+                                                            <button
+                                                                key={iconName}
+                                                                type="button"
+                                                                onClick={() => setData('icon', iconName)}
+                                                                className={`w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center ${
+                                                                    data.icon === iconName 
+                                                                        ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800 bg-blue-50 dark:bg-blue-900/20' 
+                                                                        : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 bg-white dark:bg-gray-800'
+                                                                }`}
+                                                                title={iconName}
+                                                            >
+                                                                {React.createElement(getIconByName(iconName), { 
+                                                                    className: "w-4 h-4 text-gray-600 dark:text-gray-300" 
+                                                                })}
+                                                            </button>
+                                                        ))
+                                                    ) : (
+                                                        <div className="col-span-6 text-center py-8 text-gray-500 dark:text-gray-400">
+                                                            No icons found matching your criteria
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Manual Icon Input */}
+                                                <Input
+                                                    value={data.icon}
+                                                    onChange={e => setData('icon', e.target.value)}
+                                                    placeholder="Or enter icon name manually"
+                                                    className="border border-gray-300 dark:border-gray-600"
+                                                />
+                                            </div>
+                                            
+                                            {errors.icon && <p className="text-red-500 text-sm mt-1">{errors.icon}</p>}
                                         </div>
                                     </div>
                                 </TabsContent>

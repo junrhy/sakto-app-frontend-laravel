@@ -19,6 +19,7 @@ class Module extends Model
         'pricing_type',
         'included_in_plans',
         'bg_color',
+        'icon',
         'rating',
         'order',
         'is_active'

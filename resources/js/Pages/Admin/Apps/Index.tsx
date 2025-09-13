@@ -1,5 +1,5 @@
 import { Head, Link as InertiaLink, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -28,6 +28,7 @@ import {
     AdjustmentsHorizontalIcon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
+import { getIconByName } from '@/lib/iconLibrary';
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 
 interface App {
@@ -42,6 +43,7 @@ interface App {
     pricingType: 'free' | 'one-time' | 'subscription';
     includedInPlans?: string[];
     bgColor: string;
+    icon?: string;
     rating: number;
 }
 
@@ -427,11 +429,20 @@ export default function Index({ apps }: Props) {
                                                 onCheckedChange={() => handleSelectApp(app.id)}
                                                 className="mt-1"
                                             />
-                                            <div className="flex-1 min-w-0">
-                                                <CardTitle className="text-lg truncate">{app.title}</CardTitle>
-                                                <CardDescription className="mt-1 line-clamp-2 text-sm">
-                                                {app.description}
-                                            </CardDescription>
+                                            <div className="flex items-start gap-3 flex-1">
+                                                {app.icon && (
+                                                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                                        {React.createElement(getIconByName(app.icon), { 
+                                                            className: "w-5 h-5 text-gray-600 dark:text-gray-300" 
+                                                        })}
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <CardTitle className="text-lg truncate">{app.title}</CardTitle>
+                                                    <CardDescription className="mt-1 line-clamp-2 text-sm">
+                                                    {app.description}
+                                                </CardDescription>
+                                                </div>
                                             </div>
                                         </div>
                                         <DropdownMenu>
@@ -585,12 +596,21 @@ export default function Index({ apps }: Props) {
                                                 />
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div>
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {app.title}
-                                                    </div>
-                                                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                                                        {app.description}
+                                                <div className="flex items-center gap-3">
+                                                    {app.icon && (
+                                                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                                            {React.createElement(getIconByName(app.icon), { 
+                                                                className: "w-5 h-5 text-gray-600 dark:text-gray-300" 
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {app.title}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                                                            {app.description}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
