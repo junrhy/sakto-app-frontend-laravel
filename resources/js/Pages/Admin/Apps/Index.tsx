@@ -25,6 +25,7 @@ import {
 import AdminLayout from '@/Layouts/Admin/AdminLayout';
 
 interface App {
+    id: number;
     title: string;
     route: string;
     visible: boolean;
@@ -59,16 +60,22 @@ export default function Index({ apps }: Props) {
         return matchesSearch && matchesCategory;
     });
 
-    const handleDelete = (index: number) => {
+    const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this app?')) {
-            destroy(route('admin.apps.destroy', index));
+            destroy(route('admin.apps.destroy', id));
         }
     };
 
     const handleReorder = (fromIndex: number, toIndex: number) => {
-        const newOrder = [...apps];
+        const newOrder = [...filteredApps];
         const [movedItem] = newOrder.splice(fromIndex, 1);
         newOrder.splice(toIndex, 0, movedItem);
+        
+        // Create order mapping where keys are new positions and values are app IDs
+        const orderMapping: { [key: number]: number } = {};
+        newOrder.forEach((app, index) => {
+            orderMapping[index] = app.id;
+        });
         
         // Update the order via API
         fetch(route('admin.apps.reorder'), {
@@ -78,7 +85,7 @@ export default function Index({ apps }: Props) {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
             body: JSON.stringify({
-                order: newOrder.map((_, index) => index)
+                order: orderMapping
             })
         }).then(() => {
             window.location.reload();
@@ -151,7 +158,7 @@ export default function Index({ apps }: Props) {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem asChild>
-                                                    <InertiaLink href={route('admin.apps.edit', index)}>
+                                                    <InertiaLink href={route('admin.apps.edit', app.id)}>
                                                         <PencilIcon className="h-4 w-4 mr-2" />
                                                         Edit
                                                     </InertiaLink>
@@ -163,7 +170,7 @@ export default function Index({ apps }: Props) {
                                                         Move Up
                                                     </DropdownMenuItem>
                                                 )}
-                                                {index < apps.length - 1 && (
+                                                {index < filteredApps.length - 1 && (
                                                     <DropdownMenuItem onClick={() => handleReorder(index, index + 1)}>
                                                         <ArrowDownIcon className="h-4 w-4 mr-2" />
                                                         Move Down
@@ -171,7 +178,7 @@ export default function Index({ apps }: Props) {
                                                 )}
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem 
-                                                    onClick={() => handleDelete(index)}
+                                                    onClick={() => handleDelete(app.id)}
                                                     className="text-red-600 dark:text-red-400"
                                                 >
                                                     <TrashIcon className="h-4 w-4 mr-2" />

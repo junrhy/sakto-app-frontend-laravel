@@ -14,45 +14,50 @@ class ModuleSeeder extends Seeder
      */
     public function run(): void
     {
-        $modules = [
-            ['id' => 1, 'name' => 'Retail', 'identifier' => 'retail'],
-            ['id' => 2, 'name' => 'FnB', 'identifier' => 'fnb'],
-            ['id' => 3, 'name' => 'Warehousing', 'identifier' => 'warehousing'],
-            ['id' => 4, 'name' => 'Transportation', 'identifier' => 'transportation'],
-            ['id' => 5, 'name' => 'Rental Items', 'identifier' => 'rental-items'],
-            ['id' => 6, 'name' => 'Rental Properties', 'identifier' => 'rental-properties'],
-            ['id' => 7, 'name' => 'Clinical', 'identifier' => 'clinical'],
-            ['id' => 8, 'name' => 'Lending', 'identifier' => 'lending'],
-            ['id' => 9, 'name' => 'Payroll', 'identifier' => 'payroll'],
-            ['id' => 10, 'name' => 'SMS', 'identifier' => 'sms'],
-            ['id' => 11, 'name' => 'Email', 'identifier' => 'email'],
-            ['id' => 12, 'name' => 'Contacts', 'identifier' => 'contacts'],
-            ['id' => 13, 'name' => 'Genealogy', 'identifier' => 'genealogy'],
-            ['id' => 14, 'name' => 'Pages', 'identifier' => 'pages'],
-            ['id' => 15, 'name' => 'Challenges', 'identifier' => 'challenges'],
-            ['id' => 16, 'name' => 'Content Creator', 'identifier' => 'content-creator'],
-            ['id' => 17, 'name' => 'Products', 'identifier' => 'products'],
-            ['id' => 18, 'name' => 'Healthcare', 'identifier' => 'healthcare'],
-            ['id' => 19, 'name' => 'Events', 'identifier' => 'events'],
-            ['id' => 20, 'name' => 'Mortuary', 'identifier' => 'mortuary'],
-            ['id' => 21, 'name' => 'Bill Payments', 'identifier' => 'bill-payments'],
-            ['id' => 22, 'name' => 'Billers', 'identifier' => 'billers'],
-            ['id' => 23, 'name' => 'Courses', 'identifier' => 'courses'],
-        ];
+        // Get apps data from config
+        $apps = config('apps');
+        
+        foreach ($apps as $index => $app) {
+            // Generate identifier from title if not provided
+            $identifier = $this->generateIdentifier($app['title']);
+            
+            $moduleData = [
+                'name' => $app['title'],
+                'identifier' => $identifier,
+                'title' => $app['title'],
+                'route' => $app['route'],
+                'visible' => $app['visible'],
+                'description' => $app['description'],
+                'price' => $app['price'],
+                'categories' => $app['categories'],
+                'coming_soon' => $app['comingSoon'],
+                'pricing_type' => $app['pricingType'],
+                'included_in_plans' => $app['includedInPlans'],
+                'bg_color' => $app['bgColor'],
+                'rating' => $app['rating'],
+                'order' => $index + 1,
+                'is_active' => true
+            ];
 
-        foreach ($modules as $module) {
-            $existingModule = Module::where('id', $module['id'])->first();
+            $existingModule = Module::where('identifier', $identifier)
+                ->orWhere('name', $app['title'])
+                ->first();
             
             if ($existingModule) {
                 // Update existing module
-                $existingModule->update([
-                    'name' => $module['name'],
-                    'identifier' => $module['identifier']
-                ]);
+                $existingModule->update($moduleData);
             } else {
                 // Create new module
-                Module::create($module);
+                Module::create($moduleData);
             }
         }
+    }
+
+    /**
+     * Generate identifier from title
+     */
+    private function generateIdentifier(string $title): string
+    {
+        return strtolower(str_replace([' ', '&', '-'], ['-', 'and', '-'], $title));
     }
 }

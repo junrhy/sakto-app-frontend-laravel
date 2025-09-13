@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\Project;
+use App\Models\Module;
 
 class AppsController extends Controller
 {
@@ -39,8 +40,29 @@ class AppsController extends Controller
                 : (is_string($project->enabledModules) ? json_decode($project->enabledModules, true) : []);
         }
         
+        // Get apps from database instead of config
+        $apps = Module::active()
+            ->ordered()
+            ->get()
+            ->map(function ($module) {
+                return [
+                    'title' => $module->title,
+                    'route' => $module->route,
+                    'visible' => $module->visible,
+                    'description' => $module->description,
+                    'price' => $module->price,
+                    'categories' => $module->categories,
+                    'comingSoon' => $module->coming_soon,
+                    'pricingType' => $module->pricing_type,
+                    'includedInPlans' => $module->included_in_plans,
+                    'bgColor' => $module->bg_color,
+                    'rating' => $module->rating,
+                ];
+            })
+            ->toArray();
+        
         return response()->json([
-            'apps' => config('apps'),
+            'apps' => $apps,
             'enabledModules' => $enabledModules
         ]);
     }

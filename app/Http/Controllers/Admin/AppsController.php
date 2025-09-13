@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SubscriptionPlan;
+use App\Models\Module;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\File;
@@ -13,7 +14,27 @@ class AppsController extends Controller
 {
     public function index()
     {
-        $apps = config('apps');
+        $apps = Module::active()
+            ->ordered()
+            ->get()
+            ->map(function ($module) {
+                return [
+                    'id' => $module->id,
+                    'title' => $module->title,
+                    'route' => $module->route,
+                    'visible' => $module->visible,
+                    'description' => $module->description,
+                    'price' => $module->price,
+                    'categories' => $module->categories,
+                    'comingSoon' => $module->coming_soon,
+                    'pricingType' => $module->pricing_type,
+                    'includedInPlans' => $module->included_in_plans,
+                    'bgColor' => $module->bg_color,
+                    'rating' => $module->rating,
+                    'order' => $module->order,
+                ];
+            })
+            ->toArray();
         
         return Inertia::render('Admin/Apps/Index', [
             'apps' => $apps
@@ -50,23 +71,39 @@ class AppsController extends Controller
             'rating' => 'required|numeric|min:0|max:5',
         ]);
 
-        $apps = config('apps');
-        $apps[] = $validated;
+        // Generate identifier from title
+        $identifier = strtolower(str_replace([' ', '&', '-'], ['-', 'and', '-'], $validated['title']));
         
-        $this->updateConfigFile($apps);
+        // Get the next order value
+        $maxOrder = Module::max('order') ?? 0;
         
-        // Clear config cache
-        Cache::forget('config_apps');
+        Module::create([
+            'name' => $validated['title'],
+            'identifier' => $identifier,
+            'title' => $validated['title'],
+            'route' => $validated['route'],
+            'visible' => $validated['visible'] ?? false,
+            'description' => $validated['description'],
+            'price' => $validated['price'],
+            'categories' => $validated['categories'],
+            'coming_soon' => $validated['comingSoon'] ?? false,
+            'pricing_type' => $validated['pricingType'],
+            'included_in_plans' => $validated['includedInPlans'] ?? [],
+            'bg_color' => $validated['bgColor'],
+            'rating' => $validated['rating'],
+            'order' => $maxOrder + 1,
+            'is_active' => true
+        ]);
         
         return redirect()->route('admin.apps.index')
             ->with('success', 'App created successfully.');
     }
 
-    public function edit($index)
+    public function edit($id)
     {
-        $apps = config('apps');
+        $module = Module::find($id);
         
-        if (!isset($apps[$index])) {
+        if (!$module) {
             return redirect()->route('admin.apps.index')
                 ->with('error', 'App not found.');
         }
@@ -76,14 +113,29 @@ class AppsController extends Controller
             ->orderBy('price')
             ->get(['id', 'name', 'slug', 'price', 'duration_in_days', 'project_id']);
         
+        $app = [
+            'id' => $module->id,
+            'title' => $module->title,
+            'route' => $module->route,
+            'visible' => $module->visible,
+            'description' => $module->description,
+            'price' => $module->price,
+            'categories' => $module->categories,
+            'comingSoon' => $module->coming_soon,
+            'pricingType' => $module->pricing_type,
+            'includedInPlans' => $module->included_in_plans,
+            'bgColor' => $module->bg_color,
+            'rating' => $module->rating,
+            'order' => $module->order,
+        ];
+        
         return Inertia::render('Admin/Apps/Edit', [
-            'app' => $apps[$index],
-            'index' => $index,
+            'app' => $app,
             'subscriptionPlans' => $subscriptionPlans
         ]);
     }
 
-    public function update(Request $request, $index)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -101,39 +153,46 @@ class AppsController extends Controller
             'rating' => 'required|numeric|min:0|max:5',
         ]);
 
-        $apps = config('apps');
+        $module = Module::find($id);
         
-        if (!isset($apps[$index])) {
+        if (!$module) {
             return redirect()->route('admin.apps.index')
                 ->with('error', 'App not found.');
         }
         
-        $apps[$index] = $validated;
+        // Generate identifier from title if it changed
+        $identifier = strtolower(str_replace([' ', '&', '-'], ['-', 'and', '-'], $validated['title']));
         
-        $this->updateConfigFile($apps);
-        
-        // Clear config cache
-        Cache::forget('config_apps');
+        $module->update([
+            'name' => $validated['title'],
+            'identifier' => $identifier,
+            'title' => $validated['title'],
+            'route' => $validated['route'],
+            'visible' => $validated['visible'] ?? false,
+            'description' => $validated['description'],
+            'price' => $validated['price'],
+            'categories' => $validated['categories'],
+            'coming_soon' => $validated['comingSoon'] ?? false,
+            'pricing_type' => $validated['pricingType'],
+            'included_in_plans' => $validated['includedInPlans'] ?? [],
+            'bg_color' => $validated['bgColor'],
+            'rating' => $validated['rating'],
+        ]);
         
         return redirect()->route('admin.apps.index')
             ->with('success', 'App updated successfully.');
     }
 
-    public function destroy($index)
+    public function destroy($id)
     {
-        $apps = config('apps');
+        $module = Module::find($id);
         
-        if (!isset($apps[$index])) {
+        if (!$module) {
             return redirect()->route('admin.apps.index')
                 ->with('error', 'App not found.');
         }
         
-        array_splice($apps, $index, 1);
-        
-        $this->updateConfigFile($apps);
-        
-        // Clear config cache
-        Cache::forget('config_apps');
+        $module->delete();
         
         return redirect()->route('admin.apps.index')
             ->with('success', 'App deleted successfully.');
@@ -143,67 +202,14 @@ class AppsController extends Controller
     {
         $validated = $request->validate([
             'order' => 'required|array',
-            'order.*' => 'integer|min:0',
+            'order.*' => 'integer|min:1',
         ]);
 
-        $apps = config('apps');
-        $newOrder = [];
-        
-        foreach ($validated['order'] as $newIndex => $oldIndex) {
-            if (isset($apps[$oldIndex])) {
-                $newOrder[] = $apps[$oldIndex];
-            }
+        foreach ($validated['order'] as $newOrder => $moduleId) {
+            Module::where('id', $moduleId)->update(['order' => $newOrder + 1]);
         }
-        
-        $this->updateConfigFile($newOrder);
-        
-        // Clear config cache
-        Cache::forget('config_apps');
         
         return response()->json(['success' => true]);
     }
 
-    private function updateConfigFile($apps)
-    {
-        $configPath = config_path('apps.php');
-        
-        // Generate the PHP array content
-        $content = "<?php\n\nreturn [\n";
-        
-        foreach ($apps as $app) {
-            $content .= "    [\n";
-            $content .= "        'title' => '" . addslashes($app['title']) . "',\n";
-            $content .= "        'route' => '" . addslashes($app['route']) . "',\n";
-            $content .= "        'visible' => " . ($app['visible'] ? 'true' : 'false') . ",\n";
-            $content .= "        'description' => '" . addslashes($app['description']) . "',\n";
-            $content .= "        'price' => " . $app['price'] . ",\n";
-            $content .= "        'categories' => [" . implode(', ', array_map(function($cat) { return "'" . addslashes($cat) . "'"; }, $app['categories'])) . "],\n";
-            $content .= "        'comingSoon' => " . ($app['comingSoon'] ? 'true' : 'false') . ",\n";
-            $content .= "        'pricingType' => '" . addslashes($app['pricingType']) . "',\n";
-            $content .= "        'includedInPlans' => [" . implode(', ', array_map(function($plan) { return "'" . addslashes($plan) . "'"; }, $app['includedInPlans'] ?? [])) . "],\n";
-            $content .= "        'bgColor' => '" . addslashes($app['bgColor']) . "',\n";
-            $content .= "        'rating' => " . $app['rating'] . "\n";
-            $content .= "    ],\n";
-        }
-        
-        $content .= "];\n";
-        
-        // Write to file
-        try {
-            File::put($configPath, $content);
-            
-            // Clear OPcache for this specific file if OPcache is enabled
-            if (function_exists('opcache_invalidate')) {
-                opcache_invalidate($configPath, true);
-            }
-            
-            // Clear OPcache completely if the above doesn't work
-            if (function_exists('opcache_reset')) {
-                opcache_reset();
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to update apps.php config file: ' . $e->getMessage());
-            throw new \Exception('Failed to update apps configuration. Please check file permissions.');
-        }
-    }
 }

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SubscriptionController;
+use App\Models\Module;
 
 class CheckSubscriptionAccess
 {
@@ -139,16 +140,13 @@ class CheckSubscriptionAccess
             return false;
         }
 
-        // Get apps configuration
-        $appsConfig = config('apps');
+        // Find the app in the database
+        $module = Module::where('title', $appName)->first();
         
-        // Find the app in the configuration
-        foreach ($appsConfig as $app) {
-            if ($app['title'] === $appName) {
-                return in_array($planSlug, $app['includedInPlans'] ?? []);
-            }
+        if (!$module) {
+            return false;
         }
 
-        return false;
+        return in_array($planSlug, $module->included_in_plans ?? []);
     }
 } 

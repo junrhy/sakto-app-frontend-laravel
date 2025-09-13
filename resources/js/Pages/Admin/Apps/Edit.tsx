@@ -58,6 +58,7 @@ const PREDEFINED_COLORS = [
 ];
 
 interface App {
+    id: number;
     title: string;
     route: string;
     visible: boolean;
@@ -73,11 +74,10 @@ interface App {
 
 interface Props {
     app: App;
-    index: number;
     subscriptionPlans: SubscriptionPlan[];
 }
 
-export default function Edit({ app, index, subscriptionPlans }: Props) {
+export default function Edit({ app, subscriptionPlans }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         title: app.title,
         route: app.route,
@@ -99,7 +99,7 @@ export default function Edit({ app, index, subscriptionPlans }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('admin.apps.update', index));
+        put(route('admin.apps.update', app.id));
     };
 
     const addCategory = () => {
