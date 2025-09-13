@@ -93,7 +93,7 @@ class LandingController extends Controller
 
     public function medical()
     {
-        return Inertia::render('Landing/Medical', [
+        return Inertia::render('Landing/Medical/Index', [
             'canLogin' => Route::has('login'),
             'canRegister' => Route::has('register'),
             'laravelVersion' => Application::VERSION,
