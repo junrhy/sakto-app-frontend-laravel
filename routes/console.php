@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-// Schedule the subscription renewal command to run daily at midnight
-Schedule::command('app:renew-subscriptions')->daily();
+// Schedule the subscription renewal command to run daily at midnight Philippines time
+Schedule::command('app:renew-subscriptions')->dailyAt('00:00');

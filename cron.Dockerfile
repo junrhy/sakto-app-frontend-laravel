@@ -12,6 +12,7 @@ RUN apk add --no-cache \
     unzip \
     postgresql-dev \
     dos2unix \
+    tzdata \
     && docker-php-ext-install \
     pdo_mysql \
     pdo_pgsql \
@@ -19,6 +20,10 @@ RUN apk add --no-cache \
     gd \
     zip \
     opcache
+
+# Set timezone to Asia/Manila (Philippines)
+ENV TZ=Asia/Manila
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -54,17 +59,17 @@ RUN mkdir -p /var/www/storage/logs \
 # Set proper ownership
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Create startup script for cron
-RUN echo '#!/bin/sh\n\
-php artisan config:cache && \
-php artisan route:cache && \
-php artisan view:cache && \
-php artisan schedule:run\n' > /usr/local/bin/cron-startup.sh \
-&& chmod +x /usr/local/bin/cron-startup.sh \
-&& dos2unix /usr/local/bin/cron-startup.sh 2>/dev/null || true
-
 # Switch to www-data user
 USER www-data
 
+# Create startup script for cron in a location accessible to www-data
+RUN echo '#!/bin/sh\n\
+export TZ=Asia/Manila\n\
+php artisan config:cache && \
+php artisan route:cache && \
+php artisan view:cache && \
+php artisan schedule:run\n' > /var/www/cron-startup.sh \
+&& chmod +x /var/www/cron-startup.sh
+
 # Run the Laravel scheduler
-CMD ["/usr/local/bin/cron-startup.sh"]
+CMD ["/var/www/cron-startup.sh"]
