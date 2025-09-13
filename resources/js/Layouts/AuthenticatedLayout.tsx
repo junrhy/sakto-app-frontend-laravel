@@ -29,6 +29,9 @@ interface App {
     identifier?: string;
     order?: number;
     isActive?: boolean;
+    isInSubscription?: boolean;
+    isUserAdded?: boolean;
+    isAvailable?: boolean;
 }
 
 // Utility function to get icon for any app
@@ -44,7 +47,10 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
         const data = await response.json();
         return (data.apps || []).map((app: any) => ({
             ...app,
-            icon: getIconForApp(app)
+            icon: getIconForApp(app),
+            isInSubscription: app.isInSubscription || false,
+            isUserAdded: app.isUserAdded || false,
+            isAvailable: app.isAvailable || false
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -203,30 +209,37 @@ export default function Authenticated({ children, header, user, auth: propAuth }
 
     const hasDashboardAccess = !url.includes('help') && !url.includes('profile') && !url.includes('credits') && !url.includes('subscriptions');
 
-    const hasRetailAccess = (enabledModules.includes('retail') && (appParam === 'retail' || url.includes('retail'))) ?? false;
-    const hasFnbAccess = (enabledModules.includes('fnb') && (appParam === 'fnb' || url.includes('fnb'))) ?? false;
-    const hasWarehousingAccess = (enabledModules.includes('warehousing') && (appParam === 'warehousing' || url.includes('warehousing'))) ?? false;
-    const hasTransportationAccess = (enabledModules.includes('transportation') && (appParam === 'transportation' || url.includes('transportation'))) ?? false;
-    const hasRentalItemAccess = (enabledModules.includes('rental-items') && (appParam === 'rental-items' || url.includes('rental-items'))) ?? false;
-    const hasRentalPropertyAccess = (enabledModules.includes('rental-properties') && (appParam === 'rental-properties' || url.includes('rental-properties'))) ?? false;
-    const hasClinicalAccess = (enabledModules.includes('clinical') && (appParam === 'clinical' || url.includes('clinical'))) ?? false;
-    const hasLendingAccess = (enabledModules.includes('lending') && (appParam === 'lending' || url.includes('lending'))) ?? false;
-    const hasPayrollAccess = (enabledModules.includes('payroll') && (appParam === 'payroll' || url.includes('payroll'))) ?? false;
-    const hasTravelAccess = (enabledModules.includes('travel') && (appParam === 'travel' || url.includes('travel'))) ?? false;
-    const hasSmsAccess = (enabledModules.includes('sms') && (appParam === 'sms' || url.includes('sms'))) ?? false;
-    const hasEmailAccess = (enabledModules.includes('email') && (appParam === 'email' || url.includes('email'))) ?? false;
-    const hasContactsAccess = (enabledModules.includes('contacts') && (appParam === 'contacts' || url.includes('contacts'))) ?? false;
-    const hasGenealogyAccess = (enabledModules.includes('genealogy') && (appParam === 'genealogy' || url.includes('genealogy'))) ?? false;
-    const hasEventsAccess = (enabledModules.includes('events') && (appParam === 'events' || url.includes('events'))) ?? false;
-    const hasChallengesAccess = (enabledModules.includes('challenges') && (appParam === 'challenges' || url.includes('challenges'))) ?? false;
-    const hasContentCreatorAccess = (enabledModules.includes('content-creator') && (appParam === 'content-creator' || url.includes('content-creator'))) ?? false;
-    const hasProductsAccess = (enabledModules.includes('products') && (appParam === 'products' || url.includes('products'))) ?? false;
-    const hasPagesAccess = (enabledModules.includes('pages') && (appParam === 'pages' || url.includes('pages'))) ?? false;
-    const hasHealthcareAccess = (enabledModules.includes('healthcare') && (appParam === 'healthcare' || url.includes('healthcare'))) ?? false;
-    const hasMortuaryAccess = (enabledModules.includes('mortuary') && (appParam === 'mortuary' || url.includes('mortuary'))) ?? false;
-    const hasBillersAccess = (enabledModules.includes('billers') && (appParam === 'billers' || url.includes('billers'))) ?? false;
-    const hasBillPaymentsAccess = (enabledModules.includes('bill-payments') && (appParam === 'bill-payments' || url.includes('bill-payments'))) ?? false;
-    const hasCoursesAccess = (enabledModules.includes('courses') && (appParam === 'courses' || url.includes('courses'))) ?? false;
+    // Helper function to check if user has access to a module (either in subscription or user-added)
+    const hasModuleAccess = (moduleIdentifier: string) => {
+        const isInSubscription = enabledModules.includes(moduleIdentifier);
+        const isUserAdded = apps.some(app => app.identifier === moduleIdentifier && app.isUserAdded);
+        return isInSubscription || isUserAdded;
+    };
+
+    const hasRetailAccess = (hasModuleAccess('retail') && (appParam === 'retail' || url.includes('retail'))) ?? false;
+    const hasFnbAccess = (hasModuleAccess('fnb') && (appParam === 'fnb' || url.includes('fnb'))) ?? false;
+    const hasWarehousingAccess = (hasModuleAccess('warehousing') && (appParam === 'warehousing' || url.includes('warehousing'))) ?? false;
+    const hasTransportationAccess = (hasModuleAccess('transportation') && (appParam === 'transportation' || url.includes('transportation'))) ?? false;
+    const hasRentalItemAccess = (hasModuleAccess('rental-items') && (appParam === 'rental-items' || url.includes('rental-items'))) ?? false;
+    const hasRentalPropertyAccess = (hasModuleAccess('rental-properties') && (appParam === 'rental-properties' || url.includes('rental-properties'))) ?? false;
+    const hasClinicalAccess = (hasModuleAccess('clinical') && (appParam === 'clinical' || url.includes('clinical'))) ?? false;
+    const hasLendingAccess = (hasModuleAccess('lending') && (appParam === 'lending' || url.includes('lending'))) ?? false;
+    const hasPayrollAccess = (hasModuleAccess('payroll') && (appParam === 'payroll' || url.includes('payroll'))) ?? false;
+    const hasTravelAccess = (hasModuleAccess('travel') && (appParam === 'travel' || url.includes('travel'))) ?? false;
+    const hasSmsAccess = (hasModuleAccess('sms') && (appParam === 'sms' || url.includes('sms'))) ?? false;
+    const hasEmailAccess = (hasModuleAccess('email') && (appParam === 'email' || url.includes('email'))) ?? false;
+    const hasContactsAccess = (hasModuleAccess('contacts') && (appParam === 'contacts' || url.includes('contacts'))) ?? false;
+    const hasGenealogyAccess = (hasModuleAccess('genealogy') && (appParam === 'genealogy' || url.includes('genealogy'))) ?? false;
+    const hasEventsAccess = (hasModuleAccess('events') && (appParam === 'events' || url.includes('events'))) ?? false;
+    const hasChallengesAccess = (hasModuleAccess('challenges') && (appParam === 'challenges' || url.includes('challenges'))) ?? false;
+    const hasContentCreatorAccess = (hasModuleAccess('content-creator') && (appParam === 'content-creator' || url.includes('content-creator'))) ?? false;
+    const hasProductsAccess = (hasModuleAccess('products') && (appParam === 'products' || url.includes('products'))) ?? false;
+    const hasPagesAccess = (hasModuleAccess('pages') && (appParam === 'pages' || url.includes('pages'))) ?? false;
+    const hasHealthcareAccess = (hasModuleAccess('healthcare') && (appParam === 'healthcare' || url.includes('healthcare'))) ?? false;
+    const hasMortuaryAccess = (hasModuleAccess('mortuary') && (appParam === 'mortuary' || url.includes('mortuary'))) ?? false;
+    const hasBillersAccess = (hasModuleAccess('billers') && (appParam === 'billers' || url.includes('billers'))) ?? false;
+    const hasBillPaymentsAccess = (hasModuleAccess('bill-payments') && (appParam === 'bill-payments' || url.includes('bill-payments'))) ?? false;
+    const hasCoursesAccess = (hasModuleAccess('courses') && (appParam === 'courses' || url.includes('courses'))) ?? false;
 
 
     return (
@@ -1526,17 +1539,12 @@ export default function Authenticated({ children, header, user, auth: propAuth }
                                                 // Convert app title to match module name format (lowercase and hyphenated)
                                                 const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
                                                 
-                                                // Only show apps that are in enabledModules
-                                                if (!enabledModules.includes(normalizedAppTitle)) {
-                                                    return false;
-                                                }
+                                                // Show apps that are either in subscription or user-added
+                                                const isInSubscription = enabledModules.includes(normalizedAppTitle);
+                                                const isUserAdded = app.isUserAdded || false;
                                                 
-                                                // Show app if it's marked as visible
-                                                if (app.visible) return true;
-                                                
-                                                // Show subscription apps if user has an active subscription that includes this app
-                                                const userSubscription = auth?.user?.subscription;
-                                                if (app.pricingType === 'subscription' && userSubscription && userSubscription.plan?.slug && app.includedInPlans?.includes(userSubscription.plan.slug)) {
+                                                // Show app if it's in subscription or user-added
+                                                if (isInSubscription || isUserAdded) {
                                                     return true;
                                                 }
                                                 

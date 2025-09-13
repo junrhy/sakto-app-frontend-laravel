@@ -24,6 +24,9 @@ interface App {
     identifier?: string;
     order?: number;
     isActive?: boolean;
+    isInSubscription?: boolean;
+    isUserAdded?: boolean;
+    isAvailable?: boolean;
 }
 
 // Utility function to get icon for any app
@@ -39,7 +42,10 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
         const data = await response.json();
         return (data.apps || []).map((app: any) => ({
             ...app,
-            icon: getIconForApp(app)
+            icon: getIconForApp(app),
+            isInSubscription: app.isInSubscription || false,
+            isUserAdded: app.isUserAdded || false,
+            isAvailable: app.isAvailable || false
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -385,17 +391,13 @@ export default function Home({ auth }: Props) {
                             // Convert app title to match module name format (lowercase and hyphenated)
                             const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
                             
-                            // Only show apps that are in enabledModules
+                            // Show apps that are either in subscription or user-added
                             const enabledModules = parseEnabledModules(auth.project.enabledModules);
-                            if (!enabledModules.includes(normalizedAppTitle)) {
-                                return false;
-                            }
+                            const isInSubscription = enabledModules.includes(normalizedAppTitle);
+                            const isUserAdded = app.isUserAdded || false;
                             
-                            // Show app if it's marked as visible
-                            if (app.visible) return true;
-                            
-                            // Show subscription apps if user has an active subscription that includes this app
-                            if (app.pricingType === 'subscription' && subscription && subscription.plan.slug && app.includedInPlans?.includes(subscription.plan.slug)) {
+                            // Show app if it's in subscription or user-added
+                            if (isInSubscription || isUserAdded) {
                                 return true;
                             }
                             

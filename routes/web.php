@@ -444,6 +444,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     // Apps and Dashboard
     Route::get('/apps', [AppsController::class, 'index'])->name('apps');
     Route::get('/api/apps', [AppsController::class, 'getApps'])->name('api.apps');
+    Route::post('/api/apps/add', [AppsController::class, 'addApp'])->name('api.apps.add');
+    Route::delete('/api/apps/remove', [AppsController::class, 'removeApp'])->name('api.apps.remove');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboards', [DashboardController::class, 'gallery'])->name('dashboard.gallery');
     Route::post('/dashboard', [DashboardController::class, 'store'])->name('dashboard.store');

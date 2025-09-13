@@ -29,6 +29,9 @@ interface App {
     identifier?: string;
     order?: number;
     isActive?: boolean;
+    isInSubscription?: boolean;
+    isUserAdded?: boolean;
+    isAvailable?: boolean;
 }
 
 // Utility function to get icon for any app
@@ -44,7 +47,10 @@ const fetchAppsFromAPI = async (): Promise<App[]> => {
         const data = await response.json();
         return (data.apps || []).map((app: any) => ({
             ...app,
-            icon: getIconForApp(app)
+            icon: getIconForApp(app),
+            isInSubscription: app.isInSubscription || false,
+            isUserAdded: app.isUserAdded || false,
+            isAvailable: app.isAvailable || false
         }));
     } catch (error) {
         console.error('Failed to fetch apps:', error);
@@ -253,21 +259,14 @@ export default function Apps() {
     const formatPrice = (price: number) => {
         if (price === 0) return 'Free';
         try {
-            const convertedPrice = auth.user.app_currency.symbol === '₱' 
-                ? price
-                : price * (exchangeRates.USD || 56.50) // Use API rate or fallback;
-            
             const formattedNumber = new Intl.NumberFormat('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-            }).format(convertedPrice);
-            return `${auth.user.app_currency.symbol}${formattedNumber}`;
+            }).format(price);
+            return `₱${formattedNumber}`;
         } catch (error) {
             console.error('Price formatting error:', error);
-            const convertedPrice = auth.user.app_currency.symbol === '₱' 
-                ? price * (exchangeRates.PHP || 56.50)
-                : price;
-            return `${auth.user.app_currency.symbol}${convertedPrice.toFixed(2)}`;
+            return `₱${price.toFixed(2)}`;
         }
     };
 
@@ -285,40 +284,24 @@ export default function Apps() {
         return showAllCategories ? allCategories : allCategories.slice(0, 5);
     }, [allCategories, showAllCategories]);
 
-    // Filter apps based on search query, selected category, and enabled modules
+    // Filter apps based on search query and category (show ALL apps, not just available ones)
     const filteredApps = useMemo(() => {
         const filtered = apps.filter(app => {
             const matchesSearch = app.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                 app.description.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = !selectedCategory || app.categories.includes(selectedCategory);
             
-            // Check if app is enabled in project modules
-            const modules = parseEnabledModules(enabledModules);
-            const moduleId = appTitleToModuleId(app.title);
-            const matchesEnabledModules = modules.includes(moduleId);
-            
-            // Debug logging for filtering
-            if (!matchesEnabledModules) {
-                console.log(`App "${app.title}" (module: ${moduleId}) not in enabled modules:`, modules);
-            }
-            
-            return matchesSearch && matchesCategory && matchesEnabledModules;
+            // Show all apps regardless of availability status
+            return matchesSearch && matchesCategory;
         });
         
         // Debug summary
-        console.log(`Filtered ${filtered.length} apps from ${apps.length} total apps. Enabled modules:`, enabledModules);
+        console.log(`Filtered ${filtered.length} apps from ${apps.length} total apps.`);
         console.log('Shown apps:', filtered.map(app => app.title));
         
         return filtered;
-    }, [searchQuery, selectedCategory, apps, enabledModules, appTitleToModuleId]);
+    }, [searchQuery, selectedCategory, apps]);
 
-    // Group apps by their status (free, paid, coming soon)
-    const groupedApps = useMemo(() => {
-        const paidApps = filteredApps.filter(app => !app.comingSoon);
-        const comingSoonApps = filteredApps.filter(app => app.comingSoon);
-        
-        return { paidApps, comingSoonApps };
-    }, [filteredApps]);
 
     const formatNumber = (num: number | undefined | null) => {
         return num?.toLocaleString() ?? '0';
@@ -333,6 +316,60 @@ export default function Apps() {
     const isAppIncludedInCurrentPlan = (app: App) => {
         if (!subscription || !app.includedInPlans || !subscription.plan.slug) return false;
         return app.includedInPlans.includes(subscription.plan.slug);
+    };
+
+    // Handle adding an app to user's collection
+    const handleAddApp = async (app: App) => {
+        try {
+            const response = await fetch('/api/apps/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    module_identifier: app.identifier
+                })
+            });
+
+            if (response.ok) {
+                // Refresh apps data
+                const appData = await fetchAppsFromAPI();
+                setApps(appData);
+            } else {
+                const error = await response.json();
+                console.error('Failed to add app:', error.message);
+            }
+        } catch (error) {
+            console.error('Error adding app:', error);
+        }
+    };
+
+    // Handle removing an app from user's collection
+    const handleRemoveApp = async (app: App) => {
+        try {
+            const response = await fetch('/api/apps/remove', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    module_identifier: app.identifier
+                })
+            });
+
+            if (response.ok) {
+                // Refresh apps data
+                const appData = await fetchAppsFromAPI();
+                setApps(appData);
+            } else {
+                const error = await response.json();
+                console.error('Failed to remove app:', error.message);
+            }
+        } catch (error) {
+            console.error('Error removing app:', error);
+        }
     };
 
     return (
@@ -473,26 +510,28 @@ export default function Apps() {
 
                                 {/* Apps List */}
                                 <div className="space-y-4">
-                                    {/* Paid Apps */}
-                                    {groupedApps.paidApps.length > 0 && (
+                                    {/* All Apps */}
+                                    {filteredApps.length > 0 && (
                                         <div>
                                             <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
-                                                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Available</span>
-                                                {auth.project.identifier.replace('-', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Apps
+                                                <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">All Apps</span>
+                                                Available Modules
                                                 <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium px-2 py-0.5 rounded-full">
-                                                    {groupedApps.paidApps.length}
+                                                    {filteredApps.length}
                                                 </span>
                                             </h2>
                                             <div className="space-y-3">
-                                                {groupedApps.paidApps.map((app) => (
+                                                {filteredApps.map((app) => (
                                                     <Card 
                                                         key={app.title} 
-                                                        className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer"
+                                                        className={`hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm cursor-pointer ${
+                                                            app.comingSoon ? 'opacity-75' : ''
+                                                        }`}
                                                         onClick={() => setSelectedApp(app)}
                                                     >
                                                         <CardHeader className="p-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm`}>
+                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm ${app.comingSoon ? 'opacity-50' : ''}`}>
                                                                     <div className="text-xl dark:text-slate-300">
                                                                         {app.icon}
                                                                     </div>
@@ -500,50 +539,76 @@ export default function Apps() {
                                                                 <div className="flex-1">
                                                                     <div className="flex items-center gap-2">
                                                                         <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
+                                                                        {app.comingSoon && (
+                                                                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs">
+                                                                                Coming Soon
+                                                                            </Badge>
+                                                                        )}
+                                                                        {!app.comingSoon && app.isInSubscription && (
+                                                                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs">
+                                                                                In Plan
+                                                                            </Badge>
+                                                                        )}
+                                                                        {!app.comingSoon && app.isUserAdded && !app.isInSubscription && (
+                                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-xs">
+                                                                                Added
+                                                                            </Badge>
+                                                                        )}
+                                                                        {!app.comingSoon && !app.isInSubscription && !app.isUserAdded && (
+                                                                            <Badge variant="secondary" className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 text-xs">
+                                                                                Not in Plan
+                                                                            </Badge>
+                                                                        )}
                                                                     </div>
+                                                                    {/* Show price for apps not in plan */}
+                                                                    {!app.comingSoon && !app.isInSubscription && !app.isUserAdded && app.price > 0 && (
+                                                                        <div className="mt-1">
+                                                                            <span className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                                                                {formatPrice(app.price)}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                                                                                {app.pricingType === 'one-time' ? 'one-time' : app.pricingType === 'subscription' ? 'per month' : ''}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                     <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
                                                                         {app.description}
                                                                     </CardDescription>
                                                                 </div>
-                                                            </div>
-                                                        </CardHeader>
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Coming Soon Apps */}
-                                    {groupedApps.comingSoonApps.length > 0 && (
-                                        <div>
-                                            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white flex items-center">
-                                                <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-semibold px-2.5 py-0.5 rounded-full mr-2">Coming Soon</span>
-                                                Coming Soon
-                                                <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium px-2 py-0.5 rounded-full">
-                                                    {groupedApps.comingSoonApps.length}
-                                                </span>
-                                            </h2>
-                                            <div className="space-y-3">
-                                                {groupedApps.comingSoonApps.map((app) => (
-                                                    <Card 
-                                                        key={app.title} 
-                                                        className="hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-800/50 bg-white dark:bg-gray-800/80 backdrop-blur-sm opacity-75 cursor-pointer"
-                                                        onClick={() => setSelectedApp(app)}
-                                                    >
-                                                        <CardHeader className="p-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`min-w-[3rem] w-12 h-12 bg-gray-50 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center ${app.bgColor} shadow-sm opacity-50`}>
-                                                                    <div className="text-xl dark:text-slate-300">
-                                                                        {app.icon}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <CardTitle className="text-base text-gray-900 dark:text-white">{app.title}</CardTitle>
-                                                                    </div>
-                                                                    <CardDescription className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
-                                                                        {app.description}
-                                                                    </CardDescription>
+                                                                <div className="flex gap-2">
+                                                                    {!app.comingSoon && !app.isInSubscription && !app.isUserAdded && (
+                                                                        <div className="flex flex-col items-end">
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleAddApp(app);
+                                                                                }}
+                                                                                className="text-xs"
+                                                                            >
+                                                                                Add
+                                                                            </Button>
+                                                                            {app.price > 0 && (
+                                                                                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
+                                                                                    {formatPrice(app.price)}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {!app.comingSoon && app.isUserAdded && !app.isInSubscription && (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleRemoveApp(app);
+                                                                            }}
+                                                                            className="text-xs text-red-600 hover:text-red-700"
+                                                                        >
+                                                                            Remove
+                                                                        </Button>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </CardHeader>
@@ -589,6 +654,46 @@ export default function Apps() {
                                                 ))}
                                             </div>
                                         </div>
+
+                                        {/* Pricing Information */}
+                                        {!selectedApp.comingSoon && (
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Pricing</h3>
+                                                <div className="space-y-2">
+                                                    {selectedApp.isInSubscription ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                                Included in Plan
+                                                            </Badge>
+                                                        </div>
+                                                    ) : selectedApp.isUserAdded ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                                                Added to Collection
+                                                            </Badge>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                                                                    {formatPrice(selectedApp.price)}
+                                                                </span>
+                                                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                                    {selectedApp.pricingType === 'one-time' ? 'one-time payment' : 
+                                                                     selectedApp.pricingType === 'subscription' ? 'per month' : 
+                                                                     selectedApp.pricingType === 'free' ? 'free' : ''}
+                                                                </span>
+                                                            </div>
+                                                            {selectedApp.pricingType === 'subscription' && (
+                                                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                                    Billed monthly • Cancel anytime
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col items-center text-center py-8">
