@@ -59,17 +59,18 @@ RUN mkdir -p /var/www/storage/logs \
 # Set proper ownership
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
+# Create startup script for cron (before switching user)
+RUN printf '#!/bin/sh\n\
+export TZ=Asia/Manila\n\
+php artisan config:cache && \\\n\
+php artisan route:cache && \\\n\
+php artisan view:cache && \\\n\
+php artisan schedule:run\n' > /var/www/cron-startup.sh \
+&& chmod +x /var/www/cron-startup.sh \
+&& chown www-data:www-data /var/www/cron-startup.sh
+
 # Switch to www-data user
 USER www-data
-
-# Create startup script for cron in a location accessible to www-data
-RUN echo '#!/bin/sh\n\
-export TZ=Asia/Manila\n\
-php artisan config:cache && \
-php artisan route:cache && \
-php artisan view:cache && \
-php artisan schedule:run\n' > /var/www/cron-startup.sh \
-&& chmod +x /var/www/cron-startup.sh
 
 # Run the Laravel scheduler
 CMD ["/var/www/cron-startup.sh"]
