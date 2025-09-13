@@ -17,9 +17,16 @@ class SubscriptionAdminController extends Controller
     /**
      * Display a listing of subscription plans and user subscriptions.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $plans = SubscriptionPlan::with('project')->orderBy('price')->get();
+        $query = SubscriptionPlan::with('project');
+        
+        // Apply project filter if provided
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->project_id);
+        }
+        
+        $plans = $query->orderBy('slug')->get();
         
         // Add active users count for each plan
         $plans->each(function ($plan) {
@@ -30,17 +37,28 @@ class SubscriptionAdminController extends Controller
         });
         
         $projects = Project::orderBy('name')->get();
-        $subscriptions = UserSubscription::with('plan')
+        
+        // Get users for filter dropdown
+        $users = \App\Models\User::orderBy('name')->get();
+        
+        $subscriptionsQuery = UserSubscription::with('plan')
             ->select('user_subscriptions.*')
             ->join('users', 'users.identifier', '=', 'user_subscriptions.user_identifier')
-            ->addSelect('users.name as user_name')
-            ->orderBy('user_subscriptions.created_at', 'desc')
-            ->paginate(10);
+            ->addSelect('users.name as user_name');
+        
+        // Apply user filter if provided
+        if ($request->filled('user_id')) {
+            $subscriptionsQuery->where('users.id', $request->user_id);
+        }
+        
+        $subscriptions = $subscriptionsQuery->orderBy('user_subscriptions.created_at', 'desc')->paginate(10);
         
         return Inertia::render('Admin/Subscriptions/Index', [
             'plans' => $plans,
             'projects' => $projects,
+            'users' => $users,
             'subscriptions' => $subscriptions,
+            'filters' => $request->only(['project_id', 'user_id']),
         ]);
     }
     

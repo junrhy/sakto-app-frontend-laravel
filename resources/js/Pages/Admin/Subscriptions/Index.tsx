@@ -19,6 +19,7 @@ interface Props {
   auth: PageProps['auth'];
   plans: SubscriptionPlan[];
   projects: Project[];
+  users: User[];
   subscriptions: {
     data: (UserSubscription & { user_name?: string })[];
     links: any[];
@@ -33,9 +34,13 @@ interface Props {
       total: number;
     };
   };
+  filters: {
+    project_id?: string;
+    user_id?: string;
+  };
 }
 
-export default function Index({ auth, plans, projects, subscriptions }: Props) {
+export default function Index({ auth, plans, projects, users, subscriptions, filters }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -43,6 +48,8 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
   const [features, setFeatures] = useState<string[]>([]);
   const [featureInput, setFeatureInput] = useState('');
+  const [projectFilter, setProjectFilter] = useState(filters.project_id || '');
+  const [userFilter, setUserFilter] = useState(filters.user_id || '');
 
   const createForm = useForm({
     name: '',
@@ -177,6 +184,30 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
     setShowRenewalModal(true);
   };
 
+  const handleProjectFilterChange = (projectId: string) => {
+    setProjectFilter(projectId);
+    // Navigate with the new filter
+    const url = new URL(window.location.href);
+    if (projectId) {
+      url.searchParams.set('project_id', projectId);
+    } else {
+      url.searchParams.delete('project_id');
+    }
+    window.location.href = url.toString();
+  };
+
+  const handleUserFilterChange = (userId: string) => {
+    setUserFilter(userId);
+    // Navigate with the new filter
+    const url = new URL(window.location.href);
+    if (userId) {
+      url.searchParams.set('user_id', userId);
+    } else {
+      url.searchParams.delete('user_id');
+    }
+    window.location.href = url.toString();
+  };
+
   return (
     <AdminLayout
       auth={{ user: auth.user, project: auth.project, modules: auth.modules }}
@@ -197,6 +228,36 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
                   <SecondaryButton onClick={openRenewalModal}>
                     Run Renewal Command
                   </SecondaryButton>
+                </div>
+              </div>
+              
+              {/* Project Filter */}
+              <div className="mb-4">
+                <div className="flex items-center space-x-4">
+                  <label htmlFor="project-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Filter by Project:
+                  </label>
+                  <select
+                    id="project-filter"
+                    value={projectFilter}
+                    onChange={(e) => handleProjectFilterChange(e.target.value)}
+                    className="block w-64 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                  >
+                    <option value="">All Projects</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                  {projectFilter && (
+                    <button
+                      onClick={() => handleProjectFilterChange('')}
+                      className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Clear Filter
+                    </button>
+                  )}
                 </div>
               </div>
               
@@ -325,6 +386,36 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">User Subscriptions</h3>
+              
+              {/* User Filter */}
+              <div className="mb-4">
+                <div className="flex items-center space-x-4">
+                  <label htmlFor="user-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Filter by User:
+                  </label>
+                  <select
+                    id="user-filter"
+                    value={userFilter}
+                    onChange={(e) => handleUserFilterChange(e.target.value)}
+                    className="block w-64 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+                  >
+                    <option value="">All Users</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                  {userFilter && (
+                    <button
+                      onClick={() => handleUserFilterChange('')}
+                      className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Clear Filter
+                    </button>
+                  )}
+                </div>
+              </div>
               
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
