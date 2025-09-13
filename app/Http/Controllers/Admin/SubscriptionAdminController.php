@@ -51,6 +51,7 @@ class SubscriptionAdminController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:subscription_plans,slug',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'duration_in_days' => 'required|integer|min:1',
@@ -62,14 +63,8 @@ class SubscriptionAdminController extends Controller
             'project_id' => 'nullable|exists:projects,id',
         ]);
         
-        // Generate slug from name
-        $validated['slug'] = Str::slug($validated['name']);
-        
-        // Check if slug already exists
-        $existingPlan = SubscriptionPlan::where('slug', $validated['slug'])->first();
-        if ($existingPlan) {
-            $validated['slug'] = $validated['slug'] . '-' . time();
-        }
+        // Convert slug to proper format
+        $validated['slug'] = Str::slug($validated['slug']);
         
         SubscriptionPlan::create($validated);
         
@@ -85,6 +80,7 @@ class SubscriptionAdminController extends Controller
         
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:subscription_plans,slug,' . $id,
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'duration_in_days' => 'required|integer|min:1',
@@ -95,6 +91,9 @@ class SubscriptionAdminController extends Controller
             'badge_text' => 'nullable|string|max:255',
             'project_id' => 'nullable|exists:projects,id',
         ]);
+        
+        // Convert slug to proper format
+        $validated['slug'] = Str::slug($validated['slug']);
         
         $plan->update($validated);
         

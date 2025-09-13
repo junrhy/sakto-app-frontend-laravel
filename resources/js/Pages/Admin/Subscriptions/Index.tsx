@@ -46,6 +46,7 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
 
   const createForm = useForm({
     name: '',
+    slug: '',
     description: '',
     price: '',
     duration_in_days: '',
@@ -59,6 +60,7 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
 
   const editForm = useForm({
     name: '',
+    slug: '',
     description: '',
     price: '',
     duration_in_days: '',
@@ -84,6 +86,7 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
     setCurrentPlan(plan);
     editForm.setData({
       name: plan.name,
+      slug: plan.slug || '',
       description: plan.description || '',
       price: plan.price?.toString() || '0',
       duration_in_days: plan.duration_in_days?.toString() || '0',
@@ -412,6 +415,20 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
           </div>
           
           <div className="mb-4">
+            <InputLabel htmlFor="slug" value="Slug" className="text-gray-700 dark:text-gray-300" />
+            <TextInput
+              id="slug"
+              type="text"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              value={createForm.data.slug}
+              onChange={(e) => createForm.setData('slug', e.target.value)}
+              placeholder="e.g., basic-plan, premium-plan"
+              required
+            />
+            <InputError message={createForm.errors.slug} className="mt-2" />
+          </div>
+          
+          <div className="mb-4">
             <InputLabel htmlFor="description" value="Description" className="text-gray-700 dark:text-gray-300" />
             <TextArea
               id="description"
@@ -574,6 +591,20 @@ export default function Index({ auth, plans, projects, subscriptions }: Props) {
               required
             />
             <InputError message={editForm.errors.name} className="mt-2" />
+          </div>
+          
+          <div className="mb-4">
+            <InputLabel htmlFor="edit_slug" value="Slug" className="text-gray-700 dark:text-gray-300" />
+            <TextInput
+              id="edit_slug"
+              type="text"
+              className="mt-1 block w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+              value={editForm.data.slug}
+              onChange={(e) => editForm.setData('slug', e.target.value)}
+              placeholder="e.g., basic-plan, premium-plan"
+              required
+            />
+            <InputError message={editForm.errors.slug} className="mt-2" />
           </div>
           
           <div className="mb-4">

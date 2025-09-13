@@ -23,8 +23,9 @@ class AppsController extends Controller
     public function create()
     {
         $subscriptionPlans = SubscriptionPlan::where('is_active', true)
+            ->with('project:id,name,identifier')
             ->orderBy('price')
-            ->get(['id', 'name', 'slug', 'price', 'duration_in_days']);
+            ->get(['id', 'name', 'slug', 'price', 'duration_in_days', 'project_id']);
             
         return Inertia::render('Admin/Apps/Create', [
             'subscriptionPlans' => $subscriptionPlans
@@ -71,8 +72,9 @@ class AppsController extends Controller
         }
         
         $subscriptionPlans = SubscriptionPlan::where('is_active', true)
+            ->with('project:id,name,identifier')
             ->orderBy('price')
-            ->get(['id', 'name', 'slug', 'price', 'duration_in_days']);
+            ->get(['id', 'name', 'slug', 'price', 'duration_in_days', 'project_id']);
         
         return Inertia::render('Admin/Apps/Edit', [
             'app' => $apps[$index],

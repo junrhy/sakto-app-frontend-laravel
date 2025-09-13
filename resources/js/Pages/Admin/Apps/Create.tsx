@@ -18,6 +18,12 @@ interface SubscriptionPlan {
     slug: string;
     price: number;
     duration_in_days: number;
+    project_id?: number;
+    project?: {
+        id: number;
+        name: string;
+        identifier: string;
+    };
 }
 
 interface Props {
@@ -332,36 +338,73 @@ export default function Create({ subscriptionPlans }: Props) {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label>Included Plans</Label>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {data.includedInPlans.map(plan => (
-                                            <Badge key={plan} variant="secondary" className="flex items-center gap-1">
-                                                {plan}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removePlan(plan)}
-                                                    className="ml-1 hover:text-red-500"
-                                                >
-                                                    <XMarkIcon className="h-3 w-3" />
-                                                </button>
-                                            </Badge>
+                                    <div className="space-y-4 mt-2">
+                                        {Object.entries(
+                                            data.includedInPlans.reduce((acc, planSlug) => {
+                                                const plan = subscriptionPlans.find(p => p.slug === planSlug);
+                                                const projectName = plan?.project?.name || 'No Project';
+                                                if (!acc[projectName]) {
+                                                    acc[projectName] = [];
+                                                }
+                                                acc[projectName].push(planSlug);
+                                                return acc;
+                                            }, {} as Record<string, string[]>)
+                                        ).map(([projectName, plans]) => (
+                                            <div key={projectName}>
+                                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    {projectName}
+                                                </h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {plans.map(plan => (
+                                                        <Badge key={plan} variant="secondary" className="flex items-center gap-1">
+                                                            {plan}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removePlan(plan)}
+                                                                className="ml-1 hover:text-red-500"
+                                                            >
+                                                                <XMarkIcon className="h-3 w-3" />
+                                                            </button>
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
 
                                 <div>
                                     <Label>Available Subscription Plans</Label>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {subscriptionPlans.map(plan => (
-                                            <button
-                                                key={plan.id}
-                                                type="button"
-                                                onClick={() => addPredefinedPlan(plan.slug)}
-                                                disabled={data.includedInPlans.includes(plan.slug)}
-                                                className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                                title={`${plan.name} (${plan.slug}) - $${plan.price} (${plan.duration_in_days} days)`}
-                                            >
-                                                {plan.name}
-                                            </button>
+                                    <div className="space-y-4 mt-2">
+                                        {Object.entries(
+                                            subscriptionPlans.reduce((acc, plan) => {
+                                                const projectName = plan.project?.name || 'No Project';
+                                                if (!acc[projectName]) {
+                                                    acc[projectName] = [];
+                                                }
+                                                acc[projectName].push(plan);
+                                                return acc;
+                                            }, {} as Record<string, SubscriptionPlan[]>)
+                                        ).map(([projectName, plans]) => (
+                                            <div key={projectName}>
+                                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    {projectName}
+                                                </h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {plans.map(plan => (
+                                                        <button
+                                                            key={plan.id}
+                                                            type="button"
+                                                            onClick={() => addPredefinedPlan(plan.slug)}
+                                                            disabled={data.includedInPlans.includes(plan.slug)}
+                                                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            title={`${plan.name} (${plan.slug}) - $${plan.price} (${plan.duration_in_days} days)`}
+                                                        >
+                                                            {plan.name}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
