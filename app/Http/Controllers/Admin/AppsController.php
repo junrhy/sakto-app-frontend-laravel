@@ -189,6 +189,21 @@ class AppsController extends Controller
         $content .= "];\n";
         
         // Write to file
-        File::put($configPath, $content);
+        try {
+            File::put($configPath, $content);
+            
+            // Clear OPcache for this specific file if OPcache is enabled
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($configPath, true);
+            }
+            
+            // Clear OPcache completely if the above doesn't work
+            if (function_exists('opcache_reset')) {
+                opcache_reset();
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to update apps.php config file: ' . $e->getMessage());
+            throw new \Exception('Failed to update apps configuration. Please check file permissions.');
+        }
     }
 }

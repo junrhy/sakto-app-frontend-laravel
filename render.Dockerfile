@@ -113,8 +113,10 @@ RUN mkdir -p /var/log/supervisor \
     && mkdir -p /var/www/bootstrap/cache \
     && chown -R www-data:www-data /var/www/storage \
     && chown -R www-data:www-data /var/www/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/config \
     && chmod -R 775 /var/www/storage \
-    && chmod -R 775 /var/www/bootstrap/cache
+    && chmod -R 775 /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/config
 
 # Create startup script
 COPY docker/nginx/docker-entrypoint.sh /usr/local/bin/startup.sh
@@ -125,6 +127,8 @@ RUN chmod +x /usr/local/bin/startup.sh \
 RUN printf '#!/bin/sh\n' > /usr/local/bin/fix-permissions.sh && \
     printf 'chown -R www-data:www-data /var/www/storage\n' >> /usr/local/bin/fix-permissions.sh && \
     printf 'chmod -R 775 /var/www/storage\n' >> /usr/local/bin/fix-permissions.sh && \
+    printf 'chown -R www-data:www-data /var/www/config\n' >> /usr/local/bin/fix-permissions.sh && \
+    printf 'chmod -R 775 /var/www/config\n' >> /usr/local/bin/fix-permissions.sh && \
     printf 'exec "$@"\n' >> /usr/local/bin/fix-permissions.sh && \
     chmod +x /usr/local/bin/fix-permissions.sh && \
     dos2unix /usr/local/bin/fix-permissions.sh 2>/dev/null || true
