@@ -74,7 +74,7 @@ Route::middleware('auth')->group(function () {
         ->name('team-member.authenticate');
     
     Route::post('team-member/authenticate', [TeamMemberController::class, 'authenticate'])
-        ->name('team-member.authenticate');
+        ->name('team-member.authenticate.post');
     
     Route::post('team-member/switch', [TeamMemberController::class, 'switch'])
         ->name('team-member.switch');

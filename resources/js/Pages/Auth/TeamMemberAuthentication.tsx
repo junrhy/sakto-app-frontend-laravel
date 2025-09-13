@@ -31,7 +31,7 @@ export default function TeamMemberAuthentication({ teamMember }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('team-member.authenticate'));
+        post(route('team-member.authenticate.post'));
     };
 
     const getInitials = (firstName: string, lastName: string) => {

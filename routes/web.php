@@ -352,7 +352,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/self-registration', [ContactsController::class, 'selfRegistration'])->name('contacts.self-registration');
         Route::post('/store-self', [ContactsController::class, 'storeSelf'])->name('contacts.store-self');
         Route::get('/{id}/public', [ContactsController::class, 'publicProfile'])->name('contacts.public-profile');
-        Route::get('/list', [ContactsController::class, 'getContacts'])->name('contacts.list');
+        Route::get('/list', [ContactsController::class, 'getContacts'])->name('contacts.public-list');
         Route::post('/bulk-delete', [ContactsController::class, 'destroyBulk'])->name('contacts.bulk-delete');
     });
 
@@ -364,7 +364,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/member/{memberId}', [GenealogyController::class, 'memberProfile'])->name('genealogy.member-profile');
         Route::get('/circular', [GenealogyController::class, 'circularView'])->name('genealogy.circular');
         Route::get('/printable', [GenealogyController::class, 'printableView'])->name('genealogy.printable');
-        Route::get('/members', [GenealogyController::class, 'familyMemberFullView'])->name('genealogy.members');
+        Route::get('/members', [GenealogyController::class, 'familyMemberFullView'])->name('genealogy.public-members');
         Route::get('/settings', [GenealogyController::class, 'getPublicSettings'])->name('genealogy.public-settings');
     });
 
