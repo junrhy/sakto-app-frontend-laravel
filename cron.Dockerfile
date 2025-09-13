@@ -1,20 +1,24 @@
 # Cron-specific Dockerfile for Laravel scheduled tasks
-FROM php:8.2-cli-alpine
+FROM php:8.2-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
+    nginx \
+    supervisor \
     curl \
     libpng-dev \
     libzip-dev \
     zip \
     unzip \
     postgresql-dev \
+    dos2unix \
     && docker-php-ext-install \
     pdo_mysql \
     pdo_pgsql \
     bcmath \
     gd \
-    zip
+    zip \
+    opcache
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -50,8 +54,17 @@ RUN mkdir -p /var/www/storage/logs \
 # Set proper ownership
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
+# Create startup script for cron
+RUN echo '#!/bin/sh\n\
+php artisan config:cache && \
+php artisan route:cache && \
+php artisan view:cache && \
+php artisan schedule:run\n' > /usr/local/bin/cron-startup.sh \
+&& chmod +x /usr/local/bin/cron-startup.sh \
+&& dos2unix /usr/local/bin/cron-startup.sh 2>/dev/null || true
+
 # Switch to www-data user
 USER www-data
 
 # Run the Laravel scheduler
-CMD ["php", "artisan", "schedule:run"]
+CMD ["/usr/local/bin/cron-startup.sh"]
