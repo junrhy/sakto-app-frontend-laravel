@@ -5,9 +5,10 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState, useEffect } from 'react';
 import { ThemeProvider } from "@/Components/ThemeProvider";
-import { Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { Button } from '@/Components/ui/button';
 import { CreditCardIcon, SparklesIcon, AlertCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { PageProps, User, Project } from '@/types/index';
 import { parseEnabledModules } from '@/lib/utils';
 import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
@@ -105,56 +106,68 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
     return 'from-white to-gray-100 border-gray-200 dark:from-gray-800 dark:to-gray-700 dark:border-gray-600';
 };
 
-const requiresSubscription = (appParam: string | null, auth: any): boolean => {
-    if (!appParam) return false;
+const showAccessDialog = (appParam: string | null, auth: any, apps: any[], url: string): boolean => {
+    // Parse enabled modules from project
+    const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
     
-    // Match the middleware's subscription-required apps
-    const subscriptionApps = [
-        'clinic',
-        'real-estate',
-        'transportation',
-        'warehousing',
-        'sms',
-        'email',
-        'genealogy',
-        'events',
-        'challenges',
-        'content-creator',
-        'products',
-        'pages',
-        'healthcare'
+    // Helper function to check if user has access to a module (either in subscription or user-added)
+    const hasModuleAccess = (moduleIdentifier: string) => {
+        const isInSubscription = enabledModules.includes(moduleIdentifier);
+        const isUserAdded = apps.some(app => app.identifier === moduleIdentifier && app.isUserAdded);
+        return isInSubscription || isUserAdded;
+    };
+    
+    // Get the app identifier from either URL parameter or route path
+    let appIdentifier = appParam;
+    
+    // If no appParam, try to extract from URL path
+    if (!appIdentifier) {
+        appIdentifier = getAppIdentifierFromUrl(url);
+    }
+    
+    // If still no app identifier, no dialog needed
+    if (!appIdentifier) return false;
+    
+    // Check if user has access to the current app
+    const hasAccess = hasModuleAccess(appIdentifier);
+    
+    // Return true if user doesn't have access (show dialog to inform user)
+    return !hasAccess;
+};
+
+// Helper function to extract app identifier from URL path
+const getAppIdentifierFromUrl = (url: string): string | null => {
+    // List of all app route prefixes
+    const appRoutes = [
+        'clinic', 'clinical', 'pos-retail', 'retail', 'pos-restaurant', 'fnb',
+        'warehousing', 'transportation', 'rental-item', 'rental-items', 
+        'rental-property', 'rental-properties', 'loan', 'lending', 'payroll', 
+        'travel', 'sms', 'email', 'contacts', 'family-tree', 'genealogy', 
+        'events', 'challenges', 'content-creator', 'products', 'pages', 
+        'healthcare', 'mortuary', 'billers', 'bill-payments', 'courses'
     ];
     
-    const requires = subscriptionApps.includes(appParam);
+    // Extract pathname from URL
+    const pathname = url.split('?')[0].split('#')[0];
     
-    // If the app doesn't require subscription, return false
-    if (!requires) return false;
+    // Check if URL starts with any app route
+    for (const route of appRoutes) {
+        if (pathname.includes(`/${route}`) || pathname.endsWith(`/${route}`)) {
+            // Map some route names to their module identifiers
+            const routeToModuleMap: { [key: string]: string } = {
+                'pos-retail': 'retail',
+                'pos-restaurant': 'fnb',
+                'rental-item': 'rental-items',
+                'rental-property': 'rental-properties',
+                'family-tree': 'genealogy',
+                'loan': 'lending'
+            };
+            
+            return routeToModuleMap[route] || route;
+        }
+    }
     
-    // Get the current user's subscription from auth
-    const userSubscription = auth?.user?.subscription;
-    
-    // If no subscription exists, return true (requires subscription)
-    if (!userSubscription) return true;
-    
-    // Check if subscription is active and not expired
-    const isActive = userSubscription.status === 'active';
-    const isExpired = new Date(userSubscription.end_date) < new Date();
-    
-    // If subscription is not active or expired, return true (requires subscription)
-    if (!isActive || isExpired) return true;
-    
-    // Check if the plan has unlimited access
-    const hasUnlimitedAccess = userSubscription.plan?.unlimited_access;
-    
-    // If plan has unlimited access, return false (no subscription required)
-    if (hasUnlimitedAccess) return false;
-
-    // For non-unlimited plans, check if the app is included in the plan's features
-    const planFeatures = userSubscription.plan?.features || [];
-    const hasFeature = planFeatures.includes(appParam);
-    
-    // Return true if the app is not included in the plan's features
-    return !hasFeature;
+    return null;
 };
 
 export default function Authenticated({ children, header, user, auth: propAuth }: Props) {
@@ -241,26 +254,47 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const hasBillPaymentsAccess = (hasModuleAccess('bill-payments') && (appParam === 'bill-payments' || url.includes('bill-payments'))) ?? false;
     const hasCoursesAccess = (hasModuleAccess('courses') && (appParam === 'courses' || url.includes('courses'))) ?? false;
 
+    // Comprehensive route protection: Show dialog for unauthorized app routes
+    // Covers both dashboard routes (?app=) and direct app routes (/clinic, /products, etc.)
+    // Dialog cannot be dismissed - users must choose an action to proceed
 
     return (
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
-                {/* Subscription Notification Banner */}
-                {requiresSubscription(appParam, auth) && (
-                    <div className="sticky top-0 left-0 right-0 bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 dark:from-purple-600 dark:to-indigo-600 z-[55] text-center text-white text-sm py-2">
-                        <div className="container mx-auto px-4 flex items-center justify-center flex-wrap gap-2">
-                            <span className="font-medium">This feature requires a subscription plan for premium access!</span>
+                {/* Access Control Dialog */}
+                <Dialog open={showAccessDialog(appParam, auth, apps, url)} onOpenChange={() => {}}>
+                    <DialogContent className="sm:max-w-md [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
+                        <DialogHeader>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                                    <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                </div>
+                                <DialogTitle className="text-lg font-semibold">Access Required</DialogTitle>
+                            </div>
+                            <DialogDescription className="text-base">
+                                You don't have access to this feature yet. Choose how you'd like to gain access:
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 mt-4">
                             <Button 
-                                variant="link" 
-                                size="sm" 
-                                className="text-white underline p-0 h-auto"
                                 onClick={() => window.location.href = route('subscriptions.index')}
+                                className="w-full justify-start gap-2"
+                                variant="default"
                             >
-                                View Plans
+                                <CreditCardIcon className="h-4 w-4" />
+                                Upgrade Subscription Plan
+                            </Button>
+                            <Button 
+                                onClick={() => window.location.href = route('apps')}
+                                className="w-full justify-start gap-2"
+                                variant="outline"
+                            >
+                                <SparklesIcon className="h-4 w-4" />
+                                Add App to Collection
                             </Button>
                         </div>
-                    </div>
-                )}
+                    </DialogContent>
+                </Dialog>
 
                 {/* Mobile Navigation */}
                 <div

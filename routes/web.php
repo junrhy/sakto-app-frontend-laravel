@@ -770,8 +770,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     });
 });
 
-// Routes that require subscription
-Route::middleware(['auth', 'verified', 'team.member.selection', 'subscription.access'])->group(function () {
+// Routes that require subscription (now handled by frontend dialog)
+Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function () {
     // Help route
     Route::get('/help', function () {
         return Inertia::render('Help');
