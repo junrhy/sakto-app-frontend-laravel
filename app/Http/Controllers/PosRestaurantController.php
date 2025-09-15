@@ -30,6 +30,7 @@ class PosRestaurantController extends Controller
             'tables' => $this->getTables(),
             'joinedTables' => $this->getJoinedTables(),
             'reservations' => $this->getReservations(),
+            'blockedDates' => $this->getBlockedDates(),
             'currency_symbol' => $jsonAppCurrency->symbol
         ]);
     }
@@ -590,6 +591,75 @@ class PosRestaurantController extends Controller
             return response()->json([
                 'error' => 'Failed to save settings: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function getBlockedDates()
+    {
+        try {
+            $clientIdentifier = auth()->user()->identifier;
+            $response = Http::withToken($this->apiToken)
+                ->get("{$this->apiUrl}/fnb-blocked-dates?client_identifier={$clientIdentifier}");
+
+            if (!$response->successful()) {
+                throw new \Exception('API request failed: ' . $response->body());
+            }
+
+            $data = $response->json();
+            return $data['data'] ?? [];
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    public function storeBlockedDate(Request $request)
+    {
+        try {
+            $request['client_identifier'] = auth()->user()->identifier;
+
+            $response = Http::withToken($this->apiToken)
+                ->post("{$this->apiUrl}/fnb-blocked-dates", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to block date');
+            }
+
+            return redirect()->back()->with('success', 'Date blocked successfully')
+                ->with('blockedDate', $response->json()['data']);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to block date: ' . $e->getMessage());
+        }
+    }
+
+    public function updateBlockedDate(Request $request, $id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->put("{$this->apiUrl}/fnb-blocked-dates/{$id}", $request->all());
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to update blocked date');
+            }
+
+            return redirect()->back()->with('success', 'Blocked date updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update blocked date: ' . $e->getMessage());
+        }
+    }
+
+    public function destroyBlockedDate($id)
+    {
+        try {
+            $response = Http::withToken($this->apiToken)
+                ->delete("{$this->apiUrl}/fnb-blocked-dates/{$id}");
+
+            if (!$response->successful()) {
+                throw new \Exception($response->json()['message'] ?? 'Failed to remove blocked date');
+            }
+
+            return redirect()->back()->with('success', 'Blocked date removed successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to remove blocked date: ' . $e->getMessage());
         }
     }
 }

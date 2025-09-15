@@ -6,11 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Plus, Edit, Trash, Check, X } from "lucide-react";
-import { Reservation, Table as TableType } from '../types';
+import { Reservation, Table as TableType, BlockedDate } from '../types';
 
 interface ReservationsTabProps {
     reservations: Reservation[];
     tables: TableType[];
+    blockedDates?: BlockedDate[];
     currency_symbol: string;
     onAddReservation: (reservation: Omit<Reservation, 'id' | 'status'>) => void;
     onUpdateReservation: (id: number, reservation: Partial<Reservation>) => void;
@@ -22,6 +23,7 @@ interface ReservationsTabProps {
 export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     reservations,
     tables,
+    blockedDates = [],
     currency_symbol,
     onAddReservation,
     onUpdateReservation,
@@ -43,6 +45,20 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         tables.filter(table => table.status === 'available'),
         [tables]
     );
+
+    const isDateBlocked = useCallback((date: string, time?: string) => {
+        return blockedDates.some(blockedDate => {
+            if (blockedDate.blocked_date !== date) return false;
+            
+            if (blockedDate.is_full_day) return true;
+            
+            if (time && blockedDate.start_time && blockedDate.end_time) {
+                return time >= blockedDate.start_time && time < blockedDate.end_time;
+            }
+            
+            return false;
+        });
+    }, [blockedDates]);
 
     const filteredReservations = useMemo(() => {
         return reservations.filter(reservation => {
@@ -73,6 +89,10 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
     const handleSubmitReservation = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (newReservation.name && newReservation.date && newReservation.time && newReservation.tableId) {
+            if (isDateBlocked(newReservation.date, newReservation.time)) {
+                alert('This time period is blocked and reservations are not available.');
+                return;
+            }
             onAddReservation(newReservation);
             setNewReservation({
                 name: '',
@@ -84,7 +104,7 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
                 contact: ''
             });
         }
-    }, [newReservation, onAddReservation]);
+    }, [newReservation, onAddReservation, isDateBlocked]);
 
     return (
         <div className="space-y-6">

@@ -106,3 +106,15 @@ export interface QRCodeData {
     customerName?: string;
     url: string;
 }
+
+export interface BlockedDate {
+    id: number;
+    blocked_date: string;
+    start_time?: string;
+    end_time?: string;
+    is_full_day: boolean;
+    reason?: string;
+    client_identifier: string;
+    created_at: string;
+    updated_at: string;
+}

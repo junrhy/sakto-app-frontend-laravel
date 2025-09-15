@@ -1,13 +1,14 @@
 import { useState, useMemo, useCallback } from 'react';
-import { MenuItem, Table, OrderItem, Reservation, JoinedTable } from '../types';
+import { MenuItem, Table, OrderItem, Reservation, JoinedTable, BlockedDate } from '../types';
 
-export const usePosState = (initialMenuItems: MenuItem[], initialTables: Table[], initialJoinedTables: JoinedTable[]) => {
+export const usePosState = (initialMenuItems: MenuItem[], initialTables: Table[], initialJoinedTables: JoinedTable[], initialReservations: Reservation[] = [], initialBlockedDates: BlockedDate[] = []) => {
     // Core state
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
     const [tables, setTables] = useState<Table[]>(initialTables);
     const [joinedTables, setJoinedTables] = useState<JoinedTable[]>(initialJoinedTables);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-    const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
+    const [blockedDates, setBlockedDates] = useState<BlockedDate[]>(initialBlockedDates);
     
     // UI state
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -136,6 +137,10 @@ export const usePosState = (initialMenuItems: MenuItem[], initialTables: Table[]
         categoryFilteredMenuItems,
         filteredMenuItems,
         totalAmount,
+        
+        // Data
+        reservations,
+        blockedDates,
         
         // Actions
         addItemToOrder,

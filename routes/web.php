@@ -507,6 +507,10 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
         Route::post('/reservations', [PosRestaurantController::class, 'storeReservation']);
         Route::delete('/reservations/{id}', [PosRestaurantController::class, 'destroyReservation']);
         Route::get('/reservations-overview', [PosRestaurantController::class, 'getReservationsOverview']);
+        Route::get('/blocked-dates', [PosRestaurantController::class, 'getBlockedDates']);
+        Route::post('/blocked-dates', [PosRestaurantController::class, 'storeBlockedDate']);
+        Route::put('/blocked-dates/{id}', [PosRestaurantController::class, 'updateBlockedDate']);
+        Route::delete('/blocked-dates/{id}', [PosRestaurantController::class, 'destroyBlockedDate']);
     });
     
     // Lending

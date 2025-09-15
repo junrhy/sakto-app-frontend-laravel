@@ -247,9 +247,55 @@ export const usePosApi = () => {
         });
     }, []);
 
+    // Blocked Dates API calls
+    const createBlockedDate = useCallback(async (blockedDateData: any) => {
+        return new Promise((resolve) => {
+            router.post('/pos-restaurant/blocked-dates', blockedDateData, {
+                onSuccess: () => {
+                    toast.success('Date blocked successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(Object.values(errors)[0] as string || 'Failed to block date');
+                    resolve(false);
+                }
+            });
+        });
+    }, []);
+
+    const updateBlockedDate = useCallback(async (id: number, blockedDateData: any) => {
+        return new Promise((resolve) => {
+            router.put(`/pos-restaurant/blocked-dates/${id}`, blockedDateData, {
+                onSuccess: () => {
+                    toast.success('Blocked date updated successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(Object.values(errors)[0] as string || 'Failed to update blocked date');
+                    resolve(false);
+                }
+            });
+        });
+    }, []);
+
+    const deleteBlockedDate = useCallback(async (id: number) => {
+        return new Promise((resolve) => {
+            router.delete(`/pos-restaurant/blocked-dates/${id}`, {
+                onSuccess: () => {
+                    toast.success('Blocked date removed successfully');
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error(Object.values(errors)[0] as string || 'Failed to remove blocked date');
+                    resolve(false);
+                }
+            });
+        });
+    }, []);
+
     // Utility function to refresh data
     const refreshData = useCallback(() => {
-        router.reload({ only: ['menuItems', 'tables', 'reservations'] });
+        router.reload({ only: ['menuItems', 'tables', 'reservations', 'blockedDates'] });
     }, []);
 
     return {
@@ -275,6 +321,11 @@ export const usePosApi = () => {
         createReservation,
         updateReservation,
         deleteReservation,
+        
+        // Blocked Dates
+        createBlockedDate,
+        updateBlockedDate,
+        deleteBlockedDate,
         
         // Kitchen Orders
         storeKitchenOrder,

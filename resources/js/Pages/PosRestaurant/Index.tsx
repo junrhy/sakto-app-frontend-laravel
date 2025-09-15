@@ -2,18 +2,19 @@ import React, { useState, useCallback, lazy, Suspense, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { UtensilsCrossed, Calculator, Check, ShoppingCart } from "lucide-react";
+import { UtensilsCrossed, Calculator, Check, ShoppingCart, Calendar } from "lucide-react";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Toaster, toast } from "sonner";
 import { usePosState } from './hooks/usePosState';
 import { usePosApi } from './hooks/usePosApi';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { MenuItem, Table, JoinedTable, Reservation, MenuItemFormData } from './types';
+import { MenuItem, Table, JoinedTable, Reservation, MenuItemFormData, BlockedDate } from './types';
 
 // Lazy load tab components for better performance
 const PosTab = lazy(() => import('./components/PosTab').then(module => ({ default: module.PosTab })));
 const TablesTab = lazy(() => import('./components/TablesTab').then(module => ({ default: module.TablesTab })));
 const ReservationsTab = lazy(() => import('./components/ReservationsTab').then(module => ({ default: module.ReservationsTab })));
+const BlockedDatesTab = lazy(() => import('./components/BlockedDatesTab').then(module => ({ default: module.BlockedDatesTab })));
 const MenuTab = lazy(() => import('./components/MenuTab').then(module => ({ default: module.MenuTab })));
 
 // Lazy load dialog components
@@ -45,6 +46,8 @@ interface PageProps {
     tables: Table[];
     tab?: string;
     joinedTables?: JoinedTable[];
+    reservations?: Reservation[];
+    blockedDates?: BlockedDate[];
     currency_symbol?: string;
 }
 
@@ -53,6 +56,8 @@ export default function PosRestaurantIndex({
     tables, 
     tab = 'pos', 
     joinedTables = [], 
+    reservations = [],
+    blockedDates = [],
     currency_symbol = '$' 
 }: PageProps) {
     const [isTabLoading, setIsTabLoading] = useState(false);
@@ -75,7 +80,7 @@ export default function PosRestaurantIndex({
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
     // Use custom hooks for state management and API calls
-    const posState = usePosState(menuItems, tables, joinedTables);
+    const posState = usePosState(menuItems, tables, joinedTables, reservations, blockedDates);
     const api = usePosApi();
 
     // Sync currentTab with the tab prop
@@ -420,6 +425,28 @@ export default function PosRestaurantIndex({
         await handleUpdateReservation(id, { status: 'cancelled' });
     }, [handleUpdateReservation]);
 
+    // Blocked Dates handlers
+    const handleAddBlockedDate = useCallback(async (blockedDate: Omit<BlockedDate, 'id' | 'created_at' | 'updated_at'>) => {
+        const result = await api.createBlockedDate(blockedDate);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleUpdateBlockedDate = useCallback(async (id: number, blockedDate: Partial<BlockedDate>) => {
+        const result = await api.updateBlockedDate(id, blockedDate);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleDeleteBlockedDate = useCallback(async (id: number) => {
+        const result = await api.deleteBlockedDate(id);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -448,7 +475,7 @@ export default function PosRestaurantIndex({
                     <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-3 border-b border-gray-200 dark:border-gray-600">
                         <TabsList className={`grid w-full ${
                             useMediaQuery('(min-width: 640px)') 
-                                ? 'grid-cols-4' 
+                                ? 'grid-cols-5' 
                                 : 'grid-cols-2'
                         } gap-2 p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600 pb-10`}>
                             <TabsTrigger 
@@ -474,6 +501,14 @@ export default function PosRestaurantIndex({
                                 <Check className="w-4 h-4 mr-2 group-data-[state=active]:text-white" />
                                 <span className="hidden sm:inline">Reservations</span>
                                 <span className="sm:hidden">Reserve</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="blocked-dates" 
+                                className="group relative text-sm font-medium whitespace-nowrap px-4 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:hover:text-gray-200 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                                <Calendar className="w-4 h-4 mr-2 group-data-[state=active]:text-white" />
+                                <span className="hidden sm:inline">Blocked Dates</span>
+                                <span className="sm:hidden">Blocked</span>
                             </TabsTrigger>
                             <TabsTrigger 
                                 value="menu" 
@@ -541,12 +576,24 @@ export default function PosRestaurantIndex({
                                         <ReservationsTab
                                             reservations={posState.reservations}
                                             tables={posState.tables}
+                                            blockedDates={posState.blockedDates}
                                             currency_symbol={currency_symbol}
                                             onAddReservation={handleAddReservation}
                                             onUpdateReservation={handleUpdateReservation}
                                             onDeleteReservation={handleDeleteReservation}
                                             onConfirmReservation={handleConfirmReservation}
                                             onCancelReservation={handleCancelReservation}
+                                        />
+                                    </TabsContent>
+                                )}
+                                
+                                {currentTab === "blocked-dates" && (
+                                    <TabsContent value="blocked-dates" className="p-6 pb-8">
+                                        <BlockedDatesTab
+                                            blockedDates={posState.blockedDates}
+                                            onAddBlockedDate={handleAddBlockedDate}
+                                            onUpdateBlockedDate={handleUpdateBlockedDate}
+                                            onDeleteBlockedDate={handleDeleteBlockedDate}
                                         />
                                     </TabsContent>
                                 )}
