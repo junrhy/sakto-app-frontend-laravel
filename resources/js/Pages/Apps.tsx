@@ -9,7 +9,7 @@ import { Badge } from '@/Components/ui/badge';
 // @ts-ignore
 import { Search, Sun, Moon, Monitor } from 'lucide-react';
 import { useTheme } from "@/Components/ThemeProvider";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
 import { getIconByName, getSmartIconSuggestion } from '@/lib/iconLibrary';
 import AppPaymentModal from '@/Components/AppPaymentModal';
@@ -706,6 +706,11 @@ export default function Apps() {
                                             collisionPadding={16}
                                         >
                                             <DropdownMenuItem>
+                                                <HomeIcon className="w-5 h-5 mr-2" />
+                                                <InertiaLink href={route('home')}>Home</InertiaLink>
+                                            </DropdownMenuItem>
+
+                                            <DropdownMenuItem>
                                                 <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink href="/help">Help</InertiaLink>
                                             </DropdownMenuItem>
@@ -1085,8 +1090,6 @@ export default function Apps() {
                     </div>
                 </div>
             </div>
-
-            <BottomNav />
 
             {/* Payment Modal */}
             <AppPaymentModal

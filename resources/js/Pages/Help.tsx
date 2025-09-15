@@ -8,7 +8,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/Components/ui/dropdown-menu";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, CreditCardIcon, SparklesIcon, HomeIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 import BottomNav from '@/Components/BottomNav';
@@ -59,10 +59,6 @@ interface Subscription {
 
 const defaultFAQItems = [
     {
-        question: "What is Sakto?",
-        answer: "Sakto is a comprehensive business management platform that offers various applications to help you manage different aspects of your business efficiently."
-    },
-    {
         question: "How do I get started?",
         answer: "After logging in, you'll be taken to your home dashboard where you can see all available apps. Simply click on any app to start using it."
     },
@@ -76,7 +72,7 @@ const defaultFAQItems = [
     },
     {
         question: "What payment methods do you accept?",
-        answer: "We accept major credit cards, PayPal, and bank transfers. Payment options may vary by region."
+        answer: "We accept major credit cards, E-Wallets, and bank transfers. Payment options may vary by region."
     }
 ];
 
@@ -218,6 +214,11 @@ export default function Help({ auth }: Props) {
                                             onCloseAutoFocus={(e) => e.preventDefault()}
                                             collisionPadding={16}
                                         >
+                                            <DropdownMenuItem>
+                                                <HomeIcon className="w-5 h-5 mr-2" />
+                                                <InertiaLink href={route('home')} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Home</InertiaLink>
+                                            </DropdownMenuItem>
+
                                             <DropdownMenuItem>
                                                 <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink href="/help" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Help</InertiaLink>
@@ -390,7 +391,6 @@ export default function Help({ auth }: Props) {
                     </div>
                 </div>
             </div>
-                <BottomNav />
             </div>
         </ThemeProvider>
     );

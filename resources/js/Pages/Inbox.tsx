@@ -7,7 +7,7 @@ import MessageDialog from '@/Components/MessageDialog';
 import { ThemeProvider, useTheme } from "@/Components/ThemeProvider";
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu";
-import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ArrowRightStartOnRectangleIcon, UserIcon, TrashIcon, CreditCardIcon, HomeIcon } from '@heroicons/react/24/outline';
 // @ts-ignore
 import { Sun, Moon, Monitor } from 'lucide-react';
 import axios from 'axios';
@@ -251,6 +251,11 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                                             collisionPadding={16}
                                         >
                                             <DropdownMenuItem>
+                                                <HomeIcon className="w-5 h-5 mr-2" />
+                                                <InertiaLink href={route('home')} className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Home</InertiaLink>
+                                            </DropdownMenuItem>
+
+                                            <DropdownMenuItem>
                                                 <QuestionMarkCircleIcon className="w-5 h-5 mr-2" />
                                                 <InertiaLink href="/help" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Help</InertiaLink>
                                             </DropdownMenuItem>
@@ -353,8 +358,6 @@ export default function Inbox({ auth, messages: initialMessages }: Props) {
                     </div>
                 </div>
             </div>
-
-            <BottomNav />
 
             {/* Sonner Toaster for this component */}
             <Toaster 
