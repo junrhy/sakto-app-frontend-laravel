@@ -388,20 +388,8 @@ export default function Home({ auth }: Props) {
                     
                     <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4 lg:gap-6 gap-y-8 md:gap-y-10 lg:gap-y-12 w-full mx-auto">
                         {apps.filter(app => {
-                            // Convert app title to match module name format (lowercase and hyphenated)
-                            const normalizedAppTitle = app.title.toLowerCase().replace(/\s+/g, '-');
-                            
-                            // Show apps that are either in subscription or user-added
-                            const enabledModules = parseEnabledModules(auth.project.enabledModules);
-                            const isInSubscription = enabledModules.includes(normalizedAppTitle);
-                            const isUserAdded = app.isUserAdded || false;
-                            
-                            // Show app if it's in subscription or user-added
-                            if (isInSubscription || isUserAdded) {
-                                return true;
-                            }
-                            
-                            return false;
+                            // Show apps that are available (either in subscription or user-added)
+                            return app.isAvailable;
                         }).sort((a, b) => a.title.localeCompare(b.title)).map((app) => (
                             <InertiaLink
                                 key={app.title}

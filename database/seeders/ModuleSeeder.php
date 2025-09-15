@@ -59,6 +59,11 @@ class ModuleSeeder extends Seeder
      */
     private function generateIdentifier(string $title): string
     {
+        // Special case for F&B to use 'fnb' instead of 'fandb'
+        if (strtolower($title) === 'f&b') {
+            return 'fnb';
+        }
+        
         return strtolower(str_replace([' ', '&', '-'], ['-', 'and', '-'], $title));
     }
 

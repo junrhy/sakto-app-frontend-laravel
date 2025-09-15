@@ -6,7 +6,7 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/Components/ui/dialog";
-import { Pencil, Trash2, PlusCircle, History, FileText, DollarSign, Plus, Edit } from 'lucide-react';
+import { Pencil, Trash2, PlusCircle, History, FileText, DollarSign, Plus, Edit, Users, UserPlus } from 'lucide-react';
 import { Textarea } from "@/Components/ui/textarea";
 import { ScrollArea } from "@/Components/ui/scroll-area";
 import DentalChart from '@/Components/DentalChart';
@@ -675,12 +675,33 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
         >
             <Head title="Clinic" />
 
-            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <Tabs defaultValue="patients" className="space-y-4">
-                    <TabsList>
-                    <TabsTrigger value="patients">Patients</TabsTrigger>
-                    <TabsTrigger value="add-patient">Add Patient</TabsTrigger>
-                    </TabsList>
+            <div className="p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <Tabs defaultValue="patients" className="space-y-6">
+                    <div className="border-b border-gray-200 dark:border-gray-700">
+                        <TabsList className="h-auto p-0 bg-transparent border-0 rounded-none">
+                            <TabsTrigger 
+                                value="patients" 
+                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    <span>Patients</span>
+                                    <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
+                                        {filteredPatients.length}
+                                    </span>
+                                </div>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="add-patient" 
+                                className="relative px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <UserPlus className="h-4 w-4" />
+                                    <span>Add Patient</span>
+                                </div>
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
 
                     <TabsContent value="patients">
                     <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
@@ -688,38 +709,38 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
 
                                 </div>
                                 <div className="relative w-full sm:w-64">
-                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                                     <Input
                                         placeholder="Search patients..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-8 w-full"
+                                        className="pl-8 w-full bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>
 
                             <Table>
                                 <TableHeader>
-                                    <TableRow>
-                                        <TableHead>ID</TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Next Visit</TableHead>
-                                        <TableHead>Total Bills ({currency})</TableHead>
-                                        <TableHead>Balance ({currency})</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                    <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                        <TableHead className="text-gray-900 dark:text-white">ID</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Name</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Next Visit</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Total Bills ({currency})</TableHead>
+                                        <TableHead className="text-gray-900 dark:text-white">Balance ({currency})</TableHead>
+                                        <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {currentPatients.map((patient) => (
-                                        <TableRow key={patient.id}>
+                                        <TableRow key={patient.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <TableCell 
-                                                className="cursor-pointer hover:bg-gray-100" 
+                                                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white" 
                                                 onClick={() => openPatientInfoDialog(patient)}
                                             >
                                                 {patient.id}
                                             </TableCell>
-                                            <TableCell>{patient.name}</TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">{patient.name}</TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center space-x-2">
                                                     <span>{formatDateTime(patient.next_visit_date)}</span>
                                                     <Dialog>
@@ -774,7 +795,7 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                                                     </Dialog>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center space-x-2">
                                                     <span>{formatCurrency(patient.total_bills, currency)}</span>
                                                     <Dialog>
@@ -820,7 +841,7 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                                                     </Button>
                                                 </div>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-gray-900 dark:text-white">
                                                 <div className="flex items-center space-x-2">
                                                     <span>{formatCurrency(patient.balance, currency)}</span>
                                                     <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
@@ -905,7 +926,7 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                             </Table>
 
                             <div className="flex justify-between items-center mt-4">
-                                <div>
+                                <div className="text-gray-600 dark:text-gray-400">
                                     Showing {((currentPage - 1) * patientsPerPage) + 1} to {Math.min(currentPage * patientsPerPage, filteredPatients.length)} of {filteredPatients.length} patients
                                 </div>
                                 <div className="flex space-x-2">
@@ -937,40 +958,44 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                     <TabsContent value="add-patient">
                     <form onSubmit={addPatient} className="space-y-4">
                         <div>
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name" className="text-gray-900 dark:text-white">Name</Label>
                         <Input
                             id="name"
                             value={newPatient.name}
                             onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                             required
                         />
                         </div>
                         <div>
-                        <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                        <Label htmlFor="dateOfBirth" className="text-gray-900 dark:text-white">Date of Birth</Label>
                         <Input
                             id="dateOfBirth"
                             type="date"
                             value={newPatient.dateOfBirth}
                             onChange={(e) => setNewPatient({ ...newPatient, dateOfBirth: e.target.value })}
+                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                             required
                         />
                         </div>
                         <div>
-                        <Label htmlFor="contactNumber">Contact Number</Label>
+                        <Label htmlFor="contactNumber" className="text-gray-900 dark:text-white">Contact Number</Label>
                         <Input
                             id="contactNumber"
                             value={newPatient.contactNumber}
                             onChange={(e) => setNewPatient({ ...newPatient, contactNumber: e.target.value })}
+                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                             required
                         />
                         </div>
                         <div>
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
                         <Input
                             id="email"
                             type="email"
                             value={newPatient.email}
                             onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                             required
                         />
                         </div>
@@ -981,9 +1006,9 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
 
                 {/* Add this dialog component before the delete confirmation dialog */}
                 <Dialog open={!!showingHistoryForPatient} onOpenChange={(open) => !open && setShowingHistoryForPatient(null)}>
-                    <DialogContent className="max-w-4xl">
+                    <DialogContent className="max-w-4xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <DialogHeader>
-                            <DialogTitle>
+                            <DialogTitle className="text-gray-900 dark:text-white">
                                 {activeHistoryType === 'bill' && `Bill History - ${showingHistoryForPatient?.name}`}
                                 {activeHistoryType === 'payment' && `Payment History - ${showingHistoryForPatient?.name}`}
                                 {activeHistoryType === 'checkup' && `Checkup History - ${showingHistoryForPatient?.name}`}
@@ -991,42 +1016,42 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                         </DialogHeader>
                         <div className="max-h-[60vh] overflow-y-auto">
                             {isLoadingHistory ? (
-                                <div className="flex items-center justify-center p-4">
+                                <div className="flex items-center justify-center p-4 text-gray-600 dark:text-gray-400">
                                     Loading history...
                                 </div>
                             ) : (
                                 activeHistoryType === 'bill' && (
                                     <Table>
                                         <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Bill #</TableHead>
-                                                <TableHead>Date</TableHead>
-                                                <TableHead>Details</TableHead>
-                                                <TableHead>Amount ({currency})</TableHead>
-                                                <TableHead className="text-right">Actions</TableHead>
+                                            <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                                <TableHead className="text-gray-900 dark:text-white">Bill #</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">Date</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">Details</TableHead>
+                                                <TableHead className="text-gray-900 dark:text-white">Amount ({currency})</TableHead>
+                                                <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {showingHistoryForPatient?.bills?.length === 0 ? (
                                                 <TableRow>
-                                                    <TableCell colSpan={5} className="text-center">
+                                                    <TableCell colSpan={5} className="text-center text-gray-600 dark:text-gray-400">
                                                         No bills found
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
                                                 showingHistoryForPatient?.bills?.map((bill) => (
-                                                    <TableRow key={bill.id}>
-                                                        <TableCell>{bill.bill_number}</TableCell>
-                                                        <TableCell>{formatDateTime(bill.bill_date)}</TableCell>
-                                                        <TableCell>
+                                                    <TableRow key={bill.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                        <TableCell className="text-gray-900 dark:text-white">{bill.bill_number}</TableCell>
+                                                        <TableCell className="text-gray-900 dark:text-white">{formatDateTime(bill.bill_date)}</TableCell>
+                                                        <TableCell className="text-gray-900 dark:text-white">
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm text-gray-500">{bill.bill_details}</span>
+                                                                <span className="text-sm text-gray-500 dark:text-gray-400">{bill.bill_details}</span>
                                                                 {bill.bill_status && (
-                                                                    <span className="text-xs text-gray-400">Status: {bill.bill_status}</span>
+                                                                    <span className="text-xs text-gray-400 dark:text-gray-500">Status: {bill.bill_status}</span>
                                                                 )}
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell>{formatCurrency(parseFloat(bill.bill_amount), currency)}</TableCell>
+                                                        <TableCell className="text-gray-900 dark:text-white">{formatCurrency(parseFloat(bill.bill_amount), currency)}</TableCell>
                                                         <TableCell className="text-right">
                                                                                         {canDelete && (
                                 <Button
@@ -1048,28 +1073,28 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                             {activeHistoryType === 'payment' && (
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Amount ({currency})</TableHead>
-                                            <TableHead>Method</TableHead>
-                                            <TableHead>Notes</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                        <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                            <TableHead className="text-gray-900 dark:text-white">Date</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">Amount ({currency})</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">Method</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">Notes</TableHead>
+                                            <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {showingHistoryForPatient?.payments?.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={5} className="text-center">
+                                                <TableCell colSpan={5} className="text-center text-gray-600 dark:text-gray-400">
                                                     No payments found
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             showingHistoryForPatient?.payments?.map((payment) => (
-                                                <TableRow key={payment.id}>
-                                                    <TableCell>{formatDateTime(payment.payment_date)}</TableCell>
-                                                    <TableCell>{formatCurrency(parseFloat(payment.payment_amount), currency)}</TableCell>
-                                                    <TableCell className="capitalize">{payment.payment_method}</TableCell>
-                                                    <TableCell>{payment.payment_notes}</TableCell>
+                                                <TableRow key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <TableCell className="text-gray-900 dark:text-white">{formatDateTime(payment.payment_date)}</TableCell>
+                                                    <TableCell className="text-gray-900 dark:text-white">{formatCurrency(parseFloat(payment.payment_amount), currency)}</TableCell>
+                                                    <TableCell className="capitalize text-gray-900 dark:text-white">{payment.payment_method}</TableCell>
+                                                    <TableCell className="text-gray-900 dark:text-white">{payment.payment_notes}</TableCell>
                                                     <TableCell className="text-right">
                                                                                     {canDelete && (
                                 <Button
@@ -1090,21 +1115,21 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                             {activeHistoryType === 'checkup' && (
                                 <Table>
                                     <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Diagnosis</TableHead>
-                                            <TableHead>Treatment</TableHead>
-                                            <TableHead>Notes</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                        <TableRow className="bg-gray-50 dark:bg-gray-700">
+                                            <TableHead className="text-gray-900 dark:text-white">Date</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">Diagnosis</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">Treatment</TableHead>
+                                            <TableHead className="text-gray-900 dark:text-white">Notes</TableHead>
+                                            <TableHead className="text-right text-gray-900 dark:text-white">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {showingHistoryForPatient?.checkups?.map((checkup) => (
-                                            <TableRow key={checkup.id}>
-                                                <TableCell>{formatDateTime(checkup.date)}</TableCell>
-                                                <TableCell>{checkup.diagnosis}</TableCell>
-                                                <TableCell>{checkup.treatment}</TableCell>
-                                                <TableCell>{checkup.notes}</TableCell>
+                                            <TableRow key={checkup.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <TableCell className="text-gray-900 dark:text-white">{formatDateTime(checkup.date)}</TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">{checkup.diagnosis}</TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">{checkup.treatment}</TableCell>
+                                                <TableCell className="text-gray-900 dark:text-white">{checkup.notes}</TableCell>
                                                 <TableCell className="text-right">
                                                                                 {canDelete && (
                                 <Button
@@ -1127,9 +1152,9 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
 
                 {/* Add this new Dialog for the dental chart */}
                 <Dialog open={isDentalChartDialogOpen} onOpenChange={setIsDentalChartDialogOpen}>
-                    <DialogContent className="max-w-3xl">
+                    <DialogContent className="max-w-3xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
-                        <DialogTitle>Dental Chart for {selectedPatient?.name}</DialogTitle>
+                        <DialogTitle className="text-gray-900 dark:text-white">Dental Chart for {selectedPatient?.name}</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="max-h-[80vh]">
                         {selectedPatient && (
@@ -1147,24 +1172,25 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
 
                 {/* Add this dialog component near your other dialogs */}
                 <Dialog open={!!editingPatient} onOpenChange={(open) => !open && setEditingPatient(null)}>
-                    <DialogContent>
+                    <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <DialogHeader>
-                            <DialogTitle>Edit Patient Details</DialogTitle>
+                            <DialogTitle className="text-gray-900 dark:text-white">Edit Patient Details</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={updatePatient} className="space-y-4">
                             <div>
-                                <Label htmlFor="edit-name">Name</Label>
+                                <Label htmlFor="edit-name" className="text-gray-900 dark:text-white">Name</Label>
                                 <Input
                                     id="edit-name"
                                     value={editingPatient?.name || ''}
                                     onChange={(e) => setEditingPatient(prev => 
                                         prev ? { ...prev, name: e.target.value } : null
                                     )}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="edit-email">Email</Label>
+                                <Label htmlFor="edit-email" className="text-gray-900 dark:text-white">Email</Label>
                                 <Input
                                     id="edit-email"
                                     type="email"
@@ -1172,22 +1198,24 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                                     onChange={(e) => setEditingPatient(prev => 
                                         prev ? { ...prev, email: e.target.value } : null
                                     )}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="edit-phone">Phone</Label>
+                                <Label htmlFor="edit-phone" className="text-gray-900 dark:text-white">Phone</Label>
                                 <Input
                                     id="edit-phone"
                                     value={editingPatient?.phone || ''}
                                     onChange={(e) => setEditingPatient(prev => 
                                         prev ? { ...prev, phone: e.target.value } : null
                                     )}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="edit-birthdate">Birthdate</Label>
+                                <Label htmlFor="edit-birthdate" className="text-gray-900 dark:text-white">Birthdate</Label>
                                 <Input
                                     id="edit-birthdate"
                                     type="date"
@@ -1195,6 +1223,7 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                                     onChange={(e) => setEditingPatient(prev => 
                                         prev ? { ...prev, birthdate: e.target.value } : null
                                     )}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
@@ -1210,11 +1239,11 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
 
                 {/* Add this Dialog component near your other dialogs */}
                 <Dialog open={!!deleteConfirmation} onOpenChange={(open) => !open && setDeleteConfirmation(null)}>
-                    <DialogContent>
+                    <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <DialogHeader>
-                            <DialogTitle>Confirm Deletion</DialogTitle>
+                            <DialogTitle className="text-gray-900 dark:text-white">Confirm Deletion</DialogTitle>
                         </DialogHeader>
-                        <p>Are you sure you want to delete {deleteConfirmation?.name}? This action cannot be undone.</p>
+                        <p className="text-gray-700 dark:text-gray-300">Are you sure you want to delete {deleteConfirmation?.name}? This action cannot be undone.</p>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setDeleteConfirmation(null)}>
                                 Cancel
@@ -1231,13 +1260,13 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
 
                 {/* Add Checkup Dialog */}
                 <Dialog open={isCheckupDialogOpen} onOpenChange={setIsCheckupDialogOpen}>
-                    <DialogContent>
+                    <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <DialogHeader>
-                            <DialogTitle>Add Checkup Record for {checkupPatient?.name}</DialogTitle>
+                            <DialogTitle className="text-gray-900 dark:text-white">Add Checkup Record for {checkupPatient?.name}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleAddCheckup} className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Date</Label>
+                                <Label className="text-gray-900 dark:text-white">Date</Label>
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -1266,29 +1295,32 @@ export default function Clinic({ auth, initialPatients = [] as Patient[], appCur
                                 </Popover>
                             </div>
                             <div>
-                                <Label htmlFor="diagnosis">Diagnosis</Label>
+                                <Label htmlFor="diagnosis" className="text-gray-900 dark:text-white">Diagnosis</Label>
                                 <Textarea
                                     id="diagnosis"
                                     value={newCheckupResult.diagnosis}
                                     onChange={(e) => setNewCheckupResult(prev => ({ ...prev, diagnosis: e.target.value }))}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="treatment">Treatment</Label>
+                                <Label htmlFor="treatment" className="text-gray-900 dark:text-white">Treatment</Label>
                                 <Textarea
                                     id="treatment"
                                     value={newCheckupResult.treatment}
                                     onChange={(e) => setNewCheckupResult(prev => ({ ...prev, treatment: e.target.value }))}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="notes">Notes</Label>
+                                <Label htmlFor="notes" className="text-gray-900 dark:text-white">Notes</Label>
                                 <Textarea
                                     id="notes"
                                     value={newCheckupResult.notes}
                                     onChange={(e) => setNewCheckupResult(prev => ({ ...prev, notes: e.target.value }))}
+                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                 />
                             </div>
                             <DialogFooter>

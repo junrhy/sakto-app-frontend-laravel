@@ -26,6 +26,7 @@ import {
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
+import { Settings as SettingsIcon, Calendar, Zap, CreditCard } from 'lucide-react';
 import axios from 'axios';
 
 interface OperatingHours {
@@ -128,83 +129,129 @@ export default function Settings({ settings, auth }: Props) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Clinic Settings</CardTitle>
-                            <CardDescription>
-                                Configure your clinic settings, operating hours, and features.
-                            </CardDescription>
+                    <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-xl">
+                        <CardHeader className="pb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                    <SettingsIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-2xl text-gray-900 dark:text-white">Clinic Settings</CardTitle>
+                                    <CardDescription className="text-gray-600 dark:text-gray-400 mt-1">
+                                        Configure your clinic settings, operating hours, and features.
+                                    </CardDescription>
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {canEdit ? (
                                 <SettingsForm settings={settings} onSubmit={handleSubmit}>
                                 {({ data, setData }) => (
-                                    <Tabs defaultValue="general" className="space-y-4">
-                                        <TabsList>
-                                            <TabsTrigger value="general">General</TabsTrigger>
-                                            <TabsTrigger value="appointments">Appointments</TabsTrigger>
-                                            <TabsTrigger value="features">Features</TabsTrigger>
-                                            <TabsTrigger value="billing">Billing</TabsTrigger>
-                                        </TabsList>
+                                    <Tabs defaultValue="general" className="space-y-6">
+                                        <div className="border-b border-gray-200 dark:border-gray-700">
+                                            <TabsList className="h-auto p-0 bg-transparent border-0 rounded-none grid w-full grid-cols-4">
+                                                <TabsTrigger 
+                                                    value="general" 
+                                                    className="relative px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <SettingsIcon className="h-4 w-4" />
+                                                        <span className="hidden sm:inline">General</span>
+                                                    </div>
+                                                </TabsTrigger>
+                                                <TabsTrigger 
+                                                    value="appointments" 
+                                                    className="relative px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4" />
+                                                        <span className="hidden sm:inline">Appointments</span>
+                                                    </div>
+                                                </TabsTrigger>
+                                                <TabsTrigger 
+                                                    value="features" 
+                                                    className="relative px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Zap className="h-4 w-4" />
+                                                        <span className="hidden sm:inline">Features</span>
+                                                    </div>
+                                                </TabsTrigger>
+                                                <TabsTrigger 
+                                                    value="billing" 
+                                                    className="relative px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:bg-transparent rounded-none transition-all duration-200"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <CreditCard className="h-4 w-4" />
+                                                        <span className="hidden sm:inline">Billing</span>
+                                                    </div>
+                                                </TabsTrigger>
+                                            </TabsList>
+                                        </div>
 
                                         <TabsContent value="general">
                                             <div className="space-y-4">
                                                 <div className="space-y-2">
-                                                    <Label>Clinic Name</Label>
+                                                    <Label className="text-gray-900 dark:text-white">Clinic Name</Label>
                                                     <Input
                                                         value={data.general.clinic_name}
                                                         onChange={(e) => setData('general.clinic_name', e.target.value)}
                                                         placeholder="Your Clinic Name"
+                                                        className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                     />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label>Description</Label>
+                                                    <Label className="text-gray-900 dark:text-white">Description</Label>
                                                     <Textarea
                                                         value={data.general.description}
                                                         onChange={(e) => setData('general.description', e.target.value)}
                                                         placeholder="Brief description of your clinic"
                                                         rows={3}
+                                                        className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                     />
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label>Address</Label>
+                                                    <Label className="text-gray-900 dark:text-white">Address</Label>
                                                     <Textarea
                                                         value={data.general.address}
                                                         onChange={(e) => setData('general.address', e.target.value)}
                                                         placeholder="Clinic address"
                                                         rows={2}
+                                                        className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                     />
                                                 </div>
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Phone</Label>
+                                                        <Label className="text-gray-900 dark:text-white">Phone</Label>
                                                         <Input
                                                             value={data.general.phone}
                                                             onChange={(e) => setData('general.phone', e.target.value)}
                                                             placeholder="+1234567890"
+                                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                         />
                                                     </div>
 
                                                     <div className="space-y-2">
-                                                        <Label>Email</Label>
+                                                        <Label className="text-gray-900 dark:text-white">Email</Label>
                                                         <Input
                                                             type="email"
                                                             value={data.general.email}
                                                             onChange={(e) => setData('general.email', e.target.value)}
                                                             placeholder="clinic@example.com"
+                                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                         />
                                                     </div>
                                                 </div>
 
                                                 <div className="space-y-4">
-                                                    <h3 className="text-lg font-medium">Operating Hours</h3>
+                                                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Operating Hours</h3>
                                                     <div className="space-y-4">
                                                         {weekDays.map((day) => (
                                                             <div key={day} className="flex items-center gap-4">
-                                                                <div className="w-24 font-medium capitalize">{day}</div>
+                                                                <div className="w-24 font-medium capitalize text-gray-900 dark:text-white">{day}</div>
                                                                 <div className="flex items-center gap-4">
                                                                     <Switch
                                                                         checked={!data.general.operating_hours[day].closed}
@@ -216,14 +263,14 @@ export default function Settings({ settings, auth }: Props) {
                                                                                 type="time"
                                                                                 value={data.general.operating_hours[day].open}
                                                                                 onChange={(e) => setData(`general.operating_hours.${day}.open`, e.target.value)}
-                                                                                className="w-32"
+                                                                                className="w-32 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                                             />
-                                                                            <span>to</span>
+                                                                            <span className="text-gray-700 dark:text-gray-300">to</span>
                                                                             <Input
                                                                                 type="time"
                                                                                 value={data.general.operating_hours[day].close}
                                                                                 onChange={(e) => setData(`general.operating_hours.${day}.close`, e.target.value)}
-                                                                                className="w-32"
+                                                                                className="w-32 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                                             />
                                                                         </>
                                                                     )}
@@ -239,8 +286,8 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Enable Appointments</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Enable Appointments</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Allow patients to book appointments
                                                         </div>
                                                     </div>
@@ -253,31 +300,33 @@ export default function Settings({ settings, auth }: Props) {
                                                 {data.appointments.enable_appointments && (
                                                     <>
                                                         <div className="space-y-2">
-                                                            <Label>Default Appointment Duration (minutes)</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Default Appointment Duration (minutes)</Label>
                                                             <Input
                                                                 type="number"
                                                                 value={data.appointments.appointment_duration}
                                                                 onChange={(e) => setData('appointments.appointment_duration', parseInt(e.target.value))}
                                                                 min={5}
                                                                 step={5}
+                                                                className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <Label>Buffer Between Appointments (minutes)</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Buffer Between Appointments (minutes)</Label>
                                                             <Input
                                                                 type="number"
                                                                 value={data.appointments.appointment_buffer}
                                                                 onChange={(e) => setData('appointments.appointment_buffer', parseInt(e.target.value))}
                                                                 min={0}
                                                                 step={5}
+                                                                className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
 
                                                         <div className="flex items-center justify-between">
                                                             <div className="space-y-0.5">
-                                                                <Label>Enable Online Booking</Label>
-                                                                <div className="text-sm text-gray-500">
+                                                                <Label className="text-gray-900 dark:text-white">Enable Online Booking</Label>
+                                                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                                                     Allow patients to book online
                                                                 </div>
                                                             </div>
@@ -289,8 +338,8 @@ export default function Settings({ settings, auth }: Props) {
 
                                                         <div className="flex items-center justify-between">
                                                             <div className="space-y-0.5">
-                                                                <Label>Enable Reminders</Label>
-                                                                <div className="text-sm text-gray-500">
+                                                                <Label className="text-gray-900 dark:text-white">Enable Reminders</Label>
+                                                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                                                     Send appointment reminders
                                                                 </div>
                                                             </div>
@@ -302,12 +351,13 @@ export default function Settings({ settings, auth }: Props) {
 
                                                         {data.appointments.enable_reminders && (
                                                             <div className="space-y-2">
-                                                                <Label>Reminder Hours Before</Label>
+                                                                <Label className="text-gray-900 dark:text-white">Reminder Hours Before</Label>
                                                                 <Input
                                                                     type="number"
                                                                     value={data.appointments.reminder_hours}
                                                                     onChange={(e) => setData('appointments.reminder_hours', parseInt(e.target.value))}
                                                                     min={1}
+                                                                    className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                                 />
                                                             </div>
                                                         )}
@@ -320,8 +370,8 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Insurance</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Insurance</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable insurance processing
                                                         </div>
                                                     </div>
@@ -333,20 +383,21 @@ export default function Settings({ settings, auth }: Props) {
 
                                                 {data.features.enable_insurance && (
                                                     <div className="space-y-2">
-                                                        <Label>Insurance Providers</Label>
+                                                        <Label className="text-gray-900 dark:text-white">Insurance Providers</Label>
                                                         <Textarea
                                                             value={data.features.insurance_providers.join('\n')}
                                                             onChange={(e) => setData('features.insurance_providers', e.target.value.split('\n'))}
                                                             placeholder="One provider per line"
                                                             rows={3}
+                                                            className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                         />
                                                     </div>
                                                 )}
 
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Prescriptions</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Prescriptions</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable prescription management
                                                         </div>
                                                     </div>
@@ -358,8 +409,8 @@ export default function Settings({ settings, auth }: Props) {
 
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Lab Results</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Lab Results</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable lab results management
                                                         </div>
                                                     </div>
@@ -371,8 +422,8 @@ export default function Settings({ settings, auth }: Props) {
 
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Dental Charts</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Dental Charts</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable dental charting
                                                         </div>
                                                     </div>
@@ -384,8 +435,8 @@ export default function Settings({ settings, auth }: Props) {
 
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Medical History</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Medical History</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable medical history tracking
                                                         </div>
                                                     </div>
@@ -397,8 +448,8 @@ export default function Settings({ settings, auth }: Props) {
 
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Patient Portal</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Patient Portal</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable patient portal access
                                                         </div>
                                                     </div>
@@ -414,8 +465,8 @@ export default function Settings({ settings, auth }: Props) {
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-0.5">
-                                                        <Label>Enable Billing</Label>
-                                                        <div className="text-sm text-gray-500">
+                                                        <Label className="text-gray-900 dark:text-white">Enable Billing</Label>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
                                                             Enable billing and invoicing
                                                         </div>
                                                     </div>
@@ -428,59 +479,63 @@ export default function Settings({ settings, auth }: Props) {
                                                 {data.billing.enable_billing && (
                                                     <>
                                                         <div className="space-y-2">
-                                                            <Label>Tax Rate (%)</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Tax Rate (%)</Label>
                                                             <Input
                                                                 type="number"
                                                                 value={data.billing.tax_rate}
                                                                 onChange={(e) => setData('billing.tax_rate', parseFloat(e.target.value))}
                                                                 min={0}
                                                                 step={0.1}
+                                                                className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <Label>Currency</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Currency</Label>
                                                             <Select
                                                                 value={data.billing.currency}
                                                                 onValueChange={(value) => setData('billing.currency', value)}
                                                             >
-                                                                <SelectTrigger>
+                                                                <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white">
                                                                     <SelectValue placeholder="Select currency" />
                                                                 </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="USD">USD ($)</SelectItem>
-                                                                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                                                                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                                                                <SelectContent className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                                                                    <SelectItem value="USD" className="text-gray-900 dark:text-white">USD ($)</SelectItem>
+                                                                    <SelectItem value="EUR" className="text-gray-900 dark:text-white">EUR (€)</SelectItem>
+                                                                    <SelectItem value="GBP" className="text-gray-900 dark:text-white">GBP (£)</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <Label>Payment Methods</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Payment Methods</Label>
                                                             <Textarea
                                                                 value={data.billing.payment_methods.join('\n')}
                                                                 onChange={(e) => setData('billing.payment_methods', e.target.value.split('\n'))}
                                                                 placeholder="One payment method per line"
                                                                 rows={3}
+                                                                className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <Label>Invoice Prefix</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Invoice Prefix</Label>
                                                             <Input
                                                                 value={data.billing.invoice_prefix}
                                                                 onChange={(e) => setData('billing.invoice_prefix', e.target.value)}
                                                                 placeholder="INV-"
+                                                                className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <Label>Invoice Footer</Label>
+                                                            <Label className="text-gray-900 dark:text-white">Invoice Footer</Label>
                                                             <Textarea
                                                                 value={data.billing.invoice_footer}
                                                                 onChange={(e) => setData('billing.invoice_footer', e.target.value)}
                                                                 placeholder="Thank you for your business"
                                                                 rows={3}
+                                                                className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
                                                     </>

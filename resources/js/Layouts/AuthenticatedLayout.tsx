@@ -106,7 +106,10 @@ const getHeaderColorClass = (url: string, projectIdentifier?: string): string =>
     return 'from-white to-gray-100 border-gray-200 dark:from-gray-800 dark:to-gray-700 dark:border-gray-600';
 };
 
-const showAccessDialog = (appParam: string | null, auth: any, apps: any[], url: string): boolean => {
+const showAccessDialog = (appParam: string | null, auth: any, apps: any[], url: string, isLoadingApps: boolean): boolean => {
+    // Don't show dialog while apps are still loading
+    if (isLoadingApps) return false;
+    
     // Parse enabled modules from project
     const enabledModules = parseEnabledModules(auth?.project?.enabledModules);
     
@@ -117,12 +120,12 @@ const showAccessDialog = (appParam: string | null, auth: any, apps: any[], url: 
         return isInSubscription || isUserAdded;
     };
     
-    // Get the app identifier from either URL parameter or route path
-    let appIdentifier = appParam;
+    // Get the app identifier from URL path first (more comprehensive)
+    let appIdentifier = getAppIdentifierFromUrl(url);
     
-    // If no appParam, try to extract from URL path
-    if (!appIdentifier) {
-        appIdentifier = getAppIdentifierFromUrl(url);
+    // If no app identifier from URL path, try the app parameter
+    if (!appIdentifier && appParam) {
+        appIdentifier = appParam;
     }
     
     // If still no app identifier, no dialog needed
@@ -147,22 +150,37 @@ const getAppIdentifierFromUrl = (url: string): string | null => {
         'healthcare', 'mortuary', 'billers', 'bill-payments', 'courses'
     ];
     
-    // Extract pathname from URL
-    const pathname = url.split('?')[0].split('#')[0];
+    // Extract pathname from URL, properly handling hostname exclusion
+    let pathname: string;
+    try {
+        // If URL is a full URL with protocol, use URL constructor
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            const urlObj = new URL(url);
+            pathname = urlObj.pathname;
+        } else {
+            // If URL is just a path, remove query params and hash
+            pathname = url.split('?')[0].split('#')[0];
+        }
+    } catch (error) {
+        // Fallback to simple string splitting if URL parsing fails
+        pathname = url.split('?')[0].split('#')[0];
+    }
     
-    // Check if URL starts with any app route
+    // Map some route names to their module identifiers
+    const routeToModuleMap: { [key: string]: string } = {
+        'pos-retail': 'retail',
+        'pos-restaurant': 'fnb',
+        'rental-item': 'rental-items',
+        'rental-property': 'rental-properties',
+        'family-tree': 'genealogy',
+        'loan': 'lending'
+    };
+    
+    // Check if URL contains any app route
     for (const route of appRoutes) {
-        if (pathname.includes(`/${route}`) || pathname.endsWith(`/${route}`)) {
-            // Map some route names to their module identifiers
-            const routeToModuleMap: { [key: string]: string } = {
-                'pos-retail': 'retail',
-                'pos-restaurant': 'fnb',
-                'rental-item': 'rental-items',
-                'rental-property': 'rental-properties',
-                'family-tree': 'genealogy',
-                'loan': 'lending'
-            };
-            
+        // Check for exact route match at the beginning of path segments
+        const routePattern = new RegExp(`(^|/)${route}(/|$)`, 'i');
+        if (routePattern.test(pathname)) {
             return routeToModuleMap[route] || route;
         }
     }
@@ -235,7 +253,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
     const hasTransportationAccess = (hasModuleAccess('transportation') && (appParam === 'transportation' || url.includes('transportation'))) ?? false;
     const hasRentalItemAccess = (hasModuleAccess('rental-items') && (appParam === 'rental-items' || url.includes('rental-items'))) ?? false;
     const hasRentalPropertyAccess = (hasModuleAccess('rental-properties') && (appParam === 'rental-properties' || url.includes('rental-properties'))) ?? false;
-    const hasClinicalAccess = (hasModuleAccess('clinical') && (appParam === 'clinical' || url.includes('clinical'))) ?? false;
+    const hasClinicalAccess = (hasModuleAccess('clinic') && (appParam === 'clinic' || url.includes('clinic'))) ?? false;
     const hasLendingAccess = (hasModuleAccess('lending') && (appParam === 'lending' || url.includes('lending'))) ?? false;
     const hasPayrollAccess = (hasModuleAccess('payroll') && (appParam === 'payroll' || url.includes('payroll'))) ?? false;
     const hasTravelAccess = (hasModuleAccess('travel') && (appParam === 'travel' || url.includes('travel'))) ?? false;
@@ -262,7 +280,7 @@ export default function Authenticated({ children, header, user, auth: propAuth }
         <ThemeProvider>
             <div className="min-h-screen bg-white dark:bg-gray-800 relative">
                 {/* Access Control Dialog */}
-                <Dialog open={showAccessDialog(appParam, auth, apps, url)} onOpenChange={() => {}}>
+                <Dialog open={showAccessDialog(appParam, auth, apps, url, isLoadingApps)} onOpenChange={() => {}}>
                     <DialogContent className="sm:max-w-md [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
                         <DialogHeader>
                             <div className="flex items-center gap-3 mb-2">
