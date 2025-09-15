@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Module;
 
 class ModuleSeeder extends Seeder
@@ -14,43 +15,58 @@ class ModuleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Apps data migrated from config/apps.php
-        $apps = $this->getAppsData();
-        
-        foreach ($apps as $index => $app) {
-            // Generate identifier from title if not provided
-            $identifier = $this->generateIdentifier($app['title']);
+        try {
+            // Apps data migrated from config/apps.php
+            $apps = $this->getAppsData();
             
-            $moduleData = [
-                'name' => $app['title'],
-                'identifier' => $identifier,
-                'title' => $app['title'],
-                'route' => $app['route'],
-                'visible' => $app['visible'],
-                'description' => $app['description'],
-                'price' => $app['price'],
-                'categories' => $app['categories'],
-                'coming_soon' => $app['comingSoon'],
-                'pricing_type' => $app['pricingType'],
-                'included_in_plans' => $app['includedInPlans'],
-                'bg_color' => $app['bgColor'],
-                'icon' => $app['icon'] ?? $this->getSmartIconSuggestion($app['title']),
-                'rating' => $app['rating'],
-                'order' => $index + 1,
-                'is_active' => true
-            ];
+            $this->command->info('Starting ModuleSeeder...');
+            $this->command->info('Processing ' . count($apps) . ' modules...');
+            
+            foreach ($apps as $index => $app) {
+                try {
+                    // Generate identifier from title if not provided
+                    $identifier = $this->generateIdentifier($app['title']);
+                    
+                    $moduleData = [
+                        'name' => $app['title'],
+                        'identifier' => $identifier,
+                        'title' => $app['title'],
+                        'route' => $app['route'],
+                        'visible' => $app['visible'],
+                        'description' => $app['description'],
+                        'price' => $app['price'],
+                        'categories' => $app['categories'],
+                        'coming_soon' => $app['comingSoon'],
+                        'pricing_type' => $app['pricingType'],
+                        'included_in_plans' => $app['includedInPlans'],
+                        'bg_color' => $app['bgColor'],
+                        'icon' => $app['icon'] ?? $this->getSmartIconSuggestion($app['title']),
+                        'rating' => $app['rating'],
+                        'order' => $index + 1,
+                        'is_active' => true
+                    ];
 
-            $existingModule = Module::where('identifier', $identifier)
-                ->orWhere('name', $app['title'])
-                ->first();
-            
-            if ($existingModule) {
-                // Update existing module
-                $existingModule->update($moduleData);
-            } else {
-                // Create new module
-                Module::create($moduleData);
+                    // Use updateOrCreate to handle both insert and update cases
+                    $module = Module::updateOrCreate(
+                        ['identifier' => $identifier], // Search criteria
+                        $moduleData // Data to insert/update
+                    );
+                    
+                    $this->command->info("✓ Processed module: {$app['title']} (ID: {$module->id})");
+                    
+                } catch (\Exception $e) {
+                    $this->command->error("✗ Failed to process module '{$app['title']}': " . $e->getMessage());
+                    Log::error("ModuleSeeder failed for module '{$app['title']}': " . $e->getMessage());
+                    throw $e; // Re-throw to stop execution on critical errors
+                }
             }
+            
+            $this->command->info('ModuleSeeder completed successfully!');
+            
+        } catch (\Exception $e) {
+            $this->command->error('ModuleSeeder failed: ' . $e->getMessage());
+            Log::error('ModuleSeeder failed: ' . $e->getMessage());
+            throw $e;
         }
     }
 
