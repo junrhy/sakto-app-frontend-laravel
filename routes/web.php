@@ -450,6 +450,7 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::get('/api/apps/billing-history', [AppsController::class, 'getBillingHistory'])->name('api.apps.billing-history');
     Route::get('/api/apps/invoice/{invoiceId}/pdf', [AppsController::class, 'downloadInvoicePDF'])->name('api.apps.invoice.pdf');
     Route::get('/api/apps/upcoming-invoices/pdf', [AppsController::class, 'downloadUpcomingInvoicesPDF'])->name('api.apps.upcoming-invoices.pdf');
+    Route::get('/api/apps/billing-history/monthly/{monthKey}/download', [AppsController::class, 'downloadMonthlyBillingPDF'])->name('api.apps.billing-history.monthly.download');
     Route::post('/api/apps/toggle-auto-renew', [AppsController::class, 'toggleAutoRenew'])->name('api.apps.toggle-auto-renew');
     Route::post('/api/apps/cancel-subscription', [AppsController::class, 'cancelAppSubscription'])->name('api.apps.cancel-subscription');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

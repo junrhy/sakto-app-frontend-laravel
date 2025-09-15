@@ -548,4 +548,58 @@ class AppsController extends Controller
             'message' => 'App subscription cancelled successfully'
         ]);
     }
+
+    /**
+     * Download monthly billing PDF.
+     */
+    public function downloadMonthlyBillingPDF(Request $request, $monthKey)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+        
+        // Validate month key format (YYYY-MM)
+        if (!preg_match('/^\d{4}-\d{2}$/', $monthKey)) {
+            return response()->json([
+                'message' => 'Invalid month format. Expected YYYY-MM'
+            ], 400);
+        }
+        
+        try {
+            $pdfContent = $this->billingService->generateMonthlyBillingPDF($user->identifier, $monthKey);
+            $filename = 'billing_' . $monthKey . '.pdf';
+            
+            \Log::info('Monthly billing PDF download requested', [
+                'user_identifier' => $user->identifier,
+                'month_key' => $monthKey,
+                'filename' => $filename,
+                'pdf_size' => strlen($pdfContent)
+            ]);
+            
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Content-Length', strlen($pdfContent))
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+                
+        } catch (\Exception $e) {
+            \Log::error('Monthly billing PDF generation failed', [
+                'user_identifier' => $user->identifier,
+                'month_key' => $monthKey,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Failed to generate monthly billing PDF',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 } 

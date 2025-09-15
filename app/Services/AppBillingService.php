@@ -527,7 +527,7 @@ class AppBillingService
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
                 'type' => $invoice->type,
-                'total_amount' => $invoice->total_amount,
+                'total_amount' => (float) $invoice->total_amount,
                 'status' => $invoice->status,
                 'payment_method' => $invoice->payment_method,
                 'created_at' => $invoice->created_at,
@@ -535,9 +535,9 @@ class AppBillingService
                 'items' => $invoice->items->map(function ($item) {
                     return [
                         'description' => $item->description,
-                        'quantity' => $item->quantity,
-                        'unit_price' => $item->unit_price,
-                        'total_price' => $item->total_price,
+                        'quantity' => (int) $item->quantity,
+                        'unit_price' => (float) $item->unit_price,
+                        'total_price' => (float) $item->total_price,
                     ];
                 }),
             ];
@@ -570,7 +570,7 @@ class AppBillingService
                     'subscription_identifier' => $subscription->identifier,
                     'plan_name' => $subscription->plan->name,
                     'billing_cycle' => $subscription->billing_cycle ?? 'monthly',
-                    'total_amount' => $subscription->plan->price,
+                    'total_amount' => (float) $subscription->plan->price,
                     'status' => 'upcoming',
                     'payment_method' => $subscription->payment_method,
                     'due_date' => $nextBillingDate,
@@ -578,8 +578,8 @@ class AppBillingService
                         [
                             'description' => $subscription->plan->name . ' Subscription',
                             'quantity' => 1,
-                            'unit_price' => $subscription->plan->price,
-                            'total_price' => $subscription->plan->price,
+                            'unit_price' => (float) $subscription->plan->price,
+                            'total_price' => (float) $subscription->plan->price,
                         ]
                     ],
                 ];
@@ -603,7 +603,7 @@ class AppBillingService
                 'user_app_id' => $userApp->id,
                 'app_name' => $userApp->module->title,
                 'billing_cycle' => 'monthly', // Default for app subscriptions
-                'total_amount' => $userApp->module->price,
+                'total_amount' => (float) $userApp->module->price,
                 'status' => 'upcoming',
                 'payment_method' => 'credits', // Default for app subscriptions
                 'due_date' => $userApp->next_billing_date,
@@ -611,8 +611,8 @@ class AppBillingService
                     [
                         'description' => $userApp->module->title . ' Subscription',
                         'quantity' => 1,
-                        'unit_price' => $userApp->module->price,
-                        'total_price' => $userApp->module->price,
+                        'unit_price' => (float) $userApp->module->price,
+                        'total_price' => (float) $userApp->module->price,
                     ]
                 ],
             ];
@@ -909,6 +909,178 @@ class AppBillingService
             <div class="footer">
                 <p>These are upcoming invoices for your active subscriptions.</p>
                 <p>This is a computer-generated document.</p>
+            </div>
+        </body>
+        </html>';
+
+        return $html;
+    }
+
+    /**
+     * Generate PDF for monthly billing.
+     */
+    public function generateMonthlyBillingPDF(string $userIdentifier, string $monthKey): string
+    {
+        // Parse month key (YYYY-MM)
+        $year = substr($monthKey, 0, 4);
+        $month = substr($monthKey, 5, 2);
+        
+        // Get invoices for the specific month
+        $invoices = Invoice::forUser($userIdentifier)
+            ->with(['items', 'user'])
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        if ($invoices->isEmpty()) {
+            throw new \Exception('No invoices found for the specified month');
+        }
+
+        $html = $this->generateMonthlyBillingHTML($invoices, $monthKey);
+
+        $pdf = Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+        ]);
+
+        return $pdf->output();
+    }
+
+    /**
+     * Generate HTML for monthly billing PDF.
+     */
+    private function generateMonthlyBillingHTML($invoices, string $monthKey): string
+    {
+        $user = $invoices->first()->user;
+        $companyName = config('app.name', 'Sakto App');
+        $companyAddress = 'B2-208 Mivesa Garden Residences, Lahug Cebu City, Philippines';
+        $companyPhone = '+63 926 004 9848';
+        $companyEmail = 'billing@sakto.app';
+        
+        // Format month display
+        $date = \DateTime::createFromFormat('Y-m', $monthKey);
+        $monthDisplay = $date->format('F Y');
+        
+        $totalAmount = $invoices->sum('total_amount');
+
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Monthly Billing - ' . $monthDisplay . '</title>
+            <style>
+                @page { margin: 20mm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
+                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e74c3c; padding-bottom: 20px; }
+                .company-name { font-size: 24px; font-weight: bold; color: #e74c3c; margin-bottom: 5px; }
+                .company-details { font-size: 12px; color: #666; }
+                .billing-title { font-size: 28px; font-weight: bold; margin: 20px 0; }
+                .billing-details { display: flex; justify-content: space-between; margin-bottom: 30px; }
+                .billing-info, .customer-info { width: 48%; }
+                .info-section h3 { margin: 0 0 10px 0; color: #e74c3c; font-size: 16px; }
+                .info-section p { margin: 5px 0; font-size: 14px; }
+                .invoice-item { border: 1px solid #ddd; margin-bottom: 15px; padding: 15px; }
+                .invoice-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+                .invoice-number { font-weight: bold; color: #e74c3c; }
+                .invoice-amount { font-weight: bold; font-size: 16px; }
+                .invoice-date { color: #666; font-size: 12px; }
+                .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+                .items-table th { background-color: #f8f9fa; font-weight: bold; }
+                .total-section { text-align: right; margin-top: 30px; border-top: 2px solid #e74c3c; padding-top: 20px; }
+                .total-row { display: flex; justify-content: space-between; margin: 5px 0; }
+                .total-label { font-weight: bold; }
+                .grand-total { font-size: 18px; font-weight: bold; color: #e74c3c; }
+                .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-name">' . $companyName . '</div>
+                <div class="company-details">
+                    ' . $companyAddress . '<br>
+                    Phone: ' . $companyPhone . ' | Email: ' . $companyEmail . '
+                </div>
+            </div>
+
+            <div class="billing-title">Monthly Billing Statement</div>
+            <div class="billing-title" style="font-size: 20px; color: #666;">' . $monthDisplay . '</div>
+
+            <div class="billing-details">
+                <div class="billing-info">
+                    <div class="info-section">
+                        <h3>Billing Information</h3>
+                        <p><strong>Period:</strong> ' . $monthDisplay . '</p>
+                        <p><strong>Total Invoices:</strong> ' . $invoices->count() . '</p>
+                        <p><strong>Generated:</strong> ' . now()->format('F j, Y g:i A') . '</p>
+                    </div>
+                </div>
+                <div class="customer-info">
+                    <div class="info-section">
+                        <h3>Customer Information</h3>
+                        <p><strong>Name:</strong> ' . htmlspecialchars($user->name) . '</p>
+                        <p><strong>Email:</strong> ' . htmlspecialchars($user->email) . '</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #e74c3c; margin-bottom: 20px;">Invoice Details</h3>';
+
+        foreach ($invoices as $invoice) {
+            $html .= '
+            <div class="invoice-item">
+                <div class="invoice-header">
+                    <div>
+                        <div class="invoice-number">Invoice #' . $invoice->invoice_number . '</div>
+                        <div class="invoice-date">Date: ' . $invoice->created_at->format('F j, Y') . '</div>
+                    </div>
+                    <div class="invoice-amount">PHP ' . number_format($invoice->total_amount, 2) . '</div>
+                </div>
+                
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+            
+            foreach ($invoice->items as $item) {
+                $html .= '
+                        <tr>
+                            <td>' . htmlspecialchars($item->description) . '</td>
+                            <td>' . $item->quantity . '</td>
+                            <td>PHP ' . number_format($item->unit_price, 2) . '</td>
+                            <td>PHP ' . number_format($item->total_price, 2) . '</td>
+                        </tr>';
+            }
+            
+            $html .= '
+                    </tbody>
+                </table>
+            </div>';
+        }
+
+        $html .= '
+            <div class="total-section">
+                <div class="total-row">
+                    <span class="total-label">Total Amount for ' . $monthDisplay . ':</span>
+                    <span class="grand-total">PHP ' . number_format($totalAmount, 2) . '</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>This is a computer-generated statement. No signature required.</p>
+                <p>For questions about this statement, please contact us at ' . $companyEmail . '</p>
             </div>
         </body>
         </html>';
