@@ -8,6 +8,7 @@ use Inertia\Inertia;
 use App\Models\Project;
 use App\Models\Module;
 use App\Models\UserApp;
+use App\Models\Invoice;
 use App\Services\AppBillingService;
 
 class AppsController extends Controller
@@ -251,11 +252,112 @@ class AppsController extends Controller
         $user = auth()->user();
         $limit = $request->get('limit', 20);
         
-        $billingHistory = $this->billingService->getUserBillingHistory($user->identifier, $limit);
+        $billingInfo = $this->billingService->getComprehensiveBillingInfo($user->identifier, $limit);
         
-        return response()->json([
-            'billing_history' => $billingHistory
-        ]);
+        return response()->json($billingInfo);
+    }
+
+    /**
+     * Download invoice PDF.
+     */
+    public function downloadInvoicePDF(Request $request, $invoiceId)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+        
+        // Validate invoice ID
+        if (!is_numeric($invoiceId) || $invoiceId <= 0) {
+            return response()->json([
+                'message' => 'Invalid invoice ID'
+            ], 400);
+        }
+        
+        $invoiceId = (int) $invoiceId;
+        
+        try {
+            $pdfContent = $this->billingService->generateInvoicePDF($invoiceId, $user->identifier);
+            
+            $invoice = Invoice::forUser($user->identifier)->findOrFail($invoiceId);
+            $filename = 'invoice_' . $invoice->invoice_number . '.pdf';
+            
+            \Log::info('PDF download requested', [
+                'invoice_id' => $invoiceId,
+                'user_identifier' => $user->identifier,
+                'filename' => $filename,
+                'pdf_size' => strlen($pdfContent)
+            ]);
+            
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Content-Length', strlen($pdfContent))
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+                
+        } catch (\Exception $e) {
+            \Log::error('PDF generation failed', [
+                'invoice_id' => $invoiceId,
+                'user_identifier' => $user->identifier,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Failed to generate invoice PDF',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download upcoming invoices PDF.
+     */
+    public function downloadUpcomingInvoicesPDF(Request $request)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+        
+        try {
+            $pdfContent = $this->billingService->generateUpcomingInvoicesPDF($user->identifier);
+            $filename = 'upcoming_invoices_' . date('Y-m-d') . '.pdf';
+            
+            \Log::info('Upcoming invoices PDF download requested', [
+                'user_identifier' => $user->identifier,
+                'filename' => $filename,
+                'pdf_size' => strlen($pdfContent)
+            ]);
+            
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->header('Content-Length', strlen($pdfContent))
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+                
+        } catch (\Exception $e) {
+            \Log::error('Upcoming invoices PDF generation failed', [
+                'user_identifier' => $user->identifier,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Failed to generate upcoming invoices PDF',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

@@ -7,9 +7,11 @@ use App\Models\InvoiceItem;
 use App\Models\UserApp;
 use App\Models\Module;
 use App\Models\User;
+use App\Models\UserSubscription;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AppBillingService
 {
@@ -540,5 +542,377 @@ class AppBillingService
                 }),
             ];
         })->toArray();
+    }
+
+    /**
+     * Get user's upcoming subscription invoices.
+     */
+    public function getUpcomingSubscriptionInvoices(string $userIdentifier): array
+    {
+        $upcomingInvoices = [];
+
+        // Get active subscriptions
+        $activeSubscriptions = UserSubscription::where('user_identifier', $userIdentifier)
+            ->where('status', UserSubscription::STATUS_ACTIVE)
+            ->where('auto_renew', true)
+            ->with('plan')
+            ->get();
+
+        foreach ($activeSubscriptions as $subscription) {
+            $nextBillingDate = $subscription->next_billing_date ?? $subscription->end_date;
+            
+            if ($nextBillingDate && $nextBillingDate > now()) {
+                $upcomingInvoices[] = [
+                    'id' => 'upcoming_' . $subscription->id,
+                    'invoice_number' => 'UPCOMING-' . $subscription->identifier,
+                    'type' => 'subscription',
+                    'subscription_id' => $subscription->id,
+                    'subscription_identifier' => $subscription->identifier,
+                    'plan_name' => $subscription->plan->name,
+                    'billing_cycle' => $subscription->billing_cycle ?? 'monthly',
+                    'total_amount' => $subscription->plan->price,
+                    'status' => 'upcoming',
+                    'payment_method' => $subscription->payment_method,
+                    'due_date' => $nextBillingDate,
+                    'items' => [
+                        [
+                            'description' => $subscription->plan->name . ' Subscription',
+                            'quantity' => 1,
+                            'unit_price' => $subscription->plan->price,
+                            'total_price' => $subscription->plan->price,
+                        ]
+                    ],
+                ];
+            }
+        }
+
+        // Get upcoming app subscription renewals
+        $upcomingAppSubscriptions = UserApp::forUser($userIdentifier)
+            ->where('billing_type', UserApp::BILLING_SUBSCRIPTION)
+            ->where('auto_renew', true)
+            ->where('cancelled_at', null)
+            ->where('next_billing_date', '>', now())
+            ->with('module')
+            ->get();
+
+        foreach ($upcomingAppSubscriptions as $userApp) {
+            $upcomingInvoices[] = [
+                'id' => 'upcoming_app_' . $userApp->id,
+                'invoice_number' => 'UPCOMING-APP-' . $userApp->id,
+                'type' => 'app_subscription',
+                'user_app_id' => $userApp->id,
+                'app_name' => $userApp->module->title,
+                'billing_cycle' => 'monthly', // Default for app subscriptions
+                'total_amount' => $userApp->module->price,
+                'status' => 'upcoming',
+                'payment_method' => 'credits', // Default for app subscriptions
+                'due_date' => $userApp->next_billing_date,
+                'items' => [
+                    [
+                        'description' => $userApp->module->title . ' Subscription',
+                        'quantity' => 1,
+                        'unit_price' => $userApp->module->price,
+                        'total_price' => $userApp->module->price,
+                    ]
+                ],
+            ];
+        }
+
+        // Sort by due date
+        usort($upcomingInvoices, function ($a, $b) {
+            return strtotime($a['due_date']) - strtotime($b['due_date']);
+        });
+
+        return $upcomingInvoices;
+    }
+
+    /**
+     * Get comprehensive billing information including history and upcoming invoices.
+     */
+    public function getComprehensiveBillingInfo(string $userIdentifier, int $limit = 20): array
+    {
+        return [
+            'billing_history' => $this->getUserBillingHistory($userIdentifier, $limit),
+            'upcoming_invoices' => $this->getUpcomingSubscriptionInvoices($userIdentifier),
+        ];
+    }
+
+    /**
+     * Generate PDF for an invoice.
+     */
+    public function generateInvoicePDF(int $invoiceId, string $userIdentifier): string
+    {
+        $invoice = Invoice::forUser($userIdentifier)
+            ->with(['items', 'user'])
+            ->findOrFail($invoiceId);
+
+        $html = $this->generateInvoiceHTML($invoice);
+
+        $pdf = Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+        ]);
+
+        return $pdf->output();
+    }
+
+    /**
+     * Generate PDF for all upcoming invoices.
+     */
+    public function generateUpcomingInvoicesPDF(string $userIdentifier): string
+    {
+        $upcomingInvoices = $this->getUpcomingSubscriptionInvoices($userIdentifier);
+        
+        if (empty($upcomingInvoices)) {
+            throw new \Exception('No upcoming invoices found');
+        }
+
+        $html = $this->generateUpcomingInvoicesHTML($upcomingInvoices);
+
+        $pdf = Pdf::loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => false,
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+        ]);
+
+        return $pdf->output();
+    }
+
+    /**
+     * Generate HTML for invoice PDF.
+     */
+    private function generateInvoiceHTML(Invoice $invoice): string
+    {
+        $user = $invoice->user;
+        $companyName = config('app.name', 'Sakto App');
+        $companyAddress = 'B2-208 Mivesa Garden Residences, Lahug Cebu City, Philippines';
+        $companyPhone = '+63 926 004 9848';
+        $companyEmail = 'billing@sakto.app';
+
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Invoice ' . $invoice->invoice_number . '</title>
+            <style>
+                @page { margin: 20mm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
+                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e74c3c; padding-bottom: 20px; }
+                .company-name { font-size: 24px; font-weight: bold; color: #e74c3c; margin-bottom: 5px; }
+                .company-details { font-size: 12px; color: #666; }
+                .invoice-title { font-size: 28px; font-weight: bold; margin: 20px 0; }
+                .invoice-details { display: flex; justify-content: space-between; margin-bottom: 30px; }
+                .invoice-info, .billing-info { width: 48%; }
+                .info-section h3 { margin: 0 0 10px 0; color: #e74c3c; font-size: 16px; }
+                .info-section p { margin: 5px 0; font-size: 14px; }
+                .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                .items-table th, .items-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                .items-table th { background-color: #f8f9fa; font-weight: bold; color: #333; }
+                .items-table tr:nth-child(even) { background-color: #f8f9fa; }
+                .total-section { text-align: right; margin-top: 20px; }
+                .total-row { display: flex; justify-content: space-between; margin: 5px 0; }
+                .total-label { font-weight: bold; }
+                .grand-total { font-size: 18px; font-weight: bold; color: #e74c3c; border-top: 2px solid #e74c3c; padding-top: 10px; }
+                .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-name">' . $companyName . '</div>
+                <div class="company-details">
+                    ' . $companyAddress . '<br>
+                    Phone: ' . $companyPhone . ' | Email: ' . $companyEmail . '
+                </div>
+            </div>
+
+            <div class="invoice-title">INVOICE</div>
+
+            <div class="invoice-details">
+                <div class="invoice-info">
+                    <div class="info-section">
+                        <h3>Invoice Details</h3>
+                        <p><strong>Invoice Number:</strong> ' . $invoice->invoice_number . '</p>
+                        <p><strong>Invoice Date:</strong> ' . $invoice->created_at->format('F j, Y') . '</p>
+                        <p><strong>Due Date:</strong> ' . ($invoice->due_date ? $invoice->due_date->format('F j, Y') : 'N/A') . '</p>
+                        <p><strong>Status:</strong> ' . ucfirst($invoice->status) . '</p>
+                    </div>
+                </div>
+                <div class="billing-info">
+                    <div class="info-section">
+                        <h3>Bill To</h3>
+                        <p><strong>' . ($user->name ?? 'N/A') . '</strong></p>
+                        <p>' . ($user->email ?? 'N/A') . '</p>
+                    </div>
+                </div>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+        foreach ($invoice->items as $item) {
+            $html .= '
+                    <tr>
+                        <td>' . htmlspecialchars($item->description) . '</td>
+                        <td>' . $item->quantity . '</td>
+                        <td>PHP ' . number_format($item->unit_price, 2) . '</td>
+                        <td>PHP ' . number_format($item->total_price, 2) . '</td>
+                    </tr>';
+        }
+
+        $html .= '
+                </tbody>
+            </table>
+
+            <div class="total-section">
+                <div class="total-row">
+                    <span class="total-label">Subtotal:</span>
+                    <span>PHP ' . number_format($invoice->subtotal, 2) . '</span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Tax:</span>
+                    <span>PHP ' . number_format($invoice->tax_amount, 2) . '</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>Total Amount:</span>
+                    <span>PHP ' . number_format($invoice->total_amount, 2) . '</span>
+                </div>
+            </div>';
+
+        if ($invoice->payment_method) {
+            $html .= '
+            <div style="margin-top: 20px;">
+                <p><strong>Payment Method:</strong> ' . ucfirst($invoice->payment_method) . '</p>';
+            
+            if ($invoice->paid_at) {
+                $html .= '<p><strong>Paid Date:</strong> ' . $invoice->paid_at->format('F j, Y g:i A') . '</p>';
+            }
+            
+            $html .= '</div>';
+        }
+
+        $html .= '
+            <div class="footer">
+                <p>Thank you for your business!</p>
+                <p>This is a computer-generated invoice.</p>
+            </div>
+        </body>
+        </html>';
+
+        return $html;
+    }
+
+    /**
+     * Generate HTML for upcoming invoices PDF.
+     */
+    private function generateUpcomingInvoicesHTML(array $upcomingInvoices): string
+    {
+        $companyName = config('app.name', 'Sakto App');
+        $companyAddress = 'B2-208 Mivesa Garden Residences, Lahug Cebu City, Philippines';
+        $companyPhone = '+63 926 004 9848';
+        $companyEmail = 'billing@sakto.app';
+
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Upcoming Invoices</title>
+            <style>
+                @page { margin: 15mm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 10px; color: #333; font-size: 12px; }
+                .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #e74c3c; padding-bottom: 15px; }
+                .company-name { font-size: 20px; font-weight: bold; color: #e74c3c; margin-bottom: 5px; }
+                .company-details { font-size: 10px; color: #666; }
+                .document-title { font-size: 22px; font-weight: bold; margin: 15px 0; text-align: center; }
+                .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 11px; }
+                .summary-table th { background-color: #f8f9fa; font-weight: bold; color: #333; }
+                .summary-table tr:nth-child(even) { background-color: #f8f9fa; }
+                .amount { text-align: right; font-weight: bold; color: #e74c3c; }
+                .due-date { color: #e74c3c; font-weight: bold; }
+                .billing-cycle { background-color: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+                .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 15px; }
+                .total-row { background-color: #e74c3c; color: white; font-weight: bold; }
+                .total-row td { border-color: #e74c3c; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-name">' . $companyName . '</div>
+                <div class="company-details">
+                    ' . $companyAddress . '<br>
+                    Phone: ' . $companyPhone . ' | Email: ' . $companyEmail . '
+                </div>
+            </div>
+
+            <div class="document-title">UPCOMING INVOICES</div>
+
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Billing Cycle</th>
+                        <th>Due Date</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+        $totalAmount = 0;
+        foreach ($upcomingInvoices as $invoice) {
+            $totalAmount += $invoice['total_amount'];
+            
+            $description = '';
+            if (isset($invoice['plan_name'])) {
+                $description = $invoice['plan_name'];
+            } elseif (isset($invoice['app_name'])) {
+                $description = $invoice['app_name'];
+            }
+            
+            $html .= '
+                    <tr>
+                        <td>' . $invoice['invoice_number'] . '</td>
+                        <td>' . ucfirst(str_replace('_', ' ', $invoice['type'])) . '</td>
+                        <td>' . $description . '</td>
+                        <td><span class="billing-cycle">' . ucfirst($invoice['billing_cycle']) . '</span></td>
+                        <td><span class="due-date">' . date('M j, Y', strtotime($invoice['due_date'])) . '</span></td>
+                        <td class="amount">PHP ' . number_format($invoice['total_amount'], 2) . '</td>
+                    </tr>';
+        }
+
+        $html .= '
+                    <tr class="total-row">
+                        <td colspan="5"><strong>Total Upcoming Amount</strong></td>
+                        <td class="amount">PHP ' . number_format($totalAmount, 2) . '</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <p>These are upcoming invoices for your active subscriptions.</p>
+                <p>This is a computer-generated document.</p>
+            </div>
+        </body>
+        </html>';
+
+        return $html;
     }
 }

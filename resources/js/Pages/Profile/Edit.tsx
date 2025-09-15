@@ -47,7 +47,7 @@ interface TeamMember {
 }
 
 interface BillingItem {
-    id: number;
+    id: number | string;
     invoice_number: string;
     type: string;
     total_amount: number;
@@ -55,6 +55,13 @@ interface BillingItem {
     payment_method: string;
     created_at: string;
     paid_at: string | null;
+    due_date?: string;
+    billing_cycle?: string;
+    plan_name?: string;
+    app_name?: string;
+    subscription_id?: number;
+    subscription_identifier?: string;
+    user_app_id?: number;
     items: Array<{
         description: string;
         quantity: number;
@@ -322,6 +329,7 @@ function IndividualAppSubscriptions() {
 // Billing History Component
 function BillingHistoryContent() {
     const [billingHistory, setBillingHistory] = useState<BillingItem[]>([]);
+    const [upcomingInvoices, setUpcomingInvoices] = useState<BillingItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -333,7 +341,8 @@ function BillingHistoryContent() {
             const response = await fetch('/api/apps/billing-history');
             if (response.ok) {
                 const data = await response.json();
-                setBillingHistory(data.billing_history);
+                setBillingHistory(data.billing_history || []);
+                setUpcomingInvoices(data.upcoming_invoices || []);
             }
         } catch (error) {
             console.error('Failed to fetch billing history:', error);
@@ -360,6 +369,74 @@ function BillingHistoryContent() {
         });
     };
 
+    const downloadInvoicePDF = async (invoiceId: number) => {
+        try {
+            // Use fetch to get the PDF content and then create a blob URL
+            const response = await fetch(`/api/apps/invoice/${invoiceId}/pdf`, {
+                method: 'GET',
+                credentials: 'same-origin',
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            
+            // Create a blob URL and trigger download
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `invoice_${invoiceId}.pdf`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            
+            // Clean up
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            toast.success('Invoice PDF downloaded successfully');
+        } catch (error) {
+            console.error('Failed to download invoice PDF:', error);
+            toast.error('Failed to download invoice PDF');
+        }
+    };
+
+    const downloadUpcomingInvoicesPDF = async () => {
+        try {
+            // Use fetch to get the PDF content and then create a blob URL
+            const response = await fetch('/api/apps/upcoming-invoices/pdf', {
+                method: 'GET',
+                credentials: 'same-origin',
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            
+            // Create a blob URL and trigger download
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `upcoming_invoices_${new Date().toISOString().split('T')[0]}.pdf`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            
+            // Clean up
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            toast.success('Upcoming invoices PDF downloaded successfully');
+        } catch (error) {
+            console.error('Failed to download upcoming invoices PDF:', error);
+            toast.error('Failed to download upcoming invoices PDF');
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         const statusConfig = {
             paid: { variant: 'default' as const, className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
@@ -367,6 +444,7 @@ function BillingHistoryContent() {
             failed: { variant: 'destructive' as const, className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
             cancelled: { variant: 'outline' as const, className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
             refunded: { variant: 'outline' as const, className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+            upcoming: { variant: 'outline' as const, className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
         };
 
         const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -387,6 +465,16 @@ function BillingHistoryContent() {
         return typeLabels[type as keyof typeof typeLabels] || type;
     };
 
+    const getBillingCycleLabel = (cycle: string) => {
+        const cycleLabels = {
+            monthly: 'Monthly',
+            yearly: 'Yearly',
+            quarterly: 'Quarterly',
+            weekly: 'Weekly',
+        };
+        return cycleLabels[cycle as keyof typeof cycleLabels] || cycle;
+    };
+
     if (isLoading) {
         return (
             <div className="space-y-4">
@@ -400,7 +488,88 @@ function BillingHistoryContent() {
         );
     }
 
-    if (billingHistory.length === 0) {
+    const renderInvoiceCard = (item: BillingItem, isUpcoming: boolean = false) => (
+        <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+                <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                        {getTypeLabel(item.type)}
+                        {item.plan_name && (
+                            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                                - {item.plan_name}
+                            </span>
+                        )}
+                        {item.app_name && (
+                            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                                - {item.app_name}
+                            </span>
+                        )}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Invoice #{item.invoice_number}
+                        {item.billing_cycle && (
+                            <span className="ml-2 text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                {getBillingCycleLabel(item.billing_cycle)}
+                            </span>
+                        )}
+                    </p>
+                </div>
+                <div className="text-right">
+                    <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                        {formatPrice(item.total_amount)}
+                    </div>
+                    {getStatusBadge(item.status)}
+                </div>
+            </div>
+            
+            {/* Items */}
+            {item.items.map((invoiceItem, index) => (
+                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                    <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                            {invoiceItem.description}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Qty: {invoiceItem.quantity} × {formatPrice(invoiceItem.unit_price)}
+                        </p>
+                    </div>
+                    <div className="text-right">
+                        <p className="font-medium text-gray-900 dark:text-white">
+                            {formatPrice(invoiceItem.total_price)}
+                        </p>
+                    </div>
+                </div>
+            ))}
+
+            {/* Payment Details */}
+            <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <p>Payment Method: {item.payment_method || 'N/A'}</p>
+                    {isUpcoming && item.due_date ? (
+                        <p>Due: {formatDate(item.due_date)}</p>
+                    ) : (
+                        <p>Date: {formatDate(item.created_at)}</p>
+                    )}
+                    {item.paid_at && (
+                        <p>Paid: {formatDate(item.paid_at)}</p>
+                    )}
+                </div>
+                {!isUpcoming && typeof item.id === 'number' && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadInvoicePDF(item.id as number)}
+                        className="text-xs"
+                    >
+                        <Receipt className="h-3 w-3 mr-1" />
+                        Download PDF
+                    </Button>
+                )}
+            </div>
+        </div>
+    );
+
+    if (billingHistory.length === 0 && upcomingInvoices.length === 0) {
         return (
             <div className="text-center py-8">
                 <Receipt className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
@@ -421,57 +590,43 @@ function BillingHistoryContent() {
     }
 
     return (
-        <div className="space-y-4">
-            {billingHistory.map((item) => (
-                <div key={item.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <h4 className="font-medium text-gray-900 dark:text-white">
-                                {getTypeLabel(item.type)}
-                            </h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Invoice #{item.invoice_number}
-                            </p>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                                {formatPrice(item.total_amount)}
-                            </div>
-                            {getStatusBadge(item.status)}
-                        </div>
+        <div className="space-y-6">
+            {/* Upcoming Invoices Section */}
+            {upcomingInvoices.length > 0 && (
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+                            Upcoming Invoices
+                        </h3>
+                        <Button
+                            onClick={downloadUpcomingInvoicesPDF}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                        >
+                            <Receipt className="h-3 w-3 mr-1" />
+                            Download All PDF
+                        </Button>
                     </div>
-                    
-                    {/* Items */}
-                    {item.items.map((invoiceItem, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                            <div>
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    {invoiceItem.description}
-                                </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Qty: {invoiceItem.quantity} × {formatPrice(invoiceItem.unit_price)}
-                                </p>
-                            </div>
-                            <div className="text-right">
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    {formatPrice(invoiceItem.total_price)}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-
-                    {/* Payment Details */}
-                    <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                            <p>Payment Method: {item.payment_method || 'N/A'}</p>
-                            <p>Date: {formatDate(item.created_at)}</p>
-                            {item.paid_at && (
-                                <p>Paid: {formatDate(item.paid_at)}</p>
-                            )}
-                        </div>
+                    <div className="space-y-4">
+                        {upcomingInvoices.map((item) => renderInvoiceCard(item, true))}
                     </div>
                 </div>
-            ))}
+            )}
+
+            {/* Billing History Section */}
+            {billingHistory.length > 0 && (
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <Receipt className="h-5 w-5 mr-2 text-orange-600" />
+                        Billing History
+                    </h3>
+                    <div className="space-y-4">
+                        {billingHistory.map((item) => renderInvoiceCard(item, false))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -448,6 +448,8 @@ Route::middleware(['auth', 'verified', 'team.member.selection'])->group(function
     Route::post('/api/apps/add-multiple', [AppsController::class, 'addMultipleApps'])->name('api.apps.add-multiple');
     Route::delete('/api/apps/remove', [AppsController::class, 'removeApp'])->name('api.apps.remove');
     Route::get('/api/apps/billing-history', [AppsController::class, 'getBillingHistory'])->name('api.apps.billing-history');
+    Route::get('/api/apps/invoice/{invoiceId}/pdf', [AppsController::class, 'downloadInvoicePDF'])->name('api.apps.invoice.pdf');
+    Route::get('/api/apps/upcoming-invoices/pdf', [AppsController::class, 'downloadUpcomingInvoicesPDF'])->name('api.apps.upcoming-invoices.pdf');
     Route::post('/api/apps/toggle-auto-renew', [AppsController::class, 'toggleAutoRenew'])->name('api.apps.toggle-auto-renew');
     Route::post('/api/apps/cancel-subscription', [AppsController::class, 'cancelAppSubscription'])->name('api.apps.cancel-subscription');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

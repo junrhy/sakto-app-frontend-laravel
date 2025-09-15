@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Schedule the subscription renewal command to run daily at midnight Philippines time
 Schedule::command('app:renew-subscriptions')->dailyAt('00:00');
+
+// Schedule the upcoming invoices notification command to run daily at 9:00 AM Philippines time
+Schedule::command('invoices:send-upcoming-notifications')->dailyAt('09:00');
