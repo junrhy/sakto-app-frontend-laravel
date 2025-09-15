@@ -1,81 +1,44 @@
+import React, { useState, useCallback, lazy, Suspense, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { useState, useRef, useMemo, useCallback, useEffect } from "react";
-import { QRCodeSVG } from 'qrcode.react';
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
-import { Label } from "@/Components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
-import { Printer, Plus, Minus, Maximize, Minimize, Edit, Trash, Search, QrCode, Trash2, Link2, Check, UtensilsCrossed, Calculator, ShoppingCart } from "lucide-react";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { usePage, router } from '@inertiajs/react';
-import { toast } from 'sonner';
+import { UtensilsCrossed, Calculator, Check, ShoppingCart } from "lucide-react";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { DialogTrigger } from "@/Components/ui/dialog";
-import { Toaster } from "sonner";
-import { Page } from '@inertiajs/core';
+import { Toaster, toast } from "sonner";
+import { usePosState } from './hooks/usePosState';
+import { usePosApi } from './hooks/usePosApi';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { MenuItem, Table, JoinedTable, Reservation, MenuItemFormData } from './types';
 
-interface MenuItem {
-    id: number;
-    name: string;
-    price: number;
-    category: string;
-    image?: string;
-    public_image_url?: string;
-    created_at?: string;
-    updated_at?: string;
-    is_available_personal?: boolean;
-    is_available_online?: boolean;
-    delivery_fee?: number;
-}
-  
-interface OrderItem extends MenuItem {
-    quantity: number;
-    selected?: boolean;
-}
-  
-interface Table {
-    id: number | string;
-    numericId?: number;
-    name: string;
-    seats: number;
-    status: 'available' | 'occupied' | 'reserved' | 'joined';
-    joined_with?: string;
-    isJoinedTable?: boolean;
-    originalTableIds?: number[];
-}
-  
-interface Reservation {
-    id: number;
-    name: string;
-    date: string;
-    time: string;
-    guests: number;
-    tableId: number;
-    status: 'pending' | 'confirmed' | 'cancelled';
-    notes?: string;
-    contact?: string;
-}
-  
-interface MenuItemFormData {
-    name: string;
-    price: number;
-    category: string;
-    image?: string;
-    delivery_fee?: number;
-}
+// Lazy load tab components for better performance
+const PosTab = lazy(() => import('./components/PosTab').then(module => ({ default: module.PosTab })));
+const TablesTab = lazy(() => import('./components/TablesTab').then(module => ({ default: module.TablesTab })));
+const ReservationsTab = lazy(() => import('./components/ReservationsTab').then(module => ({ default: module.ReservationsTab })));
+const MenuTab = lazy(() => import('./components/MenuTab').then(module => ({ default: module.MenuTab })));
 
-interface JoinedTable {
-    id: number;
-    tableIds: number[];
-    name: string;
-    seats: number;
-    status: 'available' | 'occupied' | 'reserved' | 'joined';
-}
+// Lazy load dialog components
+const CompleteOrderDialog = lazy(() => import('./components/dialogs/CompleteOrderDialog').then(module => ({ default: module.CompleteOrderDialog })));
+const AddTableDialog = lazy(() => import('./components/dialogs/AddTableDialog').then(module => ({ default: module.AddTableDialog })));
+const EditTableDialog = lazy(() => import('./components/dialogs/EditTableDialog').then(module => ({ default: module.EditTableDialog })));
+const QRCodeDialog = lazy(() => import('./components/dialogs/QRCodeDialog').then(module => ({ default: module.QRCodeDialog })));
+const SplitBillDialog = lazy(() => import('./components/dialogs/SplitBillDialog').then(module => ({ default: module.SplitBillDialog })));
+const AddMenuItemDialog = lazy(() => import('./components/dialogs/AddMenuItemDialog').then(module => ({ default: module.AddMenuItemDialog })));
+const EditMenuItemDialog = lazy(() => import('./components/dialogs/EditMenuItemDialog').then(module => ({ default: module.EditMenuItemDialog })));
+const DeleteMenuItemDialog = lazy(() => import('./components/dialogs/DeleteMenuItemDialog').then(module => ({ default: module.DeleteMenuItemDialog })));
+
+// Loading component for tab switching
+const TabLoadingSpinner = () => (
+    <div className="flex flex-col items-center justify-center p-12">
+        <div className="relative">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent absolute top-0 left-0"></div>
+        </div>
+        <div className="mt-4 text-center">
+            <p className="text-lg font-medium text-gray-900 dark:text-gray-100">Loading...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Please wait while we prepare your content</p>
+        </div>
+    </div>
+);
 
 interface PageProps {
     menuItems: MenuItem[];
@@ -85,1420 +48,130 @@ interface PageProps {
     currency_symbol?: string;
 }
 
-interface EditTableData {
-    id: number;
-    name: string;
-    seats: number;
-}
-
-interface TableResponse {
-    props: {
-        table: {
-            id: number;
-            name: string;
-            seats: number;
-            status: 'available' | 'occupied' | 'reserved' | 'joined';
-        }
-    }
-}
-
-interface Order {
-    id: number;
-    table_number: string;
-    items: OrderItem[];
-    status: 'pending' | 'completed';
-    created_at?: string;
-    updated_at?: string;
-}
-
-// Add these interfaces at the top with other interfaces
-interface ApiError {
-    original?: {
-        error?: string;
-    };
-    error?: string;
-}
-
-interface ApiResponse {
-    error?: string;
-    table?: Table;
-    tables?: Table[];
-}
-
-interface TableApiResponse extends ApiResponse {
-    props?: {
-        error?: string;
-        table?: Table;
-    };
-}
-
-interface PosRestaurantProps {
-    auth: {
-        user: {
-            id: number;
-            name: string;
-            email: string;
-        };
-    };
-    tables?: Table[];
-    error?: string;
-}
-
-// Rename the local interface to avoid conflict
-interface PosRestaurantPageData {
-    auth: { 
-        user: any;
-        selectedTeamMember?: {
-            identifier: string;
-            first_name: string;
-            last_name: string;
-            full_name: string;
-            email: string;
-            roles: string[];
-            allowed_apps: string[];
-            profile_picture?: string;
-        };
-    };
-    menuItems: MenuItem[];
-    tables: Table[];
-    tab?: string;
-    joinedTables?: JoinedTable[];
-    currency_symbol?: string;
-}
-
-const processJoinedTables = (tables: Table[]): [Table[], JoinedTable[]] => {
-    // Ensure tables is an array
-    if (!Array.isArray(tables)) {
-        console.warn('processJoinedTables received non-array tables:', tables);
-        return [[], []];
-    }
-
-    const joinedTables: JoinedTable[] = [];
-    const processedTables = [...tables];
-    const processedIds = new Set<number>();
-
-    // First pass: collect all joined table groups
-    const joinedGroups = new Map<string, number[]>();
-    
-    tables.forEach(table => {
-        if (table && table.status === 'joined' && table.joined_with) {
-            try {
-                const joinedIds = table.joined_with.split(',').map(id => {
-                    const numId = Number(id);
-                    return isNaN(numId) ? null : numId;
-                }).filter((id): id is number => id !== null);
-
-                if (joinedIds.length > 0) {
-                    const key = joinedIds.sort().join(',');
-                    if (!joinedGroups.has(key)) {
-                        joinedGroups.set(key, joinedIds);
-                    }
-                }
-            } catch (error) {
-                console.error('Error processing joined table:', error);
-            }
-        }
-    });
-
-    // Second pass: create joined table entries
-    joinedGroups.forEach((tableIds) => {
-        try {
-            // Get all tables in this joined group
-            const groupTables = tableIds.map(id => 
-                tables.find(t => t && typeof t.id === 'number' && t.id === id)
-            ).filter((t): t is Table => t !== undefined);
-
-            if (groupTables.length > 0) {
-                // Mark these tables as processed
-                tableIds.forEach(id => processedIds.add(id));
-
-                // Create joined table entry
-                const joinedTable: JoinedTable = {
-                    id: Date.now() + Math.random(),
-                    tableIds: tableIds,
-                    name: `Table ${groupTables.map(t => 
-                        t.name.replace('Table ', '')
-                    ).join(' & ')}`,
-                    seats: groupTables.reduce((sum, t) => sum + t.seats, 0),
-                    status: 'joined'
-                };
-
-                joinedTables.push(joinedTable);
-            }
-        } catch (error) {
-            console.error('Error creating joined table:', error);
-        }
-    });
-
-    // Filter out individual tables that are part of joined tables
-    const remainingTables = processedTables.filter(table => 
-        table && typeof table.id === 'number' && !processedIds.has(table.id)
-    );
-
-    return [remainingTables, joinedTables];
-};
-
-export default function PosRestaurant({ 
-    auth, 
-    menuItems: initialMenuItems, 
-    tables: initialTables, 
-    joinedTables: initialJoinedTables = [], 
-    tab = 'pos',
-    currency_symbol
-}: PosRestaurantPageData) {
-    // Check if current team member has admin or manager role
-    const canDelete = useMemo(() => {
-        if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager');
-        }
-        // If no team member is selected, check if the main user is admin
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
-
-    // Check if current team member has admin, manager, or user role
-    const canEdit = useMemo(() => {
-        if (auth.selectedTeamMember) {
-            return auth.selectedTeamMember.roles.includes('admin') || auth.selectedTeamMember.roles.includes('manager') || auth.selectedTeamMember.roles.includes('user');
-        }
-        // If no team member is selected, check if the main user is admin
-        return auth.user.is_admin;
-    }, [auth.selectedTeamMember, auth.user.is_admin]);
-
-    // Enhanced error handling for initial values with proper type checking
-    const safeInitialTables = Array.isArray(initialTables) 
-        ? initialTables 
-        : (initialTables && typeof initialTables === 'object' && 'original' in initialTables)
-            ? []  // API error case
-            : [];
-
-    const safeInitialJoinedTables = Array.isArray(initialJoinedTables) 
-        ? initialJoinedTables 
-        : [];
-
-    const safeInitialMenuItems = Array.isArray(initialMenuItems) 
-        ? initialMenuItems 
-        : (initialMenuItems && typeof initialMenuItems === 'object' && 'original' in initialMenuItems)
-            ? []  // API error case
-            : [];
-
-    // Add error state to track API connection issues
-    const [apiError, setApiError] = useState<string | null>(null);
-
-    const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-    const [menuItems, setMenuItems] = useState<MenuItem[]>(safeInitialMenuItems);
-    const [tableNumber, setTableNumber] = useState<string>("");
-    const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [isSplitBillDialogOpen, setIsSplitBillDialogOpen] = useState(false);
-    const [splitAmount, setSplitAmount] = useState<number>(2);
-    const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [newReservation, setNewReservation] = useState<Omit<Reservation, 'id' | 'status'>>({
-        name: '',
-        date: '',
-        time: '',
-        guests: 1,
-        tableId: 0,
-        notes: '',
-        contact: ''
-    });
-    const [discount, setDiscount] = useState<number>(0);
+export default function PosRestaurantIndex({ 
+    menuItems, 
+    tables, 
+    tab = 'pos', 
+    joinedTables = [], 
+    currency_symbol = '$' 
+}: PageProps) {
+    const [isTabLoading, setIsTabLoading] = useState(false);
+    const [currentTab, setCurrentTab] = useState(tab);
+    const [discount, setDiscount] = useState(0);
     const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
-    const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-    const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
-    const qrCodeRef = useRef<HTMLDivElement>(null);
-    const [customerName, setCustomerName] = useState<string>("");
-    const [tableStatusFilter, setTableStatusFilter] = useState<'all' | 'available' | 'occupied' | 'reserved' | 'joined'>('all');
-    const [isMenuItemDialogOpen, setIsMenuItemDialogOpen] = useState(false);
-    const [currentMenuItem, setCurrentMenuItem] = useState<MenuItem | null>(null);
-    const [newMenuItemImage, setNewMenuItemImage] = useState<File | null>(null);
-    const [selectedMenuItems, setSelectedMenuItems] = useState<number[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
-    const [newTableName, setNewTableName] = useState<string>("");
-    const [newTableSeats, setNewTableSeats] = useState<number>(1);
-    const [joinedTables, setJoinedTables] = useState<JoinedTable[]>(safeInitialJoinedTables);
-    const [selectedTablesForJoin, setSelectedTablesForJoin] = useState<number[]>([]);
-    const [isJoinTableDialogOpen, setIsJoinTableDialogOpen] = useState(false);
+    
+    // Dialog states
+    const [isCompleteSaleDialogOpen, setIsCompleteSaleDialogOpen] = useState(false);
     const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
-    const [tables, setTables] = useState<Table[]>(safeInitialTables);
     const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
-    const [editTableData, setEditTableData] = useState<EditTableData | null>(null);
-    const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-    const [splitMethod, setSplitMethod] = useState<'equal' | 'item'>('equal');
+    const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
+    const [isSplitBillDialogOpen, setIsSplitBillDialogOpen] = useState(false);
+    const [isAddMenuItemDialogOpen, setIsAddMenuItemDialogOpen] = useState(false);
+    const [isEditMenuItemDialogOpen, setIsEditMenuItemDialogOpen] = useState(false);
+    const [isDeleteMenuItemDialogOpen, setIsDeleteMenuItemDialogOpen] = useState(false);
+    const [editMenuItemData, setEditMenuItemData] = useState<MenuItem | null>(null);
+    const [deleteMenuItemData, setDeleteMenuItemData] = useState<{ id: number; name: string; isBulk: boolean; itemCount?: number; selectedIds?: number[] } | null>(null);
+    const [editTableData, setEditTableData] = useState<{ id: number; name: string; seats: number } | null>(null);
+    const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
-    // Get the CSRF token from the page props
-    const { props } = usePage();
-    const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
+    // Use custom hooks for state management and API calls
+    const posState = usePosState(menuItems, tables, joinedTables);
+    const api = usePosApi();
 
-    // Initialize tables and joined tables with enhanced error handling
+    // Sync currentTab with the tab prop
     useEffect(() => {
-        try {
-            // Check for API error response
-            if (initialTables && typeof initialTables === 'object' && 'original' in initialTables) {
-                const errorMessage = (initialTables as any).original?.error || 'Failed to load tables';
-                setApiError(errorMessage);
-                console.error('API Error:', errorMessage);
-                setTables([]);
-                setJoinedTables([]);
-                toast.error(errorMessage);
-                return;
-            }
+        setCurrentTab(tab);
+    }, [tab]);
 
-            if (!Array.isArray(initialTables)) {
-                console.warn('initialTables is not an array:', initialTables);
-                setTables([]);
-                setJoinedTables([]);
-                return;
-            }
+    // Permissions (these would come from your auth system)
+    const canEdit = true;
+    const canDelete = true;
 
-            const [processedTables, newJoinedTables] = processJoinedTables(initialTables);
-            setTables(processedTables || []);
-            setJoinedTables(newJoinedTables || []);
-            setApiError(null); // Clear any previous errors
-        } catch (error) {
-            console.error('Error processing tables:', error);
-            setTables([]);
-            setJoinedTables([]);
-            setApiError('Error processing tables data');
-            toast.error('Error processing tables data');
-        }
-    }, [initialTables]);
-
-    const addItemToOrder = async (item: MenuItem) => {
-        if (!tableNumber) {
-            toast.error('Please select a table first');
-            return;
-        }
-
-        if (!item || typeof item.id === 'undefined') {
-            toast.error('Invalid menu item');
-            return;
-        }
-        
-        try {
-            // Ensure orderItems is an array before finding index
-            const safeOrderItems = Array.isArray(orderItems) ? orderItems : [];
-            const existingItemIndex = safeOrderItems.findIndex(orderItem => 
-                orderItem && orderItem.id === item.id
-            );
-            
-            if (existingItemIndex !== -1) {
-                const updatedOrderItems = [...safeOrderItems];
-                updatedOrderItems[existingItemIndex] = {
-                    ...updatedOrderItems[existingItemIndex],
-                    quantity: (updatedOrderItems[existingItemIndex]?.quantity || 0) + 1
-                };
-                setOrderItems(updatedOrderItems);
-            } else {
-                const newOrderItem: OrderItem = {
-                    id: item.id,
-                    name: item.name || '',
-                    price: item.price || 0,
-                    category: item.category || '',
-                    quantity: 1
-                };
-                setOrderItems(prevItems => Array.isArray(prevItems) ? [...prevItems, newOrderItem] : [newOrderItem]);
-            }
-            
-            console.log("csrfToken: ", csrfToken);
-            const response = await fetch('/pos-restaurant/orders/add-item', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken || '',
-                },
-                body: JSON.stringify({
-                    table_number: tableNumber,
-                    item_id: item.id,
-                    quantity: 1,
-                    price: item.price,
-                    order_id: currentOrder?.id,
-                    total: item.price
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to add item to order');
-            }
-
-            const data = await response.json();
-            
-            // Update current order
-            const updatedOrder: Order = {
-                id: data.id,
-                table_number: data.table_number,
-                status: 'pending',
-                items: orderItems
-            };
-            
-            setCurrentOrder(updatedOrder);
-            toast.success('Item added to order');
-
-        } catch (error) {
-            console.error('Error adding item to order:', error);
-            toast.error('Failed to add item to order');
-        }
-    };
-
-    const removeItemFromOrder = async (id: number) => {
-        if (!tableNumber) {
-            toast.error('No table selected');
-            return;
-        }
-        console.log("Removing item from order:", id);
-        try {
-            // Store current order items for rollback if needed
-            const previousOrderItems = [...orderItems];
-            
-            // Optimistically update UI
-            setOrderItems(orderItems.filter(item => item.id !== id));
-
-            // Send request to backend using router.delete instead of fetch
-            await router.delete(`/pos-restaurant/current-order/${tableNumber}/item/${id}`, {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success('Item removed from order');
-                    
-                    // If this was the last item, update table status to available
-                    if (orderItems.length === 1) {
-                        setTables(prevTables => 
-                            prevTables.map(table => 
-                                table.name === tableNumber 
-                                    ? { ...table, status: 'available' } 
-                                    : table
-                            )
-                        );
-                    }
-                },
-                onError: () => {
-                    // Rollback on error
-                    setOrderItems(previousOrderItems);
-                    toast.error('Failed to remove item from order');
-                }
-            });
-
-        } catch (error) {
-            console.error('Error removing item from order:', error);
-            // Rollback on error
-            setOrderItems(orderItems);
-            toast.error('Failed to remove item from order');
-        }
-    };
-
-    const updateItemQuantity = (id: number, newQuantity: number) => {
-        if (newQuantity > 0) {
-        setOrderItems(orderItems.map(item =>
-            item.id === id ? { ...item, quantity: newQuantity } : item
-        ));
-        } else {
-        removeItemFromOrder(id);
-        }
-    };
-
-    const calculateDiscount = (subtotal: number) => {
-        if (discountType === 'percentage') {
-        return subtotal * (discount / 100);
-        } else {
-        return discount;
-        }
-    };
-
-    const totalAmount = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
-    const discountAmount = calculateDiscount(totalAmount);
-    const finalTotal = totalAmount - discountAmount;
-
-    const handleCompleteSale = () => {
-        if (!tableNumber) {
-            toast.error('Please select a table first');
-            return;
-        }
-        
-        if (orderItems.length === 0) {
-            toast.error('Please add items to the order');
-            return;
-        }
-
-        // Show confirmation toast
-        toast.custom((t) => (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-md w-full">
-                <h3 className="font-semibold text-lg mb-2">Complete Order Confirmation</h3>
-                <p className="mb-2">Are you sure you want to complete this order?</p>
-                <div className="text-sm space-y-1 mb-4">
-                    <p>Table: {tableNumber}</p>
-                    <p>Total Items: {orderItems.length}</p>
-                    <p>Subtotal: {currency_symbol}{totalAmount}</p>
-                    <p>Discount: {currency_symbol}{discountAmount}</p>
-                    <p className="font-semibold">Final Total: {currency_symbol}{finalTotal}</p>
-                </div>
-                <div className="flex justify-end gap-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => toast.dismiss(t)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button 
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                        onClick={() => {
-                            toast.dismiss(t);
-                            setIsCompleteSaleDialogOpen(true);
-                        }}
-                    >
-                        Confirm
-                    </Button>
-                </div>
-            </div>
-        ), {
-            duration: 5000,
-        });
-    };
-
-    const confirmCompleteSale = () => {
-        router.post('/pos-restaurant/orders/complete', {
-            table_number: tableNumber,
-            items: JSON.stringify(orderItems),
-            subtotal: totalAmount,
-            discount: discount,
-            discount_type: discountType,
-            total: finalTotal
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                setOrderItems([]);
-                setTableNumber("");
-                setIsCompleteSaleDialogOpen(false);
-                // Update table status
-                setTables(tables.map(table => 
-                    table.name === tableNumber ? { ...table, status: 'available' } : table
-                ));
-            }
-        });
-    };
-
-    const handleSplitBill = () => {
-        setIsSplitBillDialogOpen(true);
-    };
-
-    const confirmSplitBill = () => {
-        let amountPerPerson: number;
-        const selectedItemsTotal = orderItems
-            .filter(item => splitMethod === 'item' ? item.selected : true)
-            .reduce((total, item) => total + (item.price * item.quantity), 0);
-        
-        amountPerPerson = splitMethod === 'equal' 
-            ? finalTotal / splitAmount 
-            : selectedItemsTotal / splitAmount;
-
-        // Print the split bill details including order items
-        const orderItemsDetails = orderItems.map(item => {
-            const isSelected = splitMethod === 'item' ? item.selected : true;
-            return `
-                <tr class="${isSelected ? 'selected-item' : 'unselected-item'}">
-                    <td>${item.name}</td>
-                    <td>x${item.quantity}</td>
-                    <td>${item.price}</td>
-                    <td>${(item.price * item.quantity)}</td>
-                    ${splitMethod === 'item' ? `<td>${isSelected ? '✓' : '-'}</td>` : ''}
-                </tr>
-            `;
-        }).join('');
-
-        const printContent = `
-            <html>
-                <head>
-                    <title>Split Bill</title>
-                    <style>
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            padding: 20px; 
-                            max-width: 800px; 
-                            margin: 0 auto; 
-                        }
-                        .header { 
-                            text-align: center; 
-                            margin-bottom: 20px; 
-                            padding-bottom: 10px;
-                            border-bottom: 2px solid #333;
-                        }
-                        .split-details {
-                            margin: 20px 0;
-                            padding: 10px;
-                            background: #f5f5f5;
-                            border-radius: 5px;
-                        }
-                        .footer { 
-                            margin-top: 20px; 
-                            text-align: center;
-                            padding-top: 10px;
-                            border-top: 1px solid #ddd;
-                        }
-                        table { 
-                            width: 100%; 
-                            border-collapse: collapse; 
-                            margin: 15px 0;
-                        }
-                        th, td { 
-                            padding: 8px; 
-                            text-align: left; 
-                            border-bottom: 1px solid #ddd; 
-                        }
-                        .selected-item {
-                            background-color: #f0f7ff;
-                        }
-                        .unselected-item {
-                            color: #666;
-                        }
-                        .totals {
-                            margin-top: 15px;
-                            padding: 10px;
-                            border-top: 2px solid #333;
-                        }
-                        .split-amount {
-                            font-size: 1.2em;
-                            font-weight: bold;
-                            color: #2563eb;
-                            margin: 10px 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h2>Split Bill</h2>
-                        <p>Table Number: ${tableNumber}</p>
-                        <p>Date: ${new Date().toLocaleDateString()}</p>
-                        <p>Time: ${new Date().toLocaleTimeString()}</p>
-                    </div>
-
-                    <div class="split-details">
-                        <h3>Split Method: ${splitMethod === 'equal' ? 'Equal Split' : 'Split by Item'}</h3>
-                        <p>Number of ways to split: ${splitAmount}</p>
-                    </div>
-
-                    <h3>Order Items:</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                                ${splitMethod === 'item' ? '<th>Selected</th>' : ''}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${orderItemsDetails}
-                        </tbody>
-                    </table>
-
-                    <div class="totals">
-                        <p>Original Total: ${currency_symbol}${finalTotal}</p>
-                        ${splitMethod === 'item' ? `
-                            <p>Selected Items Total: ${currency_symbol}${selectedItemsTotal}</p>
-                        ` : ''}
-                        <div class="split-amount">
-                            Amount per person: ${currency_symbol}${amountPerPerson}
-                        </div>
-                    </div>
-
-                    <div class="footer">
-                        <p>Thank you for dining with us!</p>
-                    </div>
-                </body>
-            </html>
-        `;
-
-        const printWindow = window.open('', '', 'height=600,width=800');
-        if (printWindow) {
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
-            printWindow.close();
-        }
-
-        setIsSplitBillDialogOpen(false);
-    };
-
-    const printKitchenOrder = async () => {
-        if (orderItems.length === 0 || !tableNumber) {
-            toast.error('Please add items and select a table before printing kitchen order');
-            return;
-        }
-
-        try {
-            const response = await router.post('/pos-restaurant/kitchen-order', {
-                table_number: tableNumber,
-                items: orderItems.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    quantity: item.quantity,
-                    notes: '', // Add notes field if needed
-                })),
-                orderTime: new Date().toISOString(),
-            }, {
-                preserveState: true,
-                onSuccess: () => {
-                    // Create a printable format
-                    const printWindow = window.open('', '', 'height=600,width=800');
-                    if (!printWindow) {
-                        toast.error('Please allow pop-ups to print kitchen orders');
-                        return;
-                    }
-
-                    const orderDetails = orderItems.map(item => 
-                        `<tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.quantity}x</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name}</td>
-                        </tr>`
-                    ).join('');
-
-                    printWindow.document.write(`
-                        <html>
-                            <head>
-                                <title>Kitchen Order - Table ${tableNumber}</title>
-                                <style>
-                                    body { font-family: Arial, sans-serif; padding: 20px; }
-                                    .header { text-align: center; margin-bottom: 20px; }
-                                    table { width: 100%; border-collapse: collapse; }
-                                    .footer { margin-top: 20px; text-align: center; }
-                                </style>
-                            </head>
-                            <body>
-                                <div class="header">
-                                    <h2>Kitchen Order</h2>
-                                    <p>Table: ${tableNumber}</p>
-                                    <p>Time: ${new Date().toLocaleTimeString()}</p>
-                                    <p>Date: ${new Date().toLocaleDateString()}</p>
-                                </div>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">Qty</th>
-                                            <th style="text-align: left; padding: 8px; border-bottom: 2px solid #ddd;">Item</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${orderDetails}
-                                    </tbody>
-                                </table>
-                                <div class="footer">
-                                    <p>*** End of Order ***</p>
-                                </div>
-                            </body>
-                        </html>
-                    `);
-
-                    printWindow.document.close();
-                    printWindow.focus();
-                    printWindow.print();
-                    printWindow.close();
-
-                    toast.success('Kitchen order sent successfully');
-                },
-                onError: () => {
-                    toast.error('Failed to send kitchen order');
-                }
-            });
-        } catch (error) {
-            console.error('Error sending kitchen order:', error);
-            toast.error('Failed to send kitchen order');
-        }
-    };
-
-    const handleReservation = async () => {
-        if (!newReservation.name || !newReservation.date || !newReservation.time || !newReservation.tableId) {
-            toast.error('Please fill in all required fields');
-            return;
-        }
-
-        try {
-            const response = await router.post('/pos-restaurant/reservations', {
-                ...newReservation,
-                status: 'pending'
-            }, {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success('Reservation created successfully');
-                    // Update table status
-                    setTables(tables.map(table => 
-                        table.id === newReservation.tableId ? { ...table, status: 'reserved' } : table
-                    ));
-                    // Reset form
-                    setNewReservation({
-                        name: '',
-                        date: '',
-                        time: '',
-                        guests: 1,
-                        tableId: 0,
-                        notes: '',
-                        contact: ''
-                    });
-                    // Refresh reservations
-                    fetchReservations();
-                },
-                onError: () => {
-                    toast.error('Failed to create reservation');
-                }
-            });
-        } catch (error) {
-            console.error('Error creating reservation:', error);
-            toast.error('Failed to create reservation');
-        }
-    };
-
-    const fetchReservations = async () => {
-        try {
-            const response = await fetch('/pos-restaurant/reservations');
-            const data = await response.json();
-            setReservations(data);
-        } catch (error) {
-            console.error('Error fetching reservations:', error);
-            toast.error('Failed to fetch reservations');
-        }
-    };
-
-    const handleCancelReservation = async (id: number) => {
-        try {
-            await router.delete(`/pos-restaurant/reservations/${id}`, {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success('Reservation cancelled successfully');
-                    fetchReservations();
-                },
-                onError: () => {
-                    toast.error('Failed to cancel reservation');
-                }
-            });
-        } catch (error) {
-            console.error('Error cancelling reservation:', error);
-            toast.error('Failed to cancel reservation');
-        }
-    };
-
-    const handleGenerateQR = (table: Table) => {
-        setSelectedTable(table);
-        setCustomerName(""); // Reset customer name when opening the dialog
-        setIsQRDialogOpen(true);
-    };
-
-    const printQRCode = () => {
-        const printContent = qrCodeRef.current;
-        if (printContent) {
-        const winPrint = window.open('', '', 'left=0,top=0,width=800,height=600,toolbar=0,scrollbars=0,status=0');
-        if (winPrint) {
-            winPrint.document.write(`
-            <html>
-                <head>
-                <title>Print QR Code</title>
-                <style>
-                    body { display: flex; justify-content: center; align-items: center; height: 100vh; }
-                    .qr-container { text-align: center; }
-                </style>
-                </head>
-                <body>
-                <div class="qr-container">
-                    <h2>QR Code for ${selectedTable?.name}</h2>
-                    ${customerName ? `<p>Customer: ${customerName}</p>` : ''}
-                    ${printContent.innerHTML}
-                </div>
-                </body>
-            </html>
-            `);
-            winPrint.document.close();
-            winPrint.focus();
-            winPrint.print();
-            winPrint.close();
-        }
-        }
-    };
-
-    const handleJoinTables = async () => {
-        if (!Array.isArray(selectedTablesForJoin) || selectedTablesForJoin.length < 2) {
-            toast.error('Please select at least 2 tables to join');
-            return;
-        }
-
-        const selectedTableDetails = selectedTablesForJoin
-            .map(id => tables.find(table => 
-                table && typeof table.id === 'number' && table.id === id
-            ))
-            .filter((table): table is Table => table !== undefined);
-
-        if (!selectedTableDetails.every(table => table.status === 'available')) {
-            toast.error('Can only join available tables');
-            return;
-        }
-
-        try {
-            await router.post('/pos-restaurant/tables/join', {
-                tableIds: selectedTablesForJoin
-            }, {
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken || '',
-                },
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: (response: any) => {
-                    if (response && response.tables) {
-                        const [processedTables, newJoinedTables] = processJoinedTables(response.tables);
-                        setTables(processedTables || []);
-                        setJoinedTables(newJoinedTables || []);
-                    }
-                    setSelectedTablesForJoin([]);
-                    setIsJoinTableDialogOpen(false);
-                    toast.success('Tables joined successfully');
-                },
-                onError: () => {
-                    toast.error('Failed to join tables');
-                }
-            });
-        } catch (error) {
-            console.error('Error joining tables:', error);
-            toast.error('Failed to join tables');
-        }
-    };
-
-    const handleUnjoinTable = async (table: Table) => {
-        // Check if table is a joined table and has originalTableIds
-        if (!table.isJoinedTable || !table.originalTableIds) {
-            toast.error('Invalid table configuration for unjoining');
-            return;
-        }
-
-        try {
-            await router.post('/pos-restaurant/tables/unjoin', {
-                tableIds: table.originalTableIds
-            }, {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: (response: any) => {
-                    if (response.tables) {
-                        setTables(response.tables);
-                    }
-                    toast.success('Tables unjoined successfully');
-                },
-                onError: () => {
-                    toast.error('Failed to unjoin tables');
-                }
-            });
-        } catch (error) {
-            console.error('Error unjoining tables:', error);
-            toast.error('Failed to unjoin tables');
-        }
-    };
-
-    const toggleTableSelection = (tableId: number | string) => {
-        const numericId = typeof tableId === 'string' 
-            ? Number(tableId.replace('joined_', '')) 
-            : tableId;
-        
-        setSelectedTablesForJoin(prev => 
-            prev.includes(numericId)
-                ? prev.filter(id => id !== numericId)
-                : [...prev, numericId]
-        );
-    };
-
-    const filteredTables = useMemo(() => {
-        // Ensure tables is an array
-        if (!Array.isArray(tables)) {
-            return [];
-        }
-
-        let filtered = [...tables];
-        
-        // Ensure joinedTables is an array before using it
-        if (tableStatusFilter === 'all' || tableStatusFilter === 'joined') {
-            const joinedTableEntries = Array.isArray(joinedTables) ? joinedTables.map(jt => ({
-                id: `joined_${jt.id}`,
-                numericId: jt.id,
-                name: jt.name,
-                seats: jt.seats,
-                status: 'joined' as const,
-                isJoinedTable: true,
-                originalTableIds: jt.tableIds
-            })) : [];
-            filtered = [...filtered, ...joinedTableEntries];
-        }
-
-        // Apply status filter
-        if (tableStatusFilter !== 'all') {
-            filtered = filtered.filter(table => table.status === tableStatusFilter);
-        }
-
-        return filtered;
-    }, [tables, tableStatusFilter, joinedTables]);
-
-    const handleAddMenuItem = () => {
-        setCurrentMenuItem(null);
-        setIsMenuItemDialogOpen(true);
-    };
-
-    const handleEditMenuItem = (item: MenuItem) => {
-        setCurrentMenuItem(item);
-        setIsMenuItemDialogOpen(true);
-    };
-
-    const handleDeleteMenuItem = async (id: number) => {
-        if (typeof id !== 'number') {
-            toast.error('Invalid menu item ID');
-            return;
-        }
-
-        try {
-            router.delete(`/pos-restaurant/menu-item/${id}`, {
-                onSuccess: () => {
-                    toast.success('Menu item deleted successfully');
-                    setMenuItems(prevItems => 
-                        Array.isArray(prevItems) 
-                            ? prevItems.filter(item => item && item.id !== id)
-                            : []
-                    );
-                    setSelectedMenuItems(prevSelected => 
-                        Array.isArray(prevSelected)
-                            ? prevSelected.filter(itemId => itemId !== id)
-                            : []
-                    );
-                },
-                onError: () => {
-                    toast.error('Failed to delete menu item');
-                }
-            });
-        } catch (error) {
-            console.error('Error deleting menu item:', error);
-            toast.error('Failed to delete menu item');
-        }
-    };
-
-    const handleDeleteSelectedMenuItems = async () => {
-        try {
-            router.post('/pos-restaurant/menu-items/bulk-destroy', {
-                ids: selectedMenuItems
-            }, {
-                onSuccess: () => {
-                    toast.success('Selected items deleted successfully');
-                    setMenuItems(menuItems.filter(item => !selectedMenuItems.includes(item.id)));
-                    setSelectedMenuItems([]);
-                },
-                onError: () => {
-                    toast.error('Failed to delete selected items');
-                }
-            });
-        } catch (error) {
-            console.error('Error deleting selected items:', error);
-            toast.error('Failed to delete selected items');
-        }
-    };
-
-    const fetchMenuItems = async () => {
-        try {
-            const response = await fetch('/pos-restaurant/menu-items');
-            const updatedMenuItems = await response.json();
-            setMenuItems(updatedMenuItems);
-        } catch (error) {
-            console.error('Error fetching menu items:', error);
-        }
-    };
-
-    const handleSaveMenuItem = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        try {
-            const formData = new FormData();
-            const menuItemData: MenuItemFormData = {
-                name: currentMenuItem?.name || '',
-                price: currentMenuItem?.price || 0,
-                category: currentMenuItem?.category || '',
-                image: currentMenuItem?.image,
-                delivery_fee: currentMenuItem?.delivery_fee
-            };
-
-            Object.entries(menuItemData).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    formData.append(key, value.toString());
-                }
-            });
-
-            if (newMenuItemImage) {
-                formData.append('image', newMenuItemImage);
-            }
-
-            const url = currentMenuItem?.id 
-                ? `/pos-restaurant/menu-item/${currentMenuItem.id}` 
-                : '/pos-restaurant/menu-items';
-
-            const method = currentMenuItem?.id ? 'PUT' : 'POST';
-
-            await router.post(url, formData, {
-                headers: {
-                    'X-HTTP-Method-Override': method
-                },
-                preserveScroll: true,
-                onSuccess: async () => {
-                    toast.success(`Menu item ${currentMenuItem?.id ? 'updated' : 'added'} successfully`);
-                    setIsMenuItemDialogOpen(false);
-                    setCurrentMenuItem(null);
-                    setNewMenuItemImage(null);
-
-                    // Fetch updated menu items
-                    await fetchMenuItems();
-                },
-                onError: () => {
-                    toast.error(`Failed to ${currentMenuItem?.id ? 'update' : 'add'} menu item`);
-                }
-            });
-        } catch (error) {
-            console.error('Error saving menu item:', error);
-            toast.error('Failed to save menu item');
-        }
-    };
-
-    useEffect(() => {
-        fetchMenuItems();
-        fetchReservations();
+    const handleTabChange = useCallback((value: string) => {
+        setIsTabLoading(true);
+        setCurrentTab(value);
+        // Simulate loading for better UX
+        setTimeout(() => {
+            setIsTabLoading(false);
+        }, 300);
     }, []);
 
-    const handleMenuItemImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-        setNewMenuItemImage(e.target.files[0]);
+    // POS Tab handlers
+    const handleCompleteOrder = useCallback(() => {
+        setIsCompleteSaleDialogOpen(true);
+    }, []);
+
+    const handleShowQRCode = useCallback(() => {
+        // Find the table for the current order
+        const table = tables.find(t => t.name === posState.tableNumber);
+        if (table) {
+            setSelectedTable(table);
+            setIsQRDialogOpen(true);
         }
-    };
+    }, [tables, posState.tableNumber]);
 
-    const toggleMenuItemSelection = (id: number) => {
-        setSelectedMenuItems(prev =>
-        prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]
-        );
-    };
+    const handleSplitBill = useCallback(() => {
+        setIsSplitBillDialogOpen(true);
+    }, []);
 
-    const categoryFilteredMenuItems = useMemo(() => {
-        if (!Array.isArray(menuItems)) return [];
-        
-        return selectedCategory
-            ? menuItems.filter((item: MenuItem) => 
-                item && item.category === selectedCategory
-            )
-            : menuItems;
-    }, [menuItems, selectedCategory]);
-
-    const filteredMenuItems = useMemo(() => {
-        if (!Array.isArray(menuItems)) return [];
-        
-        const searchTermLower = (searchTerm || '').toLowerCase();
-        return menuItems.filter((item: MenuItem) =>
-            item && (
-                (item.name || '').toLowerCase().includes(searchTermLower) ||
-                (item.category || '').toLowerCase().includes(searchTermLower)
-            )
-        );
-    }, [menuItems, searchTerm]);
-
-    const paginatedMenuItems = useMemo(() => {
-        if (!Array.isArray(filteredMenuItems)) return [];
-        
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return filteredMenuItems.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredMenuItems, currentPage]);
-
-    const pageCount = Math.ceil(filteredMenuItems.length / itemsPerPage);
-    
-    const handleSelectAll = (checked: boolean) => {
-        if (checked) {
-            setSelectedMenuItems(paginatedMenuItems.map((item: MenuItem) => item.id));
-        } else {
-            setSelectedMenuItems([]);
-        }
-    };
-
-    const handleTabChange = (value: string) => {
-        router.get(
-            window.location.pathname,
-            { app: "fnb", tab: value },
-            { preserveState: true, preserveScroll: true, replace: true }
-        );
-    };
-
-    // Modify handleAddTable to handle database connection errors
-    const handleAddTable = async () => {
-        if (newTableName && newTableSeats > 0) {
-            try {
-                await router.post('/pos-restaurant/tables', {
-                    name: newTableName,
-                    seats: newTableSeats,
-                    status: 'available'
-                }, {
-                    onSuccess: (page: any) => {
-                        // Type assertion after checking properties exist
-                        if (!page || !page.props) {
-                            toast.error('Invalid response from server');
-                            return;
-                        }
-
-                        const response = page.props as Partial<PosRestaurantProps>;
-                        
-                        if (response.error) {
-                            toast.error(response.error);
-                            return;
-                        }
-
-                        // Create new table with generated ID
-                        const newTable: Table = {
-                            id: Date.now(), // Use timestamp as temporary ID
-                            name: newTableName,
-                            seats: newTableSeats,
-                            status: 'available'
-                        };
-                        
-                        setTables(prevTables => [...prevTables, newTable]);
-                        setNewTableName("");
-                        setNewTableSeats(1);
-                        setIsAddTableDialogOpen(false);
-                        toast.success('Table added successfully');
-                    },
-                    onError: (errors: ApiError) => {
-                        console.error('Error adding table:', errors);
-                        const errorMessage = errors?.original?.error || 'Failed to add table';
-                        toast.error(errorMessage);
-                    },
-                    preserveState: true,
-                    preserveScroll: true
-                });
-            } catch (error) {
-                console.error('Error adding table:', error);
-                toast.error('Failed to add table. Please check database connection.');
-            }
-        } else {
-            toast.error('Please enter valid table name and seats');
-        }
-    };
-
-    const handleRemoveTable = async (id: number | string) => {
-        const numericId = typeof id === 'string' ? Number(id.replace('joined_', '')) : id;
-        try {
-            await router.delete(`/pos-restaurant/table/${numericId}`, {
-                onSuccess: () => {
-                    setTables(tables.filter(table => table.id !== id));
-                    toast.success('Table removed successfully');
-                },
-                onError: () => {
-                    toast.error('Failed to remove table');
-                }
-            });
-        } catch (error) {
-            console.error('Error removing table:', error);
-            toast.error('Failed to remove table');
-        }
-    };
-
-    const updateTableStatus = async (tableId: number, status: Table['status']) => {
-        try {
-            await router.put(`/pos-restaurant/table/${tableId}`, {
-                status: status
-            }, {
-                preserveState: true,
-                preserveScroll: true,
-            });
-            
-            setTables(prevTables =>
-                prevTables.map(table =>
-                    table.id === tableId ? { ...table, status } : table
-                )
-            );
-            
-            toast.success('Table status updated successfully');
-        } catch (error) {
-            console.error('Error updating table status:', error);
-            toast.error('Failed to update table status');
-        }
-    };
-
-    const handleEditTable = async () => {
-        if (!editTableData) return;
-
-        try {
-            await router.put(`/pos-restaurant/table/${editTableData.id}`, {
-                name: editTableData.name,
-                seats: editTableData.seats
-            }, {
-                onSuccess: () => {
-                    setTables(tables.map(table => 
-                        table.id === editTableData.id 
-                            ? { ...table, name: editTableData.name, seats: editTableData.seats }
-                            : table
-                    ));
-                    setIsEditTableDialogOpen(false);
-                    setEditTableData(null);
-                    toast.success('Table updated successfully');
-                },
-                onError: () => {
-                    toast.error('Failed to update table');
-                }
-            });
-        } catch (error) {
-            console.error('Error updating table:', error);
-            toast.error('Failed to update table');
-        }
-    };
-
-    const openEditTableDialog = (table: Table) => {
-        setEditTableData({
-            id: typeof table.id === 'string' ? parseInt(table.id) : table.id,
-            name: table.name,
-            seats: table.seats
-        });
-        setIsEditTableDialogOpen(true);
-    };
-
-    const handleTableSelection = async (tableName: string) => {
-        if (!tableName) {
-            toast.error('Invalid table selection');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/pos-restaurant/current-order/${tableName}`);
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to fetch order items');
-            }
-
-            setTableNumber(tableName);
-
-            if (data && data.order) {
-                setCurrentOrder(data.order);
-                const safeItems = Array.isArray(data.order.items) ? data.order.items : [];
-                setOrderItems(safeItems.map((item: any) => ({
-                    id: item?.id || 0,
-                    name: item?.item || '',
-                    price: parseFloat(item?.price || 0),
-                    quantity: parseInt(item?.quantity || 0),
-                    category: item?.category || '',
-                    total: parseFloat(item?.total || 0)
-                })));
-            } else {
-                setCurrentOrder(null);
-                setOrderItems([]);
-            }
-
-            router.get(
-                window.location.pathname,
-                { tab: 'pos' },
-                { preserveState: true, preserveScroll: true }
-            );
-
-        } catch (error) {
-            console.error('Error fetching current order:', error);
-            toast.error('Failed to fetch current order');
-            setOrderItems([]);
-            setCurrentOrder(null);
-        }
-    };
-
-    const toggleItemSelection = (itemId: number) => {
-        setOrderItems(orderItems.map(item => 
-            item.id === itemId ? { ...item, selected: !item.selected } : item
-        ));
-    };
-
-    const printCurrentBill = () => {
-        if (orderItems.length === 0 || !tableNumber) {
-            toast.error('No items in current order');
-            return;
-        }
-
+    const handlePrintBill = useCallback(() => {
         const printWindow = window.open('', '', 'height=600,width=800');
         if (!printWindow) {
             toast.error('Please allow pop-ups to print bills');
             return;
         }
 
-        const orderItemsDetails = orderItems.map(item => `
+        const orderItemsDetails = posState.orderItems.map(item => `
             <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">x${item.quantity}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.price}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${(item.price * item.quantity)}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${currency_symbol}${item.price}</td>
+                <td>${currency_symbol}${(item.price * item.quantity)}</td>
             </tr>
         `).join('');
 
         const printContent = `
             <html>
                 <head>
-                    <title>Bill - Table ${tableNumber}</title>
+                    <title>Restaurant Bill</title>
                     <style>
-                        body { 
-                            font-family: Arial, sans-serif; 
-                            padding: 20px; 
-                            max-width: 800px; 
-                            margin: 0 auto; 
-                        }
-                        .header { 
-                            text-align: center; 
-                            margin-bottom: 20px; 
-                            padding-bottom: 10px;
-                            border-bottom: 2px solid #333;
-                        }
-                        table { 
-                            width: 100%; 
-                            border-collapse: collapse; 
-                            margin: 15px 0;
-                        }
-                        th, td { 
-                            text-align: left; 
-                            padding: 8px; 
-                            border-bottom: 1px solid #ddd; 
-                        }
-                        .totals {
-                            margin-top: 15px;
-                            padding: 10px;
-                            border-top: 2px solid #333;
-                        }
-                        .footer { 
-                            margin-top: 20px; 
-                            text-align: center;
-                            padding-top: 10px;
-                            border-top: 1px solid #ddd;
-                        }
+                        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                        .bill-details { margin-bottom: 20px; }
+                        .bill-details h3 { margin-bottom: 10px; color: #333; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        .total-section { border-top: 2px solid #333; padding-top: 10px; margin-top: 20px; }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                        <h2>Bill</h2>
-                        <p>Table: ${tableNumber}</p>
+                        <h2>Restaurant Bill</h2>
+                        <p>Table Number: ${posState.tableNumber}</p>
                         <p>Date: ${new Date().toLocaleDateString()}</p>
                         <p>Time: ${new Date().toLocaleTimeString()}</p>
                     </div>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${orderItemsDetails}
-                        </tbody>
-                    </table>
-
-                    <div class="totals">
-                        <p><strong>Subtotal:</strong> ${currency_symbol}${totalAmount}</p>
-                        <p><strong>Discount:</strong> ${currency_symbol}${discountAmount}</p>
-                        <p style="font-size: 1.2em;"><strong>Total Amount:</strong> ${currency_symbol}${finalTotal}</p>
+                    <div class="bill-details">
+                        <h3>Order Items</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orderItemsDetails}
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="footer">
-                        <p>Thank you for dining with us!</p>
+                    <div class="total-section">
+                        <p><strong>Subtotal: ${currency_symbol}${posState.totalAmount}</strong></p>
+                        <p><strong>Discount: ${currency_symbol}${discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount}</strong></p>
+                        <p><strong>Total Amount: ${currency_symbol}${posState.totalAmount - (discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount)}</strong></p>
                     </div>
                 </body>
             </html>
@@ -1509,1120 +182,464 @@ export default function PosRestaurant({
         printWindow.focus();
         printWindow.print();
         printWindow.close();
-    };
+    }, [posState.orderItems, posState.tableNumber, posState.totalAmount, currency_symbol, discount, discountType]);
 
-    // Add error message display in the UI
-    useEffect(() => {
-        if (apiError) {
-            toast.error(apiError, {
-                duration: 5000,
-                description: "Please check the database connection and try again."
-            });
+    const handlePrintKitchenOrder = useCallback(async () => {
+        const printWindow = window.open('', '', 'height=600,width=800');
+        if (!printWindow) {
+            toast.error('Please allow pop-ups to print kitchen orders');
+            return;
         }
-    }, [apiError]);
+
+        const orderItemsDetails = posState.orderItems.map(item => `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.notes || 'No special instructions'}</td>
+            </tr>
+        `).join('');
+
+        const printContent = `
+            <html>
+                <head>
+                    <title>Kitchen Order</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                        .order-details { margin-bottom: 20px; }
+                        .order-details h3 { margin-bottom: 10px; color: #333; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>Kitchen Order</h2>
+                        <p>Table Number: ${posState.tableNumber}</p>
+                        <p>Date: ${new Date().toLocaleDateString()}</p>
+                        <p>Time: ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                    <div class="order-details">
+                        <h3>Order Items</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orderItemsDetails}
+                            </tbody>
+                        </table>
+                    </div>
+                </body>
+            </html>
+        `;
+
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+
+        // Also send to kitchen order API
+        try {
+            await api.storeKitchenOrder({
+                table_number: posState.tableNumber,
+                items: posState.orderItems,
+                client_identifier: 'current_client' // This should come from auth
+            });
+            toast.success('Kitchen order sent successfully');
+        } catch (error) {
+            toast.error('Failed to send kitchen order');
+        }
+    }, [posState.orderItems, posState.tableNumber, api]);
+
+    const handleConfirmCompleteOrder = useCallback(async () => {
+        const orderData = {
+            table_number: posState.tableNumber,
+            items: JSON.stringify(posState.orderItems),
+            subtotal: posState.totalAmount,
+            discount: discount,
+            discount_type: discountType,
+            total: posState.totalAmount - (discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount)
+        };
+
+        const result = await api.completeOrder(orderData);
+        if (result) {
+            posState.clearOrder();
+            setIsCompleteSaleDialogOpen(false);
+            api.refreshData();
+        }
+    }, [posState, discount, discountType, api]);
+
+    // Table handlers
+    const handleAddTable = useCallback(async (name: string, seats: number) => {
+        const result = await api.createTable({ name, seats, status: 'available' });
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleEditTable = useCallback((table: Table) => {
+        setEditTableData({
+            id: typeof table.id === 'number' ? table.id : parseInt(table.id.toString()),
+            name: table.name,
+            seats: table.seats
+        });
+        setIsEditTableDialogOpen(true);
+    }, []);
+
+    const handleConfirmEditTable = useCallback(async (id: number, name: string, seats: number) => {
+        const result = await api.updateTable(id, { name, seats });
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleDeleteTable = useCallback(async (tableId: number) => {
+        if (confirm('Are you sure you want to delete this table?')) {
+            const result = await api.deleteTable(tableId);
+            if (result) {
+                api.refreshData();
+            }
+        }
+    }, [api]);
+
+    const handleJoinTables = useCallback(async (tableIds: number[]) => {
+        const result = await api.joinTables(tableIds);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleUnjoinTables = useCallback(async (tableIds: number[]) => {
+        const result = await api.unjoinTables(tableIds);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    // Menu handlers
+    const handleAddMenuItem = useCallback(() => {
+        setIsAddMenuItemDialogOpen(true);
+    }, []);
+
+    const handleConfirmAddMenuItem = useCallback(async (menuItemData: MenuItemFormData) => {
+        const result = await api.createMenuItem(menuItemData);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleEditMenuItem = useCallback((item: MenuItem) => {
+        setEditMenuItemData(item);
+        setIsEditMenuItemDialogOpen(true);
+    }, []);
+
+    const handleConfirmEditMenuItem = useCallback(async (id: number, menuItemData: MenuItemFormData) => {
+        const result = await api.updateMenuItem(id, menuItemData);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleDeleteMenuItem = useCallback((id: number) => {
+        // Find the menu item to get its name
+        const menuItem = posState.menuItems.find(item => item.id === id);
+        if (menuItem) {
+            setDeleteMenuItemData({
+                id: id,
+                name: menuItem.name,
+                isBulk: false
+            });
+            setIsDeleteMenuItemDialogOpen(true);
+        }
+    }, [posState.menuItems]);
+
+    const handleConfirmDeleteMenuItem = useCallback(async () => {
+        if (deleteMenuItemData) {
+            if (deleteMenuItemData.isBulk && deleteMenuItemData.selectedIds) {
+                const result = await api.bulkDeleteMenuItems(deleteMenuItemData.selectedIds);
+                if (result) {
+                    api.refreshData();
+                }
+            } else if (!deleteMenuItemData.isBulk) {
+                const result = await api.deleteMenuItem(deleteMenuItemData.id);
+                if (result) {
+                    api.refreshData();
+                }
+            }
+        }
+    }, [deleteMenuItemData, api]);
+
+    const handleBulkDeleteMenuItems = useCallback((ids: number[]) => {
+        setDeleteMenuItemData({
+            id: 0, // Not used for bulk delete
+            name: '', // Not used for bulk delete
+            isBulk: true,
+            itemCount: ids.length,
+            selectedIds: ids
+        });
+        setIsDeleteMenuItemDialogOpen(true);
+    }, []);
+
+
+    // Reservation handlers
+    const handleAddReservation = useCallback(async (reservation: Omit<Reservation, 'id' | 'status'>) => {
+        const result = await api.createReservation(reservation);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleUpdateReservation = useCallback(async (id: number, reservation: Partial<Reservation>) => {
+        const result = await api.updateReservation(id, reservation);
+        if (result) {
+            api.refreshData();
+        }
+    }, [api]);
+
+    const handleDeleteReservation = useCallback(async (id: number) => {
+        if (confirm('Are you sure you want to delete this reservation?')) {
+            const result = await api.deleteReservation(id);
+            if (result) {
+                api.refreshData();
+            }
+        }
+    }, [api]);
+
+    const handleConfirmReservation = useCallback(async (id: number) => {
+        await handleUpdateReservation(id, { status: 'confirmed' });
+    }, [handleUpdateReservation]);
+
+    const handleCancelReservation = useCallback(async (id: number) => {
+        await handleUpdateReservation(id, { status: 'cancelled' });
+    }, [handleUpdateReservation]);
 
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Point of Sale
-                </h2>
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                        <UtensilsCrossed className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold leading-tight text-gray-800 dark:text-gray-200">
+                            Food & Beverage
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Food & Beverage Management System
+                        </p>
+                    </div>
+                </div>
             }
         >
-            <Head title="Dashboard" />
+            <Head title="POS Restaurant" />
             <Toaster position="top-right" richColors />
 
-            <div className="p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
-                    <TabsList className={`grid w-full ${
-                        useMediaQuery('(min-width: 640px)') 
-                            ? 'grid-cols-4' 
-                            : 'grid-cols-2'
-                    } gap-0.5 p-0.5 min-h-0 bg-muted h-90`}>
-                        <TabsTrigger 
-                            value="pos" 
-                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
-                        >
-                            POS
-                        </TabsTrigger>
-                        <TabsTrigger 
-                            value="tables" 
-                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
-                        >
-                            Tables
-                        </TabsTrigger>
-                        <TabsTrigger 
-                            value="reservations" 
-                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
-                        >
-                            Reservations
-                        </TabsTrigger>
-                        <TabsTrigger 
-                            value="menu" 
-                            className="text-[10px] sm:text-sm md:text-base whitespace-nowrap px-0.5 py-0.5 h-7 sm:h-10 min-h-0 data-[state=active]:bg-background"
-                        >
-                            Menu
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="pos">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <Card>
-                        <CardHeader>
-                            <CardTitle>Menu Items</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-4">
-                            <Select onValueChange={(value) => setSelectedCategory(value)}>
-                                <SelectTrigger className="bg-white">
-                                <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white">
-                                <SelectItem value="Main">Main Dishes</SelectItem>
-                                <SelectItem value="Side">Side Dishes</SelectItem>
-                                <SelectItem value="Drink">Drinks</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {categoryFilteredMenuItems.map((item: MenuItem) => (
-                                <Button
-                                    key={item.id}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        addItemToOrder(item);
-                                    }}
-                                    className="h-auto flex flex-col items-center p-2 touch-manipulation bg-gray-700 hover:bg-gray-600 text-white"
-                                    type="button"
-                                >
-                                    <img 
-                                        src={item.image || '/images/no-image.jpg'} 
-                                        alt={item.name} 
-                                        width={100} 
-                                        height={100} 
-                                        className="mb-2 rounded" 
-                                    />
-                                    <span className="text-center">{item.name}</span>
-                                    <span>{currency_symbol}{item.price}</span>
-                                </Button>
-                            ))}
-                            </div>
-                        </CardContent>
-                        </Card>
-                        <Card>
-                        <CardHeader>
-                            <CardTitle>Current Order</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-4">
-                            <Label htmlFor="tableNumber">Table Number</Label>
-                            <Input
-                                id="tableNumber"
-                                value={tableNumber}
-                                onChange={(e) => setTableNumber(e.target.value)}
-                                placeholder="Enter table number"
-                                className="text-lg p-2"
-                            />
-                            </div>
-                            <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead>Item</TableHead>
-                                <TableHead>Quantity</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Total</TableHead>
-                                <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {orderItems.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell>
-                                    <div className="flex items-center space-x-2">
-                                        <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity - 1)}>
-                                        <Minus className="h-4 w-4" />
-                                        </Button>
-                                        <span className="text-lg">{item.quantity}</span>
-                                        <Button size="sm" onClick={() => updateItemQuantity(item.id, item.quantity + 1)}>
-                                        <Plus className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    </TableCell>
-                                    <TableCell>{currency_symbol}{item.price}</TableCell>
-                                    <TableCell>{currency_symbol}{(item.price * item.quantity)}</TableCell>
-                                    <TableCell>
-                                    <Button variant="destructive" size="sm" onClick={() => removeItemFromOrder(item.id)}>
-                                        Remove
-                                    </Button>
-                                    </TableCell>
-                                </TableRow>
-                                ))}
-                            </TableBody>
-                            </Table>
-                            <div className="mt-4 space-y-2">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-1/3">
-                                        <Label htmlFor="discountType">Discount Type</Label>
-                                        <Select value={discountType} onValueChange={(value: 'percentage' | 'fixed') => setDiscountType(value)}>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="percentage">Percentage</SelectItem>
-                                                <SelectItem value="fixed">Fixed Amount</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="w-1/3">
-                                        <Label htmlFor="discount">Discount</Label>
-                                        <Input
-                                            id="discount"
-                                            type="number"
-                                            value={discount}
-                                            onChange={(e) => setDiscount(Number(e.target.value))}
-                                            placeholder={discountType === 'percentage' ? "%" : "$"}
-                                            className="w-full"
+            <div className="min-h-screen p-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-6 py-3 border-b border-gray-200 dark:border-gray-600">
+                        <TabsList className={`grid w-full ${
+                            useMediaQuery('(min-width: 640px)') 
+                                ? 'grid-cols-4' 
+                                : 'grid-cols-2'
+                        } gap-2 p-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-600 pb-10`}>
+                            <TabsTrigger 
+                                value="pos" 
+                                className="group relative text-sm font-medium whitespace-nowrap px-4 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:hover:text-gray-200 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                                <UtensilsCrossed className="w-4 h-4 mr-2 group-data-[state=active]:text-white" />
+                                <span className="hidden sm:inline">Point of Sale</span>
+                                <span className="sm:hidden">POS</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="tables" 
+                                className="group relative text-sm font-medium whitespace-nowrap px-4 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:hover:text-gray-200 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                                <Calculator className="w-4 h-4 mr-2 group-data-[state=active]:text-white" />
+                                <span className="hidden sm:inline">Tables</span>
+                                <span className="sm:hidden">Tables</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="reservations" 
+                                className="group relative text-sm font-medium whitespace-nowrap px-4 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:hover:text-gray-200 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                                <Check className="w-4 h-4 mr-2 group-data-[state=active]:text-white" />
+                                <span className="hidden sm:inline">Reservations</span>
+                                <span className="sm:hidden">Reserve</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="menu" 
+                                className="group relative text-sm font-medium whitespace-nowrap px-4 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-400 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:hover:text-gray-200 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                                <ShoppingCart className="w-4 h-4 mr-2 group-data-[state=active]:text-white" />
+                                <span className="hidden sm:inline">Menu</span>
+                                <span className="sm:hidden">Menu</span>
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+                    
+                    {isTabLoading && <TabLoadingSpinner />}
+                    
+                    {!isTabLoading && (
+                        <ErrorBoundary>
+                            <Suspense fallback={<TabLoadingSpinner />}>
+                                {currentTab === "pos" && (
+                                    <TabsContent value="pos" className="p-6 pb-8">
+                                        <PosTab
+                                            menuItems={posState.menuItems}
+                                            orderItems={posState.orderItems}
+                                            tableNumber={posState.tableNumber}
+                                            selectedCategory={posState.selectedCategory}
+                                            discount={discount}
+                                            discountType={discountType}
+                                            currency_symbol={currency_symbol}
+                                            tables={tables}
+                                            onAddItemToOrder={posState.addItemToOrder}
+                                            onUpdateItemQuantity={posState.updateItemQuantity}
+                                            onRemoveItemFromOrder={posState.removeItemFromOrder}
+                                            onSetTableNumber={posState.setTableNumber}
+                                            onSetSelectedCategory={posState.setSelectedCategory}
+                                            onSetDiscount={setDiscount}
+                                            onSetDiscountType={setDiscountType}
+                                            onPrintBill={handlePrintBill}
+                                            onShowQRCode={handleShowQRCode}
+                                            onCompleteOrder={handleCompleteOrder}
+                                            onSplitBill={handleSplitBill}
+                                            onPrintKitchenOrder={handlePrintKitchenOrder}
                                         />
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex flex-col items-start">
-                            <div className="w-full flex justify-between mb-2">
-                            <span>Subtotal:</span>
-                            <span>{currency_symbol}{totalAmount}</span>
-                            </div>
-                            <div className="w-full flex justify-between mb-2">
-                            <span>Discount:</span>
-                            <span>{currency_symbol}{discountAmount}</span>
-                            </div>
-                            <div className="w-full flex justify-between mb-4">
-                            <span className="font-bold">Total:</span>
-                            <span className="font-bold">{currency_symbol}{finalTotal}</span>
-                            </div>
-                            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:justify-end gap-2 mt-4">
-                                <Button 
-                                    onClick={printCurrentBill} 
-                                    disabled={orderItems.length === 0} 
-                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
-                                >
-                                    <Printer className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">Print Bill</span>
-                                    <span className="sm:hidden">Bill</span>
-                                </Button>
-                                <Button 
-                                    onClick={printKitchenOrder} 
-                                    disabled={orderItems.length === 0} 
-                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
-                                >
-                                    <UtensilsCrossed className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">Kitchen Order</span>
-                                    <span className="sm:hidden">Kitchen</span>
-                                </Button>
-                                <Button 
-                                    onClick={handleSplitBill} 
-                                    disabled={orderItems.length === 0} 
-                                    className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
-                                >
-                                    <Calculator className="mr-2 h-4 w-4" />
-                                    <span className="hidden sm:inline">Split Bill</span>
-                                    <span className="sm:hidden">Split</span>
-                                </Button>
-                                {canEdit && (
-                                    <Button 
-                                        onClick={handleCompleteSale} 
-                                        disabled={orderItems.length === 0 || !tableNumber} 
-                                        className="w-full lg:w-auto text-sm lg:text-base py-4 lg:py-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center"
-                                    >
-                                        <ShoppingCart className="mr-2 h-4 w-4" />
-                                        <span className="hidden sm:inline">Complete Order</span>
-                                        <span className="sm:hidden">Complete</span>
-                                    </Button>
+                                    </TabsContent>
                                 )}
-                            </div>
-                        </CardFooter>
-                        </Card>
-                    </div>
-                    </TabsContent>
-                    <TabsContent value="tables">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex justify-between items-center">
-                                <CardTitle>Table Management</CardTitle>
-                                {canEdit && (
-                                    <Button onClick={() => setIsAddTableDialogOpen(true)} className="bg-gray-700 hover:bg-gray-600 text-white">
-                                        <Plus className="mr-2 h-4 w-4" /> Add Table
-                                    </Button>
+                                
+                                {currentTab === "tables" && (
+                                    <TabsContent value="tables" className="p-6 pb-8">
+                                        <TablesTab
+                                            tables={posState.filteredTables}
+                                            currency_symbol={currency_symbol}
+                                            canEdit={canEdit}
+                                            canDelete={canDelete}
+                                            onAddTable={() => setIsAddTableDialogOpen(true)}
+                                            onEditTable={handleEditTable}
+                                            onDeleteTable={handleDeleteTable}
+                                            onJoinTables={handleJoinTables}
+                                            onUnjoinTables={handleUnjoinTables}
+                                            onSetTableStatusFilter={posState.setTableStatusFilter}
+                                            tableStatusFilter={posState.tableStatusFilter}
+                                        />
+                                    </TabsContent>
                                 )}
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="flex items-end space-x-2">
-                                    <Button 
-                                        onClick={() => setIsJoinTableDialogOpen(true)}
-                                        className="bg-gray-700 hover:bg-gray-600 text-white"
-                                        disabled={selectedTablesForJoin.length < 2}
-                                    >
-                                        Join Selected Tables
-                                    </Button>
-                                </div>
-                                <div>
-                                    <Label htmlFor="tableStatusFilter">Filter by Status</Label>
-                                    <Select
-                                        value={tableStatusFilter}
-                                        onValueChange={(value: 'all' | 'available' | 'occupied' | 'reserved' | 'joined') => setTableStatusFilter(value)}
-                                    >
-                                        <SelectTrigger id="tableStatusFilter" className="bg-white">
-                                            <SelectValue placeholder="Filter by status" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-white">
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="available">Available</SelectItem>
-                                            <SelectItem value="occupied">Occupied</SelectItem>
-                                            <SelectItem value="reserved">Reserved</SelectItem>
-                                            <SelectItem value="joined">Joined</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {filteredTables.map((table) => (
-                                    <Card 
-                                        key={table.id}
-                                        className={`${
-                                            selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? 'ring-2 ring-blue-500' : ''
-                                        }`}
-                                    >
-                                        <CardHeader>
-                                            <CardTitle>
-                                                {table.status === 'joined' && table.joined_with ? (
-                                                    <>
-                                                        {table.joined_with.split(',')
-                                                            .map(id => tables.find(t => t.id === parseInt(id))?.name)
-                                                            .filter(Boolean)
-                                                            .join(' & ')}
-                                                    </>
-                                                ) : (
-                                                    table.name
-                                                )}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p>Seats: {table.seats}</p>
-                                            <p>Status: {table.status}</p>
-                                            {table.status === 'joined' && table.joined_with && (
-                                                <p className="text-sm text-gray-500">
-                                                    Combined Tables: {table.joined_with.split(',')
-                                                        .map(id => tables.find(t => t.id === parseInt(id))?.name)
-                                                        .filter(Boolean)
-                                                        .join(', ')}
-                                                </p>
-                                            )}
-                                        </CardContent>
-                                        <CardFooter className="flex flex-wrap gap-2">
-                                            {table.status === 'available' && (
-                                                <>
-                                                    <Button
-                                                        onClick={() => handleTableSelection(table.name)} 
-                                                        className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                                    >
-                                                        <Plus className="h-4 w-4" />
-                                                    </Button>
-                                                    {/* Only show join table selection for available tables */}
-                                                    <Button
-                                                        onClick={() => toggleTableSelection(table.id)}
-                                                        variant={selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? "default" : "outline"}
-                                                        className="flex-1"
-                                                    >
-                                                        {selectedTablesForJoin.includes(typeof table.id === 'string' ? parseInt(table.id.replace('joined_', '')) : table.id) ? (
-                                                            <Check className="h-4 w-4" />
-                                                        ) : (
-                                                            <Link2 className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                    {/* Generate QR, Edit, and Delete buttons for available tables */}
-                                                    <Button 
-                                                        onClick={() => handleGenerateQR(table)} 
-                                                        className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                                    >
-                                                        <QrCode className="h-4 w-4" />
-                                                    </Button>
-                                                    {canEdit && (
-                                                        <Button 
-                                                            onClick={() => openEditTableDialog(table)} 
-                                                            className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
-                                                    {canDelete && (
-                                                        <Button 
-                                                            onClick={() => handleRemoveTable(table.id)} 
-                                                            className="bg-red-500 hover:bg-red-600 text-white flex-1"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
-                                                </>
-                                            )}
-                                            {(table.status === 'occupied' || table.status === 'reserved') && (
-                                                <Button 
-                                                    onClick={() => handleTableSelection(table.name)} 
-                                                    className="bg-gray-700 hover:bg-gray-600 text-white flex-1"
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                            {/* For joined tables, show unjoin button */}
-                                            {table.status === 'joined' && (
-                                                <Button 
-                                                    onClick={() => handleUnjoinTable(table)}
-                                                    className="bg-red-500 hover:bg-red-600 text-white flex-1"
-                                                >
-                                                    Unjoin Table
-                                                </Button>
-                                            )}
-                                        </CardFooter>
-                                    </Card>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                    </TabsContent>
-                    <TabsContent value="reservations">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Reservations</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <Label htmlFor="reservationName">Name *</Label>
-                                    <Input
-                                        id="reservationName"
-                                        value={newReservation.name}
-                                        onChange={(e) => setNewReservation({ ...newReservation, name: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="reservationContact">Contact Number</Label>
-                                    <Input
-                                        id="reservationContact"
-                                        value={newReservation.contact}
-                                        onChange={(e) => setNewReservation({ ...newReservation, contact: e.target.value })}
-                                        placeholder="Phone number"
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="reservationDate">Date *</Label>
-                                    <Input
-                                        id="reservationDate"
-                                        type="date"
-                                        value={newReservation.date}
-                                        onChange={(e) => setNewReservation({ ...newReservation, date: e.target.value })}
-                                        min={new Date().toISOString().split('T')[0]}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="reservationTime">Time *</Label>
-                                    <Input
-                                        id="reservationTime"
-                                        type="time"
-                                        value={newReservation.time}
-                                        onChange={(e) => setNewReservation({ ...newReservation, time: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="reservationGuests">Number of Guests *</Label>
-                                    <Input
-                                        id="reservationGuests"
-                                        type="number"
-                                        min="1"
-                                        value={newReservation.guests}
-                                        onChange={(e) => setNewReservation({ ...newReservation, guests: parseInt(e.target.value) })}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="reservationTable">Table *</Label>
-                                    <Select 
-                                        value={newReservation.tableId.toString()} 
-                                        onValueChange={(value) => setNewReservation({ ...newReservation, tableId: parseInt(value) })}
-                                    >
-                                        <SelectTrigger className="bg-white">
-                                            <SelectValue placeholder="Select table" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {tables
-                                                .filter(table => table.status === 'available')
-                                                .map((table) => (
-                                                    <SelectItem key={table.id} value={table.id.toString()}>
-                                                        {table.name} ({table.seats} seats)
-                                                    </SelectItem>
-                                                ))
-                                            }
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <Label htmlFor="reservationNotes">Notes</Label>
-                                    <Input
-                                        id="reservationNotes"
-                                        value={newReservation.notes}
-                                        onChange={(e) => setNewReservation({ ...newReservation, notes: e.target.value })}
-                                        placeholder="Special requests or additional information"
-                                    />
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={handleReservation} 
-                                className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white"
-                                disabled={!newReservation.name || !newReservation.date || !newReservation.time || !newReservation.tableId}
-                            >
-                                Make Reservation
-                            </Button>
-
-                            <div className="mt-8">
-                                <h3 className="text-lg font-semibold mb-4">Current Reservations</h3>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Contact</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead>Time</TableHead>
-                                            <TableHead>Guests</TableHead>
-                                            <TableHead>Table</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {reservations.map((reservation) => (
-                                            <TableRow key={reservation.id}>
-                                                <TableCell>{reservation.name}</TableCell>
-                                                <TableCell>{reservation.contact || '-'}</TableCell>
-                                                <TableCell>{new Date(reservation.date).toLocaleDateString()}</TableCell>
-                                                <TableCell>{reservation.time}</TableCell>
-                                                <TableCell>{reservation.guests}</TableCell>
-                                                <TableCell>
-                                                    {tables.find(table => table.id === reservation.tableId)?.name}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className={`px-2 py-1 rounded-full text-xs ${
-                                                        reservation.status === 'confirmed' 
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : reservation.status === 'cancelled'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : 'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                        {reservation.status}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleCancelReservation(reservation.id)}
-                                                        disabled={reservation.status === 'cancelled'}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    </TabsContent>
-                    <TabsContent value="menu">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Menu Management</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
-                                <div className="flex flex-col sm:flex-row gap-2">
-                                    {canEdit && (
-                                        <Button 
-                                            onClick={handleAddMenuItem}
-                                            className="w-full sm:w-auto"
-                                        >
-                                            <Plus className="mr-2 h-4 w-4" /> Add Menu Item
-                                        </Button>
-                                    )}
-                                    {canDelete && (
-                                        <Button 
-                                            onClick={handleDeleteSelectedMenuItems} 
-                                            variant="destructive" 
-                                            disabled={selectedMenuItems.length === 0}
-                                            className="w-full sm:w-auto"
-                                        >
-                                            <Trash className="mr-2 h-4 w-4" /> 
-                                            <span className="hidden sm:inline">Delete Selected</span>
-                                            <span className="sm:hidden">Delete ({selectedMenuItems.length})</span>
-                                        </Button>
-                                    )}
-                                </div>
-                                <div className="relative w-full sm:w-64">
-                                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                    <Input
-                                        placeholder="Search menu items..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-8 w-full"
-                                    />
-                                </div>
-                            </div>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50px]">
-                                            <Checkbox
-                                                checked={
-                                                    paginatedMenuItems.length > 0 &&
-                                                    paginatedMenuItems.every((item: MenuItem) =>
-                                                        selectedMenuItems.includes(item.id)
-                                                    )
-                                                }
-                                                onCheckedChange={handleSelectAll}
-                                            />
-                                        </TableHead>
-                                        <TableHead>Image</TableHead>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>Delivery Fee</TableHead>
-                                        <TableHead>Availability</TableHead>
-                                        <TableHead>Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                {paginatedMenuItems.map((item: MenuItem) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={selectedMenuItems.includes(item.id)}
-                                                onCheckedChange={() => toggleMenuItemSelection(item.id)}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <img 
-                                                src={item.image || '/images/no-image.jpg'} 
-                                                alt={item.name} 
-                                                width={50} 
-                                                height={50} 
-                                                className="rounded-md object-cover"
-                                            />
-                                        </TableCell>
-                                        <TableCell>{item.name}</TableCell>
-                                        <TableCell>{item.category}</TableCell>
-                                        <TableCell>{currency_symbol}{item.price}</TableCell>
-                                        <TableCell>{item.delivery_fee ? `${currency_symbol}${item.delivery_fee}` : '-'}</TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1 text-xs">
-                                                <span className={item.is_available_personal ? "text-green-600" : "text-red-600"}>
-                                                    {item.is_available_personal ? "✓" : "✗"} Personal Order
-                                                </span>
-                                                <span className={item.is_available_online ? "text-green-600" : "text-red-600"}>
-                                                    {item.is_available_online ? "✓" : "✗"} Online Order
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {canEdit && (
-                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditMenuItem(item)}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                            {canDelete && (
-                                                <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item.id)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                </TableBody>
-                            </Table>
-                            <div className="flex justify-between items-center mt-4">
-                                <div>
-                                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredMenuItems.length)} of {filteredMenuItems.length} items
-                                </div>
-                                <div className="flex space-x-2">
-                                <Button
-                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                    disabled={currentPage === 1}
-                                >
-                                    Previous
-                                </Button>
-                                {Array.from({ length: pageCount }, (_, i) => i + 1).map(page => (
-                                    <Button
-                                    key={page}
-                                    onClick={() => setCurrentPage(page)}
-                                    variant={currentPage === page ? "default" : "outline"}
-                                    >
-                                    {page}
-                                    </Button>
-                                ))}
-                                <Button
-                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                                    disabled={currentPage === pageCount}
-                                >
-                                    Next
-                                </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    </TabsContent>
+                                
+                                {currentTab === "reservations" && (
+                                    <TabsContent value="reservations" className="p-6 pb-8">
+                                        <ReservationsTab
+                                            reservations={posState.reservations}
+                                            tables={posState.tables}
+                                            currency_symbol={currency_symbol}
+                                            onAddReservation={handleAddReservation}
+                                            onUpdateReservation={handleUpdateReservation}
+                                            onDeleteReservation={handleDeleteReservation}
+                                            onConfirmReservation={handleConfirmReservation}
+                                            onCancelReservation={handleCancelReservation}
+                                        />
+                                    </TabsContent>
+                                )}
+                                
+                                {currentTab === "menu" && (
+                                    <TabsContent value="menu" className="p-6 pb-8">
+                                        <MenuTab
+                                            menuItems={posState.filteredMenuItems}
+                                            currency_symbol={currency_symbol}
+                                            canEdit={canEdit}
+                                            canDelete={canDelete}
+                                            onAddMenuItem={handleAddMenuItem}
+                                            onEditMenuItem={handleEditMenuItem}
+                                            onDeleteMenuItem={handleDeleteMenuItem}
+                                            onBulkDeleteMenuItems={handleBulkDeleteMenuItems}
+                                        />
+                                    </TabsContent>
+                                )}
+                            </Suspense>
+                        </ErrorBoundary>
+                    )}
                 </Tabs>
-
-                <Dialog open={isCompleteSaleDialogOpen} onOpenChange={setIsCompleteSaleDialogOpen}>
-                    <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Complete Order</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p className="mb-2">Table Number: {tableNumber}</p>
-                        <p className="mb-2">Order Items: 
-                            <table className="w-full text-sm">
-                            {orderItems.map(item => {
-                                return <tr key={item.id}>
-                                    <td className="pl-2">{item.name}</td>
-                                    <td className="text-right">{currency_symbol}{item.price}</td>
-                                    <td className="text-right">{currency_symbol}{(item.price * item.quantity)}</td>
-                                </tr>
-                            })}
-                            </table>
-                        </p>
-                        <p className="mb-2">Subtotal: {currency_symbol}{totalAmount}</p>
-                        <p className="mb-2">Discount: {currency_symbol}{discountAmount}</p>
-                        <p>Total Amount: {currency_symbol}{finalTotal}</p>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCompleteSaleDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Cancel</Button>
-                        <Button onClick={confirmCompleteSale} className="bg-blue-500 hover:bg-blue-600 text-white">Confirm Order</Button>
-                    </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog open={isSplitBillDialogOpen} onOpenChange={setIsSplitBillDialogOpen}>
-                    <DialogContent className="max-w-3xl">
-                        <DialogHeader>
-                            <DialogTitle>Split Bill</DialogTitle>
-                        </DialogHeader>
-                        <div className="py-4">
-                            <Label>Split Method</Label>
-                            <div className="flex items-center mb-4">
-                                <label className="mr-4 flex items-center space-x-2">
-                                    <input
-                                        type="radio"
-                                        value="equal"
-                                        checked={splitMethod === 'equal'}
-                                        onChange={() => setSplitMethod('equal')}
-                                        className="form-radio"
-                                    />
-                                    <span>Equal Split</span>
-                                </label>
-                                <label className="flex items-center space-x-2">
-                                    <input
-                                        type="radio"
-                                        value="item"
-                                        checked={splitMethod === 'item'}
-                                        onChange={() => setSplitMethod('item')}
-                                        className="form-radio"
-                                    />
-                                    <span>Split by Item</span>
-                                </label>
-                            </div>
-
-                            <div className="mb-4">
-                                <Label htmlFor="splitAmount">Number of ways to split</Label>
-                                <div className="flex items-center">
-                                    <Button 
-                                        onClick={() => setSplitAmount(Math.max(splitAmount - 1, 2))} 
-                                        className="mr-2"
-                                    >
-                                        <Minus className="h-4 w-4" />
-                                    </Button>
-                                    <Input
-                                        id="splitAmount"
-                                        type="number"
-                                        value={splitAmount}
-                                        onChange={(e) => setSplitAmount(Math.max(2, parseInt(e.target.value)))}
-                                        min={2}
-                                        className="w-20 text-center"
-                                    />
-                                    <Button 
-                                        onClick={() => setSplitAmount(splitAmount + 1)} 
-                                        className="ml-2"
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div className="mb-4">
-                                <h3 className="font-semibold mb-2">Order Items:</h3>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            {splitMethod === 'item' && (
-                                                <TableHead className="w-[50px]">Select</TableHead>
-                                            )}
-                                            <TableHead>Item</TableHead>
-                                            <TableHead>Quantity</TableHead>
-                                            <TableHead>Price</TableHead>
-                                            <TableHead>Total</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {orderItems.map(item => (
-                                            <TableRow key={item.id}>
-                                                {splitMethod === 'item' && (
-                                                    <TableCell>
-                                                        <Checkbox
-                                                            checked={item.selected}
-                                                            onCheckedChange={() => toggleItemSelection(item.id)}
-                                                        />
-                                                    </TableCell>
-                                                )}
-                                                <TableCell>{item.name}</TableCell>
-                                                <TableCell>x{item.quantity}</TableCell>
-                                                <TableCell>{currency_symbol}{item.price}</TableCell>
-                                                <TableCell>{currency_symbol}{(item.price * item.quantity)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-
-                            <div className="mt-4 space-y-2 border-t pt-4">
-                                <div className="flex justify-between">
-                                    <span>Total Amount:</span>
-                                    <span>{currency_symbol}{finalTotal}</span>
-                                </div>
-                                {splitMethod === 'item' && (
-                                    <div className="flex justify-between text-blue-600">
-                                        <span>Selected Items Total:</span>
-                                        <span>{currency_symbol}{orderItems
-                                            .filter(item => item.selected)
-                                            .reduce((total, item) => total + (item.price * item.quantity), 0)}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between font-semibold">
-                                    <span>Amount per person:</span>
-                                    <span>
-                                        {currency_symbol}{(splitMethod === 'equal' 
-                                            ? finalTotal / splitAmount 
-                                            : orderItems
-                                                .filter(item => item.selected)
-                                                .reduce((total, item) => total + (item.price * item.quantity), 0) / splitAmount
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button 
-                                variant="outline" 
-                                onClick={() => setIsSplitBillDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button 
-                                onClick={confirmSplitBill}
-                                disabled={splitMethod === 'item' && !orderItems.some(item => item.selected)}
-                            >
-                                Split Bill
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
-                    <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>QR Code for {selectedTable?.name}</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div>
-                        <Label htmlFor="customerName">Customer Name (Optional)</Label>
-                        <Input
-                            id="customerName"
-                            value={customerName}
-                            onChange={(e) => setCustomerName(e.target.value)}
-                            placeholder="Enter customer name"
-                        />
-                        </div>
-                        <div className="flex flex-col items-center" ref={qrCodeRef}>
-                        {selectedTable && (
-                            <QRCodeSVG
-                            value={`https://sakto.app/fnb/menu?table=${selectedTable.id}${customerName ? `&customer=${encodeURIComponent(customerName)}` : ''}`}
-                            size={200}
-                            />
-                        )}
-                        <p className="mt-2 text-sm text-gray-500">Scan to view menu</p>
-                        {customerName && <p className="mt-1 text-sm">Customer: {customerName}</p>}
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={printQRCode} className="mr-2 bg-gray-700 hover:bg-gray-600 text-white">
-                        <Printer className="mr-2 h-4 w-4" />
-                        Print QR Code
-                        </Button>
-                        <Button onClick={() => setIsQRDialogOpen(false)} className="bg-gray-700 hover:bg-gray-600 text-white">Close</Button>
-                    </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog open={isMenuItemDialogOpen} onOpenChange={setIsMenuItemDialogOpen}>
-                    <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{currentMenuItem?.id ? 'Edit Menu Item' : 'Add Menu Item'}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSaveMenuItem}>
-                        <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="name" className="text-right">Name</Label>
-                            <Input
-                            id="name"
-                            value={currentMenuItem?.name || ''}
-                            onChange={(e) => setCurrentMenuItem({ 
-                                ...currentMenuItem!, 
-                                name: e.target.value 
-                            })}
-                            className="col-span-3"
-                            required
-                        />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="category" className="text-right">Category</Label>
-                            <Select
-                            value={currentMenuItem?.category || ''}
-                            onValueChange={(value) => setCurrentMenuItem({ 
-                                ...currentMenuItem!, 
-                                category: value 
-                            })}
-                            >
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Main">Main</SelectItem>
-                                <SelectItem value="Side">Side</SelectItem>
-                                <SelectItem value="Drink">Drink</SelectItem>
-                            </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="price" className="text-right">Price</Label>
-                            <Input
-                            id="price"
-                            type="number"
-                            step="0.01"
-                            value={currentMenuItem?.price || ''}
-                            onChange={(e) => setCurrentMenuItem({ 
-                                ...currentMenuItem!, 
-                                price: parseFloat(e.target.value) 
-                            })}
-                            className="col-span-3"
-                            required
-                        />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="delivery_fee" className="text-right">Delivery Fee</Label>
-                            <Input
-                            id="delivery_fee"
-                            type="number"
-                            step="0.01"
-                            value={currentMenuItem?.delivery_fee || ''}
-                            onChange={(e) => setCurrentMenuItem({ 
-                                ...currentMenuItem!, 
-                                delivery_fee: e.target.value ? parseFloat(e.target.value) : undefined
-                            })}
-                            className="col-span-3"
-                            placeholder="Optional"
-                        />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="image" className="text-right">Image</Label>
-                            <Input
-                            id="image"
-                            type="file"
-                            onChange={handleMenuItemImageChange}
-                            className="col-span-3"
-                            accept="image/*"
-                        />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Availability</Label>
-                            <div className="col-span-3 space-y-2">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="personal_order"
-                                        checked={currentMenuItem?.is_available_personal ?? true}
-                                        onCheckedChange={(checked) => setCurrentMenuItem({ 
-                                            ...currentMenuItem!, 
-                                            is_available_personal: checked as boolean 
-                                        })}
-                                    />
-                                    <Label htmlFor="personal_order">Available for Personal Order</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="online_order"
-                                        checked={currentMenuItem?.is_available_online ?? true}
-                                        onCheckedChange={(checked) => setCurrentMenuItem({ 
-                                            ...currentMenuItem!, 
-                                            is_available_online: checked as boolean 
-                                        })}
-                                    />
-                                    <Label htmlFor="online_order">Available for Online Order</Label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setIsMenuItemDialogOpen(false)}>
-                            Cancel
-                        </Button>
-                        <Button type="submit">Save</Button>
-                    </DialogFooter>
-                    </form>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog open={isJoinTableDialogOpen} onOpenChange={setIsJoinTableDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Join Tables</DialogTitle>
-                        </DialogHeader>
-                        <div className="py-4">
-                            <p>Selected Tables:</p>
-                            <ul className="list-disc list-inside">
-                                {selectedTablesForJoin.map(id => {
-                                    const table = tables.find(t => t.id === id);
-                                    return table ? (
-                                        <li key={id}>{table.name} ({table.seats} seats)</li>
-                                    ) : null;
-                                })}
-                            </ul>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsJoinTableDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleJoinTables}>
-                                Join Tables
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Add New Table</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="tableName" className="text-right">
-                                    Table Name
-                                </Label>
-                                <Input
-                                    id="tableName"
-                                    value={newTableName}
-                                    onChange={(e) => setNewTableName(e.target.value)}
-                                    className="col-span-3"
-                                    placeholder="e.g., Table 5"
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="tableSeats" className="text-right">
-                                    Number of Seats
-                                </Label>
-                                <Input
-                                    id="tableSeats"
-                                    type="number"
-                                    min="1"
-                                    value={newTableSeats}
-                                    onChange={(e) => setNewTableSeats(parseInt(e.target.value))}
-                                    className="col-span-3"
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsAddTableDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button 
-                                onClick={() => {
-                                    handleAddTable();
-                                    setIsAddTableDialogOpen(false);
-                                }}
-                                disabled={!newTableName || newTableSeats < 1}
-                            >
-                                Add Table
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
-                <Dialog open={isEditTableDialogOpen} onOpenChange={setIsEditTableDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Edit Table</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="editTableName" className="text-right">
-                                    Table Name
-                                </Label>
-                                <Input
-                                    id="editTableName"
-                                    value={editTableData?.name || ''}
-                                    onChange={(e) => setEditTableData(prev => prev ? {...prev, name: e.target.value} : null)}
-                                    className="col-span-3"
-                                    placeholder="e.g., Table 5"
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="editTableSeats" className="text-right">
-                                    Number of Seats
-                                </Label>
-                                <Input
-                                    id="editTableSeats"
-                                    type="number"
-                                    min="1"
-                                    value={editTableData?.seats || 1}
-                                    onChange={(e) => setEditTableData(prev => prev ? {...prev, seats: parseInt(e.target.value)} : null)}
-                                    className="col-span-3"
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsEditTableDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button 
-                                onClick={handleEditTable}
-                                disabled={!editTableData?.name || (editTableData?.seats || 0) < 1}
-                            >
-                                Update Table
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                </div>
             </div>
+
+            {/* Dialogs */}
+                <Suspense fallback={null}>
+                    <CompleteOrderDialog
+                        isOpen={isCompleteSaleDialogOpen}
+                        onClose={() => setIsCompleteSaleDialogOpen(false)}
+                        onConfirm={handleConfirmCompleteOrder}
+                        orderItems={posState.orderItems}
+                        tableNumber={posState.tableNumber}
+                        totalAmount={posState.totalAmount}
+                        discountAmount={discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount}
+                        finalTotal={posState.totalAmount - (discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount)}
+                        currency_symbol={currency_symbol}
+                    />
+
+                    <AddTableDialog
+                        isOpen={isAddTableDialogOpen}
+                        onClose={() => setIsAddTableDialogOpen(false)}
+                        onConfirm={handleAddTable}
+                    />
+
+                    <EditTableDialog
+                        isOpen={isEditTableDialogOpen}
+                        onClose={() => setIsEditTableDialogOpen(false)}
+                        onConfirm={handleConfirmEditTable}
+                        editTableData={editTableData}
+                    />
+
+                    <QRCodeDialog
+                        isOpen={isQRDialogOpen}
+                        onClose={() => setIsQRDialogOpen(false)}
+                        selectedTable={selectedTable}
+                    />
+
+                    <SplitBillDialog
+                        isOpen={isSplitBillDialogOpen}
+                        onClose={() => setIsSplitBillDialogOpen(false)}
+                        orderItems={posState.orderItems}
+                        tableNumber={posState.tableNumber}
+                        totalAmount={posState.totalAmount}
+                        discountAmount={discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount}
+                        finalTotal={posState.totalAmount - (discountType === 'percentage' ? (posState.totalAmount * discount / 100) : discount)}
+                        currency_symbol={currency_symbol}
+                    />
+
+                    <AddMenuItemDialog
+                        isOpen={isAddMenuItemDialogOpen}
+                        onClose={() => setIsAddMenuItemDialogOpen(false)}
+                        onConfirm={handleConfirmAddMenuItem}
+                    />
+
+                    <EditMenuItemDialog
+                        isOpen={isEditMenuItemDialogOpen}
+                        onClose={() => setIsEditMenuItemDialogOpen(false)}
+                        onConfirm={handleConfirmEditMenuItem}
+                        menuItem={editMenuItemData}
+                    />
+
+                    <DeleteMenuItemDialog
+                        isOpen={isDeleteMenuItemDialogOpen}
+                        onClose={() => setIsDeleteMenuItemDialogOpen(false)}
+                        onConfirm={handleConfirmDeleteMenuItem}
+                        menuItemName={deleteMenuItemData?.name}
+                        isBulkDelete={deleteMenuItemData?.isBulk}
+                        itemCount={deleteMenuItemData?.itemCount}
+                        selectedIds={deleteMenuItemData?.selectedIds}
+                    />
+                </Suspense>
         </AuthenticatedLayout>
     );
 }
