@@ -50,10 +50,14 @@ export const ReservationsTab: React.FC<ReservationsTabProps> = ({
         return blockedDates.some(blockedDate => {
             if (blockedDate.blocked_date !== date) return false;
             
-            if (blockedDate.is_full_day) return true;
+            // If no specific time is provided, check if any timeslots exist (partial day block)
+            if (!time) {
+                return blockedDate.timeslots && blockedDate.timeslots.length > 0;
+            }
             
-            if (time && blockedDate.start_time && blockedDate.end_time) {
-                return time >= blockedDate.start_time && time < blockedDate.end_time;
+            // Check if the specific time is in the blocked timeslots
+            if (blockedDate.timeslots && blockedDate.timeslots.includes(time)) {
+                return true;
             }
             
             return false;

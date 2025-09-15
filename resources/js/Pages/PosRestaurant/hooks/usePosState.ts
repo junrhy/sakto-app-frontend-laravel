@@ -139,7 +139,6 @@ export const usePosState = (initialMenuItems: MenuItem[], initialTables: Table[]
         totalAmount,
         
         // Data
-        reservations,
         blockedDates,
         
         // Actions
