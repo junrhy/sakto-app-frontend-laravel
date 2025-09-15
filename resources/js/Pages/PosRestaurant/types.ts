@@ -110,9 +110,7 @@ export interface QRCodeData {
 export interface BlockedDate {
     id: number;
     blocked_date: string;
-    start_time?: string;
-    end_time?: string;
-    is_full_day: boolean;
+    timeslots: string[];
     reason?: string;
     client_identifier: string;
     created_at: string;

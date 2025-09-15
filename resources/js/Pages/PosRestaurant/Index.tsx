@@ -447,6 +447,7 @@ export default function PosRestaurantIndex({
         }
     }, [api]);
 
+
     return (
         <AuthenticatedLayout
             header={

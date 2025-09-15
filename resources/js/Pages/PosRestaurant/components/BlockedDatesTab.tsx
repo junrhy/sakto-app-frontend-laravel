@@ -4,8 +4,7 @@ import { Input } from "@/Components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Label } from "@/Components/ui/label";
 import { Textarea } from "@/Components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { Plus, Edit, Trash, Calendar, AlertTriangle } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import { BlockedDate } from '../types';
 
 interface BlockedDatesTabProps {
@@ -23,105 +22,130 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
 }) => {
     const [newBlockedDate, setNewBlockedDate] = useState<Omit<BlockedDate, 'id' | 'created_at' | 'updated_at'>>({
         blocked_date: new Date().toISOString().split('T')[0], // Default to today
-        start_time: '',
-        end_time: '',
-        is_full_day: true,
+        timeslots: [],
         reason: '',
         client_identifier: 'current_client' // This should come from auth
     });
 
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [editData, setEditData] = useState<Partial<BlockedDate>>({});
+    const [selectedTimeSlots, setSelectedTimeSlots] = useState<string[]>([]);
+
+
+    // Generate time slots with 30-minute intervals in 12-hour format, separated by AM/PM
+    const generateTimeSlots = useCallback(() => {
+        const amSlots = [];
+        const pmSlots = [];
+        
+        for (let hour = 0; hour < 24; hour++) {
+            for (let minute = 0; minute < 60; minute += 30) {
+                const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                const displayTime = convertTo12Hour(timeString);
+                const slot = { value: timeString, display: displayTime };
+                
+                if (hour < 12) {
+                    amSlots.push(slot);
+                } else {
+                    pmSlots.push(slot);
+                }
+            }
+        }
+        
+        return { am: amSlots, pm: pmSlots };
+    }, []);
+
+    // Convert 24-hour format to 12-hour format with AM/PM
+    const convertTo12Hour = useCallback((time24: string) => {
+        const [hours, minutes] = time24.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+    }, []);
+
+    const timeSlots = generateTimeSlots();
+
+    // Handle time slot selection (including unblocking already blocked slots)
+    const handleTimeSlotToggle = useCallback((timeSlot: string) => {
+        setSelectedTimeSlots(prev => {
+            if (prev.includes(timeSlot)) {
+                return prev.filter(slot => slot !== timeSlot);
+            } else {
+                return [...prev, timeSlot].sort();
+            }
+        });
+    }, []);
+
+    const handleFullDayToggle = useCallback((isFullDay: boolean) => {
+        if (isFullDay) {
+            // Select all time slots when full day is checked
+            const timeSlots = generateTimeSlots();
+            const allTimeSlots = [...timeSlots.am, ...timeSlots.pm].map(slot => slot.value);
+            setSelectedTimeSlots(allTimeSlots);
+        } else {
+            // Clear selection when full day is unchecked
+            setSelectedTimeSlots([]);
+        }
+    }, [generateTimeSlots]);
+
 
     const handleSubmitBlockedDate = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (newBlockedDate.blocked_date) {
-            // Validate time range if not full day
-            if (!newBlockedDate.is_full_day && (!newBlockedDate.start_time || !newBlockedDate.end_time)) {
-                alert('Please provide both start and end times for time range blocking.');
-                return;
-            }
-            
-            if (!newBlockedDate.is_full_day && newBlockedDate.start_time >= newBlockedDate.end_time) {
-                alert('End time must be after start time.');
+            if (selectedTimeSlots.length === 0) {
+                alert('Please select at least one time slot to block or unblock.');
                 return;
             }
 
-            onAddBlockedDate(newBlockedDate);
+            // Get already blocked slots for this date
+            const alreadyBlockedSlots = blockedDates
+                .filter(blocked => blocked.blocked_date.split('T')[0] === newBlockedDate.blocked_date)
+                .flatMap(blocked => blocked.timeslots);
+
+            // Separate new slots to block and existing slots to unblock
+            const newSlotsToBlock = selectedTimeSlots.filter(slot => !alreadyBlockedSlots.includes(slot));
+            const slotsToUnblock = selectedTimeSlots.filter(slot => alreadyBlockedSlots.includes(slot));
+
+            // Handle blocking new slots
+            if (newSlotsToBlock.length > 0) {
+                const blockedDateEntry = {
+                    ...newBlockedDate,
+                    timeslots: newSlotsToBlock
+                };
+                onAddBlockedDate(blockedDateEntry);
+            }
+
+            // Handle unblocking existing slots
+            if (slotsToUnblock.length > 0) {
+                // Find blocked date entries that contain slots to unblock
+                const blockedEntriesToUpdate = blockedDates.filter(blocked => 
+                    blocked.blocked_date.split('T')[0] === newBlockedDate.blocked_date &&
+                    blocked.timeslots.some(slot => slotsToUnblock.includes(slot))
+                );
+
+                // For each blocked entry, remove the unblocked slots
+                blockedEntriesToUpdate.forEach(blockedEntry => {
+                    const remainingSlots = blockedEntry.timeslots.filter(slot => !slotsToUnblock.includes(slot));
+                    
+                    if (remainingSlots.length === 0) {
+                        // If no slots remain, delete the entire blocked date entry
+                        onDeleteBlockedDate(blockedEntry.id);
+                    } else {
+                        // Update the blocked date entry with remaining slots
+                        onUpdateBlockedDate(blockedEntry.id, { timeslots: remainingSlots });
+                    }
+                });
+            }
+
+            // Reset form
             setNewBlockedDate({
                 blocked_date: new Date().toISOString().split('T')[0], // Reset to today
-                start_time: '',
-                end_time: '',
-                is_full_day: true,
+                timeslots: [],
                 reason: '',
                 client_identifier: 'current_client'
             });
+            setSelectedTimeSlots([]);
         }
-    }, [newBlockedDate, onAddBlockedDate]);
+    }, [newBlockedDate, selectedTimeSlots, blockedDates, onAddBlockedDate, onUpdateBlockedDate, onDeleteBlockedDate]);
 
-    const handleEdit = useCallback((blockedDate: BlockedDate) => {
-        setEditingId(blockedDate.id);
-        setEditData({
-            blocked_date: blockedDate.blocked_date,
-            start_time: blockedDate.start_time,
-            end_time: blockedDate.end_time,
-            is_full_day: blockedDate.is_full_day,
-            reason: blockedDate.reason
-        });
-    }, []);
 
-    const handleSaveEdit = useCallback(() => {
-        if (editingId && editData.blocked_date) {
-            // Validate time range if not full day
-            if (!editData.is_full_day && (!editData.start_time || !editData.end_time)) {
-                alert('Please provide both start and end times for time range blocking.');
-                return;
-            }
-            
-            if (!editData.is_full_day && editData.start_time && editData.end_time && editData.start_time >= editData.end_time) {
-                alert('End time must be after start time.');
-                return;
-            }
-
-            onUpdateBlockedDate(editingId, editData);
-            setEditingId(null);
-            setEditData({});
-        }
-    }, [editingId, editData, onUpdateBlockedDate]);
-
-    const handleCancelEdit = useCallback(() => {
-        setEditingId(null);
-        setEditData({});
-    }, []);
-
-    const handleDelete = useCallback((id: number) => {
-        if (confirm('Are you sure you want to remove this blocked date?')) {
-            onDeleteBlockedDate(id);
-        }
-    }, [onDeleteBlockedDate]);
-
-    const formatDate = useCallback((dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-    }, []);
-
-    const formatTimeRange = useCallback((blockedDate: BlockedDate) => {
-        if (blockedDate.is_full_day) {
-            return 'All day';
-        }
-        if (blockedDate.start_time && blockedDate.end_time) {
-            return `${blockedDate.start_time} - ${blockedDate.end_time}`;
-        }
-        return 'Time range';
-    }, []);
-
-    const sortedBlockedDates = [...blockedDates].sort((a, b) => 
-        new Date(a.blocked_date).getTime() - new Date(b.blocked_date).getTime()
-    );
 
     return (
         <div className="space-y-6">
@@ -130,13 +154,7 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Blocked Dates Management</h2>
-                        <p className="text-gray-600 dark:text-gray-400">Block specific dates to prevent reservations</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Blocked Dates</p>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{blockedDates.length}</p>
-                        </div>
+                        <p className="text-gray-600 dark:text-gray-400">Block specific dates and time slots to prevent reservations</p>
                     </div>
                 </div>
             </div>
@@ -145,13 +163,12 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                 <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-b border-gray-200 dark:border-gray-600">
                     <CardTitle className="text-gray-900 dark:text-white flex items-center">
                         <Calendar className="w-5 h-5 mr-2 text-red-500" />
-                        Blocked Dates
+                        Block New Date
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                     {/* Add New Blocked Date Form */}
-                    <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg p-6 mb-6 border border-red-200 dark:border-red-800">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Block New Date</h3>
+                    <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg p-6 border border-red-200 dark:border-red-800">
                     <form onSubmit={handleSubmitBlockedDate}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
@@ -166,56 +183,160 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                     className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
                                 />
                             </div>
-                            <div>
-                                <Label htmlFor="blockingType">Blocking Type</Label>
-                                <Select 
-                                    value={newBlockedDate.is_full_day ? 'full_day' : 'time_range'} 
-                                    onValueChange={(value) => setNewBlockedDate({ 
-                                        ...newBlockedDate, 
-                                        is_full_day: value === 'full_day',
-                                        start_time: value === 'full_day' ? '' : newBlockedDate.start_time,
-                                        end_time: value === 'full_day' ? '' : newBlockedDate.end_time
-                                    })}
-                                >
-                                    <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                                        <SelectValue placeholder="Select blocking type" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-                                        <SelectItem value="full_day" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600">
-                                            Full Day
-                                        </SelectItem>
-                                        <SelectItem value="time_range" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600">
-                                            Time Range
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="fullDay"
+                                    checked={selectedTimeSlots.length === timeSlots.am.length + timeSlots.pm.length}
+                                    onChange={(e) => handleFullDayToggle(e.target.checked)}
+                                    className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <Label htmlFor="fullDay" className="text-sm font-medium text-gray-900 dark:text-white">
+                                    Block Full Day (selects all time slots)
+                                </Label>
                             </div>
-                            {!newBlockedDate.is_full_day && (
-                                <>
-                                    <div>
-                                        <Label htmlFor="startTime">Start Time *</Label>
-                                        <Input
-                                            id="startTime"
-                                            type="time"
-                                            value={newBlockedDate.start_time}
-                                            onChange={(e) => setNewBlockedDate({ ...newBlockedDate, start_time: e.target.value })}
-                                            required={!newBlockedDate.is_full_day}
-                                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
-                                        />
+                            <div className="md:col-span-2">
+                                    <Label>Select Time Slots to Block (30-minute intervals)</Label>
+                                    
+                                    {/* Legend */}
+                                    <div className="mt-2 mb-3 flex flex-wrap gap-4 text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">Available</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 bg-red-500 border border-red-500 rounded"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">Selected</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 bg-orange-200 dark:bg-orange-800 border border-orange-300 dark:border-orange-600 rounded"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">Already Blocked (click to unblock)</span>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <Label htmlFor="endTime">End Time *</Label>
-                                        <Input
-                                            id="endTime"
-                                            type="time"
-                                            value={newBlockedDate.end_time}
-                                            onChange={(e) => setNewBlockedDate({ ...newBlockedDate, end_time: e.target.value })}
-                                            required={!newBlockedDate.is_full_day}
-                                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
-                                        />
+                                    
+                                    <div className="mt-2 border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700">
+                                        <div className="grid grid-cols-2 gap-6">
+                                            {/* AM Column */}
+                                            <div>
+                                                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">AM</h4>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {timeSlots.am.map((timeSlot) => {
+                                                        const isSelected = selectedTimeSlots.includes(timeSlot.value);
+                                                        const isAlreadyBlocked = blockedDates.some(blocked => {
+                                                            // Normalize dates to YYYY-MM-DD format for comparison
+                                                            const blockedDateStr = blocked.blocked_date.split('T')[0];
+                                                            const selectedDateStr = newBlockedDate.blocked_date;
+                                                            const dateMatch = blockedDateStr === selectedDateStr;
+                                                            const slotMatch = blocked.timeslots.includes(timeSlot.value);
+                                                            
+                                                            return dateMatch && slotMatch;
+                                                        });
+                                                        
+                                                        const isDisabled = false; // Allow clicking on all slots
+                                                        
+                                                        return (
+                                                            <button
+                                                                key={timeSlot.value}
+                                                                type="button"
+                                                                onClick={() => !isDisabled && handleTimeSlotToggle(timeSlot.value)}
+                                                                disabled={isDisabled}
+                                                                className={`
+                                                                    px-3 py-2 text-sm rounded-lg border transition-all
+                                                                    ${isSelected 
+                                                                        ? 'bg-red-500 text-white border-red-500' 
+                                                                        : isAlreadyBlocked
+                                                                            ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-600 hover:bg-orange-300 dark:hover:bg-orange-700 hover:border-orange-400 dark:hover:border-orange-500'
+                                                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700'
+                                                                    }
+                                                                `}
+                                                            >
+                                                                {timeSlot.display}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                            
+                                            {/* PM Column */}
+                                            <div>
+                                                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">PM</h4>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {timeSlots.pm.map((timeSlot) => {
+                                                        const isSelected = selectedTimeSlots.includes(timeSlot.value);
+                                                        const isAlreadyBlocked = blockedDates.some(blocked => {
+                                                            // Normalize dates to YYYY-MM-DD format for comparison
+                                                            const blockedDateStr = blocked.blocked_date.split('T')[0];
+                                                            const selectedDateStr = newBlockedDate.blocked_date;
+                                                            const dateMatch = blockedDateStr === selectedDateStr;
+                                                            const slotMatch = blocked.timeslots.includes(timeSlot.value);
+                                                            
+                                                            return dateMatch && slotMatch;
+                                                        });
+                                                        
+                                                        const isDisabled = false; // Allow clicking on all slots
+                                                        
+                                                        return (
+                                                            <button
+                                                                key={timeSlot.value}
+                                                                type="button"
+                                                                onClick={() => !isDisabled && handleTimeSlotToggle(timeSlot.value)}
+                                                                disabled={isDisabled}
+                                                                className={`
+                                                                    px-3 py-2 text-sm rounded-lg border transition-all
+                                                                    ${isSelected 
+                                                                        ? 'bg-red-500 text-white border-red-500' 
+                                                                        : isAlreadyBlocked
+                                                                            ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-600 hover:bg-orange-300 dark:hover:bg-orange-700 hover:border-orange-400 dark:hover:border-orange-500'
+                                                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700'
+                                                                    }
+                                                                `}
+                                                            >
+                                                                {timeSlot.display}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {(selectedTimeSlots.length > 0 || blockedDates.some(blocked => blocked.blocked_date.split('T')[0] === newBlockedDate.blocked_date)) && (
+                                            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                                {selectedTimeSlots.length > 0 && (
+                                                    <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                                                        Selected: {selectedTimeSlots.length} time slot(s)
+                                                    </p>
+                                                )}
+                                                {blockedDates.some(blocked => blocked.blocked_date.split('T')[0] === newBlockedDate.blocked_date) && (
+                                                    <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
+                                                        Already blocked: {blockedDates
+                                                            .filter(blocked => blocked.blocked_date.split('T')[0] === newBlockedDate.blocked_date)
+                                                            .reduce((total, blocked) => total + blocked.timeslots.length, 0)} time slot(s)
+                                                    </p>
+                                                )}
+                                                <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                                                    {selectedTimeSlots.length > 0 
+                                                        ? (() => {
+                                                            const alreadyBlockedSlots = blockedDates
+                                                                .filter(blocked => blocked.blocked_date.split('T')[0] === newBlockedDate.blocked_date)
+                                                                .flatMap(blocked => blocked.timeslots);
+                                                            const newSlots = selectedTimeSlots.filter(slot => !alreadyBlockedSlots.includes(slot));
+                                                            const unblockSlots = selectedTimeSlots.filter(slot => alreadyBlockedSlots.includes(slot));
+                                                            
+                                                            if (newSlots.length > 0 && unblockSlots.length > 0) {
+                                                                return `Will block ${newSlots.length} new slot(s) and unblock ${unblockSlots.length} existing slot(s)`;
+                                                            } else if (newSlots.length > 0) {
+                                                                return `Will block ${newSlots.length} new time slot(s)`;
+                                                            } else if (unblockSlots.length > 0) {
+                                                                return `Will unblock ${unblockSlots.length} time slot(s)`;
+                                                            }
+                                                            return 'Will update these time slots';
+                                                        })()
+                                                        : 'Select time slots to block or click orange slots to unblock'
+                                                    }
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
-                                </>
-                            )}
+                                </div>
                             <div className="md:col-span-2">
                                 <Label htmlFor="blockedReason">Reason (Optional)</Label>
                                 <Textarea
@@ -233,164 +354,14 @@ export const BlockedDatesTab: React.FC<BlockedDatesTabProps> = ({
                                 className="w-full md:w-auto bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                             >
                                 <Plus className="mr-2 h-4 w-4" />
-                                {newBlockedDate.is_full_day ? 'Block Date' : 'Block Time Range'}
+                                {selectedTimeSlots.length > 0 
+                                    ? `Update ${selectedTimeSlots.length} Time Slot(s)`
+                                    : 'Select Time Slots'
+                                }
                             </Button>
                         </form>
                     </div>
 
-                    {/* Blocked Dates List */}
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Blocked Dates</h3>
-                        
-                        {sortedBlockedDates.length === 0 ? (
-                            <div className="text-center py-8">
-                                <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                <p className="text-gray-500 dark:text-gray-400">No blocked dates found.</p>
-                                <p className="text-sm text-gray-400 dark:text-gray-500">Add dates above to prevent reservations.</p>
-                            </div>
-                        ) : (
-                            <div className="grid gap-4">
-                                {sortedBlockedDates.map((blockedDate) => (
-                                    <Card key={blockedDate.id} className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                                        <CardContent className="p-4">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1">
-                                                    {editingId === blockedDate.id ? (
-                                                        <div className="space-y-3">
-                                                            <div>
-                                                                <Label htmlFor={`edit-date-${blockedDate.id}`}>Date</Label>
-                                                                <Input
-                                                                    id={`edit-date-${blockedDate.id}`}
-                                                                    type="date"
-                                                                    value={editData.blocked_date || ''}
-                                                                    onChange={(e) => setEditData({ ...editData, blocked_date: e.target.value })}
-                                                                    min={new Date().toISOString().split('T')[0]}
-                                                                    className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <Label htmlFor={`edit-blocking-type-${blockedDate.id}`}>Blocking Type</Label>
-                                                                <Select 
-                                                                    value={editData.is_full_day ? 'full_day' : 'time_range'} 
-                                                                    onValueChange={(value) => setEditData({ 
-                                                                        ...editData, 
-                                                                        is_full_day: value === 'full_day',
-                                                                        start_time: value === 'full_day' ? '' : editData.start_time,
-                                                                        end_time: value === 'full_day' ? '' : editData.end_time
-                                                                    })}
-                                                                >
-                                                                    <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                                                                        <SelectValue placeholder="Select blocking type" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-                                                                        <SelectItem value="full_day" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                                            Full Day
-                                                                        </SelectItem>
-                                                                        <SelectItem value="time_range" className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                                            Time Range
-                                                                        </SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-                                                            {!editData.is_full_day && (
-                                                                <>
-                                                                    <div>
-                                                                        <Label htmlFor={`edit-start-time-${blockedDate.id}`}>Start Time</Label>
-                                                                        <Input
-                                                                            id={`edit-start-time-${blockedDate.id}`}
-                                                                            type="time"
-                                                                            value={editData.start_time || ''}
-                                                                            onChange={(e) => setEditData({ ...editData, start_time: e.target.value })}
-                                                                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <Label htmlFor={`edit-end-time-${blockedDate.id}`}>End Time</Label>
-                                                                        <Input
-                                                                            id={`edit-end-time-${blockedDate.id}`}
-                                                                            type="time"
-                                                                            value={editData.end_time || ''}
-                                                                            onChange={(e) => setEditData({ ...editData, end_time: e.target.value })}
-                                                                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
-                                                                        />
-                                                                    </div>
-                                                                </>
-                                                            )}
-                                                            <div>
-                                                                <Label htmlFor={`edit-reason-${blockedDate.id}`}>Reason</Label>
-                                                                <Textarea
-                                                                    id={`edit-reason-${blockedDate.id}`}
-                                                                    value={editData.reason || ''}
-                                                                    onChange={(e) => setEditData({ ...editData, reason: e.target.value })}
-                                                                    placeholder="Reason for blocking this date"
-                                                                    className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-red-500 dark:focus:border-red-400 rounded-lg shadow-sm focus:shadow-md transition-all"
-                                                                    rows={2}
-                                                                />
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <Button 
-                                                                    size="sm" 
-                                                                    onClick={handleSaveEdit}
-                                                                    className="bg-green-500 hover:bg-green-600 text-white"
-                                                                >
-                                                                    Save
-                                                                </Button>
-                                                                <Button 
-                                                                    size="sm" 
-                                                                    variant="outline"
-                                                                    onClick={handleCancelEdit}
-                                                                >
-                                                                    Cancel
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div>
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <AlertTriangle className="w-4 h-4 text-red-500" />
-                                                                <h4 className="font-semibold text-gray-900 dark:text-white">
-                                                                    {formatDate(blockedDate.blocked_date)}
-                                                                </h4>
-                                                            </div>
-                                                            <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                                                <span className="font-medium">Time:</span> {formatTimeRange(blockedDate)}
-                                                            </div>
-                                                            {blockedDate.reason && (
-                                                                <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                                                    <span className="font-medium">Reason:</span> {blockedDate.reason}
-                                                                </div>
-                                                            )}
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                Blocked on {new Date(blockedDate.created_at).toLocaleDateString()}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                {editingId !== blockedDate.id && (
-                                                    <div className="flex gap-2 ml-4">
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="outline"
-                                                            onClick={() => handleEdit(blockedDate)}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button 
-                                                            size="sm" 
-                                                            variant="destructive"
-                                                            onClick={() => handleDelete(blockedDate.id)}
-                                                        >
-                                                            <Trash className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </CardContent>
             </Card>
         </div>
